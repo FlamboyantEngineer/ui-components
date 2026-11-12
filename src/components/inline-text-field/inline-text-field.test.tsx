@@ -33,6 +33,16 @@ function EditorHost({
   );
 }
 
+/** A host that returns focus to its document from the field's callbacks, as an editor does. */
+function FocusReturningHost(field: Pick<InlineTextFieldProps, 'onCommit' | 'onCancel'>) {
+  return (
+    <>
+      <InlineTextField value="A pear" aria-label="Caption" {...field} />
+      <button type="button">Document</button>
+    </>
+  );
+}
+
 describe('InlineTextField', () => {
   it('UIC-INLINE-TEXT-FIELD-1.1 renders a text input that takes no focus on mount', () => {
     const { container } = render(
@@ -102,6 +112,33 @@ describe('InlineTextField', () => {
     expect(onCancel).toHaveBeenCalledOnce();
     await user.tab();
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-INLINE-TEXT-FIELD-1.2 commits once on Enter when the host moves focus in onCommit', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn(() => screen.getByRole('button', { name: 'Document' }).focus());
+    render(<FocusReturningHost onCommit={onCommit} />);
+    const input = screen.getByRole('textbox', { name: 'Caption' });
+    await user.type(input, ' plum{Enter}');
+    expect(screen.getByRole('button', { name: 'Document' })).toHaveFocus();
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(onCommit).toHaveBeenCalledWith('A pear plum');
+  });
+
+  it('UIC-INLINE-TEXT-FIELD-1.3 commits nothing on Escape when the host moves focus in onCancel', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const onCancel = vi.fn(() => screen.getByRole('button', { name: 'Document' }).focus());
+    render(<FocusReturningHost onCommit={onCommit} onCancel={onCancel} />);
+    const input = screen.getByRole('textbox', { name: 'Caption' });
+    await user.type(input, ' plum{Escape}');
+    expect(screen.getByRole('button', { name: 'Document' })).toHaveFocus();
+    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input).toHaveValue('A pear');
+    await user.type(input, '!');
+    await user.tab();
+    expect(onCommit).toHaveBeenCalledWith('A pear!');
   });
 
   it('UIC-INLINE-TEXT-FIELD-1.4 follows a new value unless the reader changed the draft', async () => {

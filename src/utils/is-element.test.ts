@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { isFocusableElement } from './focus-target.js';
 import { isEditableTarget } from './is-editable-target.js';
-import { isElement, isHTMLElement, isNode } from './is-element.js';
+import { isElement, isHTMLElement, isNode, isShadowRoot } from './is-element.js';
 
 /** A same-origin frame's document: its nodes come from the frame window's own constructors. */
 function frameDocument(): Document {
@@ -29,6 +29,17 @@ describe('node checks', () => {
     expect(isHTMLElement(input, 'textarea')).toBe(false);
     expect(isFocusableElement(input)).toBe(true);
     expect(isEditableTarget(input)).toBe(true);
+  });
+
+  it('UIC-PORTAL-1.6 recognises the shadow roots of another window', () => {
+    const owner = frameDocument();
+    const host = owner.createElement('div');
+    owner.body.append(host);
+    const root = host.attachShadow({ mode: 'open' });
+    expect(root instanceof ShadowRoot).toBe(false);
+    expect(isShadowRoot(root)).toBe(true);
+    expect(isShadowRoot(owner.createDocumentFragment())).toBe(false);
+    expect(isShadowRoot(host)).toBe(false);
   });
 
   it('UIC-PORTAL-1.6 tells nodes, elements and HTML elements apart', () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { type RefObject, useLayoutEffect, useRef } from 'react';
+import { isShadowRoot } from './is-element.js';
 import { getOwnerWindow } from './owner-window.js';
 
 type Offsets = Map<Element, { left: number; top: number }>;
@@ -15,7 +16,7 @@ function readScrollOffsets(anchor: Element | null): Offsets {
   while (element) {
     offsets.set(element, { left: element.scrollLeft, top: element.scrollTop });
     const root = element.getRootNode();
-    element = element.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
+    element = element.parentElement ?? (isShadowRoot(root) ? root.host : null);
   }
   const page = anchor?.ownerDocument.scrollingElement;
   if (page) offsets.set(page, { left: page.scrollLeft, top: page.scrollTop });

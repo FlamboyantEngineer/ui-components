@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps, FocusEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -42,6 +42,13 @@ interface Draft {
   text: string;
 }
 
+/**
+ * How the last key settled the draft, so a blur that the host causes inside `onCommit` or
+ * `onCancel`, before the field renders again, neither commits the text Enter just committed nor
+ * the draft Escape just discarded. A change of the draft clears it.
+ */
+type Settled = { kind: 'committed'; text: string } | { kind: 'discarded' } | null;
+
 /** The draft, which starts again from a new `value` unless the reader has changed it. */
 function useDraft(value: string) {
   const [draft, setDraft] = useState<Draft>({ base: value, text: value });
@@ -64,10 +71,11 @@ export function InlineTextField(props: InlineTextFieldProps) {
   const [input, setInput] = useState<HTMLInputElement | null>(null);
   const [text, setText] = useDraft(value);
   const latest = useLatest({ text, value, onCommit, onCancel, isReadOnly, setText });
+  const settledRef = useRef<Settled>(null);
   useEffect(() => {
     if (!input) return;
     const contain = (event: Event) => {
-      if (event instanceof KeyboardEvent && event.key === 'Tab') return;
+      if ('key' in event && event.key === 'Tab') return;
       event.stopPropagation();
     };
     const onKeyDown = (event: KeyboardEvent) => {
@@ -75,9 +83,11 @@ export function InlineTextField(props: InlineTextFieldProps) {
       if (isComposingKey(event) || current.isReadOnly) return;
       if (event.key === 'Enter') {
         event.preventDefault();
+        settledRef.current = { kind: 'committed', text: current.text };
         current.onCommit?.(current.text);
       } else if (event.key === 'Escape') {
         event.preventDefault();
+        settledRef.current = { kind: 'discarded' };
         current.setText(current.value);
         current.onCancel?.();
       }
@@ -96,9 +106,15 @@ export function InlineTextField(props: InlineTextFieldProps) {
       type="text"
       value={text}
       readOnly={isReadOnly}
-      onChange={(event) => setText(event.target.value)}
+      onChange={(event) => {
+        settledRef.current = null;
+        setText(event.target.value);
+      }}
       onBlur={(event) => {
-        if (!isReadOnly && text !== value) onCommit?.(text);
+        const settled = settledRef.current;
+        const isSettled =
+          settled?.kind === 'discarded' || (settled?.kind === 'committed' && settled.text === text);
+        if (!isReadOnly && !isSettled && text !== value) onCommit?.(text);
         onBlur?.(event);
       }}
       {...hooks.root({

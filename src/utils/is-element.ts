@@ -32,3 +32,8 @@ export function isHTMLElement(value: unknown, tag?: string): boolean {
     (tag === undefined || value.localName === tag)
   );
 }
+
+/** Whether a node is a shadow root, from any window. */
+export function isShadowRoot(node: Node): node is ShadowRoot {
+  return node.nodeType === 11 && 'host' in node;
+}

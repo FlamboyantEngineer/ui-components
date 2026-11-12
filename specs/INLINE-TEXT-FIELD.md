@@ -13,14 +13,14 @@ Verification: `src/components/inline-text-field/inline-text-field.test.tsx`, `e2
 
 ### UIC-INLINE-TEXT-FIELD-1.2 - Committing
 
-Enter shall call `onCommit` with the draft, changed or not, so a host can move focus back to its document; focus leaving the field calls it only when the draft differs from `value`. Enter that confirms an input method candidate commits nothing.
+Enter shall call `onCommit` with the draft, changed or not, so a host can move focus back to its document; focus leaving the field calls it only when the draft differs from `value` and is not the draft Enter has just committed, so a host that moves focus inside `onCommit` receives one commit. Enter that confirms an input method candidate commits nothing.
 
 Implementation: `src/components/inline-text-field/inline-text-field.tsx`, `src/utils/is-composing-key.ts`
 Verification: `src/components/inline-text-field/inline-text-field.test.tsx`, `e2e/inline-text-field.spec.ts`
 
 ### UIC-INLINE-TEXT-FIELD-1.3 - Cancelling
 
-Escape shall put the draft back to `value` and call `onCancel`, so leaving the field afterwards commits nothing.
+Escape shall put the draft back to `value` and call `onCancel`, so leaving the field afterwards commits nothing, even when the host moves focus inside `onCancel` before the field renders the restored text.
 
 Implementation: `src/components/inline-text-field/inline-text-field.tsx`
 Verification: `src/components/inline-text-field/inline-text-field.test.tsx`, `e2e/inline-text-field.spec.ts`
