@@ -16,7 +16,7 @@ function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
 
 /**
  * Sends the composer's message as an edit, a queued message's new text, a reply or a new message.
- * An edit or a reply ends once the host accepts it, and only in the conversation and session it was
+ * An edit, of a message or a queued one, or a reply ends once the host accepts it, and only in the conversation and session it was
  * sent from, while the composer still shows the message sent: a rejection keeps the banner for
  * another try, and words the reader added meanwhile, or an edit or reply they started again, stay.
  * `readShown` reads what the composer shows when the host accepts.
@@ -42,11 +42,12 @@ export function submitMessage(
   }
   if (editing) {
     const queue = options.queue ?? [];
-    options.onQueueChange?.(
+    const result = options.onQueueChange?.(
       queue.map((entry) => (entry.id === editing.id ? { ...entry, text, tokens } : entry)),
     );
-    state.cancelEdit();
-    return undefined;
+    return whenAccepted(result, () => {
+      if (isShown()) state.endEdit(scope, session);
+    });
   }
   if (replyingId !== null && options.onReply) {
     const result = options.onReply(replyingId, text, tokens);

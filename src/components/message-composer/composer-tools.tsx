@@ -13,11 +13,16 @@ import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FileTrigger } from '../../primitives/index.js';
+import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
-import { type ComposerControlsValue, useComposerControlsValue } from './composer-controls.js';
+import {
+  type ComposerControlsValue,
+  composerSubmittingDelay,
+  useComposerControlsValue,
+} from './composer-controls.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import { attachChosenFiles } from './use-file-drop.js';
 
@@ -32,8 +37,8 @@ type ComposerActionMode = 'send' | 'stop' | 'save';
 
 function toActionMode(composer: ComposerControlsValue): ComposerActionMode {
   if (composer.isEditing) return 'save';
-  // A composer that sends while pending offers Stop only while there is nothing to send.
-  const isSending = composer.allowsPendingSubmit && composer.canSubmit;
+  // A composer that sends while pending offers Stop only while there is nothing to send or waiting.
+  const isSending = composer.allowsPendingSubmit && (composer.canSubmit || composer.isSubmitting);
   return composer.isPending && composer.onStop && !isSending ? 'stop' : 'send';
 }
 
@@ -111,7 +116,8 @@ function CancelButton({ composer }: { composer: ComposerControlsValue }) {
 
 /**
  * Cancel while editing, then the send button, Stop while a stoppable reply is pending, or Save
- * while editing: one button that keeps focus as it switches.
+ * while editing: one button that keeps focus as it switches. It shows itself busy once a sent
+ * message has waited `composerSubmittingDelay` for the host.
  */
 export function ComposerSendControl({
   composer,
@@ -121,7 +127,9 @@ export function ComposerSendControl({
   const { isDisabled } = composer;
   const mode = toActionMode(composer);
   const isStop = mode === 'stop';
-  const isPending = composer.isPending && !composer.allowsPendingSubmit;
+  const isReplyPending = composer.isPending && !composer.allowsPendingSubmit;
+  // A sent message the host takes time to accept shows the button busy, after a short delay.
+  const isWaiting = useActiveAfter(composer.isSubmitting, composerSubmittingDelay);
   return (
     <>
       {composer.isEditing ? <CancelButton composer={composer} /> : null}
@@ -134,7 +142,8 @@ export function ComposerSendControl({
         shortcut={isStop ? undefined : composer.submitShortcut}
         // A tooltip in both states keeps one button, so keyboard focus on it survives the switch.
         tooltip={isStop ? strings.stop : undefined}
-        isPending={!isStop && isPending}
+        isPending={!isStop && (isReplyPending || isWaiting)}
+        pendingLabel={isWaiting ? strings[mode === 'save' ? 'saving' : 'sending'] : undefined}
         isDisabled={isDisabled || (!isStop && !composer.canSubmit)}
         focusableWhenDisabled={!isDisabled}
         preventFocusOnPress

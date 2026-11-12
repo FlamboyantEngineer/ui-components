@@ -92,11 +92,12 @@ describe('Chat', () => {
       'ui-chat-transcript',
       'ui-chat-typing-indicator',
       'ui-chat__queue',
+      'ui-chat__progress',
       'ui-message-composer',
     ]);
     expect(screen.getByRole('feed', { name: 'Hiking group' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT', {
-      slots: ['transcript', 'typing', 'queue', 'composer', 'search-toggle'],
+      slots: ['transcript', 'typing', 'queue', 'progress', 'composer', 'search-toggle'],
       callerAttributes: ['data-testid'],
     });
   });
@@ -114,7 +115,7 @@ describe('Chat', () => {
     expect(last.closest('[aria-live], [role="status"], [role="alert"], [role="log"]')).toBeNull();
     expect(last.querySelector('[aria-live]')).toBeNull();
     expectHooksMatchSpec(container, 'CHAT', {
-      slots: ['transcript', 'typing', 'composer', 'disclaimer'],
+      slots: ['transcript', 'typing', 'progress', 'composer', 'disclaimer'],
     });
   });
 

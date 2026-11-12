@@ -23,6 +23,8 @@ interface ContentStrings {
   message: string;
   /** Sends a composed message. */
   send: string;
+  /** Names the send button's busy indicator while the host takes time to accept the message. */
+  sending: string;
   /** Stops a reply while it streams. */
   stop: string;
   /** Names a conversation log. */

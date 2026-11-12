@@ -42,6 +42,7 @@ import {
   toExcerpt,
   toMessageText,
 } from './chat-model.js';
+import { type ChatProgressAction, ChatProgressLine, useChatProgress } from './chat-progress.js';
 import { ChatQueue } from './chat-queue.js';
 import { sendMessageNow, submitMessage } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
@@ -78,7 +79,10 @@ export interface ChatComposerOptions
    */
   onSendNow?:
     ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>) | undefined;
-  /** Called when `onSend`, `onSendNow`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
+  /**
+   * Called when `onSend`, `onSendNow`, `onReply`, `onEdit`, `onQueueChange` or `onSteer` throws or
+   * its promise rejects; the composer keeps the message. Without it the error is rethrown.
+   */
   onSendError?: ((error: unknown) => void) | undefined;
   /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */
   allowsEmptySubmit?: boolean | undefined;
@@ -93,18 +97,28 @@ export interface ChatComposerOptions
   conversationId?: string | undefined;
   /** Messages waiting for the running reply to end, shown above the composer. */
   queue?: readonly ChatQueuedMessage[] | undefined;
-  /** Replaces the queue when the reader edits or removes a queued message; lets them send while a reply runs. */
-  onQueueChange?: ((queue: readonly ChatQueuedMessage[]) => void) | undefined;
+  /**
+   * Replaces the queue when the reader edits or removes a queued message; lets them send while a
+   * reply runs. A returned promise holds the edit, or shows the removal under way, until it settles.
+   */
+  onQueueChange?:
+    ((queue: readonly ChatQueuedMessage[]) => void | Promise<unknown>) | undefined;
   /**
    * Sends the queued message `id` into the conversation now, for a host that stops the running
-   * reply and sends it ahead of the rest of the queue; offers Steer on each queued message.
+   * reply and sends it ahead of the rest of the queue; offers Steer on each queued message. A
+   * returned promise shows the steer under way until it settles.
    */
-  onSteer?: ((id: string) => void) | undefined;
+  onSteer?: ((id: string) => void | Promise<unknown>) | undefined;
   /**
    * Called with the queued message the reader starts to edit, and with `undefined` when the edit
    * ends, so the host holds that message back meanwhile, from the queue and from Steer.
    */
   onQueuedEditChange?: ((id: string | undefined) => void) | undefined;
+  /**
+   * The icon of the line above the composer while the host takes time to accept a message, in place
+   * of the clock glyph: `true` for the library's spinner, or an element.
+   */
+  progressIcon?: ReactNode;
   /** The files attached to the next message. */
   attachments?: readonly ChatAttachmentData[] | undefined;
   /** Removes a file from the next message. */
@@ -301,8 +315,14 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
   return Boolean(options.allowsEmptySubmit || hasFile);
 }
 
+/** What sending the composer's message does: save an edit, queue it while a reply runs, or send it. */
+function toSubmitAction({ options, state }: ChatComposerProps): ChatProgressAction {
+  if (state.editing) return 'save';
+  return options.isPending && options.onQueueChange ? 'queue' : 'send';
+}
+
 /**
- * The queue of follow-ups, then the rich composer: mentions of the other participants, the host's
+ * The queue of follow-ups, the line saying what waits for the host, then the rich composer: mentions of the other participants, the host's
  * commands, a per-conversation draft, Up to edit the newest queued message, the reader's last
  * message (between people) or to recall earlier prompts (with an assistant), sending now while a
  * reply runs, the reply and edit banners, attachments, the host's
@@ -316,6 +336,7 @@ export function ChatComposer(given: ChatComposerProps) {
   const banner = useBanner(props);
   const mentions = useMentions(props);
   const composerRef = useRef<MessageComposerHandle>(null);
+  const progress = useChatProgress(options.conversationId);
   const reportDraft = useChatComposerHandle({
     handleRef: options.composerHandleRef,
     composerRef,
@@ -334,7 +355,8 @@ export function ChatComposer(given: ChatComposerProps) {
   };
   return (
     <>
-      <ChatQueue options={options} state={state} />
+      <ChatQueue options={options} state={state} track={progress.track} />
+      <ChatProgressLine action={progress.action} icon={options.progressIcon} />
       <RichMessageComposer
         ref={setComposer}
         handleRef={composerRef}
@@ -365,8 +387,16 @@ export function ChatComposer(given: ChatComposerProps) {
         startControls={renderStartControls(props)}
         endControls={options.composerEndControls}
         onKeyDown={onKeyDown}
-        onSubmit={(message) => submitMessage(props, message, () => composerRef.current?.getValue())}
-        onSubmitNow={options.onSendNow && ((message) => sendMessageNow(props, message))}
+        onSubmit={(message) =>
+          progress.track(
+            toSubmitAction(props),
+            submitMessage(props, message, () => composerRef.current?.getValue()),
+          )
+        }
+        onSubmitNow={
+          options.onSendNow &&
+          ((message) => progress.track('send', sendMessageNow(props, message)))
+        }
         onSubmitError={options.onSendError}
       />
     </>

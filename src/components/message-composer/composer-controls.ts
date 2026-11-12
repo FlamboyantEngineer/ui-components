@@ -19,6 +19,12 @@ import type { ShortcutChord } from '../shortcut/shortcut.js';
 import type { ComposerFrameModel } from './composer-frame.js';
 import type { MessageComposerSharedProps } from './message-composer.js';
 
+/**
+ * How long a sent message may wait for the host before the action button shows that it waits, so a
+ * quick acceptance never flashes a spinner.
+ */
+export const composerSubmittingDelay = 400;
+
 /** What a control in a composer's row reads from the composer. */
 export interface MessageComposerControls {
   /** The row is too narrow for the controls' labels: controls show their icon alone. */
@@ -41,6 +47,8 @@ type ComposerControlActions = Pick<
 export interface ComposerControlsValue extends MessageComposerControls, ComposerControlActions {
   isEditing: boolean;
   canSubmit: boolean;
+  /** A sent message waits for the host to accept it. */
+  isSubmitting: boolean;
   /** A reply is on its way. */
   isPending: boolean;
   /** The composer sends while a reply is on its way. */
@@ -95,6 +103,7 @@ export function useComposerControls({
     ...rest,
     isEditing: model.isEditing,
     canSubmit: model.canSubmit,
+    isSubmitting: model.isSubmitting,
     isPending: Boolean(props.isPending),
     allowsPendingSubmit: Boolean(props.allowsPendingSubmit),
     submitShortcut: model.keys.submit[0],
