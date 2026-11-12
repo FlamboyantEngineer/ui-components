@@ -115,6 +115,7 @@
   display: none;
 }
 
+.ui-chat__queue-steer,
 .ui-chat__queue-edit,
 .ui-chat__queue-remove,
 .ui-chat__search-toggle {

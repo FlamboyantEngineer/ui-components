@@ -115,6 +115,7 @@
   "chatEditingMessage": "メッセージを編集中",
   "chatEditingQueued": "待機中のメッセージを編集中",
   "chatQueuedMessages": "待機中のメッセージ {count} 件",
+  "chatSteerQueued": "待機中のメッセージ {position} で方向修正",
   "chatEditQueued": "待機中のメッセージ {position} を編集",
   "chatRemoveQueued": "待機中のメッセージ {position} を削除",
   "codeBlockTitle": "{variant, select, terminal {ターミナル} other {コード}}",

@@ -12,6 +12,7 @@ export const chatHooks = createHooks('chat', [
   'queue-item',
   'queue-text',
   'queue-attachments',
+  'queue-steer',
   'queue-edit',
   'queue-remove',
   'composer',

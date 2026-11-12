@@ -95,6 +95,11 @@ export interface ChatComposerOptions
   queue?: readonly ChatQueuedMessage[] | undefined;
   /** Replaces the queue when the reader edits or removes a queued message; lets them send while a reply runs. */
   onQueueChange?: ((queue: readonly ChatQueuedMessage[]) => void) | undefined;
+  /**
+   * Sends the queued message `id` into the conversation now, for a host that stops the running
+   * reply and sends it ahead of the rest of the queue; offers Steer on each queued message.
+   */
+  onSteer?: ((id: string) => void) | undefined;
   /** The files attached to the next message. */
   attachments?: readonly ChatAttachmentData[] | undefined;
   /** Removes a file from the next message. */
@@ -124,8 +129,6 @@ interface BannerContent {
   quote?: Omit<ChatQuoteData, 'messageId'> | undefined;
   onCancel?: (() => void) | undefined;
 }
-
-const noQueue: readonly ChatQueuedMessage[] = [];
 
 /** The text the composer edits: the reader's message or a queued one, kept while its session and target are. */
 function useEditValue({ state, messages, options }: ChatComposerProps) {
@@ -327,9 +330,11 @@ export function ChatComposer(given: ChatComposerProps) {
   return (
     <>
       <ChatQueue
-        queue={options.queue ?? noQueue}
+        queue={options.queue}
         onQueueChange={options.onQueueChange}
+        onSteer={options.onSteer}
         onEdit={(id) => state.startEdit({ kind: 'queued', id })}
+        onCancelEdit={cancelEdit}
         editingId={state.editing?.kind === 'queued' ? state.editing.id : undefined}
         composerRef={state.composerRef}
       />

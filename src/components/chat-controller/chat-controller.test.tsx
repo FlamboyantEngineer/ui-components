@@ -263,6 +263,32 @@ describe('useChatController runs', () => {
     expect(send).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-CHAT-CONTROLLER-2.5 steers with a queued message, stopping the reply, ahead of the rest', async () => {
+    const { result, at, send } = renderController();
+    const ana = { start: 0, end: 4, kind: 'mention', id: 'ana', label: '@Ana' } as const;
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
+    act(() => result.current.send('@Ana third', [ana]));
+    const third = requireDefined(result.current.queue[1]);
+    act(() => result.current.props.onSteer(third.id));
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(at().messages.at(-1)?.parts).toEqual([
+      { type: 'text', text: '@Ana third', tokens: [ana] },
+    ]);
+    expect(result.current.messages.map((message) => message.status)).toEqual([
+      undefined,
+      'cancelled',
+      undefined,
+      'streaming',
+    ]);
+    expect(result.current.queue.map((entry) => entry.text)).toEqual(['Second']);
+    act(() => result.current.steer(third.id));
+    expect(send).toHaveBeenCalledTimes(2);
+    await push(at(), { type: 'finish' });
+    expect(send).toHaveBeenCalledTimes(3);
+    expect(at().messages.at(-1)?.parts).toEqual([{ type: 'text', text: 'Second' }]);
+  });
+
   it('UIC-CHAT-CONTROLLER-2.6 lists the reader prompts for recall', async () => {
     const { result, at } = renderController({
       initialMessages: [
@@ -323,6 +349,7 @@ describe('useChatController props', () => {
         'onRetryAttachment',
         'onSend',
         'onSendNow',
+        'onSteer',
         'onStop',
         'queue',
       ].sort(),
@@ -331,6 +358,7 @@ describe('useChatController props', () => {
     expect(result.current.props).toBe(first);
     expect(result.current.props.onSend).toBe(result.current.send);
     expect(result.current.props.onSendNow).toBe(result.current.sendNow);
+    expect(result.current.props.onSteer).toBe(result.current.steer);
     expect(result.current.props.onStop).toBe(result.current.stop);
   });
 

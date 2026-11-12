@@ -115,6 +115,7 @@
   "chatEditingMessage": "Editing your message",
   "chatEditingQueued": "Editing a queued message",
   "chatQueuedMessages": "{count, plural, one {# queued message} other {# queued messages}}",
+  "chatSteerQueued": "Steer with queued message {position}",
   "chatEditQueued": "Edit queued message {position}",
   "chatRemoveQueued": "Remove queued message {position}",
   "codeBlockTitle": "{variant, select, terminal {Terminal} other {Code}}",
