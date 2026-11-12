@@ -107,7 +107,9 @@ test.describe('Query Field suggestions', () => {
     const keywordTag = await tag(keyword);
     expect(keywordTag.width).toBeLessThan(56);
     expect(await geometry(keyword)).toBeLessThan(64);
+    // A closing list stays in the DOM while it exits; wait for it so the next one is the only match.
     await page.keyboard.press('Escape');
+    await expect(list).toHaveCount(0);
     await page.keyboard.press('Backspace');
     await page.keyboard.type('g');
     const field = list.getByRole('option', { name: /genre/ });
@@ -116,6 +118,7 @@ test.describe('Query Field suggestions', () => {
     expect(box?.width).toBeLessThan(280);
     expect((await tag(field)).color).not.toBe(keywordTag.color);
     await page.keyboard.press('Escape');
+    await expect(list).toHaveCount(0);
 
     // Long names wrap inside the viewport-bound list while long descriptions truncate.
     const long = page.getByRole('textbox', { name: 'Query, long suggestions' });
