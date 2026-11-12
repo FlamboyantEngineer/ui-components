@@ -1,6 +1,8 @@
 // Where an element sits in a scrolling element, in the scroller's own CSS pixels: the pixels its
 // scrollTop, clientHeight and scrollHeight count, whatever scale an ancestor transform draws it at.
 
+import { isShadowRoot } from './is-element.js';
+
 /** The scale from an element's own CSS pixels to viewport pixels, 1 for an unlaid-out side. */
 export function toScale(viewportSize: number, ownSize: number): number {
   return viewportSize > 0 && ownSize > 0 ? viewportSize / ownSize : 1;
@@ -51,7 +53,7 @@ export function measureInScroller(element: Element, scroller: HTMLElement): Scro
 function composedParent(node: Node): Element | null {
   if (node.parentElement) return node.parentElement;
   const root = node.getRootNode();
-  return root instanceof ShadowRoot ? root.host : null;
+  return isShadowRoot(root) ? root.host : null;
 }
 
 /** Whether an element scrolls its content vertically now. */

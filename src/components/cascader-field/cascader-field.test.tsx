@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -107,7 +107,8 @@ describe('CascaderField', () => {
     expect(onChange).toHaveBeenLastCalledWith(['north', 'lakes', 'reed']);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(trigger()).toHaveAccessibleName('Place North / Lakes / Reed Point');
-    expect(trigger()).toHaveFocus();
+    // Focus returns from the closed overlay in a later frame (T11).
+    await waitFor(() => expect(trigger()).toHaveFocus());
   });
 
   it('UIC-CASCADER-FIELD-2.2 opens a branch and chooses a leaf by pointer, and reopens on the chosen path', async () => {

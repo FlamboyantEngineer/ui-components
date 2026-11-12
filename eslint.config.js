@@ -137,9 +137,9 @@ const SOURCE_SYNTAX = [
   {
     // A frame's or a popup window's nodes come from other constructors.
     selector:
-      "BinaryExpression[operator='instanceof'][right.name=/^(Node|Element|(HTML|SVG)\\w*Element)$/]",
+      "BinaryExpression[operator='instanceof'][right.name=/^(Node|Element|ShadowRoot|(HTML|SVG)\\w*Element|\\w*Event)$/]",
     message:
-      'Use isNode, isElement or isHTMLElement (src/utils/is-element.ts), which hold for nodes of any window.',
+      'Use isNode, isElement, isHTMLElement or isShadowRoot (src/utils/is-element.ts), or test an event by its fields, which hold for any window.',
   },
   {
     // Each call builds a new Intl formatter.

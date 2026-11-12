@@ -59,6 +59,30 @@ function CaptionInDocument() {
   );
 }
 
+/** A host that returns focus to its document from the caption's commit and cancel, and logs both. */
+function FocusReturningCaption() {
+  const documentRef = useRef<HTMLButtonElement>(null);
+  const [log, setLog] = useState<readonly string[]>([]);
+  const record = (entry: string) => {
+    setLog((entries) => [...entries.slice(-4), entry]);
+    documentRef.current?.focus();
+  };
+  return (
+    <div data-lab-demo="returning-focus">
+      <InlineTextField
+        value="A basket of pears"
+        aria-label="Returning caption"
+        onCommit={(text) => record(`commit ${text}`)}
+        onCancel={() => record('cancel')}
+      />
+      <button ref={documentRef} type="button">
+        Document
+      </button>
+      <p data-lab-output="calls">Calls: {log.join(', ') || 'none'}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -82,6 +106,12 @@ mountLab(
       description="The caption sits in a non-editable figure of an editable document that selects all of itself on Ctrl+A. In the caption, select all, paste, Backspace and Enter stay in the field; Escape restores the committed caption."
     >
       <CaptionInDocument />
+    </LabSection>
+    <LabSection
+      title="Returning focus"
+      description="Commit and cancel move focus back to the document, as an editor does. Enter commits once and Escape commits nothing, although the field loses focus inside the call."
+    >
+      <FocusReturningCaption />
     </LabSection>
   </>,
 );

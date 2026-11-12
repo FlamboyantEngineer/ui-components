@@ -41,4 +41,25 @@ test.describe('Inline Text Field lab', () => {
       'Document received: keydown Tab',
     );
   });
+
+  test('UIC-INLINE-TEXT-FIELD-1.2 UIC-INLINE-TEXT-FIELD-1.3 commits once when the host takes focus back', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-text-field');
+    const demo = page.locator('[data-lab-demo="returning-focus"]');
+    const caption = demo.getByRole('textbox', { name: 'Returning caption' });
+    await caption.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('!');
+    await page.keyboard.press('Enter');
+    await expect(demo.getByRole('button', { name: 'Document' })).toBeFocused();
+    await caption.click();
+    await page.keyboard.type('?');
+    await page.keyboard.press('Escape');
+    await expect(demo.getByRole('button', { name: 'Document' })).toBeFocused();
+    await expect(demo.locator('[data-lab-output="calls"]')).toHaveText(
+      'Calls: commit A basket of pears!, cancel',
+    );
+  });
 });
