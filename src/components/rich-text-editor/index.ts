@@ -56,5 +56,7 @@ export { RichTextEngineContent, RichTextEngineHost } from './rich-text-engine-vi
 export { serializeRichTextHtml, serializeRichTextText } from './rich-text-export.js';
 export { createRichTextKit } from './rich-text-extension.js';
 export { createRichTextSchema } from './rich-text-schema.js';
+export type { RichTextMountedView, RichTextViewMountOptions } from './rich-text-view-mount.js';
+export { mountRichTextView } from './rich-text-view-mount.js';
 export type { SelectionToolbarProps } from './selection-toolbar.js';
 export { SelectionToolbar } from './selection-toolbar.js';

@@ -67,6 +67,7 @@ const CLIENT_HELPERS = new Set([
   'getFieldUndo',
   'keepHandleCellDraggable',
   'mountLabBar',
+  'mountRichTextView',
   'prompt',
   'resolveScrollSpy',
 ]);
