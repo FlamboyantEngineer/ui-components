@@ -26,6 +26,8 @@ const combiningMarks = /\p{M}/gu;
 const combiningMark = /\p{M}/u;
 /** A character as matching sees it: one code point and the combining marks after it. */
 const characterCluster = /\P{M}\p{M}*|\p{M}+/gsu;
+/** Text whose clusters are single ASCII characters, which fold by case and separators alone. */
+const asciiText = /^[\0-\x7f]*$/;
 
 /** The code point that ends right before `index`, keeping a surrogate pair whole. */
 function characterBefore(text: string, index: number): string | undefined {
@@ -104,7 +106,13 @@ function toSearchable(text: string, ignoreAccents: boolean): Searchable {
  * the text writes it composed or with combining marks.
  */
 export function normalizeMatchText(text: string, options: MatchTextOptions = {}): string {
-  return toSearchable(text, options.ignoreAccents ?? false).text;
+  if (asciiText.test(text)) return text.toLowerCase().replace(separators, ' ');
+  const ignoreAccents = options.ignoreAccents ?? false;
+  let folded = '';
+  for (const [cluster] of text.matchAll(characterCluster)) {
+    folded += foldCluster(cluster, ignoreAccents);
+  }
+  return folded;
 }
 
 /** Splits a typed query into normalized, non-empty terms. */
@@ -202,16 +210,26 @@ export function findTermRanges(
   return merged;
 }
 
+/**
+ * A test of whether every term occurs in text already folded by `normalizeMatchText` with the same
+ * options. The terms are folded once, so one query tests many texts without folding them again.
+ */
+export function createFoldedTermsTest(
+  terms: readonly string[],
+  options: MatchTextOptions = {},
+): (folded: string) => boolean {
+  const ignoreAccents = options.ignoreAccents ?? false;
+  const folded = foldTerms(terms, ignoreAccents);
+  const rules = { matchWords: false, ignoreAccents };
+  return (haystack) =>
+    folded.every((term) => term.length > 0 && hasOccurrence(haystack, term, rules));
+}
+
 /** Whether every term occurs in `text`. No terms means no filter, so any text matches. */
 export function textMatchesTerms(
   text: string,
   terms: readonly string[],
   options: MatchTextOptions = {},
 ): boolean {
-  const ignoreAccents = options.ignoreAccents ?? false;
-  const haystack = normalizeMatchText(text, options);
-  const rules = { matchWords: false, ignoreAccents };
-  return foldTerms(terms, ignoreAccents).every(
-    (term) => term.length > 0 && hasOccurrence(haystack, term, rules),
-  );
+  return createFoldedTermsTest(terms, options)(normalizeMatchText(text, options));
 }

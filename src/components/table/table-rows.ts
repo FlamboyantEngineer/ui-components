@@ -117,10 +117,17 @@ export function isTextValue(value: TableCellValue): value is string | number {
   return typeof value === 'string' || typeof value === 'number';
 }
 
-function toSortKey(value: TableCellValue): string | number {
-  if (isTextValue(value)) return value;
-  if (typeof value === 'boolean') return value ? 1 : 0;
-  return isDate(value) ? value.getTime() : '';
+/**
+ * A cell value as its kind's rank and the key it orders by within that kind: empty values (absent,
+ * null, empty text, `NaN` and invalid dates) first, then text, then numbers, booleans and dates by
+ * value.
+ */
+function toSortKey(
+  value: TableCellValue,
+): readonly [0, ''] | readonly [1, string] | readonly [2, number] {
+  const key = typeof value === 'boolean' ? Number(value) : isDate(value) ? value.getTime() : value;
+  if (typeof key === 'number') return Number.isNaN(key) ? [0, ''] : [2, key];
+  return key === null || key === undefined || key === '' ? [0, ''] : [1, key];
 }
 
 /** The value `column` reads from `row`. */
@@ -139,17 +146,18 @@ export function getTextCollator(locale: string): Intl.Collator {
 }
 
 /**
- * Orders two cell values: numbers, booleans and dates numerically, text naturally ignoring case
- * by `collator`.
+ * Orders two cell values in one consistent order: empty values first, then text naturally ignoring
+ * case by `collator`, then numbers, booleans and dates numerically.
  */
 export function compareCellValues(
   left: TableCellValue,
   right: TableCellValue,
   collator: Intl.Collator,
 ): number {
-  const a = toSortKey(left);
-  const b = toSortKey(right);
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  const [leftRank, a] = toSortKey(left);
+  const [rightRank, b] = toSortKey(right);
+  if (leftRank !== rightRank) return leftRank - rightRank;
+  if (typeof a === 'number' && typeof b === 'number') return a < b ? -1 : a > b ? 1 : 0;
   return collator.compare(String(a), String(b));
 }
 

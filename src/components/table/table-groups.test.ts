@@ -391,9 +391,9 @@ describe('table grouping by typed values', () => {
   it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps numbers, booleans and strings with the same text apart', () => {
     expect(summary(entries)).toEqual([
       { key: 'ui-table-group:code=1', value: '1', rows: ['s1'], sum: 20 },
+      { key: 'ui-table-group:code=true', value: 'true', rows: ['st'], sum: 40 },
       { key: 'ui-table-group:code=1:number', value: 1, rows: ['n1', 'n1b'], sum: 15 },
       { key: 'ui-table-group:code=true:boolean', value: true, rows: ['bt'], sum: 30 },
-      { key: 'ui-table-group:code=true', value: 'true', rows: ['st'], sum: 40 },
     ]);
   });
 

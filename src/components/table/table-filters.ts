@@ -2,9 +2,9 @@ import { isDate } from '../../utils/is-date.js';
 import { toLocalDay } from '../../utils/local-day.js';
 import type { DateRangeValue } from '../date-time-field/date-time-field.js';
 import {
+  createFoldedTermsTest,
   normalizeMatchText,
   splitMatchTerms,
-  textMatchesTerms,
 } from '../text-match/match-ranges.js';
 import {
   getCellValue,
@@ -49,6 +49,8 @@ type FilterColumn<T> = Pick<TableColumn<T>, 'id' | 'getValue' | 'filter'>;
 type CellTest = (value: TableCellValue) => boolean;
 
 const isoDay = /^\d{4}-\d{2}-\d{2}/;
+/** Folded row texts by the columns array they were read from, then by row. */
+const foldedRowTexts = new WeakMap<readonly object[], WeakMap<object, string>>();
 
 function isNumberRange(value: TableColumnFilterValue): value is TableNumberRange {
   return typeof value === 'object' && !Array.isArray(value) && !('start' in value);
@@ -121,6 +123,24 @@ export function setColumnFilter(
 }
 
 /**
+ * A row's text in `columns`, folded for matching, cached for that row and that array of columns,
+ * so later keystrokes of a query only search it.
+ */
+function readFoldedRowText<T extends TableRow>(row: T, columns: readonly FilterColumn<T>[]) {
+  let texts = foldedRowTexts.get(columns) as WeakMap<T, string> | undefined;
+  if (!texts) {
+    texts = new WeakMap();
+    foldedRowTexts.set(columns, texts);
+  }
+  let text = texts.get(row);
+  if (text === undefined) {
+    text = normalizeMatchText(getRowText(row, columns));
+    texts.set(row, text);
+  }
+  return text;
+}
+
+/**
  * A test of a row against the filter: its text in `columns` contains every term of the query, and
  * each filtered column's cell passes that column's filter. Null when the filter keeps every row.
  */
@@ -135,9 +155,10 @@ export function createRowMatcher<T extends TableRow>(
     return column && test ? [{ column, test }] : [];
   });
   if (terms.length === 0 && tests.length === 0) return null;
+  const matchesTerms = createFoldedTermsTest(terms);
   return (row) => {
     return (
-      (terms.length === 0 || textMatchesTerms(getRowText(row, columns), terms)) &&
+      (terms.length === 0 || matchesTerms(readFoldedRowText(row, columns))) &&
       tests.every(({ column, test }) => test(getCellValue(row, column)))
     );
   };
