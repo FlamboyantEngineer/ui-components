@@ -145,6 +145,13 @@ test.describe('Mini App lab', () => {
     await expect(late.locator('.ui-mini-app').getByRole('status')).toHaveText(
       'Sample: timeout could not run.',
     );
+
+    const wandered = matrixCell(page, 'outcome=navigation');
+    await expect(wandered.locator('.ui-mini-app')).toHaveAttribute('data-error', 'navigation');
+    await expect(wandered.locator('iframe')).toHaveCount(0);
+    await expect(wandered.locator('[data-lab-output="error"]')).toHaveText(
+      'navigation: The mini-app frame loaded another document.',
+    );
     await lab.expectAccessible('[data-lab-matrix]');
   });
 
@@ -206,6 +213,11 @@ test.describe('Mini App lab', () => {
     await lab.open('mini-app');
     const frames = page.locator('.ui-mini-app[data-status="ready"] iframe');
     await expect(page.locator('.ui-mini-app[data-status="loading"]')).toHaveCount(0);
+    // The navigation sample is ready until its reload, so wait for it to fail first.
+    await expect(matrixCell(page, 'outcome=navigation').locator('.ui-mini-app')).toHaveAttribute(
+      'data-error',
+      'navigation',
+    );
     const count = await frames.count();
     expect(count).toBe(5);
     for (let index = 0; index < count; index += 1) {

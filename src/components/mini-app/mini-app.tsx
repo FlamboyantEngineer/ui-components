@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -89,18 +89,21 @@ function MiniAppSession({
         : '';
   return (
     <div {...rest} {...hooks.root({ className, data: { status, error: error?.kind } })}>
-      <EmbeddedFrame
-        title={title}
-        srcDoc={document}
-        sandbox="allow-scripts allow-forms"
-        referrerPolicy="no-referrer"
-        grow={false}
-        fill={false}
-        hidden={status === 'error'}
-        height={height}
-        onLoad={onLoad}
-        {...hooks.slot('frame', { focusVisible: focusVisible && status !== 'error' })}
-      />
+      {/* A frame that navigated runs a document the host never vetted: it goes, not just hides. */}
+      {error?.kind === 'navigation' ? null : (
+        <EmbeddedFrame
+          title={title}
+          srcDoc={document}
+          sandbox="allow-scripts allow-forms"
+          referrerPolicy="no-referrer"
+          grow={false}
+          fill={false}
+          hidden={status === 'error'}
+          height={height}
+          onLoad={onLoad}
+          {...hooks.slot('frame', { focusVisible: focusVisible && status !== 'error' })}
+        />
+      )}
       <span role="status" {...hooks.slot('status')}>
         {message}
       </span>
@@ -111,12 +114,18 @@ function MiniAppSession({
 /**
  * Runs a self-contained HTML, CSS and JavaScript mini-app in a sandboxed frame of its own origin.
  * It reaches the host only through the capabilities the host lends it and the state it saves, and
- * the network only at `allowedOrigins`.
+ * fetches only from `allowedOrigins`. No policy stops the frame from navigating itself to another
+ * address; when it does, the session reports `navigation` and removes the frame.
  */
 export function MiniApp({ allowedOrigins, readyTimeout, ...props }: MiniAppProps) {
   const origins = readAllowedOrigins(allowedOrigins);
   const { html, css, script } = props.source;
-  const sessionKey = JSON.stringify([html, css ?? '', script ?? '', origins]);
+  const originsKey = origins.join(' ');
+  // The source can be large: build the key only when a part of it changes.
+  const sessionKey = useMemo(
+    () => JSON.stringify([html, css ?? '', script ?? '', originsKey]),
+    [html, css, script, originsKey],
+  );
   return (
     <MiniAppSession
       key={sessionKey}
