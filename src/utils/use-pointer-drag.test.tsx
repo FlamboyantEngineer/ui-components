@@ -208,8 +208,9 @@ describe('usePointerDrag', () => {
     render(<Gesture capture={false} onMove={onMove} onEnd={onEnd} />);
     const button = screen.getByRole('button', { name: 'Move' });
     const pointer = { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 };
-    // The release happened where the document did not hear it (another frame, for example).
-    /* eslint-disable testing-library/prefer-user-event -- a release no element or document saw */
+    // The release happened where the document did not hear it (another frame, for example), so no
+    // user-event call can stand in for it.
+    /* eslint-disable testing-library/prefer-user-event */
     fireEvent.pointerDown(button, { ...pointer, buttons: 1, clientX: 10 });
     fireEvent.pointerMove(button, { ...pointer, buttons: 0, clientX: 40 });
     expect(onMove).not.toHaveBeenCalled();
