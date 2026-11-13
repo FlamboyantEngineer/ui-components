@@ -874,5 +874,9 @@
   "status": "Estado",
   "stateTrigger": "{label}: {state}",
   "transitionTo": "Mover a {state}",
-  "selectOptionIndeterminate": "Seleccionado para algunos registros"
+  "selectOptionIndeterminate": "Seleccionado para algunos registros",
+  "chatComposerHint": "{shortcut} para {action, select, queue {poner en cola} steer {redirigir} save {guardar} other {enviar}}",
+  "chatReorderQueued": "Reordenar mensaje en cola {position}",
+  "chatQueueActions": "Acciones del mensaje en cola {position}",
+  "chatSteer": "Redirigir"
 }

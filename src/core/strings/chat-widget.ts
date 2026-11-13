@@ -16,8 +16,14 @@ interface ChatWidgetStrings {
   chatQueuedMessages: (count: number) => string;
   /** Names the button that sends the queued message at `position` (1-based) into the conversation now. */
   chatSteerQueued: (position: number) => string;
+  /** Visible action label on a queued instruction's immediate send button. */
+  chatSteer: string;
   /** Names the button that edits the queued message at `position` (1-based). */
   chatEditQueued: (position: number) => string;
+  /** Names a queued instruction's reorder handle. */
+  chatReorderQueued: (position: number) => string;
+  /** Names the menu of a queued instruction. */
+  chatQueueActions: (position: number) => string;
   /** Names the button that removes the queued message at `position` (1-based). */
   chatRemoveQueued: (position: number) => string;
   /** The line above the composer while the host takes time to accept what the reader did. */
@@ -30,6 +36,8 @@ interface ChatWidgetStrings {
   chatSteerWhilePendingNote: string;
   /** Names the option that sends with Ctrl+Enter (Command+Enter on macOS), its chord after it. */
   chatSendWith: string;
+  /** The effective submit chord and its action, shown in an empty composer's hint. */
+  chatComposerHint: (action: 'send' | 'queue' | 'steer' | 'save', shortcut: string) => string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -37,6 +45,9 @@ export const chatWidgetStrings = defineStrings<ChatWidgetStrings>({
   chatQueuedMessages: (count) => ({ count }),
   chatSteerQueued: (position) => ({ position }),
   chatEditQueued: (position) => ({ position }),
+  chatReorderQueued: (position) => ({ position }),
+  chatQueueActions: (position) => ({ position }),
   chatRemoveQueued: (position) => ({ position }),
   chatProgress: (action) => ({ action }),
+  chatComposerHint: (action, shortcut) => ({ action, shortcut }),
 });

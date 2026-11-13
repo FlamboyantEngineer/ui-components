@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
+import { useRetainedState } from '../../utils/use-retained-state.js';
 
 /** The requests a card sends its host: the reader's answers, or their dismissal. */
 export type QuestionRequestKind = 'submit' | 'dismiss';
@@ -43,7 +44,10 @@ function startState(scope: string | undefined): RequestState {
  */
 export function useQuestionRequest(scope: string | undefined): QuestionRequest {
   const strings = useUiStrings();
-  const [state, setState] = useState(() => startState(scope));
+  const [state, setState] = useRetainedState(
+    scope === undefined ? undefined : `question-request:${scope}`,
+    () => startState(scope),
+  );
   const attempts = useRef(0);
   // The request in flight, which refuses a second one in its lifetime before the first renders.
   const inFlight = useRef<{ lifetime: object; attempt: number } | null>(null);
@@ -60,7 +64,11 @@ export function useQuestionRequest(scope: string | undefined): QuestionRequest {
     const fallback = kind === 'submit' ? strings.questionSubmitFailed : strings.actionFailed;
     const settle = (failure: string | null) => {
       if (inFlight.current?.attempt === attempt) inFlight.current = null;
-      setState((last) => (last.attempt === attempt ? { ...last, running: null, failure } : last));
+      setState((last) =>
+        last.lifetime === lifetime && last.attempt === attempt
+          ? { ...last, running: null, failure }
+          : last,
+      );
     };
     let result: unknown;
     try {

@@ -61,18 +61,29 @@ export function submitMessage(
 
 /** Sends the composer's message at once while a reply runs, ahead of the queue. */
 export function sendMessageNow(
-  { options }: ChatComposerProps,
-  { text, tokens }: ComposerMessage,
+  { options, state }: ChatComposerProps,
+  message: ComposerMessage,
+  readShown: () => ComposerMessage | undefined,
 ): void | Promise<unknown> {
-  return options.onSendNow?.(text, toDisplayTokens(tokens));
+  const { replyingId, session } = state;
+  const result = options.onSendNow?.(
+    message.text,
+    toDisplayTokens(message.tokens),
+    replyingId ?? undefined,
+  );
+  return whenAccepted(result, () => {
+    const shown = readShown();
+    if (shown === undefined || isSameMessage(shown, message))
+      state.endReply(options.conversationId, session);
+  });
 }
 
 /**
- * Whether sending the composer's message steers: a new message (not an edit or a reply) written
+ * Whether sending the composer's message steers: a new message or quoted reply written
  * during a reply while the reader steers automatically.
  */
 function steersNow({ options, state }: ChatComposerProps, steers: boolean) {
-  return steers && Boolean(options.isPending) && !state.editing && state.replyingId === null;
+  return steers && Boolean(options.isPending) && !state.editing;
 }
 
 /** What sending the composer's message does: save an edit, queue it while a reply runs, or send it. */
@@ -97,6 +108,6 @@ export function sendFromComposer(
   message: ComposerMessage,
   { steers, track, readShown }: SendContext,
 ): void | Promise<unknown> {
-  if (steersNow(props, steers)) return track('steer', sendMessageNow(props, message));
+  if (steersNow(props, steers)) return track('steer', sendMessageNow(props, message, readShown));
   return track(toSubmitAction(props), submitMessage(props, message, readShown));
 }

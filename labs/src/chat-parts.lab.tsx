@@ -38,6 +38,7 @@ const stepStates = [
   'failed',
   'failed-opened',
   'long-label',
+  'standalone',
 ] as const;
 
 const thinking: ChatPart = {
@@ -61,6 +62,18 @@ interface StepCase {
 }
 
 const stepCases: Record<(typeof stepStates)[number], StepCase> = {
+  standalone: {
+    parts: [
+      {
+        ...searchCall,
+        id: 'standalone-call',
+        grouping: 'standalone',
+        label: '2 results',
+        defaultExpanded: true,
+      },
+    ],
+    isStreaming: false,
+  },
   running: { parts: [thinking, running], isStreaming: true },
   answering: {
     parts: [

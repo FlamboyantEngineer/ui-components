@@ -76,7 +76,10 @@ function Notes({
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Notes' });
 const optionTexts = () => screen.queryAllByRole('option').map((option) => option.textContent);
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
 
 describe('Completions engine', () => {
   it('UIC-COMPLETION-LIST-2.1 ranks prefixes first, then word starts, leaving out an exact label', () => {
@@ -454,13 +457,15 @@ describe('Completions engine', () => {
   );
 
   it('UIC-COMPLETION-LIST-2.8 inserts by key only an option on screen', async () => {
-    const user = userEvent.setup();
+    vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<Notes completions={fruit} />);
     await user.click(input());
     // Typed in one go, the Enter comes before the list has shown: it waits instead of inserting.
     await user.keyboard('ba{Enter}');
     expect(input()).toHaveValue('ba');
     expect(input()).toHaveFocus();
+    await act(async () => vi.advanceTimersByTimeAsync(32));
     expect(await screen.findByRole('option', { name: 'banana' })).toBeVisible();
     expect(input()).toHaveAttribute('aria-activedescendant');
     await user.keyboard('{Tab}');

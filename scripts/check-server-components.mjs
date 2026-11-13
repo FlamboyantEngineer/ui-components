@@ -8,6 +8,7 @@
 // Needs the npm registry. `CHROMIUM_PATH` points Playwright at a browser of its own.
 
 import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -300,9 +301,13 @@ async function serve() {
   return origin;
 }
 
-function stopServer() {
-  server?.kill();
+async function stopServer() {
+  const stopping = server;
   server = undefined;
+  if (!stopping || stopping.exitCode !== null || stopping.signalCode !== null) return;
+  const exited = once(stopping, 'exit');
+  stopping.kill();
+  await exited;
 }
 
 try {
@@ -350,7 +355,7 @@ try {
   await checkMarkup(origin, '/helpers', [
     'Streamed Salt road+Atom Salt road+Atom+Orchard box 1 true 200 40-50',
   ]);
-  stopServer();
+  await stopServer();
 
   // The rich-text helpers, with the optional peers they need.
   install(RICH_TEXT_PEERS.map((name) => `${name}@${installedVersion(name)}`));
@@ -361,8 +366,8 @@ try {
   problems.push(error instanceof Error ? error.message : String(error));
 } finally {
   await browser?.close();
-  stopServer();
-  rmSync(workDir, { recursive: true, force: true });
+  await stopServer();
+  rmSync(workDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 }
 
 reportProblems(problems, {

@@ -75,10 +75,12 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
 ### UIC-CHAT-PARTS-3.2 - Tool calls
 
+A tool-call part may set `grouping: 'standalone'` to render as its own native row, keeping its label, kind/status glyph, literal result and duration visible without a custom renderer. The default `auto` policy still groups consecutive activity. `defaultExpanded` initializes details; `expandedParts` and `onExpandedPartsChange` control them by part ID. Each row remains independent and its default yields to retained reader choices.
+
 A tool-call part shall render as a `ChatToolCall` with its data and the `row` variant ([UIC-CHAT-TOOL-CALL-1.8](CHAT-TOOL-CALL.md#uic-chat-tool-call-18---variant)), always in a group of steps ([UIC-CHAT-PARTS-5.1](#uic-chat-parts-51---grouping)), so every call of a reply takes the same styles and keeps its state as the reply streams. Approve, Deny and Always allow show while its approval waits only when `onApprove`, `onDeny` and `onAlwaysAllow` are given, and call them with the call's `id` (and the reader's reason, for `onDeny`).
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
-Verification: `src/components/chat-parts/chat-part-view.test.tsx`
+Verification: `src/components/chat-parts/chat-part-view.test.tsx`, `src/components/chat-parts/chat-standalone.test.tsx`, `e2e/chat-native.spec.ts`
 
 ### UIC-CHAT-PARTS-3.3 - Tool renderers
 

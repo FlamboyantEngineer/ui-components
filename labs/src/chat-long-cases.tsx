@@ -108,7 +108,7 @@ function longMessage(index: number): ChatMessageData {
   };
 }
 
-const longMessages = Array.from({ length: messageCount }, (_, index) => longMessage(index));
+export const longMessages = Array.from({ length: messageCount }, (_, index) => longMessage(index));
 
 /** How many messages are in the page, counted as the chat mounts and unmounts them. */
 function useMountedCount() {

@@ -874,5 +874,9 @@
   "status": "Status",
   "stateTrigger": "{label}: {state}",
   "transitionTo": "Move to {state}",
-  "selectOptionIndeterminate": "Selected for some records"
+  "selectOptionIndeterminate": "Selected for some records",
+  "chatComposerHint": "{shortcut} to {action, select, queue {queue} steer {steer} save {save} other {send}}",
+  "chatReorderQueued": "Reorder queued message {position}",
+  "chatQueueActions": "Actions for queued message {position}",
+  "chatSteer": "Steer"
 }

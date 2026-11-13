@@ -108,8 +108,8 @@ Verification: `src/components/chat-question/chat-question-pending.test.tsx`
 
 `onSubmit` and `onDismiss` may return a promise. From the press (or Enter) until it settles, the card shall be submitting: the root publishes `data-submitting`, the button pressed is pending ([Button](BUTTON.md)'s `isPending`: it keeps focus and refuses presses), the other actions are unavailable, and the answers are read-only (a read-only radio or checkbox group publishes `data-readonly` and `aria-readonly`; a field that has focus keeps it). One request runs at a time: a second press or Enter sends nothing, including before the submitting state renders. When the promise resolves the card is no longer submitting and keeps the answers as given, staying pending until the host changes its `status`. A callback that returns no promise leaves no submitting state. The requests belong to the card's pending lifetime, which ends when the card leaves pending or changes `id`: a card pending again, even with the same `id`, starts unlocked and sends at once, and a request from an earlier lifetime that settles later changes nothing.
 
-Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question.tsx`, `src/components/chat-question/chat-question-pending.tsx`, `src/components/chat-question/chat-question-choices.tsx`, `src/components/chat-question/chat-question-fields.tsx`, `labs/reference/chat-question.css`
-Verification: `src/components/chat-question/chat-question-request.test.tsx`, `src/components/chat-question/chat-question-lifetime.test.tsx`, `e2e/chat-question.spec.ts`
+Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question.tsx`, `src/components/chat-question/chat-question-pending.tsx`, `src/components/chat-question/chat-question-choices.tsx`, `src/components/chat-question/chat-question-fields.tsx`, `labs/reference/chat-question.css`, `src/utils/use-retained-state.ts`
+Verification: `src/components/chat-question/chat-question-request.test.tsx`, `src/components/chat-question/chat-question-lifetime.test.tsx`, `e2e/chat-question.spec.ts`, `src/components/chat/chat-retained-inputs.test.tsx`
 
 ### UIC-CHAT-QUESTION-2.8 - Refused requests
 
@@ -163,6 +163,8 @@ Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/comp
 Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-3.5 - Back and Next
+
+Within full Chat, pending answer drafts and the current step shall be retained across virtual unmounts, scoped to conversation, message and part identity. Standalone ChatQuestion keeps local drafts.
 
 A card with more than one question shall draw a Back [Button](BUTTON.md) (`ui-chat-question__back`, the provider's `back` string) on every question but the first, and a primary Next button (`ui-chat-question__next`, `next`) on every question but the last, where Submit takes its place. Next is unavailable but focusable (`aria-disabled="true"`) while the shown question has no answer and hints why in a tooltip (`questionAnswerToContinue`). Back and Next select the tab of the question they show. The reader's choices and words are kept when they step back and forth.
 

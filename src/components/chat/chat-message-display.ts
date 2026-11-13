@@ -40,6 +40,8 @@ export interface ChatMessageDisplayOptions {
   sentVariant?: ChatMessageVariant | undefined;
   /** Draws everyone else's messages, an assistant's too, in a `bubble` (the default) or `plain`. */
   receivedVariant?: ChatMessageVariant | undefined;
+  /** `fade` dims sending messages instead of drawing their Sending label. Defaults to `label`. */
+  deliveryPresentation?: 'label' | 'fade' | undefined;
 }
 
 /** The display options, kept while they stay the same, so unchanged messages do not render again. */
@@ -52,10 +54,12 @@ export function useMessageDisplay({
   streamingCaret,
   sentVariant,
   receivedVariant,
+  deliveryPresentation,
 }: ChatMessageDisplayOptions): ChatMessageDisplayOptions {
   return useShallowStable({
     ...{ showAvatars, showAuthorNames, timePlacement, activityTimePlacement },
     ...{ collapseFooterTime, streamingCaret, sentVariant, receivedVariant },
+    deliveryPresentation,
   });
 }
 

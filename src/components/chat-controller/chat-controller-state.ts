@@ -10,6 +10,8 @@ import type { ChatStreamEvent } from './chat-stream.js';
 export interface ChatQueuedMessage {
   id: string;
   text: string;
+  /** The message this instruction quotes, when any. */
+  replyTo?: string | undefined;
   /** The mentions and commands in `text`. */
   tokens?: readonly ChatTextToken[] | undefined;
   /** The files it carries. */

@@ -1,7 +1,15 @@
 'use client';
 
-import { type RefCallback, type RefObject, useCallback, useMemo, useRef, useState } from 'react';
-import { getOwnerWindow } from '../../utils/owner-window.js';
+import {
+  type RefCallback,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { focusWithRetry } from '../../utils/use-focus-request.js';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */
 interface ChatEditing {
@@ -62,6 +70,8 @@ function createState(conversationId: string | undefined, session: number): ChatO
 export function useChatState(conversationId: string | undefined): ChatState {
   const [own, setOwn] = useState(() => createState(conversationId, 0));
   const composerRef = useRef<HTMLDivElement>(null);
+  const cancelFocus = useRef(() => {});
+  useEffect(() => () => cancelFocus.current(), []);
   // The editor detaches and reattaches its ref on each render, after the layout effects of the
   // queue above it; keeping the last text box lets those effects still find it.
   const setComposer = useCallback((element: HTMLDivElement | null) => {
@@ -73,14 +83,10 @@ export function useChatState(conversationId: string | undefined): ChatState {
     current = createState(conversationId, own.session + 1);
     setOwn(current);
   }
-  // Focus moves at once, and again once an overlay that ran the command, such as a context menu,
-  // has handed focus back to where it opened.
+  // An overlay may restore focus after the command, but a newer user action owns focus.
   const focusComposer = useCallback(() => {
-    composerRef.current?.focus();
-    const view = getOwnerWindow(composerRef.current);
-    view.requestAnimationFrame(() =>
-      view.requestAnimationFrame(() => composerRef.current?.focus()),
-    );
+    cancelFocus.current();
+    cancelFocus.current = focusWithRetry(() => composerRef.current);
   }, []);
   const commands = useMemo(() => {
     const update = (patch: Partial<ChatOwnState>) => setOwn((state) => ({ ...state, ...patch }));

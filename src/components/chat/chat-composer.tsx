@@ -29,6 +29,7 @@ import {
   toComposerDraftProps,
   useChatComposerHandle,
 } from './chat-composer-handle.js';
+import { type ChatComposerHint, useChatComposerHint } from './chat-composer-hint.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
   type ChatMessageText,
@@ -53,7 +54,6 @@ export interface ChatComposerOptions
       | 'isPending'
       | 'onStop'
       | 'isDisabled'
-      | 'placeholder'
       | 'commands'
       | 'history'
       | 'onAttach'
@@ -62,6 +62,8 @@ export interface ChatComposerOptions
       | 'maxRows'
       | 'getReference'
     > {
+  /** Empty-draft wording, or a formatter receiving the composer's effective localized shortcut hint. */
+  placeholder?: string | ((hint: ChatComposerHint) => string) | undefined;
   /**
    * Sends the reader's message with its mentions and commands. Without it there is no composer. A
    * returned promise holds the message, its tokens and the quote until it settles: they clear once
@@ -71,11 +73,16 @@ export interface ChatComposerOptions
     ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>) | undefined;
   /**
    * Sends the reader's message at once while a reply runs (the composer's `sendNow` chord, Ctrl+Enter
-   * by default), for a host that stops the reply and sends the message ahead of its queue. It
+   * by default), with its active quoted message ID as `replyTo`, for a host that stops the reply and sends the message ahead of its queue. It
    * settles as `onSend` does. Without it, that chord queues the message.
    */
   onSendNow?:
-    ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>) | undefined;
+    | ((
+        text: string,
+        tokens?: readonly ChatTextToken[],
+        replyTo?: string,
+      ) => void | Promise<unknown>)
+    | undefined;
   /**
    * Called when `onSend`, `onSendNow`, `onReply`, `onEdit`, `onQueueChange` or `onSteer` throws or
    * its promise rejects; the composer keeps the message. Without it the error is rethrown.
@@ -266,6 +273,15 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
   return Boolean(options.allowsEmptySubmit || hasFile);
 }
 
+function cancelReplyOnEscape(event: KeyboardEvent, state: ChatState) {
+  // A composing Escape cancels the input method's candidate, not the reply.
+  if (isComposingKey(event.nativeEvent)) return;
+  if (event.key !== 'Escape' || state.replyingId === null) return;
+  // Handled, so an overlay around the chat stays open for the next Escape.
+  event.preventDefault();
+  state.cancelReply();
+}
+
 /**
  * The queue of follow-ups, the line saying what waits for the host, then the rich composer: mentions of the other participants, the host's
  * commands, a per-conversation draft, Up to edit the newest queued message, the reader's last
@@ -283,6 +299,7 @@ export function ChatComposer(given: ChatComposerProps) {
   const composerRef = useRef<MessageComposerHandle>(null);
   const progress = useChatProgress(options.conversationId);
   const sendOptions = useChatSendOptions(options);
+  const hint = useChatComposerHint(props, sendOptions);
   const reportDraft = useChatComposerHandle({
     handleRef: options.composerHandleRef,
     composerRef,
@@ -291,24 +308,21 @@ export function ChatComposer(given: ChatComposerProps) {
     focusComposer: state.focusComposer,
   });
   if (!options.onSend) return null;
-  const onKeyDown = (event: KeyboardEvent) => {
-    // A composing Escape cancels the input method's candidate, not the reply.
-    if (isComposingKey(event.nativeEvent)) return;
-    if (event.key !== 'Escape' || state.replyingId === null) return;
-    // Handled, so an overlay around the chat stays open for the next Escape.
-    event.preventDefault();
-    state.cancelReply();
-  };
+
   return (
-    <>
-      <ChatQueue options={options} state={state} track={progress.track} />
+    <div {...hooks.slot('compose')}>
       <ChatProgressLine action={progress.action} icon={options.progressIcon} />
+      <ChatQueue options={options} state={state} track={progress.track} />
       <RichMessageComposer
         ref={setComposer}
         handleRef={composerRef}
         onChange={reportDraft}
         className={hooks.slotClass('composer')}
-        placeholder={options.placeholder}
+        placeholder={
+          typeof options.placeholder === 'function'
+            ? options.placeholder(hint)
+            : options.placeholder
+        }
         isDisabled={options.isDisabled}
         isPending={options.isPending}
         onStop={options.onStop}
@@ -333,7 +347,7 @@ export function ChatComposer(given: ChatComposerProps) {
         maxRows={options.maxRows}
         startControls={renderStartControls(props)}
         endControls={options.composerEndControls}
-        onKeyDown={onKeyDown}
+        onKeyDown={(event) => cancelReplyOnEscape(event, state)}
         onSubmit={(message) =>
           sendFromComposer(props, message, {
             steers: sendOptions.steers,
@@ -343,10 +357,14 @@ export function ChatComposer(given: ChatComposerProps) {
         }
         onSubmitNow={
           options.onSendNow &&
-          ((message) => progress.track('steer', sendMessageNow(props, message)))
+          ((message) =>
+            progress.track(
+              'steer',
+              sendMessageNow(props, message, () => composerRef.current?.getValue()),
+            ))
         }
         onSubmitError={options.onSendError}
       />
-    </>
+    </div>
   );
 }

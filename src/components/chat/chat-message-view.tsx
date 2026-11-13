@@ -201,6 +201,7 @@ export const ChatMessageView = memo(function ChatMessageView({
           status={toDisplayStatus(message)}
           groupPosition={groupPosition}
           delivery={message.delivery}
+          deliveryPresentation={display.deliveryPresentation}
           error={message.error}
           onRetry={onRetry && canRetry ? () => onRetry(id) : undefined}
           isEdited={message.isEdited}

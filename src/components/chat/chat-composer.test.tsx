@@ -244,7 +244,8 @@ describe('Chat composer', () => {
         .getAllByRole('listitem')
         .map((item) => item.textContent),
     ).toEqual(['And lunch?', 'And dinner?']);
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     expect(container.querySelector('.ui-chat__queue-item')).toHaveAttribute('data-editing', 'true');
     expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
       'Editing a queued message',
@@ -269,7 +270,8 @@ describe('Chat composer', () => {
       queue,
       onQueueChange,
     });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
       'Editing a queued message',
     );
@@ -291,7 +293,8 @@ describe('Chat composer', () => {
       queue,
       onQueueChange,
     });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     expect(container.querySelector('.ui-chat__banner')).toHaveTextContent(
       'Editing a queued message',
     );
@@ -331,7 +334,8 @@ describe('Chat composer', () => {
     const steer = container.querySelectorAll('.ui-chat__queue-steer');
     expect(steer).toHaveLength(2);
     expect(steer[0]).toHaveClass('ui-button');
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 2' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 2' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 2' }));
     expect(
       screen.queryByRole('button', { name: 'Steer with queued message 2' }),
     ).not.toBeInTheDocument();
@@ -364,7 +368,8 @@ describe('Chat composer', () => {
     await user.click(screen.getByRole('button', { name: 'Steer with queued message 3' }));
     await user.click(screen.getByRole('button', { name: 'Steer with queued message 2' }));
     expect(onSteer.mock.calls).toEqual([['q3'], ['q2']]);
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     expect(onQueuedEditChange).toHaveBeenLastCalledWith('q1');
     expect(
       screen.queryByRole('button', { name: 'Steer with queued message 1' }),
@@ -372,7 +377,8 @@ describe('Chat composer', () => {
     await waitFor(() => expect(box()).toHaveFocus());
     await user.keyboard('{Escape}');
     await waitFor(() => expect(onQueuedEditChange).toHaveBeenLastCalledWith(undefined));
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 2' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 2' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 2' }));
     await waitFor(() => expect(box()).toHaveFocus());
     await user.keyboard(' too{Enter}');
     await waitFor(() => expect(onQueuedEditChange).toHaveBeenLastCalledWith(undefined));
@@ -412,7 +418,8 @@ describe('Chat composer', () => {
     expect(lists[0]).toHaveClass('ui-chat-attachment-list');
     expect(lists[0]?.querySelectorAll('.ui-chat-attachment[data-kind="image"]')).toHaveLength(1);
     expect(container.querySelectorAll('.ui-chat__queue-text')).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     await waitFor(() => expect(box()).toHaveFocus());
     await user.keyboard(' Left?{Enter}');
     expect(onQueueChange).toHaveBeenLastCalledWith([
@@ -472,7 +479,7 @@ describe('Chat composer', () => {
     });
     await user.click(box());
     await user.keyboard('Skip the museum{Control>}{Enter}{/Control}');
-    expect(onSendNow).toHaveBeenCalledWith('Skip the museum', []);
+    expect(onSendNow).toHaveBeenCalledWith('Skip the museum', [], undefined);
     expect(onSend).not.toHaveBeenCalled();
   });
 

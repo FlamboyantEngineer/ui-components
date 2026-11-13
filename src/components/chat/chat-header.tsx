@@ -18,6 +18,8 @@ export interface ChatHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
    * avatars, which list everyone with their presence when pressed.
    */
   participants?: readonly ChatParticipant[] | undefined;
+  /** Shows the participants' decorative identity. Defaults to `true`. */
+  showIdentity?: boolean | undefined;
   /**
    * A line under the title, such as who is typing or what the assistant is doing. It is shown, not
    * announced, since the conversation announces the same news where it happens.
@@ -71,6 +73,7 @@ export function ChatHeader({
   ref,
   title,
   participants = [],
+  showIdentity = true,
   status,
   actions,
   className,
@@ -80,7 +83,7 @@ export function ChatHeader({
   const Heading = `h${useHeadingLevel(undefined)}` as const;
   return (
     <div ref={ref} id={id} {...hooks.root({ className, props: rest })}>
-      <HeaderAvatar participants={participants} />
+      {showIdentity ? <HeaderAvatar participants={participants} /> : null}
       <div {...hooks.slot('text')}>
         <Heading {...hooks.slot('title')}>{title}</Heading>
         {status ? (

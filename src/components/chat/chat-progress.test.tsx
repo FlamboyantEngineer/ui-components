@@ -199,7 +199,8 @@ describe('Chat progress', () => {
     const saving = deferred();
     const onQueueChange = vi.fn(() => saving.promise);
     const { user } = setup({ queue: [{ id: 'q1', text: 'First' }], onQueueChange });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     await user.keyboard(' draft');
     await user.keyboard('{Enter}');
     expect(onQueueChange).toHaveBeenCalledWith([
