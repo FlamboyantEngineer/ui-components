@@ -117,6 +117,7 @@ export function Banner({
   autoFocus = false,
   className,
   ref,
+  'aria-label': ariaLabel,
   ...rest
 }: BannerProps) {
   const [own, setRef] = useForwardedRef<HTMLElement>(ref);
@@ -132,13 +133,17 @@ export function Banner({
       ref={setRef as Ref<HTMLDivElement>}
       {...hooks.root({ className, data })}
       tabIndex={autoFocus ? -1 : undefined}
-      role={isUrgent ? 'alert' : 'status'}
-      aria-live={isUrgent ? 'assertive' : 'polite'}
-      aria-atomic="true"
       aria-busy={isPending || undefined}
     >
       <BannerLead icon={icon === undefined ? getToneGlyph(tone) : icon} isPending={isPending} />
-      <Element {...hooks.slot('content')}>
+      {/* Only the title and description are the live region: the actions and dismiss are not read. */}
+      <Element
+        {...hooks.slot('content')}
+        role={isUrgent ? 'alert' : 'status'}
+        aria-live={isUrgent ? 'assertive' : 'polite'}
+        aria-atomic="true"
+        aria-label={ariaLabel}
+      >
         <BannerPart as={Element} slot="title">
           {title}
         </BannerPart>

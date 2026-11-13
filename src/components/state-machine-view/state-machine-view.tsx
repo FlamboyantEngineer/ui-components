@@ -138,7 +138,7 @@ export interface StateMachineViewProps
   states: readonly StateMachineState[];
   transitions: readonly StateMachineTransition[];
   /** The state the machine starts in. Defaults to the first state. */
-  initialState?: Key | undefined;
+  initialKey?: Key | undefined;
   /** The state the machine is in, highlighted. */
   currentKey?: Key | undefined;
   /** `horizontal` (the default) lays the states out left to right; `vertical` top to bottom. */

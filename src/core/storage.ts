@@ -22,9 +22,18 @@ export function createMemoryStorage(initial?: Record<string, string>): UiStorage
   };
 }
 
-/** Wraps a storage that may throw (quota, privacy mode) so reads return null and writes are dropped. */
+/** The safe wrapper of each storage, so calling `createSafeStorage` in a render keeps one adapter. */
+const safeStorages = new WeakMap<UiStorage, UiStorage>();
+
+/**
+ * Wraps a storage that may throw (quota, privacy mode) so reads return null and writes are dropped.
+ * The same storage always gets the same wrapper, so the provider keeps its adapter when the
+ * component holding it renders again.
+ */
 export function createSafeStorage(storage: UiStorage): UiStorage {
-  return {
+  const known = safeStorages.get(storage);
+  if (known) return known;
+  const safe: UiStorage = {
     getItem(key) {
       try {
         return storage.getItem(key);
@@ -47,4 +56,6 @@ export function createSafeStorage(storage: UiStorage): UiStorage {
       }
     },
   };
+  safeStorages.set(storage, safe);
+  return safe;
 }

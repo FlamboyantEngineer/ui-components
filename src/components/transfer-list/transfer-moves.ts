@@ -53,6 +53,23 @@ export function stepChosenKeys(
   return step === 1 ? result.reverse() : result;
 }
 
+/**
+ * `chosen` with the selected keys stepped among the keys the side shows (`shown`, in their order):
+ * each passes over the next shown unselected key, and the keys a filter hides keep their places.
+ */
+export function stepShownKeys(
+  chosen: readonly Key[],
+  options: { shown: readonly Key[]; selected: ReadonlySet<Key>; step: -1 | 1 },
+): Key[] {
+  const shown = new Set(options.shown);
+  const stepped = stepChosenKeys(
+    chosen.filter((key) => shown.has(key)),
+    options,
+  );
+  let next = 0;
+  return chosen.map((key) => (shown.has(key) ? requireDefined(stepped[next++]) : key));
+}
+
 /** Whether stepping the selected keys would move any of them. */
 export function canStepChosenKeys(
   chosen: readonly Key[],

@@ -25,6 +25,8 @@ interface PickerStrings {
   moveAllTo: (label: string) => string;
   /** Says a cascader field's level could not load its options. */
   cascaderLoadFailed: string;
+  /** Describes a cascader field's option that opens a level of its own. */
+  cascaderOpensLevel: string;
   /** Separates the levels of a cascader field's chosen path (`/`); spaces surround it. */
   cascaderPathSeparator: string;
 }

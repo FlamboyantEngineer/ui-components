@@ -345,7 +345,7 @@ describe('FolderManager', () => {
     await act(async () => attempts[0]?.reject(new Error('That name is taken.')));
     const message = screen.getByRole('alert');
     expect(message).toHaveTextContent('That name is taken.');
-    expect(message).toHaveClass('ui-folder-manager__message', 'ui-inline-error');
+    expect(message.parentElement).toHaveClass('ui-folder-manager__message', 'ui-inline-error');
     expect(input).toHaveValue('Pears');
     expect(input).toHaveFocus();
     expect(input).not.toHaveAttribute('readonly');
@@ -416,6 +416,27 @@ describe('FolderManager', () => {
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('The folder is in use.');
     expect(row('Vegetables')).toBeInTheDocument();
+  });
+
+  it('UIC-FOLDER-MANAGER-2.6 UIC-FOLDER-MANAGER-6.2 keeps the selection when a delete resolves to false', async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn((key: Key) => Promise.resolve(key === 'fruit' ? false : undefined));
+    const onSelectionChange = vi.fn();
+    render(
+      <Manager
+        selectionMode="multiple"
+        defaultSelectedKeys={['fruit', 'vegetables']}
+        onDelete={onDelete}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(row('Fruit')).toHaveFocus());
+    expect(onDelete.mock.calls).toEqual([['fruit']]);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(row('Fruit')).toHaveAttribute('aria-selected', 'true');
+    expect(row('Vegetables')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('UIC-FOLDER-MANAGER-2.7 holds new folders and moves at the depth limit', async () => {
@@ -816,10 +837,10 @@ describe('FolderManager', () => {
     expect(container.querySelector('.ui-tree__loader')).not.toBeNull();
     await act(async () => answers[0]?.reject(new Error('The pantry is locked.')));
     const error = within(row('Pantry')).getByRole('alert');
-    expect(error).toHaveClass('ui-folder-manager__load-error', 'ui-inline-error');
+    expect(error.parentElement).toHaveClass('ui-folder-manager__load-error', 'ui-inline-error');
     expect(error).toHaveTextContent('The pantry is locked.');
     expectHooksMatchSpec(container, 'FOLDER-MANAGER', { slots: ['load-error'] });
-    await user.click(within(error).getByRole('button', { name: 'Retry' }));
+    await user.click(within(row('Pantry')).getByRole('button', { name: 'Retry' }));
     expect(answers).toHaveLength(2);
     await act(async () => answers[1]?.resolve());
     expect(rowNames()).toEqual(['Pantry', 'Jars', 'Cellar']);
@@ -1050,6 +1071,40 @@ describe('FolderManager', () => {
     ]);
     await user.clear(search);
     expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
+  });
+
+  it('UIC-FOLDER-MANAGER-2.3 UIC-FOLDER-MANAGER-7.1 keeps the query when F2 has no folder to rename', async () => {
+    const user = userEvent.setup();
+    render(
+      <Manager filterable selectionMode="multiple" defaultSelectedKeys={['citrus', 'berries']} />,
+    );
+    const search = screen.getByRole('searchbox', { name: 'Filter folders' });
+    await user.type(search, 'ber');
+    act(() => row('Berries').focus());
+    await user.keyboard('{F2}');
+    expect(search).toHaveValue('ber');
+    expect(rowNames()).toEqual(['Fruit', 'Berries']);
+    expect(screen.queryByRole('textbox', { name: /^Rename/ })).not.toBeInTheDocument();
+  });
+
+  it('UIC-FOLDER-MANAGER-7.1 keeps the branches a filter hides collapsed when a row toggles', async () => {
+    const user = userEvent.setup();
+    render(
+      <Manager
+        filterable
+        folders={[
+          ...sample.slice(0, 1),
+          { id: 'nuts', name: 'Nuts', children: [{ id: 'pecan', name: 'Pecan' }] },
+        ]}
+      />,
+    );
+    await user.click(within(row('Nuts')).getByRole('button', { name: 'Collapse Nuts' }));
+    const search = screen.getByRole('searchbox', { name: 'Filter folders' });
+    await user.type(search, 'ber');
+    expect(rowNames()).toEqual(['Fruit', 'Berries']);
+    await user.click(within(row('Fruit')).getByRole('button', { name: 'Collapse Fruit' }));
+    await user.clear(search);
+    expect(rowNames()).toEqual(['Fruit', 'Nuts']);
   });
 
   it('UIC-FOLDER-MANAGER-7.1 sets the query aside while the search box is gone', async () => {

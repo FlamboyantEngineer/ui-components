@@ -11,6 +11,7 @@ import {
   type FieldControlProps,
   type FieldInputProps,
   type FieldTextInputProps,
+  isFieldValueEqual,
   useFieldControl,
 } from '../field/field.js';
 import { snippetFieldHooks as hooks } from './snippet-field-hooks.js';
@@ -58,7 +59,8 @@ function toDraft(value: SnippetFieldValue | null): SnippetDraft {
 /** The reader's source and lines, started again from the saved value whenever it changes. */
 function useSnippetDraft(value: SnippetFieldValue | null) {
   const [draft, setDraft] = useState(() => toDraft(value));
-  const current = draft.from === value ? draft : toDraft(value);
+  // Compared by structure, so a host that passes an equal value inline keeps the reader's draft.
+  const current = isFieldValueEqual(draft.from, value) ? draft : toDraft(value);
   if (current !== draft) setDraft(current);
   return [current, (next: Partial<SnippetDraft>) => setDraft({ ...current, ...next })] as const;
 }

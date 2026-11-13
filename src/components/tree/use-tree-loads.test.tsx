@@ -79,7 +79,7 @@ describe('Tree loading children', () => {
     await userEvent.click(within(row('Asia')).getByRole('button', { name: 'Expand Asia' }));
     const error = await screen.findByRole('alert');
     expect(error).toHaveTextContent('The atlas is offline.');
-    expect(error.closest('.ui-tree__load-error')).toBe(error);
+    expect(error.closest('.ui-tree__load-error')).toBe(error.parentElement);
     expect(row('Asia')).toContainElement(error);
     expectHooksMatchSpec(container, 'TREE', { slots: ['load-error'] });
     expect(onLoad).toHaveBeenCalledTimes(1);

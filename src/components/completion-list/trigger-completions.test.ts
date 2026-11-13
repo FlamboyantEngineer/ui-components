@@ -54,4 +54,21 @@ describe('createTriggerCompletions', () => {
     expect(source(context('@a\n@b c', 7))).toBeInstanceOf(Promise);
     expect(source(context('a\nb c'))).toEqual([]);
   });
+
+  it('UIC-COMPLETION-LIST-2.5 stops asking once a spaced query holds more words than the trigger allows', () => {
+    const getCompletions = vi.fn(() => people);
+    const source = createTriggerCompletions([
+      { character: '@', allowsSpaces: true, getCompletions },
+    ]);
+    expect(source(context('@Maria Sa Lo'))).toEqual(expect.objectContaining({ from: 0 }));
+    expect(getCompletions).toHaveBeenLastCalledWith('Maria Sa Lo');
+    getCompletions.mockClear();
+    expect(source(context('@Maria Sa Lo '))).toEqual([]);
+    expect(source(context('@Maria Sa Lo and the rest of the line'))).toEqual([]);
+    expect(getCompletions).not.toHaveBeenCalled();
+    const longer = createTriggerCompletions([
+      { character: '@', allowsSpaces: true, maxWords: 5, getCompletions },
+    ]);
+    expect(longer(context('@Maria Sa Lo de Ruiz'))).toEqual(expect.objectContaining({ from: 0 }));
+  });
 });

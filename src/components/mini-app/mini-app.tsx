@@ -74,7 +74,7 @@ function MiniAppSession({
   const [document] = useState(() =>
     createMiniAppDocument({ source, title, locale, allowedOrigins, initialState }),
   );
-  const { status, error, height, focusVisible, onLoad } = useMiniAppSession({
+  const { status, error, height, focusVisible, frameRef, onLoad } = useMiniAppSession({
     readyTimeout,
     capabilities,
     onReady,
@@ -100,6 +100,7 @@ function MiniAppSession({
           fill={false}
           hidden={status === 'error'}
           height={height}
+          ref={frameRef}
           onLoad={onLoad}
           {...hooks.slot('frame', { focusVisible: focusVisible && status !== 'error' })}
         />

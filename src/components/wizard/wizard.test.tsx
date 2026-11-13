@@ -250,7 +250,7 @@ describe('Wizard', () => {
     await userEvent.click(action('Next'));
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('Pick a city we fly to.');
-    expect(alert).toHaveClass('ui-inline-error', 'ui-wizard__error');
+    expect(alert.parentElement).toHaveClass('ui-inline-error', 'ui-wizard__error');
     expectHooksMatchSpec(container, 'WIZARD', { slots: ['error'] });
     await userEvent.click(action('Next'));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();

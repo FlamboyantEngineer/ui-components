@@ -108,17 +108,25 @@ The boundaries are specified in [specs/SERVER-COMPONENTS.md](specs/SERVER-COMPON
 Components work without any setup. `UiProvider` replaces the defaults when a host needs to ([specs/PROVIDER.md](specs/PROVIDER.md)):
 
 ```tsx
-import { UiProvider, createSafeStorage } from '@flamboyantengineer/ui-components';
+import {
+  UiProvider,
+  createSafeStorage,
+  type UiLinkRenderer,
+} from '@flamboyantengineer/ui-components';
 import { fr } from '@flamboyantengineer/ui-components/locales';
 import { BoltIcon } from './icons'; // any SVG component
+
+// Services are compared by identity: define them once, outside the component that renders the provider.
+const renderLink: UiLinkRenderer = (props) => <RouterLink to={props.href} {...props} />;
+const storage = createSafeStorage(window.localStorage);
 
 <UiProvider
   icons={{ close: BoltIcon }} // replace one built-in glyph
   messages={{ ...fr, close: 'Fermer la fenêtre' }} // a language file, with any key replaced
   locale="fr-FR" // plurals, numbers and lists; React Aria formatting and direction
-  renderLink={(props) => <RouterLink to={props.href} {...props} />} // library links
+  renderLink={renderLink} // library links
   navigate={router.navigate} // React Aria links, menu items and tabs with href
-  storage={createSafeStorage(window.localStorage)} // persisted layout state
+  storage={storage} // persisted layout state
 >
   <App />
 </UiProvider>;

@@ -250,4 +250,37 @@ describe('SnippetField', () => {
     expect(screen.getAllByRole('button', { name: 'Preview' })).toHaveLength(2);
     expect(screen.getByRole('textbox', { name: 'Off' })).toBeDisabled();
   });
+
+  it('UIC-SNIPPET-FIELD-2.1 reports a loader that throws at once', async () => {
+    const user = userEvent.setup();
+    const loadSnippet: SnippetLoader = () => {
+      throw new Error('No reader yet.');
+    };
+    render(<SnippetField label="Example" defaultValue={saved} loadSnippet={loadSnippet} />);
+    await user.click(previewButton());
+    expect(await screen.findByText('No reader yet.')).toBeInTheDocument();
+  });
+
+  it('UIC-SNIPPET-FIELD-1.3 keeps the typed source when the host passes an equal value inline', async () => {
+    const user = userEvent.setup();
+    function Host() {
+      const [, setTick] = useState(0);
+      return (
+        <>
+          <button type="button" onClick={() => setTick((tick) => tick + 1)}>
+            Render again
+          </button>
+          <SnippetField label="Example" value={{ ...saved }} loadSnippet={vi.fn()} />
+        </>
+      );
+    }
+    render(<Host />);
+    await user.clear(field());
+    await user.type(field(), 'notes/other.ts');
+    await user.clear(lastLine());
+    await user.type(lastLine(), '4');
+    await user.click(screen.getByRole('button', { name: 'Render again' }));
+    expect(field()).toHaveValue('notes/other.ts');
+    expect(lastLine()).toHaveValue('4');
+  });
 });

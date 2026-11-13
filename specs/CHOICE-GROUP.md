@@ -41,7 +41,7 @@ Verification: `src/components/choice-group/choice-group.test.tsx`
 
 ### UIC-CHOICE-GROUP-1.6 - Hooks and caller attributes
 
-`ChoiceGroup` and `Choice` shall carry the hooks below, append the caller's `className` to their root and forward caller `data-*` attributes to it. A caller `id` on `ChoiceGroup` goes on the root, and the group's id derives from it (`<id>-control`).
+`ChoiceGroup` and `Choice` shall carry the hooks below, append the caller's `className` to their root and forward caller `data-*` attributes to it. A `Choice` keeps them on its root in both selection modes, never on its radio or checkbox. A caller `id` on `ChoiceGroup` goes on the root, and the group's id derives from it (`<id>-control`).
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`
 Verification: `src/components/choice-group/choice-group.test.tsx`

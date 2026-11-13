@@ -40,9 +40,12 @@ function createCharacterMatch(query: string): (character: CharacterGridCharacter
   const terms = splitMatchTerms(query, { ignoreAccents: true });
   return (character) => {
     if (query === character.char) return true;
-    if (codePoint !== undefined && Array.from(character.char).length === 1) {
-      return character.char.codePointAt(0) === codePoint;
-    }
+    if (
+      codePoint !== undefined &&
+      Array.from(character.char).length === 1 &&
+      character.char.codePointAt(0) === codePoint
+    )
+      return true;
     return textMatchesTerms(character.name, terms, { ignoreAccents: true });
   };
 }

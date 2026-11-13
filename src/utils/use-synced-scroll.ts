@@ -3,6 +3,7 @@
 import { type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { clamp } from './clamp.js';
 import { isHTMLElement } from './is-element.js';
+import { getOwnerWindow } from './owner-window.js';
 import { mapScrollOffset, type ScrollAnchor } from './scroll-offset-map.js';
 
 /** A container to keep aligned: the element, or a ref whose element is stable. */
@@ -84,12 +85,17 @@ function isContainer({ containers }: ScrollSync, node: Node): boolean {
   return isHTMLElement(node) && containers.has(node);
 }
 
+/** The observers, made from the containers' own window, so a frame's containers are watched too. */
 function createObservers(sync: ScrollSync): ScrollSync['observers'] {
-  if (typeof ResizeObserver === 'undefined' || typeof MutationObserver === 'undefined') return null;
+  const [first] = sync.containers;
+  if (!first) return null;
+  const view = getOwnerWindow(first);
+  if (typeof view.ResizeObserver === 'undefined' || typeof view.MutationObserver === 'undefined')
+    return null;
   const forget = () => sync.anchors.clear();
   return {
-    resize: new ResizeObserver(forget),
-    mutation: new MutationObserver((records) => {
+    resize: new view.ResizeObserver(forget),
+    mutation: new view.MutationObserver((records) => {
       forget();
       // Children that came or went change what the resize observer watches.
       if (records.some(({ type, target }) => type === 'childList' && isContainer(sync, target))) {

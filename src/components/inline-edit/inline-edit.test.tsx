@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -449,7 +449,7 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(root).not.toHaveAttribute('data-pending');
     expect(root).toHaveAttribute('data-invalid', 'true');
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('ui-inline-edit__error', 'ui-inline-error');
+    expect(alert.parentElement).toHaveClass('ui-inline-edit__error', 'ui-inline-error');
     expect(alert).toHaveTextContent('The title is taken.');
     expect(textbox()).toHaveValue('Seeded rye');
     expectHooksMatchSpec(container, 'INLINE-EDIT', { slots: ['error'] });
@@ -696,6 +696,43 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await act(async () => save.resolve());
     expect(read()).toHaveFocus();
+  });
+
+  it('UIC-INLINE-EDIT-1.4 UIC-INLINE-EDIT-1.7 cancels on a press that takes no focus, and saves a press that leaves focus nowhere', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<InlineEdit label="Title" value="Rye loaf" onSave={onSave} showActions />);
+    await user.click(read());
+    await user.keyboard('{Control>}a{/Control}Changed');
+    // As in browsers that focus no button on a press: the editor blurs to nothing, then the click.
+    const pressWithoutFocus = async (target: HTMLElement) => {
+      // user-event always focuses the pressed button, so the press is made of separate events.
+      /* eslint-disable testing-library/prefer-user-event */
+      fireEvent.pointerDown(target);
+      act(() => textbox().blur());
+      // A press lasts longer than the editor's wait before it saves on leaving.
+      await act(async () => new Promise((done) => setTimeout(done, 10)));
+      fireEvent.pointerUp(target);
+      fireEvent.click(target);
+      /* eslint-enable testing-library/prefer-user-event */
+      await act(async () => new Promise((done) => setTimeout(done, 10)));
+    };
+    await pressWithoutFocus(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onSave).not.toHaveBeenCalled();
+    expect(read()).toBeInTheDocument();
+    await user.click(read());
+    await user.keyboard('{Control>}a{/Control}Changed');
+    await pressWithoutFocus(textbox().closest('.ui-inline-edit__editor') as HTMLElement);
+    expect(onSave).toHaveBeenCalledWith('Changed');
+  });
+
+  it('UIC-INLINE-EDIT-1.2 takes no focus when its effects run again over the same state', () => {
+    render(
+      <StrictMode>
+        <InlineEdit label="Title" value="Rye loaf" onSave={() => {}} isEditing />
+      </StrictMode>,
+    );
+    expect(textbox()).not.toHaveFocus();
   });
 
   it('UIC-INLINE-EDIT-1.8 keeps a disabled value read only', async () => {

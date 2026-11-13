@@ -193,8 +193,13 @@ function DiagramViewportArea<T>({
     // A control inside that handled the key keeps it.
     if (event.defaultPrevented || isEditableTarget(event.target, '[role="slider"]')) return;
     if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const [selected] = controller.selection.selected;
+    // A pressed edge leaves focus on the viewport: its keys remove the selection, edges included.
+    const isRemoval = (event.key === 'Delete' || event.key === 'Backspace') && controller.isEditing;
     if (event.key === '+' || event.key === '=') stepZoom(1);
     else if (event.key === '-') stepZoom(-1);
+    else if (isRemoval && event.target === event.currentTarget && selected !== undefined)
+      controller.moves.remove(selected);
     else return;
     event.preventDefault();
   };

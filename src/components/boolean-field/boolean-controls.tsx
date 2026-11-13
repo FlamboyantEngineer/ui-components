@@ -15,7 +15,7 @@ import {
 } from '../field/field.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { SelectControl, type SelectKeysValue } from '../select-field/select-field.js';
-import { Switch } from '../switch/switch.js';
+import { Switch, type SwitchProps } from '../switch/switch.js';
 import { booleanFieldHooks as hooks } from './boolean-field-hooks.js';
 
 /**
@@ -224,8 +224,39 @@ function ToggleButtonControl(props: BooleanControlProps) {
   );
 }
 
+/**
+ * The switch variant. A switch reports only on and off to assistive technology, so while unset its
+ * caption (`unsetLabel`) also describes it.
+ */
+function BooleanSwitch({
+  state,
+  labels,
+  size,
+  shared,
+}: BooleanControlProps & { shared: SwitchProps }) {
+  const captionId = useId();
+  const caption = switchCaptionOf(state.value, labels);
+  const isUnset = state.value === null;
+  const describedBy = [isUnset ? captionId : null, shared['aria-describedby']].filter(Boolean);
+  return (
+    <Switch
+      {...shared}
+      aria-describedby={describedBy.join(' ') || undefined}
+      className={hooks.slotClass('switch')}
+      size={size}
+      isIndeterminate={isUnset}
+    >
+      {caption === null ? null : (
+        <span {...hooks.slot('caption')} id={captionId}>
+          {caption}
+        </span>
+      )}
+    </Switch>
+  );
+}
+
 function CheckControl(props: BooleanControlProps) {
-  const { control, state, variant, labels, name, size } = props;
+  const { control, state, variant, name, size } = props;
   const shared = {
     ...toAriaControlProps(control),
     inputRef: control.ref,
@@ -241,17 +272,9 @@ function CheckControl(props: BooleanControlProps) {
         {formValue}
       </>
     );
-  const caption = switchCaptionOf(state.value, labels);
   return (
     <>
-      <Switch
-        {...shared}
-        className={hooks.slotClass('switch')}
-        size={size}
-        isIndeterminate={state.value === null}
-      >
-        {caption}
-      </Switch>
+      <BooleanSwitch {...props} shared={shared} />
       {formValue}
     </>
   );

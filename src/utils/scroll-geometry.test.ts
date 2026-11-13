@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  measureInScroller,
-  measureScale,
-  scrollToStartWithin,
-  toScale,
-} from './scroll-geometry.js';
+import { measureInScroller, scrollToStartWithin } from './scroll-geometry.js';
 
 /** A scroller drawn at `scale`: 200 by 100 own pixels, a 2px border, scrolled 40 down. */
 function scaledScroller(scale: number) {
@@ -24,11 +19,15 @@ function scaledScroller(scale: number) {
 }
 
 describe('scroll geometry', () => {
-  it('UIC-SCROLL-REGION-4.5 reads an element scale from its box and its layout size', () => {
-    expect(toScale(50, 100)).toBe(0.5);
-    expect(toScale(0, 100)).toBe(1);
-    expect(measureScale(scaledScroller(0.5))).toEqual({ x: 0.5, y: 0.5 });
-    expect(measureScale(document.createElement('div'))).toEqual({ x: 1, y: 1 });
+  it('UIC-SCROLL-REGION-4.5 reads a fractional box as unscaled, as offset sizes round', () => {
+    const scroller = scaledScroller(1);
+    // 104.5 pixels tall on screen while offsetHeight rounds it to 104: no scale at all.
+    scroller.getBoundingClientRect = () =>
+      ({ top: 10, left: 20, width: 204, height: 104.5 }) as DOMRect;
+    const element = document.createElement('div');
+    element.getBoundingClientRect = () =>
+      ({ top: 12010, left: 22, width: 50, height: 30 }) as DOMRect;
+    expect(measureInScroller(element, scroller).top).toBe(12000 - 2 + 40);
   });
 
   it('UIC-SCROLL-REGION-4.5 measures an element in the scroller own pixels under a scale', () => {

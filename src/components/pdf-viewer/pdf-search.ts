@@ -1,4 +1,5 @@
 import { escapeRegExp } from '../../utils/escape-regexp.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { isTextItem, type PdfTextContent } from './pdf-engine.js';
 
 /** A page's searchable text: its runs joined, with a line break after each run that ends a line. */
@@ -41,6 +42,9 @@ const combiningMarks = /\p{M}/gu;
 const wordBefore = '(?<![\\p{L}\\p{M}\\p{N}_])';
 const wordAfter = '(?![\\p{L}\\p{M}\\p{N}_])';
 
+/** Each page's text folded by `foldAccents`, kept while the page is, so a new query folds nothing. */
+const foldedTexts = new WeakMap<PdfPageText, string>();
+
 /**
  * Accented letters as their base letter, one character at a time, so an index in the result is the
  * same index in `text`. A letter whose base form has another length is kept.
@@ -51,6 +55,14 @@ function foldAccents(text: string): string {
     const base = character.normalize('NFD').replace(combiningMarks, '');
     folded += base.length === character.length ? base : character;
   }
+  return folded;
+}
+
+function readFoldedText(page: PdfPageText): string {
+  const cached = foldedTexts.get(page);
+  if (cached !== undefined) return cached;
+  const folded = foldAccents(page.text);
+  foldedTexts.set(page, folded);
   return folded;
 }
 
@@ -119,7 +131,7 @@ export function findTextMatches(
   const pattern = createQueryPattern(query, options);
   if (!pattern) return [];
   return pages.flatMap((page, pageIndex) =>
-    [...(options.ignoreAccents ? foldAccents(page.text) : page.text).matchAll(pattern)].map(
+    [...(options.ignoreAccents ? readFoldedText(page) : page.text).matchAll(pattern)].map(
       (found) => ({
         pageIndex,
         start: found.index,
@@ -137,22 +149,43 @@ export function findMatchFrom(matches: readonly PdfMatch[], pageIndex: number): 
   );
 }
 
-/**
- * The match ranges of every page that has highlighted matches, keyed by page index: every match,
- * or only the current one without `highlightAll`.
- */
+/** The ranges of every page that has matches, keyed by page index, none current; none without `highlightAll`. */
 export function groupMatchRanges(
   pages: readonly PdfPageText[],
   matches: readonly PdfMatch[],
-  { current, highlightAll = true }: { current: number; highlightAll?: boolean | undefined },
-): Map<number, PdfMatchRange[]> {
+  highlightAll = true,
+): ReadonlyMap<number, PdfMatchRange[]> {
   const groups = new Map<number, PdfMatchRange[]>();
-  matches.forEach((match, index) => {
+  if (!highlightAll) return groups;
+  for (const match of matches) {
     const page = pages[match.pageIndex];
-    if (!page || (!highlightAll && index !== current)) return;
+    if (!page) continue;
     const ranges = groups.get(match.pageIndex) ?? [];
-    appendRunRanges(page, match, { ranges, isCurrent: index === current });
+    appendRunRanges(page, match, { ranges, isCurrent: false });
     groups.set(match.pageIndex, ranges);
-  });
+  }
   return groups;
+}
+
+/**
+ * `groups` with the page of the `current` match grouped again so that match is current: every
+ * match on the page with `highlightAll`, or the current one alone. Every other page keeps its
+ * ranges as they are, so stepping through matches draws only the pages it leaves and reaches.
+ */
+export function markCurrentMatch(
+  groups: ReadonlyMap<number, PdfMatchRange[]>,
+  { pages, matches }: { pages: readonly PdfPageText[]; matches: readonly PdfMatch[] },
+  { current, highlightAll = true }: { current: number; highlightAll?: boolean | undefined },
+): ReadonlyMap<number, PdfMatchRange[]> {
+  const match = matches[current];
+  const page = match && pages[match.pageIndex];
+  if (!match || !page) return groups;
+  const onPage = (index: number) => matches[index]?.pageIndex === match.pageIndex;
+  let first = current;
+  if (highlightAll) while (onPage(first - 1)) first -= 1;
+  const ranges: PdfMatchRange[] = [];
+  for (let index = first; index === current || (highlightAll && onPage(index)); index += 1) {
+    appendRunRanges(page, requireDefined(matches[index]), { ranges, isCurrent: index === current });
+  }
+  return new Map(groups).set(match.pageIndex, ranges);
 }

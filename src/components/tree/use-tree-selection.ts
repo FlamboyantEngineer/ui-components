@@ -56,6 +56,29 @@ function toKeySet<T extends TreeItemData>(
   return selection === 'all' ? new Set(collectKeys(items, cascade)) : selection;
 }
 
+/**
+ * The keys with the loaded, enabled descendants of every selected row, so children that load under
+ * a selected branch arrive selected. The same set when it already holds them.
+ */
+function withDescendants<T extends TreeItemData>(
+  items: readonly T[],
+  { keys, cascade }: { keys: ReadonlySet<Key>; cascade: Cascade<T> },
+): ReadonlySet<Key> {
+  if (keys.size === 0) return keys;
+  let result: Set<Key> | null = null;
+  // A selected row's subtree is taken whole, so the walk need not go below it.
+  const getChildren = (item: T) => (keys.has(item.id) ? undefined : cascade.getChildren(item));
+  for (const item of walkTree(items, getChildren)) {
+    if (!keys.has(item.id) || cascade.disabled.has(item.id)) continue;
+    for (const key of collectKeys(cascade.getChildren(item) ?? [], cascade)) {
+      if (keys.has(key)) continue;
+      result ??= new Set(keys);
+      result.add(key);
+    }
+  }
+  return result ?? keys;
+}
+
 /** Selects or deselects the descendants of rows whose own selection changed. */
 function pushDown<T extends TreeItemData>(
   items: readonly T[],
@@ -132,7 +155,10 @@ export function useTreeSelection<T extends TreeItemData>(
   const selected = useMemo(
     () =>
       isPropagating
-        ? toKeySet(current === 'all' ? 'all' : new Set(current), { items, cascade })
+        ? withDescendants(items, {
+            keys: toKeySet(current === 'all' ? 'all' : new Set(current), { items, cascade }),
+            cascade,
+          })
         : noKeys,
     [isPropagating, current, items, cascade],
   );

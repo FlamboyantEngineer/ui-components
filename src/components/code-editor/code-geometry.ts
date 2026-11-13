@@ -1,7 +1,7 @@
 // Where source offsets sit on screen, read from the highlighted copy, which lies exactly under the
 // text area: the rectangle of a range, the offset under a point, and scrolling a range into view.
 
-import { measureScale } from '../../utils/scroll-geometry.js';
+import { measureScale } from '../../utils/element-scale.js';
 import type { CodeRange } from './code-ranges.js';
 
 interface TextPoint {

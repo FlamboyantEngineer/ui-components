@@ -55,7 +55,9 @@ describe('PdfViewer page failures', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next page' }));
     expect(screen.getByRole('textbox', { name: 'Page' })).toHaveValue('2');
     const drawings = engine.render.mock.calls.length;
-    await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
+    await userEvent.click(
+      within(alert.parentElement as HTMLElement).getByRole('button', { name: 'Retry' }),
+    );
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
     expect(engine.render.mock.calls.length).toBeGreaterThan(drawings);
     expect(pageElement(1)).not.toHaveAttribute('data-error');

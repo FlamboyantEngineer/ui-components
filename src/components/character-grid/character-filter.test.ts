@@ -59,6 +59,23 @@ describe('filterCharacterCategories', () => {
     expect(filterCharacterCategories(categories, 'u+31')).toEqual([]);
   });
 
+  it('UIC-CHARACTER-GRID-2.1 matches a name that reads like a code point', () => {
+    const signs = [
+      {
+        id: 'signs',
+        label: 'Signs',
+        characters: [
+          { char: '¬', name: 'Not sign' },
+          { char: 'ŭ', name: 'Uac sample' },
+        ],
+      },
+    ];
+    expect(filterCharacterCategories(signs, 'uac')[0]?.characters.map(({ name }) => name)).toEqual([
+      'Not sign',
+      'Uac sample',
+    ]);
+  });
+
   it('UIC-CHARACTER-GRID-2.1 leaves out categories without a match', () => {
     expect(filterCharacterCategories(categories, 'euro').map((category) => category.id)).toEqual([
       'currency',

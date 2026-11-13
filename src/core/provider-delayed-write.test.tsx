@@ -3,7 +3,14 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createJsonCodec } from '../utils/json-codec.js';
 import { type PersistentState, UiProvider, usePersistentState } from './provider.js';
-import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
+import { createMemoryStorage, type UiStorage } from './storage.js';
+
+/** A new adapter over `store` on each call, as a host that builds its adapter inline makes. */
+const wrap = (store: UiStorage): UiStorage => ({
+  getItem: (key) => store.getItem(key),
+  setItem: (key, value) => store.setItem(key, value),
+  removeItem: (key) => store.removeItem(key),
+});
 
 const textCodec = createJsonCodec((value): string => {
   if (typeof value !== 'string') throw new TypeError('Not stored text');
@@ -108,9 +115,9 @@ describe('persistent state with a write delay', () => {
   it('UIC-PROVIDER-6.3 keeps a pending change when a new adapter wraps the same store', () => {
     vi.useFakeTimers();
     const backing = createMemoryStorage({ note: '"Pear"' });
-    const { result, rerender } = renderWithAdapter(createSafeStorage(backing), 'note');
+    const { result, rerender } = renderWithAdapter(wrap(backing), 'note');
     act(() => result.current[1]('Plum'));
-    rerender({ key: 'note', storage: createSafeStorage(backing) });
+    rerender({ key: 'note', storage: wrap(backing) });
     expect(backing.getItem('note')).toBe('"Plum"');
     expect(result.current[0]).toBe('Plum');
     act(() => result.current[1]((text) => `${text}s`));
@@ -132,9 +139,9 @@ describe('persistent state with a write delay', () => {
   it('UIC-PROVIDER-6.3 keeps plain state, with no key, across an adapter change', () => {
     vi.useFakeTimers();
     const backing = createMemoryStorage();
-    const { result, rerender } = renderWithAdapter(createSafeStorage(backing), undefined);
+    const { result, rerender } = renderWithAdapter(wrap(backing), undefined);
     act(() => result.current[1]('Plum'));
-    rerender({ key: undefined, storage: createSafeStorage(backing) });
+    rerender({ key: undefined, storage: wrap(backing) });
     expect(result.current[0]).toBe('Plum');
     expect(backing.getItem('note')).toBeNull();
   });

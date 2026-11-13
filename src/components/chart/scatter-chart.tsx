@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, type ReactNode } from 'react';
+import { memo, type ReactNode, useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -183,7 +183,10 @@ export function ScatterChart({
   const format = getNumberFormat(useLocale().locale, formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
-  const axisNames = { x: xLabel ?? strings.chartXAxis, y: yLabel ?? strings.chartYAxis };
+  const xName = xLabel ?? strings.chartXAxis;
+  const yName = yLabel ?? strings.chartYAxis;
+  // One object while the names stay, so the memoized plot skips the renders that change nothing.
+  const axisNames = useMemo(() => ({ x: xName, y: yName }), [xName, yName]);
   const model = useScatterChartModel({
     element,
     series,

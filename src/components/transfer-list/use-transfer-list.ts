@@ -8,7 +8,7 @@ import {
   addChosenKeys,
   canStepChosenKeys,
   dropChosenKeys,
-  stepChosenKeys,
+  stepShownKeys,
   type TransferDrop,
 } from './transfer-moves.js';
 import type { TransferListItem, TransferListSide } from './transfer-pane.js';
@@ -104,10 +104,18 @@ export function useTransferList(options: TransferListOptions) {
     const to = from === 'available' ? 'chosen' : 'available';
     setSelections({ [from]: new Set(), [to]: moved } as PerSide<Selection>);
   };
+  // Up and down step among the rows the chosen side shows; rows its filter hides keep their places.
+  const shownChosen = sides.chosen.shown.map((item) => item.id);
   const step = (direction: -1 | 1) => ({
-    canStep: canStepChosenKeys(chosen, { selected: sides.chosen.selected, step: direction }),
+    canStep: canStepChosenKeys(shownChosen, { selected: sides.chosen.selected, step: direction }),
     onStep: () =>
-      setChosen(stepChosenKeys(chosen, { selected: sides.chosen.selected, step: direction })),
+      setChosen(
+        stepShownKeys(chosen, {
+          shown: shownChosen,
+          selected: sides.chosen.selected,
+          step: direction,
+        }),
+      ),
   });
   return {
     sides,

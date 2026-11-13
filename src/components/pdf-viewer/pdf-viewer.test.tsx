@@ -212,9 +212,14 @@ describe('PdfViewer', () => {
     const scroller = screen.getByRole('document');
     expect(fireEvent.wheel(scroller, { deltaY: -40 })).toBe(true);
     expect(onZoomChange).toHaveBeenLastCalledWith(100);
-    expect(fireEvent.wheel(scroller, { deltaY: -40, ctrlKey: true })).toBe(false);
+    // A trackpad pinch's small deltas add up to whole steps, one grid level each.
+    for (let event = 0; event < 12; event += 1) {
+      expect(fireEvent.wheel(scroller, { deltaY: -1.5, ctrlKey: true })).toBe(false);
+    }
+    expect(onZoomChange).toHaveBeenLastCalledWith(100);
+    fireEvent.wheel(scroller, { deltaY: -40, ctrlKey: true });
     expect(onZoomChange).toHaveBeenLastCalledWith(125);
-    fireEvent.wheel(scroller, { deltaY: 40, metaKey: true });
+    fireEvent.wheel(scroller, { deltaY: 100, metaKey: true });
     expect(onZoomChange).toHaveBeenLastCalledWith(100);
   });
 

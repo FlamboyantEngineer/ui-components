@@ -135,6 +135,9 @@ function reorderOf<T extends FolderItem>(
 function useFolderKeys<T extends FolderItem>(model: FolderManagerModel<T>, entries: MenuEntry[]) {
   const { actions, nameRef, isBusy } = model;
   const offers = (id: Key) => entries.some((entry) => entry.id === id);
+  // Rename applies to one selected folder; a blocked delete still shows its reason.
+  const enables = (id: Key) =>
+    entries.some((entry) => entry.id === id && !('isDisabled' in entry && entry.isDisabled));
   return {
     onKeyDownCapture(event: KeyboardEvent<HTMLDivElement>) {
       const input = nameRef.current;
@@ -148,7 +151,7 @@ function useFolderKeys<T extends FolderItem>(model: FolderManagerModel<T>, entri
     },
     onItemKeyDown(node: FolderNode<T>, event: KeyboardEvent<HTMLElement>) {
       if (node.kind !== 'folder' || isBusy) return false;
-      if (event.key === 'F2' && offers('rename')) model.startRename();
+      if (event.key === 'F2' && enables('rename')) model.startRename();
       else if (event.key === 'Delete' && offers('delete')) model.remove();
       else return false;
       return true;

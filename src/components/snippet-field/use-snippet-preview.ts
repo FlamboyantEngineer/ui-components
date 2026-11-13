@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { callSettling } from '../../utils/is-thenable.js';
 import type { SnippetRequest } from './snippet-request.js';
 
 /** What the host's loader found: the code, or why there is none. */
@@ -48,7 +49,10 @@ export function useSnippetPreview(loadSnippet: SnippetLoader) {
       controllerRef.current = null;
       setPreview(next);
     };
-    loadSnippet(request, { signal: controller.signal }).then(
+    // A loader that throws at once fails like one that rejects.
+    void Promise.resolve(
+      callSettling(() => loadSnippet(request, { signal: controller.signal })),
+    ).then(
       (found) =>
         settle(
           found.ok

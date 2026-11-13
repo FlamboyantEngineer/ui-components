@@ -1,19 +1,22 @@
 /**
- * The script that runs first in every mini-app frame. It defines `window.miniApp` and talks to the
- * host only through the `MessagePort` the host transfers once the frame has loaded; messages sent
- * before then wait in a queue. It reports uncaught errors and rejections to the host instead of the
+ * The script that runs first in every mini-app frame. Before any of the mini-app's code runs, it
+ * opens a `MessageChannel` and posts one end to the host's window, so the host takes its channel
+ * from the vetted document and from nothing the frame loads later. It defines `window.miniApp` and
+ * talks to the host only through the end it keeps. It reports uncaught errors and rejections to the host instead of the
  * console, posts the document's height whenever it changes, posts `ready` on the `load` event, and
  * posts `focus` with whether its focused element shows a focus ring as focus enters, moves and leaves.
  * The document does not scroll vertically until the host says its frame is capped (`scroll`).
  * `__STATE__` is replaced with the initial state's JSON.
  */
 export const miniAppBridge = `(() => {
-  let port = null;
+  const channel = new MessageChannel();
+  const port = channel.port1;
+  // The frame's origin is opaque and it cannot know the host's, so the message names no target origin.
+  parent.postMessage({ type: 'ui-mini-app:connect' }, '*', [channel.port2]);
   let nextId = 1;
-  const queue = [];
   document.documentElement.style.overflowY = 'hidden';
   const pending = new Map();
-  const send = (message) => (port ? port.postMessage(message) : queue.push(message));
+  const send = (message) => port.postMessage(message);
   const describe = (value) =>
     value instanceof Error ? value.message : typeof value === 'string' ? value : String(value);
   addEventListener('error', (event) => {
@@ -34,24 +37,17 @@ export const miniAppBridge = `(() => {
   };
   addEventListener('focusin', reportFocus);
   addEventListener('blur', reportFocus);
-  addEventListener('message', (event) => {
-    const data = event.data;
-    if (port || event.source !== parent || !data || data.type !== 'ui-mini-app:connect') return;
-    if (!event.ports[0]) return;
-    port = event.ports[0];
-    port.onmessage = ({ data: reply }) => {
-      if (reply && reply.type === 'scroll') {
-        document.documentElement.style.overflowY = reply.enabled ? 'auto' : 'hidden';
-        return;
-      }
-      const call = reply && pending.get(reply.id);
-      if (!call) return;
-      pending.delete(reply.id);
-      if (reply.ok) call.resolve(reply.value);
-      else call.reject(new Error(reply.message));
-    };
-    for (const message of queue.splice(0)) port.postMessage(message);
-  });
+  port.onmessage = ({ data: reply }) => {
+    if (reply && reply.type === 'scroll') {
+      document.documentElement.style.overflowY = reply.enabled ? 'auto' : 'hidden';
+      return;
+    }
+    const call = reply && pending.get(reply.id);
+    if (!call) return;
+    pending.delete(reply.id);
+    if (reply.ok) call.resolve(reply.value);
+    else call.reject(new Error(reply.message));
+  };
   addEventListener('load', () => {
     send({ type: 'ready' });
     const root = document.documentElement;

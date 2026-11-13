@@ -6,6 +6,7 @@ import {
   maskPlaceholder,
   maskText,
   parseTextMask,
+  readMaskValue,
   unmaskText,
 } from './text-mask.js';
 
@@ -52,5 +53,19 @@ describe('text masks', () => {
     });
     expect(deleteAcrossLiterals('(555) 1234', 3, { direction: -1, mask: phone })).toBeNull();
     expect(deleteAcrossLiterals('(5', 1, { direction: -1, mask: phone })).toBeNull();
+  });
+
+  it('UIC-MASKED-TEXT-FIELD-1.2 reads a given value as raw when its slots accept it in order', () => {
+    const code = parseTextMask('ID-AAA');
+    expect(readMaskValue('ICE', code)).toBe('ICE');
+    expect(readMaskValue('ice', code)).toBe('ICE');
+    expect(readMaskValue('ID-ICE', code)).toBe('ICE');
+    expect(readMaskValue('ID-I', code)).toBe('I');
+    expect(maskText('ICE', code)).toBe('ID-ICE');
+    const line = parseTextMask('1-999');
+    expect(readMaskValue('123', line)).toBe('123');
+    expect(readMaskValue('1-23', line)).toBe('23');
+    expect(readMaskValue('(555', phone)).toBe('555');
+    expect(readMaskValue('5551234567', phone)).toBe('5551234567');
   });
 });

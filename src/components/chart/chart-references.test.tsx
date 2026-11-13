@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { BarChart } from './bar-chart.js';
@@ -97,6 +97,47 @@ describe('chart references', () => {
     expectHooksMatchSpec(document.body, 'CHART', {
       slots: ['references', 'reference', 'reference-line', 'reference-band', 'reference-label'],
     });
+  });
+
+  it('UIC-CHART-9.1 keys references by axis, so a value and an x reference may share an id', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { rerender } = render(
+      <LineChart
+        aria-label="Load"
+        series={[
+          {
+            id: 'load',
+            label: 'Load',
+            points: [
+              { x: 1, y: 2 },
+              { x: 5, y: 8 },
+            ],
+          },
+        ]}
+        references={[{ id: 'mark', label: 'Ceiling', value: 6 }]}
+        xReferences={[{ id: 'mark', label: 'Cutover', value: 3 }]}
+      />,
+    );
+    rerender(
+      <LineChart
+        aria-label="Load"
+        series={[
+          {
+            id: 'load',
+            label: 'Load',
+            points: [
+              { x: 1, y: 2 },
+              { x: 5, y: 8 },
+            ],
+          },
+        ]}
+        references={[{ id: 'mark', label: 'Ceiling', value: 6 }]}
+      />,
+    );
+    const keyWarnings = errors.mock.calls.filter((call) => String(call[0]).includes('same key'));
+    errors.mockRestore();
+    expect(keyWarnings).toEqual([]);
+    expect(references().map((reference) => reference.textContent)).toEqual(['Ceiling']);
   });
 
   it('UIC-CHART-9.1 runs value references across horizontal bars', () => {

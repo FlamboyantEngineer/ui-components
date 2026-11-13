@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { FieldScopeContext } from '../field/field-scope.js';
 import { MaskedTextField, type MaskedTextFieldProps } from './masked-text-field.js';
 
 function textbox(name = 'Phone') {
@@ -143,6 +144,29 @@ describe('MaskedTextField', () => {
     expect(textbox()).toHaveValue('(555) 123-4567');
     expect(onChange).not.toHaveBeenCalled();
     rerender(<Phone defaultValue="5551234567" isDisabled />);
+    expect(textbox()).toBeDisabled();
+    expect(formValue('phone')).toBeNull();
+  });
+
+  it('UIC-MASKED-TEXT-FIELD-1.2 reads a raw value whose characters a literal also spells', () => {
+    render(
+      <form aria-label="Contact">
+        <MaskedTextField label="Code" mask="ID-AAA" name="code" value="ICE" />
+        <MaskedTextField label="Line" mask="1-999" name="line" defaultValue="123" />
+      </form>,
+    );
+    expect(screen.getByRole('textbox', { name: 'Code' })).toHaveValue('ID-ICE');
+    expect(formValue('code')).toBe('ICE');
+    expect(screen.getByRole('textbox', { name: 'Line' })).toHaveValue('1-123');
+    expect(formValue('line')).toBe('123');
+  });
+
+  it('UIC-MASKED-TEXT-FIELD-1.4 submits no raw value inside a disabled scope', () => {
+    render(
+      <FieldScopeContext value={{ isDisabled: true }}>
+        <Phone defaultValue="5551234567" />
+      </FieldScopeContext>,
+    );
     expect(textbox()).toBeDisabled();
     expect(formValue('phone')).toBeNull();
   });

@@ -58,7 +58,12 @@ interface StepRowDrag {
   /** Spread on the step: it drags and takes drops. */
   props: HTMLAttributes<HTMLLIElement>;
   /** Spread on the handle: a pointer press arms the drag, a keyboard press starts it. */
-  handleProps: { onPressStart: (event: PressEvent) => void; onPress: (event: PressEvent) => void };
+  handleProps: {
+    onPressStart: (event: PressEvent) => void;
+    onPress: (event: PressEvent) => void;
+    /** The drag instructions React Aria gives the handle. */
+    'aria-describedby': string | undefined;
+  };
   isDragging: boolean;
   dropPosition: StepMove['position'] | null;
 }
@@ -77,7 +82,7 @@ export function useStepRowDrag({
   drag: StepDrag | null;
 }): StepRowDrag {
   const ref = useRef<HTMLLIElement>(null);
-  const { dragProps, startDrag, isDragging, dropPosition } = useItemDrag({
+  const { dragProps, startDrag, describedBy, isDragging, dropPosition } = useItemDrag({
     ref,
     key: id,
     textValue: label,
@@ -95,6 +100,7 @@ export function useStepRowDrag({
     handleProps: {
       onPressStart: armStep,
       onPress: startDrag,
+      'aria-describedby': drag ? describedBy : undefined,
     },
     isDragging,
     dropPosition,

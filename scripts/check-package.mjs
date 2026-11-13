@@ -23,6 +23,28 @@ const IMPORT_ATTRIBUTES =
   /\b(?:from\s*['"][^'"]+['"]|import\s*\(\s*['"][^'"]+['"]\s*,)\s*with\s*\{/;
 const CSS_IMPORT = /(?:from\s*|import\s*\(?\s*)['"][^'"]+\.(?:css|scss|sass|less)['"]/;
 
+/**
+ * The library reads private React Aria paths and contexts, so it must get exactly the react-aria and
+ * react-stately that its react-aria-components was built with: all three are pinned, the installed
+ * react-aria-components is the pinned one, and the other two are the versions it pins.
+ */
+function reactAriaPinProblems(dependencies) {
+  const found = [];
+  const components = JSON.parse(
+    readFileSync(join(root, 'node_modules/react-aria-components/package.json'), 'utf8'),
+  );
+  const expected = {
+    'react-aria-components': components.version,
+    'react-aria': components.dependencies['react-aria'],
+    'react-stately': components.dependencies['react-stately'],
+  };
+  for (const [name, version] of Object.entries(expected)) {
+    if (dependencies[name] !== version)
+      found.push(`dependency ${name} is ${dependencies[name]}, not exactly ${version}`);
+  }
+  return found;
+}
+
 const dirFlag = process.argv.indexOf('--dir');
 /** The package directory to check: the checkout by default. */
 const packageRoot = dirFlag === -1 ? root : resolve(process.argv[dirFlag + 1] ?? '');
@@ -87,6 +109,7 @@ try {
       if (STYLING_DEPENDENCY.test(name)) problems.push(`${field} includes styling package ${name}`);
     }
   }
+  problems.push(...reactAriaPinProblems(manifest.dependencies ?? {}));
 
   const extractDir = join(workDir, 'extract');
   mkdirSync(extractDir);

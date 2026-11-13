@@ -124,7 +124,7 @@ Verification: `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `e2e/pdf-viewe
 
 ### UIC-PDF-VIEWER-3.4 - Wheel zoom
 
-Ctrl or Command with the wheel over the pages shall step the zoom along the grid (up zooms in) and prevent the browser's own page zoom.
+Ctrl or Command with the wheel over the pages shall step the zoom along the grid (up zooms in) and prevent the browser's own page zoom. The wheel's travel adds up into whole steps (one mouse notch, or as much trackpad pinch travel), each moving one grid level, so a pinch of many small events does not leap across the grid; a wheel that counts in lines or pages steps once per event.
 
 Implementation: `src/components/pdf-viewer/use-pdf-zoom.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`
@@ -214,7 +214,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 ### UIC-PDF-VIEWER-5.3 - Stepping through matches
 
-The bar's Previous match and Next match buttons, and Enter and Shift + Enter in the field, shall step the current match backwards and forwards, wrapping at either end; the buttons are disabled without matches. A new query starts at the first match on or after the current page. The current match is brought into view: its page is scrolled to when it is not rendered, and the match is centred when it is not fully visible, measured in the scroller's own pixels, also under an ancestor `transform: scale()`.
+The bar's Previous match and Next match buttons, and Enter and Shift + Enter in the field, shall step the current match backwards and forwards, wrapping at either end; the buttons are disabled without matches. A new query starts at the first match on or after the current page. The current match is brought into view: its page is scrolled to when it is not rendered, and the match is centred when it is not fully visible, measured in the scroller's own pixels, also under an ancestor `transform: scale()`. Stepping highlights again only the pages the current match leaves and reaches; every other page keeps its highlights.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-search.tsx`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/pdf-viewer-page.tsx`, `src/components/pdf-viewer/use-pdf-pages.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/pdf-search.test.ts`, `e2e/pdf-viewer.spec.ts`
@@ -242,7 +242,7 @@ Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`, `e2e/pdf-view
 
 ### UIC-PDF-VIEWER-5.7 - Find options
 
-After the match buttons, the bar's options menu (UIC-FIND-BAR-1.4), named with the provider's `findOptions` string, shall check the find options that are on, and toggle one when chosen, staying open: `highlightAll` (on by default: every match is highlighted; off, only the current one), `matchCase` (upper and lower case differ), `ignoreAccents` (an accented letter matches its base letter, so `cafe` finds `café`, whether the accent is a letter of its own or a combining mark) and `wholeWords` (a match is not part of a longer word: no letter, mark, digit or underscore on either side). They are named with the provider's string of the same name. `searchOptions` shall replace the viewer's own options, and `onSearchOptionsChange` receive every set chosen in the menu or through `renderSearch`'s `setOptions`. A change of options other than `highlightAll` is a new set of matches (UIC-PDF-VIEWER-5.3).
+After the match buttons, the bar's options menu (UIC-FIND-BAR-1.4), named with the provider's `findOptions` string, shall check the find options that are on, and toggle one when chosen, staying open: `highlightAll` (on by default: every match is highlighted; off, only the current one), `matchCase` (upper and lower case differ), `ignoreAccents` (an accented letter matches its base letter, so `cafe` finds `café`, whether the accent is a letter of its own or a combining mark; each page's text is folded once, not again for each query) and `wholeWords` (a match is not part of a longer word: no letter, mark, digit or underscore on either side). They are named with the provider's string of the same name. `searchOptions` shall replace the viewer's own options, and `onSearchOptionsChange` receive every set chosen in the menu or through `renderSearch`'s `setOptions`. A change of options other than `highlightAll` is a new set of matches (UIC-PDF-VIEWER-5.3).
 
 Implementation: `src/components/pdf-viewer/pdf-search.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/pdf-viewer-search.tsx`
 Verification: `src/components/pdf-viewer/pdf-search.test.ts`, `src/components/pdf-viewer/use-pdf-search.test.tsx`, `e2e/pdf-viewer.spec.ts`

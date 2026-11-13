@@ -1,8 +1,8 @@
 // Cuts a target element's boxes to what the scrolling or clipping elements around it let show.
 
+import { measureScale } from '../../utils/element-scale.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
-import { toScale } from '../../utils/scroll-geometry.js';
 
 /** A rectangle in viewport pixels. */
 interface ViewportBox {
@@ -30,8 +30,7 @@ function toClip(element: HTMLElement): Clip | null {
   const clipsY = style.overflowY !== 'visible';
   if (!clipsX && !clipsY) return null;
   const box = element.getBoundingClientRect();
-  const scaleX = toScale(box.width, element.offsetWidth);
-  const scaleY = toScale(box.height, element.offsetHeight);
+  const { x: scaleX, y: scaleY } = measureScale(element);
   const left = box.left + element.clientLeft * scaleX;
   const top = box.top + element.clientTop * scaleY;
   return {

@@ -58,6 +58,28 @@ const toKebabCase = (name: string) =>
   name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
 /** The set with one constraint set to `value`, or without it when `value` is `undefined`. */
+interface CheckedSet {
+  kind: ConstraintEditorKind;
+  compare: ConstraintCompare | undefined;
+  issues: ConstraintIssue[];
+}
+
+/** Each set's problems, kept so a change and the render after it run the author's pattern once. */
+const checked = new WeakMap<ConstraintSet, CheckedSet>();
+
+/** `validateConstraints`, run once per set object, kind and comparison. */
+function checkConstraints(
+  kind: ConstraintEditorKind,
+  set: ConstraintSet,
+  compare: ConstraintCompare | undefined,
+): ConstraintIssue[] {
+  const known = checked.get(set);
+  if (known?.kind === kind && known.compare === compare) return known.issues;
+  const issues = validateConstraints(kind, set, compare);
+  checked.set(set, { kind, compare, issues });
+  return issues;
+}
+
 function withConstraint(
   set: ConstraintSet,
   name: ConstraintName,
@@ -94,7 +116,7 @@ export function ConstraintEditor({
 }: ConstraintEditorProps) {
   const strings = useUiStrings();
   const [set, setSet] = useControllableState(value, defaultValue);
-  const issues = validateConstraints(kind, set, compare);
+  const issues = checkConstraints(kind, set, compare);
   const offered = constraintsByKind[kind].filter(
     (name) => !constraints || constraints.includes(name),
   );
@@ -116,7 +138,7 @@ export function ConstraintEditor({
       onChange: (next) => {
         const updated = withConstraint(set, name, next);
         setSet(updated);
-        onChange?.(updated, validateConstraints(kind, updated, compare));
+        onChange?.(updated, checkConstraints(kind, updated, compare));
       },
       isReadOnly: isReadOnly || lockedConstraints.includes(name),
       issues: shown,

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -157,9 +157,9 @@ describe('ChatAttachment', () => {
   it('UIC-CHAT-ATTACHMENT-1.5 shows the error as an alert, by default naming the file', () => {
     const { container, rerender } = render(<ChatAttachment {...report} status="error" />);
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('ui-chat-attachment__error', 'ui-inline-error');
+    expect(alert.parentElement).toHaveClass('ui-chat-attachment__error', 'ui-inline-error');
     expect(alert).toHaveTextContent('Trip plan.pdf could not be uploaded.');
-    expect(within(alert).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
     rerender(<ChatAttachment {...report} error="The file is too large." />);
     expect(screen.getByRole('alert')).toHaveTextContent('The file is too large.');
     expect(root(container)).toHaveAttribute('data-status', 'error');
@@ -170,7 +170,7 @@ describe('ChatAttachment', () => {
   it('UIC-CHAT-ATTACHMENT-1.5 retries a failed upload and moves the focus to the remove button', async () => {
     const user = userEvent.setup();
     render(<Retrying removable />);
-    await user.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Retry' }));
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(screen.getByRole('progressbar', { name: 'Uploading Trip plan.pdf' })).toBeVisible();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Remove Trip plan.pdf' })).toHaveFocus(),

@@ -179,6 +179,26 @@ describe('resolveLineGeometry', () => {
     expect(unreadable.yTicks.at(-1)?.value).toBeLessThanOrEqual(1);
   });
 
+  it('UIC-CHART-6.3 rounds only the open end of a half-fixed range, in increasing order', () => {
+    const plot = { top: 10, right: 110, bottom: 110, left: 10 };
+    const series = [
+      {
+        series: 0,
+        id: 0,
+        points: [
+          { x: 0, y: 12 },
+          { x: 1, y: 97 },
+        ],
+      },
+    ];
+    expect(createLineValueScale({ ...base, minValue: 0, series }, plot).domain).toEqual([0, 100]);
+    expect(createLineValueScale({ ...base, maxValue: 99, series }, plot).domain).toEqual([0, 99]);
+    // A bound past the data never reverses the scale.
+    const past = createLineValueScale({ ...base, minValue: 200, series }, plot);
+    expect(past.domain[0]).toBeLessThan(past.domain[1]);
+    expect(past.domain[1]).toBe(200);
+  });
+
   it('UIC-CHART-6.3 keeps values beyond a fixed range at its edges', () => {
     const geometry = resolveLineGeometry({
       ...base,

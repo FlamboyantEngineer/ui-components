@@ -129,7 +129,7 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
     await userEvent.type(comment(), 'Ship it');
     await userEvent.click(submit());
     const error = await screen.findByRole('alert');
-    expect(error).toHaveClass('ui-decision-control__error', 'ui-inline-error');
+    expect(error.parentElement).toHaveClass('ui-decision-control__error', 'ui-inline-error');
     expect(error).toHaveTextContent('The review is closed.');
     expect(comment()).toHaveValue('Ship it');
     await userEvent.click(submit());

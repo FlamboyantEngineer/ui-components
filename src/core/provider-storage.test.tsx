@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { numberCodec } from '../utils/json-codec.js';
 import { UiProvider, usePersistentState } from './provider.js';
-import { createMemoryStorage, type UiStorage } from './storage.js';
+import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
 
 describe('persistent state ownership', () => {
   it('UIC-PROVIDER-6.1 reads a replacement adapter before writing under the same key', () => {
@@ -177,5 +177,38 @@ describe('persistent state hydration', () => {
       </UiProvider>,
     );
     expect(seen[0]).toBe(150);
+  });
+});
+
+describe('createSafeStorage', () => {
+  it('UIC-PROVIDER-6.1 keeps one adapter for a storage wrapped while rendering', () => {
+    const store = createMemoryStorage({ count: '4' });
+    let reads = 0;
+    const counted: UiStorage = {
+      ...store,
+      getItem: (key) => {
+        reads += 1;
+        return store.getItem(key);
+      },
+    };
+    expect(createSafeStorage(counted)).toBe(createSafeStorage(counted));
+    function Count() {
+      const [count] = usePersistentState('count', 0, { codec: numberCodec });
+      return <output>{count}</output>;
+    }
+    function Host({ tick }: { tick: number }) {
+      return (
+        <UiProvider storage={createSafeStorage(counted)}>
+          <span>{tick}</span>
+          <Count />
+        </UiProvider>
+      );
+    }
+    const { rerender } = render(<Host tick={0} />);
+    expect(screen.getByRole('status')).toHaveTextContent('4');
+    const settled = reads;
+    rerender(<Host tick={1} />);
+    rerender(<Host tick={2} />);
+    expect(reads).toBe(settled);
   });
 });

@@ -29,7 +29,7 @@ Verification: `src/components/constraint-editor/constraint-model.test.ts`, `src/
 
 ### UIC-CONSTRAINT-EDITOR-1.3 - Problems
 
-`validateConstraints(kind, set, compare)` shall list the problems of a set as `{ constraint, reason }`, on the constraint whose control shows them: unreadable numbers (`notNumber`, on that constraint), a maximum below the minimum (`boundsReversed`, on `maximum`), reversed lengths or counts (`lengthsReversed`, `countsReversed`, on the maximum), a default outside the bounds or lengths (`defaultBelowMinimum`, `defaultAboveMaximum`, `defaultTooShort`, `defaultTooLong`), an unreadable pattern (`patternInvalid`) and a default that does not match it (`defaultPatternMismatch`). A text length counts code points. Problems never change the set: nothing is clamped, swapped or dropped.
+`validateConstraints(kind, set, compare)` shall list the problems of a set as `{ constraint, reason }`, on the constraint whose control shows them: unreadable numbers (`notNumber`, on that constraint), a maximum below the minimum (`boundsReversed`, on `maximum`), reversed lengths or counts (`lengthsReversed`, `countsReversed`, on the maximum), a default outside the bounds or lengths (`defaultBelowMinimum`, `defaultAboveMaximum`, `defaultTooShort`, `defaultTooLong`), an unreadable pattern (`patternInvalid`) and a default that does not match it (`defaultPatternMismatch`). A text length counts code points. Problems never change the set: nothing is clamped, swapped or dropped. The pattern check runs the author's pattern on the main thread, so a pattern that backtracks badly is slow on a long default; the editor checks each set once, not on every render, and a change and the render after it share that check.
 
 Implementation: `src/components/constraint-editor/constraint-model.ts`
 Verification: `src/components/constraint-editor/constraint-model.test.ts`
@@ -45,7 +45,7 @@ Verification: `src/components/constraint-editor/constraint-editor.test.tsx`, `e2
 
 ### UIC-CONSTRAINT-EDITOR-2.2 - Changes and unsetting
 
-The set shall be controlled by `value` with `onChange(set, issues)`, or held from `defaultValue`. Each control change sets its constraint, and an Unset button (`ui-constraint-editor__unset`, named by the provider string `constraintUnset`) after a set constraint removes it. Emptying a text or number control unsets its constraint, except a text field's default, where empty text is a value until Unset. A new `value` replaces every control's value.
+The set shall be controlled by `value` with `onChange(set, issues)`, or held from `defaultValue`. Each control change sets its constraint, and an Unset button (`ui-constraint-editor__unset`, named by the provider string `constraintUnset`) after a set constraint removes it. The button leaves with the value, so pressing it moves focus to the first tabbable element of its row, the constraint's control (`useFocusRequest`, [UIC-STEP-LIST-EDITOR-4.2](STEP-LIST-EDITOR.md#uic-step-list-editor-42---focus-after-an-edit)). Emptying a text or number control unsets its constraint, except a text field's default, where empty text is a value until Unset. A new `value` replaces every control's value.
 
 Implementation: `src/components/constraint-editor/constraint-editor.tsx`, `src/components/constraint-editor/constraint-controls.tsx`
 Verification: `src/components/constraint-editor/constraint-editor.test.tsx`, `e2e/constraint-editor.spec.ts`

@@ -1,0 +1,5 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Fix the graphics review findings. `PdfViewer` zooms once per whole wheel notch and folds accents once per page; stepping through matches highlights only the pages it leaves and reaches. `DiagramCanvas` removes a selected edge with Delete on the viewport. Time axes over hours or minutes get clock ticks (new `TimeTickUnit` type). `SignatureImage` accepts the same file twice. `SvgMarkup` drops root attributes that draw outside its box. A donut slice over half the circle draws closed. Line and scatter charts keep fixed `min`/`max` ends exact and round only the open end. `Projection` renders a reader again only for its own slot. `ScatterChart` stops redrawing its plot for unchanged axis names (the internal scatter geometry no longer takes `formatAxisValue`). Chart references are keyed per axis. `MiniApp` takes its channel from the bridge, which opens it before any mini-app code runs, so a document the frame navigates to never reaches it; the ready timeout now runs from the frame's insertion.

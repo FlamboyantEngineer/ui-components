@@ -1,8 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { listTabbables } from '../../utils/tabbable.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { Button } from '../button/button.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
 import { type FieldIssue, toInnerControlSize } from '../field/field.js';
@@ -146,16 +148,26 @@ export function BuiltInConstraintControl(props: BuiltInControlOptions): ReactNod
   }
 }
 
-/** The Unset button after a set constraint's control. */
+/**
+ * The Unset button after a set constraint's control. It leaves with the value, so pressing it moves
+ * focus to the first tabbable element of its row, the constraint's control.
+ */
 export function ConstraintUnsetButton({ control }: { control: ConstraintControl }) {
   const strings = useUiStrings();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const requestFocus = useFocusRequest();
   if (control.value === undefined || control.isReadOnly) return null;
   return (
     <Button
       className={hooks.slotClass('unset')}
       size={toInnerControlSize(control.size)}
       variant="ghost"
-      onPress={() => control.onChange(undefined)}
+      ref={buttonRef}
+      onPress={() => {
+        const row = buttonRef.current?.parentElement;
+        control.onChange(undefined);
+        if (row) requestFocus(() => listTabbables(row)[0]);
+      }}
     >
       {strings.constraintUnset(control.label)}
     </Button>

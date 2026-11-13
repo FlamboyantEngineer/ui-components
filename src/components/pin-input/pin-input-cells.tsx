@@ -261,6 +261,10 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
             {...cellControl}
             placeholder={cells.placeholder}
             enterKeyHint={cells.enterKeyHint}
+            // A code is never spell checked, capitalised or corrected by a mobile keyboard.
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
             tabIndex={index === tabbable ? 0 : -1}
             value={composition.textOf(index, value)}
             onChange={(event) => {

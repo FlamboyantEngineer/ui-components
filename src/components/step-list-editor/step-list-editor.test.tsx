@@ -217,7 +217,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     );
   });
 
-  it('UIC-STEP-LIST-EDITOR-2.3 moves the step with Alt+Arrow keys, keeping focus', async () => {
+  it('UIC-STEP-LIST-EDITOR-2.3 UIC-STEP-LIST-EDITOR-4.1 moves the step with Alt+Arrow keys, keeping focus and announcing it', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();
     render(<Controlled onValue={onValue} />);
@@ -229,6 +229,9 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(idsOf(onValue.mock.lastCall?.[0])).toEqual(['type', 'open', 'save']);
     expect(handle).toHaveFocus();
     expect(screen.getByRole('button', { name: 'Move step 2' })).toBe(handle);
+    expect(screen.getByRole('status')).toHaveTextContent('Step moved to position 2 of 3');
+    expect(handle).toHaveAttribute('aria-describedby');
+    expect(handle).toHaveAccessibleDescription(/drag/i);
 
     const menu = screen.getByRole('button', { name: 'Actions for step 2' });
     act(() => menu.focus());

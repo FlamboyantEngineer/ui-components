@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ConstraintEditor } from './constraint-editor.js';
 import type { ConstraintSet } from './constraint-model.js';
 
@@ -97,6 +98,21 @@ describe('ConstraintEditor', () => {
     expect(onChange).toHaveBeenLastCalledWith({}, []);
   });
 
+  it('UIC-CONSTRAINT-EDITOR-2.2 moves focus to the control when Unset leaves', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConstraintEditor
+        kind="text"
+        aria-label="Rules"
+        defaultValue={{ maxLength: 4, default: 'a' }}
+      />,
+    );
+    screen.getByRole('button', { name: 'Unset Longest length' }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('button', { name: 'Unset Longest length' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Longest length' })).toHaveFocus();
+  });
+
   it('UIC-CONSTRAINT-EDITOR-1.2 UIC-CONSTRAINT-EDITOR-2.2 keeps decimal text exactly and tells unset from false', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -131,6 +147,41 @@ describe('ConstraintEditor', () => {
     );
     expect(screen.getByRole('textbox', { name: 'Maximum' })).toHaveValue('2');
     expect(rowOf(container, 'maximum')).toBeInTheDocument();
+  });
+
+  it('UIC-CONSTRAINT-EDITOR-1.3 checks a set once, not on every render', async () => {
+    const user = userEvent.setup();
+    const compare = vi.fn((left: string, right: string) => left.localeCompare(right));
+    const value = { minimum: '1', maximum: '5', default: '3' };
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ConstraintEditor kind="number" aria-label="Rules" value={value} compare={compare} />,
+    );
+    const calls = compare.mock.calls.length;
+    expect(calls).toBeGreaterThan(0);
+    rerender(
+      <ConstraintEditor
+        kind="number"
+        aria-label="Rules"
+        value={value}
+        compare={compare}
+        onChange={onChange}
+      />,
+    );
+    expect(compare).toHaveBeenCalledTimes(calls);
+    await user.click(screen.getByRole('button', { name: 'Unset Default value' }));
+    const updated = requireDefined(onChange.mock.lastCall)[0] as ConstraintSet;
+    const afterChange = compare.mock.calls.length;
+    rerender(
+      <ConstraintEditor
+        kind="number"
+        aria-label="Rules"
+        value={updated}
+        compare={compare}
+        onChange={onChange}
+      />,
+    );
+    expect(compare).toHaveBeenCalledTimes(afterChange);
   });
 
   it('UIC-CONSTRAINT-EDITOR-2.2 follows a replaced value', async () => {

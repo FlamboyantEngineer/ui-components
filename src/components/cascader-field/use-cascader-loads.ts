@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { callSettling } from '../../utils/is-thenable.js';
 import { type CascaderOption, toCascaderPathKey } from './cascader-options.js';
 
 /**
@@ -43,7 +44,8 @@ export function useCascaderLoads(loader: CascaderLoader | undefined) {
     if (!loader || !branch || !signal || signal.aborted) return;
     const key = toKey(path);
     settle(key, { status: 'loading' });
-    void loader(branch, { path, signal }).then(
+    // A loader that throws at once fails like one that rejects.
+    void Promise.resolve(callSettling(() => loader(branch, { path, signal }))).then(
       (options) => {
         if (!signal.aborted) settle(key, { status: 'ready', options });
       },

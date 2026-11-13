@@ -138,7 +138,7 @@ function Loading() {
         loadChildren={loadChildren}
         value={value}
         onChange={setValue}
-        description="Each region loads on first opening; Unreachable fails twice, then loads."
+        description="Each region loads on first opening, and a chosen region loads as the panels open; Unreachable fails twice, then loads."
         data-lab-field="loading"
       />
       <Button onPress={() => setValue(['east', 'east-a'])}>Choose East Market</Button>
@@ -165,6 +165,23 @@ function Saved() {
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
       <LabOutput name="Saved">{describe(saved)}</LabOutput>
+    </>
+  );
+}
+
+function OwnedOpen() {
+  const [isOpen, setOpen] = useState(false);
+  return (
+    <>
+      <CascaderField
+        label="Pickup point"
+        options={places}
+        defaultValue={chosen}
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+      />
+      <Button onPress={() => setOpen(true)}>Show the panels</Button>
+      <LabOutput name="Open">{isOpen ? 'open' : 'closed'}</LabOutput>
     </>
   );
 }
@@ -214,6 +231,12 @@ mountLab(
       description="Choose, then restore, undo with Ctrl+Z, clear with Backspace or open the field's menu."
     >
       <Saved />
+    </LabSection>
+    <LabSection
+      title="Owned open state"
+      description="The host opens the panels; each opening starts at the chosen path."
+    >
+      <OwnedOpen />
     </LabSection>
     <LabSection title="Form value" description="A named field submits its leaf's id.">
       <FormValue />

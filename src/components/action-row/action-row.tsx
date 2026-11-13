@@ -1,15 +1,20 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { type FocusTarget, useFocusReturn } from '../../utils/focus-target.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { ActionRowActions, createClearKey } from './action-row-actions.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
 import { type ActionRowAction, orderActions } from './action-verbs.js';
+
+/** An element, by ref or by a function that returns it, that focus moves to. */
+export type ActionRowFocusTarget = FocusTarget;
 
 /** `visible` keeps every action in the row; `menu` collapses those that do not fit into a menu. */
 export type ActionRowOverflow = 'visible' | 'menu';
@@ -39,6 +44,11 @@ export interface ActionRowProps
   selectedCount?: number | undefined;
   /** Clears the selection: the clear button and Escape inside the row call it. */
   onClearSelection?: (() => void) | undefined;
+  /**
+   * Where focus goes when the selection bar leaves (its count reaches zero) while it holds focus,
+   * as after its clear button or Escape; usually the collection the bar acts on.
+   */
+  finalFocus?: ActionRowFocusTarget | undefined;
 }
 
 /** The selected count and the button that clears the selection. */
@@ -74,7 +84,16 @@ function SelectionStatus({
  * places, and custom actions, each with a tooltip. It can be one toolbar, collapse actions into a
  * menu and serve as a collection's selection bar. Renders nothing without actions or lead content.
  */
-export function ActionRow({
+export function ActionRow(props: ActionRowProps) {
+  const { selectedCount, actions, lead } = props;
+  const isSelection = selectedCount !== undefined;
+  if (isSelection && selectedCount <= 0) return null;
+  if (actions.length === 0 && isEmptyNode(lead) && !isSelection) return null;
+  return <ActionRowBar {...props} />;
+}
+
+/** The row ActionRow draws, which hands focus to `finalFocus` when it leaves holding focus. */
+function ActionRowBar({
   actions,
   lead,
   size = 'md',
@@ -82,17 +101,21 @@ export function ActionRow({
   overflow = 'visible',
   selectedCount,
   onClearSelection,
+  finalFocus,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   className,
+  ref,
   ...rest
 }: ActionRowProps) {
   const isSelection = selectedCount !== undefined;
-  if (isSelection && selectedCount <= 0) return null;
-  if (actions.length === 0 && isEmptyNode(lead) && !isSelection) return null;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const rootRef = useMergedRefs(ref, containerRef);
+  useFocusReturn({ containerRef, finalFocus });
   return (
     <div
       {...rest}
+      ref={rootRef}
       {...hooks.root({ className, props: rest, data: { size, overflow, selection: isSelection } })}
       onKeyDown={isSelection ? createClearKey(onClearSelection) : undefined}
     >

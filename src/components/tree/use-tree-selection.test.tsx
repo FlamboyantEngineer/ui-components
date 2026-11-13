@@ -74,6 +74,42 @@ describe('Tree selection', () => {
     expect(requireDefined(onSelectionChange.mock.lastCall)[0]).toEqual(new Set());
   });
 
+  it('UIC-TREE-5.2 selects children that load under a selected branch', () => {
+    const onSelectionChange = vi.fn<(keys: Selection) => void>();
+    const unloaded: Food[] = [
+      { id: 'docs', name: 'Docs' },
+      { id: 'other', name: 'Other' },
+    ];
+    const loaded: Food[] = [
+      {
+        id: 'docs',
+        name: 'Docs',
+        children: [
+          { id: 'a', name: 'A' },
+          { id: 'b', name: 'B' },
+        ],
+      },
+      { id: 'other', name: 'Other' },
+    ];
+    const { result, rerender } = renderHook(
+      ({ items }: { items: Food[] }) =>
+        useTreeSelection({
+          items,
+          getChildren: (item) => item.children,
+          disabledKeys: undefined,
+          selectionMode: 'multiple',
+          selectionPropagation: true,
+          onSelectionChange,
+        }),
+      { initialProps: { items: unloaded } },
+    );
+    act(() => result.current.props.onSelectionChange?.(new Set(['docs'])));
+    rerender({ items: loaded });
+    expect(result.current.props.selectedKeys).toEqual(new Set(['docs', 'a', 'b']));
+    act(() => result.current.props.onSelectionChange?.(new Set(['docs', 'a', 'b', 'other'])));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['docs', 'a', 'b', 'other']));
+  });
+
   it('UIC-TREE-5.2 marks deeply nested partial selections without changing controlled keys', () => {
     let leaf: Food = { id: '19999', name: 'Leaf' };
     for (let index = 19998; index >= 0; index -= 1) {

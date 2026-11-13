@@ -163,6 +163,33 @@ describe('createTimeScale', () => {
     ]);
   });
 
+  it('UIC-SCALES-2.4 ticks hours and minutes across a domain of date-times shorter than days', () => {
+    const hourly = utc({ domain: ['2026-03-01T00:00:00Z', '2026-03-01T23:00:00Z'] });
+    expect(hourly.ticks().map(({ value }) => value)).toEqual(
+      [0, 3, 6, 9, 12, 15, 18, 21].map(
+        (hour) => `2026-03-01T${String(hour).padStart(2, '0')}:00:00.000Z`,
+      ),
+    );
+    const half = utc({ domain: ['2026-03-01T10:07:00Z', '2026-03-01T10:37:00Z'] });
+    expect(half.ticks().map(({ value }) => value)).toEqual(
+      [10, 15, 20, 25, 30, 35].map((minute) => `2026-03-01T10:${minute}:00.000Z`),
+    );
+    expect(half.ticks()[0]?.label).toBe('10:10 AM');
+    expect(half.ticks({ count: 2 }).map(({ value }) => value)).toEqual([
+      '2026-03-01T10:15:00.000Z',
+      '2026-03-01T10:30:00.000Z',
+    ]);
+    expect(half.ticks({ unit: 'minute' })).toHaveLength(31);
+    // Paris runs an hour ahead of UTC: three-hour ticks fall on its own clock.
+    const paris = utc({
+      domain: ['2026-03-01T00:00:00Z', '2026-03-01T23:00:00Z'],
+      timeZone: 'Europe/Paris',
+    });
+    expect(paris.ticks()[0]?.value).toBe('2026-03-01T02:00:00.000Z');
+    // Dates alone keep calendar ticks however short the domain.
+    expect(utc({ domain: ['2026-03-01', '2026-03-02'] }).ticks()).toHaveLength(2);
+  });
+
   it('UIC-SCALES-2.5 labels ticks for the unit and the locale', () => {
     const scale = utc({ domain: ['2026-01-01', '2026-12-31'] });
     expect(scale.format('2026-03-05', 'day')).toBe('Mar 5');

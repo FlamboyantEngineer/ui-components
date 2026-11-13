@@ -137,7 +137,7 @@ describe('StateMachineView', () => {
     expect(state('Cancelled')).toHaveAccessibleDescription(
       'Final state. Comes from Placed (cancel).',
     );
-    rerender(<StateMachineView states={states} transitions={transitions} initialState="paid" />);
+    rerender(<StateMachineView states={states} transitions={transitions} initialKey="paid" />);
     expect(marker('Paid')).toHaveAttribute('data-initial', 'true');
     expect(container.querySelectorAll('.ui-state-machine-view__initial-marker')).toHaveLength(1);
   });
@@ -153,7 +153,7 @@ describe('StateMachineView', () => {
       <StateMachineView
         states={states}
         transitions={transitions}
-        initialState={initial}
+        initialKey={initial}
         currentKey={current}
         defaultView="outline"
       />

@@ -120,21 +120,27 @@ describe('Banner', () => {
     expect(root.tagName).toBe('SPAN');
     expect(root).toHaveAttribute('data-inline', 'true');
     expect(root.querySelector('div')).toBeNull();
-    expect(root).toHaveAttribute('role', 'alert');
-    expect(root).toHaveAttribute('aria-label', 'Connection lost');
+    expect(screen.getByRole('alert', { name: 'Connection lost' })).toHaveClass(
+      'ui-banner__content',
+    );
     expectHooksMatchSpec(container, 'BANNER', { slots: ['content', 'title', 'description'] });
   });
 
   it('UIC-BANNER-2.1 announces danger as an assertive alert and every other tone as a polite status', () => {
     const { container, rerender } = render(<Banner description="Note" />);
     for (const tone of tones) {
-      rerender(<Banner tone={tone} description="Note" />);
-      const root = container.firstElementChild;
+      rerender(
+        <Banner tone={tone} description="Note" actions={<button type="button">Undo</button>} />,
+      );
+      const region = container.querySelector('.ui-banner__content');
       const urgent = tone === 'danger';
-      expect(root).toHaveAttribute('role', urgent ? 'alert' : 'status');
-      expect(root).toHaveAttribute('aria-live', urgent ? 'assertive' : 'polite');
-      expect(root).toHaveAttribute('aria-atomic', 'true');
-      expect(screen.getByRole(urgent ? 'alert' : 'status')).toBe(root);
+      expect(region).toHaveAttribute('role', urgent ? 'alert' : 'status');
+      expect(region).toHaveAttribute('aria-live', urgent ? 'assertive' : 'polite');
+      expect(region).toHaveAttribute('aria-atomic', 'true');
+      expect(screen.getByRole(urgent ? 'alert' : 'status')).toBe(region);
+      // The actions sit beside the live region, so an update never reads their labels.
+      expect(region).not.toContainElement(screen.getByRole('button', { name: 'Undo' }));
+      expect(container.firstElementChild).not.toHaveAttribute('role');
     }
   });
 
@@ -142,7 +148,7 @@ describe('Banner', () => {
     const { container, rerender } = render(
       <Banner id="sync" tone="info" description="Saving changes" />,
     );
-    const region = container.firstElementChild;
+    const region = container.querySelector('.ui-banner__content');
     for (const [tone, text] of [
       ['success', 'All changes saved'],
       ['danger', 'Could not save'],
@@ -150,10 +156,10 @@ describe('Banner', () => {
       ['info', 'Saving changes'],
     ] as const) {
       rerender(<Banner id="sync" tone={tone} description={text} />);
-      expect(container.firstElementChild).toBe(region);
+      expect(container.querySelector('.ui-banner__content')).toBe(region);
       expect(region).toHaveTextContent(text);
       expect(region).toHaveAttribute('role', tone === 'danger' ? 'alert' : 'status');
-      for (const decorative of region?.querySelectorAll('.ui-banner__icon') ?? []) {
+      for (const decorative of container.querySelectorAll('.ui-banner__icon')) {
         expect(decorative).toHaveAttribute('aria-hidden', 'true');
       }
     }
@@ -212,10 +218,10 @@ describe('Banner', () => {
     }
     try {
       rerender(<Notice isOpen />);
-      const root = screen.getByRole('status');
+      const root = screen.getByRole('status').closest('.ui-banner');
       expect(root).not.toHaveAttribute('data-entering');
       rerender(<Notice isOpen={false} />);
-      expect(screen.getByRole('status')).toBe(root);
+      expect(screen.getByRole('status').closest('.ui-banner')).toBe(root);
       expect(root).toHaveAttribute('data-exiting', 'true');
       await act(async () => finishFade());
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -265,7 +271,7 @@ describe('Banner', () => {
         />
       </>,
     );
-    const banner = screen.getByRole('alert');
+    const banner = screen.getByRole('alert').closest('.ui-banner');
     expect(banner).toHaveAttribute('tabindex', '-1');
     expect(banner).toHaveFocus();
 

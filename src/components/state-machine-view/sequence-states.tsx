@@ -154,7 +154,7 @@ function getStateFlags(
   return {
     key: toKeyIdentity(state.id),
     current: state.id === props.currentKey,
-    initial: state.id === (props.initialState ?? props.states[0]?.id),
+    initial: state.id === (props.initialKey ?? props.states[0]?.id),
     final: state.isFinal,
     selected: state.id === props.selectedKey && !state.isDisabled,
     disabled: state.isDisabled,
@@ -213,7 +213,7 @@ function SequenceState({
   moveFocus,
 }: SequenceStateProps) {
   const strings = useUiStrings();
-  const initial = props.initialState ?? props.states[0]?.id;
+  const initial = props.initialKey ?? props.states[0]?.id;
   const flags = getStateFlags(props, state, { index, count: layout.states.length });
   const menu = getContextMenuRequestHandlers(
     props.onStateContextMenu && ((event) => props.onStateContextMenu?.(state.id, state, event)),

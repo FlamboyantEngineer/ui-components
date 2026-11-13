@@ -10,6 +10,7 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
@@ -44,22 +45,82 @@ interface ProjectionEntry {
   readonly owner: string;
 }
 
-type ProjectionState = ReadonlyMap<string, readonly ProjectionEntry[]>;
-
-interface ProjectionActions {
+/**
+ * The slots' content, read and watched one slot at a time: a component that reads one slot never
+ * renders again for another, so it may publish to a second slot what it read from the first.
+ */
+interface ProjectionStore {
+  /** The slot's stack of content, the latest last; the same array until the slot changes. */
+  get(slot: string): readonly ProjectionEntry[] | undefined;
+  /** Calls `listener` whenever the slot's stack changes. */
+  subscribe(slot: string, listener: () => void): () => void;
   /** Adds the owner's content at the top of the slot's stack, or replaces it in place. */
   publish(slot: string, owner: string, content: ReactNode): void;
   withdraw(slot: string, owner: string): void;
 }
 
-// Two contexts: publishing re-renders the outlets, never the components that publish.
-const ProjectionActionsContext = createContext<ProjectionActions | null>(null);
-const ProjectionStateContext = createContext<ProjectionState | null>(null);
+// The store never changes for a provider's lifetime, so publishing re-renders only the slot's readers.
+const ProjectionStoreContext = createContext<ProjectionStore | null>(null);
 
 const noSlots: readonly string[] = [];
 
+/** A store of every slot's content, telling each slot's own listeners when it changes. */
+function createProjectionStore(): ProjectionStore {
+  const entries = new Map<string, readonly ProjectionEntry[]>();
+  const listeners = new Map<string, Set<() => void>>();
+  const update = (slot: string, next: readonly ProjectionEntry[]) => {
+    if (next.length > 0) entries.set(slot, next);
+    else entries.delete(slot);
+    for (const listener of [...(listeners.get(slot) ?? [])]) listener();
+  };
+  return {
+    get: (slot) => entries.get(slot),
+    subscribe(slot, listener) {
+      const slotListeners = listeners.get(slot) ?? new Set();
+      listeners.set(slot, slotListeners);
+      slotListeners.add(listener);
+      return () => {
+        slotListeners.delete(listener);
+        if (slotListeners.size === 0) listeners.delete(slot);
+      };
+    },
+    publish(slot, owner, content) {
+      const current = entries.get(slot) ?? [];
+      const index = current.findIndex((entry) => entry.owner === owner);
+      if (index >= 0 && current[index]?.content === content) return;
+      const next = [...current];
+      if (index >= 0) next[index] = { content, owner };
+      else next.push({ content, owner });
+      update(slot, next);
+    },
+    withdraw(slot, owner) {
+      const current = entries.get(slot);
+      if (!current?.some((entry) => entry.owner === owner)) return;
+      update(
+        slot,
+        current.filter((entry) => entry.owner !== owner),
+      );
+    },
+  };
+}
+
+/** A store whose `owned` slots are its own and whose other slots are the parent's. */
+function routeSlots(
+  owned: ReadonlySet<string>,
+  own: ProjectionStore,
+  parent: ProjectionStore,
+): ProjectionStore {
+  const storeOf = (slot: string) => (owned.has(slot) ? own : parent);
+  return {
+    get: (slot) => storeOf(slot).get(slot),
+    subscribe: (slot, listener) => storeOf(slot).subscribe(slot, listener),
+    publish: (slot, owner, content) => storeOf(slot).publish(slot, owner, content),
+    withdraw: (slot, owner) => storeOf(slot).withdraw(slot, owner),
+  };
+}
+
 /** The slots a provider shares with its parent: every slot but its own, while it has a parent. */
-function useSlotOwnership(slots: readonly string[] | undefined, parent: ProjectionActions | null) {
+function useSlotOwnership(slots: readonly string[] | undefined, parent: ProjectionStore | null) {
   const hasSlots = slots !== undefined;
   const slotList = useStableArray(slots ?? noSlots);
   return useMemo(
@@ -70,63 +131,15 @@ function useSlotOwnership(slots: readonly string[] | undefined, parent: Projecti
 
 /** Owns the named slots that `ProjectionContent` publishes to and `ProjectionOutlet` renders. */
 export function ProjectionProvider({ slots, children }: ProjectionProviderProps) {
-  const parentActions = useContext(ProjectionActionsContext);
-  const parentState = useContext(ProjectionStateContext);
-  const owned = useSlotOwnership(slots, parentActions);
-  const [ownState, setState] = useState<ProjectionState>(() => new Map());
-
-  const publish = useCallback((slot: string, owner: string, content: ReactNode) => {
-    setState((current) => {
-      const entries = current.get(slot) ?? [];
-      const index = entries.findIndex((entry) => entry.owner === owner);
-      if (index >= 0 && entries[index]?.content === content) return current;
-      const nextEntries = [...entries];
-      if (index >= 0) nextEntries[index] = { content, owner };
-      else nextEntries.push({ content, owner });
-      const next = new Map(current);
-      next.set(slot, nextEntries);
-      return next;
-    });
-  }, []);
-
-  const withdraw = useCallback((slot: string, owner: string) => {
-    setState((current) => {
-      const entries = current.get(slot);
-      if (!entries?.some((entry) => entry.owner === owner)) return current;
-      const remaining = entries.filter((entry) => entry.owner !== owner);
-      const next = new Map(current);
-      if (remaining.length > 0) next.set(slot, remaining);
-      else next.delete(slot);
-      return next;
-    });
-  }, []);
-
-  const actions = useMemo<ProjectionActions>(() => {
-    if (!owned || !parentActions) return { publish, withdraw };
-    return {
-      publish: (slot, owner, content) =>
-        (owned.has(slot) ? publish : parentActions.publish)(slot, owner, content),
-      withdraw: (slot, owner) => (owned.has(slot) ? withdraw : parentActions.withdraw)(slot, owner),
-    };
-  }, [owned, parentActions, publish, withdraw]);
-
-  // Outlets of the slots this provider does not own render the parent's content.
-  const state = useMemo<ProjectionState>(() => {
-    if (!owned || !parentState) return ownState;
-    const merged = new Map(parentState);
-    for (const slot of owned) {
-      const entries = ownState.get(slot);
-      if (entries) merged.set(slot, entries);
-      else merged.delete(slot);
-    }
-    return merged;
-  }, [owned, parentState, ownState]);
-
-  return (
-    <ProjectionActionsContext value={actions}>
-      <ProjectionStateContext value={state}>{children}</ProjectionStateContext>
-    </ProjectionActionsContext>
+  const parent = useContext(ProjectionStoreContext);
+  const owned = useSlotOwnership(slots, parent);
+  const [own] = useState(createProjectionStore);
+  // Outlets and content of the slots this provider does not own reach the parent's store.
+  const store = useMemo(
+    () => (owned && parent ? routeSlots(owned, own, parent) : own),
+    [owned, parent, own],
   );
+  return <ProjectionStoreContext value={store}>{children}</ProjectionStoreContext>;
 }
 
 /**
@@ -134,7 +147,7 @@ export function ProjectionProvider({ slots, children }: ProjectionProviderProps)
  * Without a provider above, it renders its children in place.
  */
 export function ProjectionContent({ slot, children }: ProjectionContentProps) {
-  const actions = useContext(ProjectionActionsContext);
+  const actions = useContext(ProjectionStoreContext);
   const owner = useId();
 
   // Leaving the slot (unmount or a new slot name) withdraws the content.
@@ -157,7 +170,13 @@ export function ProjectionContent({ slot, children }: ProjectionContentProps) {
  * by its publisher: state inside it survives the publisher's updates and never passes to another.
  */
 export function useProjectedContent(slot: string): ReactNode {
-  const entry = useContext(ProjectionStateContext)?.get(slot)?.at(-1);
+  const store = useContext(ProjectionStoreContext);
+  const subscribe = useCallback(
+    (listener: () => void) => store?.subscribe(slot, listener) ?? (() => {}),
+    [store, slot],
+  );
+  const read = () => store?.get(slot);
+  const entry = useSyncExternalStore(subscribe, read, read)?.at(-1);
   if (!entry || isEmptyNode(entry.content)) return undefined;
   return <Fragment key={entry.owner}>{entry.content}</Fragment>;
 }

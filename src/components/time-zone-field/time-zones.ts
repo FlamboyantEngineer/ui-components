@@ -26,6 +26,16 @@ export function isTimeZone(id: string): boolean {
   }
 }
 
+/** The generic-name format of a zone, or `null` when the platform cannot read the zone. */
+function createZoneFormat(locale: string, id: string): Intl.DateTimeFormat | null {
+  if (id === '') return null;
+  try {
+    return new Intl.DateTimeFormat(locale, { timeZone: id, timeZoneName: 'longGeneric' });
+  } catch {
+    return null;
+  }
+}
+
 /** Every zone the platform lists, with `UTC`, which some platforms leave out. */
 export function listPlatformZones(): string[] {
   const zones =
@@ -57,8 +67,8 @@ export function describeZones(
 ): TimeZoneEntry[] {
   const entries: TimeZoneEntry[] = [];
   for (const id of new Set(ids)) {
-    if (!isTimeZone(id)) continue;
-    const named = new Intl.DateTimeFormat(locale, { timeZone: id, timeZoneName: 'longGeneric' });
+    const named = createZoneFormat(locale, id);
+    if (!named) continue;
     const name = readPart(named, at ?? new Date(0));
     if (!at) {
       entries.push({ id, offset: null, offsetText: '', name });

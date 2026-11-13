@@ -146,7 +146,7 @@ describe('ChatQuestion requests', () => {
     await answerThree(user);
     await user.click(screen.getByRole('button', { name: 'Submit' }));
     const error = await screen.findByRole('alert');
-    expect(error).toHaveClass('ui-chat-question__error', 'ui-inline-error');
+    expect(error.parentElement).toHaveClass('ui-chat-question__error', 'ui-inline-error');
     expect(error).toHaveTextContent('The agent is busy.');
     expect(card(threeName)).not.toHaveAttribute('data-submitting');
     expect(container.querySelector('.ui-chat-question__progress')).toHaveTextContent(

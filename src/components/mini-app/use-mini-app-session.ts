@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, type SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
 import type { MiniAppState } from './mini-app-document.js';
 import { isMiniAppState } from './mini-app-state.js';
@@ -167,8 +167,39 @@ function useClosePortOnUnmount(portRef: RefObject<MessagePort | null>) {
   );
 }
 
+interface BridgePortOptions {
+  frameRef: RefObject<HTMLIFrameElement | null>;
+  portRef: RefObject<MessagePort | null>;
+  /** Reads what arrives on the port taken. */
+  onPortMessage: RefObject<(port: MessagePort, data: unknown) => void>;
+}
+
 /**
- * The lifecycle of one mini-app frame: it connects to the frame on its first `load`, settles
+ * Takes the port the frame's bridge opens: the first `ui-mini-app:connect` message with a port from
+ * the frame's window. The bridge is the first script of the vetted document, so its message is posted
+ * before any of the mini-app's code runs, and before any document the frame navigates to could post
+ * one; messages from one window arrive in the order they were posted, so a later document never
+ * reaches the channel. It listens from the commit that inserts the frame, before its document runs.
+ */
+function useBridgePort({ frameRef, portRef, onPortMessage }: BridgePortOptions) {
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    const owner = frame?.ownerDocument.defaultView;
+    if (!frame || !owner) return undefined;
+    const onMessage = (event: MessageEvent) => {
+      if (portRef.current || event.source !== frame.contentWindow) return;
+      const port = event.ports[0];
+      if (!port || !isRecord(event.data) || event.data.type !== 'ui-mini-app:connect') return;
+      port.onmessage = (message) => onPortMessage.current(port, message.data);
+      portRef.current = port;
+    };
+    owner.addEventListener('message', onMessage);
+    return () => owner.removeEventListener('message', onMessage);
+  }, [frameRef, portRef, onPortMessage]);
+}
+
+/**
+ * The lifecycle of one mini-app frame: it takes the channel its bridge opens, settles
  * `loading` into `ready` or `error`, follows the height and keyboard focus the frame reports, answers
  * capability calls and closes the channel on unmount.
  */
@@ -223,28 +254,24 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
     }
   };
 
-  const onLoad = (event: SyntheticEvent<HTMLIFrameElement>) => {
+  const onPortMessage = useLatest((port: MessagePort, data: unknown) => {
+    const read = readFrameMessage(data);
+    if (read) receive(port, read);
+  });
+  useBridgePort({ frameRef, portRef, onPortMessage });
+
+  const onLoad = () => {
     if (hasLoadedRef.current) {
       fail({ kind: 'navigation', message: 'The mini-app frame loaded another document.' });
       return;
     }
     hasLoadedRef.current = true;
-    frameRef.current = event.currentTarget;
-    const target = event.currentTarget.contentWindow;
-    if (statusRef.current === 'error' || !target) return;
-    const channel = new MessageChannel();
-    const port = channel.port1;
-    port.onmessage = (message) => {
-      const read = readFrameMessage(message.data);
-      if (read) receive(port, read);
-    };
-    portRef.current = port;
-    // The frame's origin is opaque, so no target origin can name it; only the frame receives the port.
-    target.postMessage({ type: 'ui-mini-app:connect' }, '*', [channel.port2]);
   };
 
   const { readyTimeout } = options;
-  useEffect(() => {
+  // The time runs from the commit that inserts the frame, as the channel does: the bridge can say
+  // `ready` before passive effects run, and a timer started then would give it longer.
+  useLayoutEffect(() => {
     const timer = setTimeout(() => {
       if (statusRef.current !== 'loading') return;
       fail({ kind: 'timeout', message: `The mini-app was not ready within ${readyTimeout} ms.` });
@@ -258,5 +285,5 @@ export function useMiniAppSession(options: MiniAppSessionOptions) {
 
   useClosePortOnUnmount(portRef);
 
-  return { status, error, height, focusVisible, onLoad };
+  return { status, error, height, focusVisible, frameRef, onLoad };
 }

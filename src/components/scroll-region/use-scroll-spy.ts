@@ -1,9 +1,9 @@
 'use client';
 
 import { type RefObject, useEffect, useState } from 'react';
+import { measureScale } from '../../utils/element-scale.js';
 import { observeViewport } from '../../utils/observe-viewport.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
-import { measureScale } from '../../utils/scroll-geometry.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useTargetElement } from '../../utils/use-target-element.js';
 

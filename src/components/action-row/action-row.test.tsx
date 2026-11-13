@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, Profiler } from 'react';
+import { createRef, Profiler, useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
@@ -887,6 +887,29 @@ describe('ActionRow', () => {
       />,
     );
     expect(container.querySelector('.ui-action-row')).toBeNull();
+  });
+
+  it('UIC-ACTION-ROW-3.1 moves focus to finalFocus when the cleared selection bar leaves', async () => {
+    const user = userEvent.setup();
+    function Collection() {
+      const [count, setCount] = useState(2);
+      const listRef = useRef<HTMLUListElement>(null);
+      return (
+        <>
+          <ActionRow
+            selectedCount={count}
+            onClearSelection={() => setCount(0)}
+            finalFocus={listRef}
+            actions={[{ verb: 'delete', onPress: noop }]}
+          />
+          <ul ref={listRef} tabIndex={-1} aria-label="Items" />
+        </>
+      );
+    }
+    render(<Collection />);
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Items' })).toHaveFocus();
   });
 
   it('UIC-ACTION-ROW-3.1 leaves an Escape that an input method composition owns to the input method', async () => {

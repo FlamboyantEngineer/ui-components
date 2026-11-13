@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { InlineTextField, type InlineTextFieldProps } from './inline-text-field.js';
@@ -150,6 +150,36 @@ describe('InlineTextField', () => {
     await user.type(input, '!');
     rerender(<InlineTextField value="A green pear" aria-label="Caption" />);
     expect(input).toHaveValue('A ripe pear!');
+  });
+
+  it('UIC-INLINE-TEXT-FIELD-1.4 takes the stored value after a commit the host normalised', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    function Trimming() {
+      const [value, setValue] = useState('old');
+      return (
+        <>
+          <InlineTextField
+            value={value}
+            aria-label="Caption"
+            onCommit={(text) => {
+              onCommit(text);
+              setValue(text.trim());
+            }}
+          />
+          <button type="button">Elsewhere</button>
+        </>
+      );
+    }
+    render(<Trimming />);
+    const input = screen.getByRole('textbox', { name: 'Caption' });
+    await user.clear(input);
+    await user.type(input, 'new  {Enter}');
+    expect(input).toHaveValue('new');
+    expect(input).not.toHaveAttribute('data-dirty');
+    await user.click(input);
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-INLINE-TEXT-FIELD-1.5 keeps keys and clipboard events from the host around it', async () => {

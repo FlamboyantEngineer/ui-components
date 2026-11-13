@@ -834,7 +834,7 @@ test.describe('PDF Viewer lab', () => {
     await reader.getByRole('button', { name: 'Previous page' }).click();
     await expect(reader.getByRole('textbox', { name: 'Page' })).toHaveValue('2');
     await third.scrollIntoViewIfNeeded();
-    await alert.getByRole('button', { name: 'Retry' }).click();
+    await third.getByRole('button', { name: 'Retry' }).click();
     await expect(third.getByRole('alert')).toHaveCount(0);
     await expect(third).not.toHaveAttribute('data-error');
     await expect(failed).toHaveText('3');

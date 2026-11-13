@@ -31,6 +31,8 @@ interface EditingStrings {
   stepActions: (number: string) => string;
   /** Names a step's drag handle, from its number. */
   moveStep: (number: string) => string;
+  /** Announces a moved step's new place, from its new position and the number of steps. */
+  stepMoved: (position: number, count: number) => string;
   /** Adds a step at the end of a step list. */
   addStep: string;
   /** Inserts a new step before a step. */
@@ -73,6 +75,7 @@ export const editingStrings = defineStrings<EditingStrings>({
   stepLabel: (number) => ({ number }),
   stepActions: (number) => ({ number }),
   moveStep: (number) => ({ number }),
+  stepMoved: (position, count) => ({ position, count }),
   formLayoutDropAtEnd: (container) => ({ container }),
   formLayoutMove: (node) => ({ node }),
   formLayoutRemove: (node) => ({ node }),

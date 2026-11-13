@@ -1,14 +1,14 @@
 // The points of a scatter chart and its two value axes (specs/CHART.md).
 
 import type { Key } from '../../core/props.js';
-import { createLinearScale, type LinearScale } from '../../utils/linear-scale.js';
+import type { LinearScale } from '../../utils/linear-scale.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
-import { withAxisFormat } from './chart-format.js';
 import { toValueIdentity } from './chart-identity.js';
 import {
   type ChartBox,
   type ChartMargin,
   countTicks,
+  createBoundedScale,
   resolvePlotBox,
   roundCoordinate,
 } from './chart-layout.js';
@@ -43,7 +43,6 @@ export interface ScatterGeometryInput {
   maxY?: number | undefined;
   locale: string;
   formatOptions?: Intl.NumberFormatOptions | undefined;
-  formatAxisValue?: ((value: number) => string) | undefined;
 }
 
 /** A drawn observation. */
@@ -99,38 +98,39 @@ function drawnPoints(input: Pick<ScatterGeometryInput, 'series'>) {
 
 /** The y axis, also used to measure tick labels before laying out the points. */
 export function createScatterYScale(input: ScatterGeometryInput, plot: ChartBox): LinearScale {
-  const isFixed = input.minY !== undefined || input.maxY !== undefined;
-  const scale = createLinearScale({
-    domain: findDomain(
-      drawnPoints(input).map((point) => point.y),
-      input.minY,
-      input.maxY,
-    ),
-    range: [plot.bottom, plot.top],
-    nice: !isFixed,
-    clamp: true,
-    tickCount: countTicks(plot.bottom - plot.top, yTickSpacing),
-    locale: input.locale,
-    formatOptions: input.formatOptions,
-  });
-  return withAxisFormat(scale, input.formatAxisValue);
+  return createBoundedScale(
+    {
+      domain: findDomain(
+        drawnPoints(input).map((point) => point.y),
+        input.minY,
+        input.maxY,
+      ),
+      range: [plot.bottom, plot.top],
+      clamp: true,
+      tickCount: countTicks(plot.bottom - plot.top, yTickSpacing),
+      locale: input.locale,
+      formatOptions: input.formatOptions,
+    },
+    { low: input.minY, high: input.maxY },
+  );
 }
 
 function createScatterXScale(input: ScatterGeometryInput, plot: ChartBox): LinearScale {
-  const isFixed = input.minX !== undefined || input.maxX !== undefined;
-  return createLinearScale({
-    domain: findDomain(
-      drawnPoints(input).map((point) => point.x),
-      input.minX,
-      input.maxX,
-    ),
-    range: [plot.left, plot.right],
-    nice: !isFixed,
-    clamp: true,
-    tickCount: countTicks(plot.right - plot.left, xTickSpacing),
-    locale: input.locale,
-    formatOptions: input.formatOptions,
-  });
+  return createBoundedScale(
+    {
+      domain: findDomain(
+        drawnPoints(input).map((point) => point.x),
+        input.minX,
+        input.maxX,
+      ),
+      range: [plot.left, plot.right],
+      clamp: true,
+      tickCount: countTicks(plot.right - plot.left, xTickSpacing),
+      locale: input.locale,
+      formatOptions: input.formatOptions,
+    },
+    { low: input.minX, high: input.maxX },
+  );
 }
 
 /**

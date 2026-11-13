@@ -56,7 +56,10 @@ function describeRingSegment(
   start: number,
   end: number,
 ): string {
-  if (end - start >= 1) {
+  // A whole ring, or a share so near it that both ends round to one point, which one arc cannot draw.
+  const isClosed =
+    end - start > 0.5 && pointAt(centre, outer, start) === pointAt(centre, outer, end);
+  if (end - start >= 1 || isClosed) {
     return (
       describeRingSegment({ centre, outer, inner }, start, start + 0.5) +
       describeRingSegment({ centre, outer, inner }, start + 0.5, end)

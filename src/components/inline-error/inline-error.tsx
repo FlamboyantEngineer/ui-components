@@ -57,18 +57,20 @@ export function InlineError({
   const strings = useUiStrings();
   const glyph = getToneGlyph(tone) ?? ErrorGlyph;
   return (
-    <div
-      {...rest}
-      {...hooks.root({ className, data: { tone, pending: isPending } })}
-      {...toLiveRegion(tone === 'danger' && !isPending)}
-      aria-atomic="true"
-    >
+    <div {...rest} {...hooks.root({ className, data: { tone, pending: isPending } })}>
       {isPending ? (
         <span {...hooks.slot('spinner')} aria-hidden="true" />
       ) : (
         <Icon icon={glyph} className={hooks.slotClass('icon')} />
       )}
-      <div {...hooks.slot('message')}>{children}</div>
+      {/* Only the message is the live region: the retry button and its progress are not read with it. */}
+      <div
+        {...hooks.slot('message')}
+        {...toLiveRegion(tone === 'danger' && !isPending)}
+        aria-atomic="true"
+      >
+        {children}
+      </div>
       {onRetry ? (
         <Button
           variant="secondary"
