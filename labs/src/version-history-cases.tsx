@@ -9,6 +9,7 @@ import {
   type VersionHistoryFilter,
   type VersionHistoryVersion,
 } from '../../src/components/version-history/index.js';
+import type { Key } from '../../src/core/props.js';
 
 /** A fixed clock: 20 April 2026, 10:30 UTC. */
 const getNow = () => new Date('2026-04-20T10:30:00Z');
@@ -267,6 +268,37 @@ export function FoldedHistory() {
       />
       <Output name="expanded" value={expanded.join(', ') || 'none'} />
       <Output name="compared" value={compared} />
+    </div>
+  );
+}
+
+/** Folding the host holds, with outside buttons, beside a history unfolded at first. */
+export function HostFolding() {
+  const [expanded, setExpanded] = useState<ReadonlySet<Key>>(new Set());
+  return (
+    <div data-lab-demo="host-folding">
+      <p>
+        <Button size="sm" variant="secondary" onPress={() => setExpanded(new Set(['f5', 'f2']))}>
+          Unfold every named version
+        </Button>{' '}
+        <Button size="sm" variant="secondary" onPress={() => setExpanded(new Set())}>
+          Fold them all
+        </Button>
+      </p>
+      <VersionHistory
+        aria-label="History folded by the host"
+        versions={folded}
+        getNow={getNow}
+        expandedKeys={expanded}
+        onExpandedChange={setExpanded}
+      />
+      <Output name="host expanded" value={[...expanded].map(String).join(', ') || 'none'} />
+      <VersionHistory
+        aria-label="History unfolded at first"
+        versions={folded}
+        getNow={getNow}
+        defaultExpandedKeys={['f2']}
+      />
     </div>
   );
 }

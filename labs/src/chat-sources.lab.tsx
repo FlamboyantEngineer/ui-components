@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
   ChatCitation,
   type ChatSource,
@@ -56,6 +57,20 @@ function AnswerDemo() {
   );
 }
 
+/** A list the host opens and closes from its own button, hearing the reader's toggle. */
+function HostExpanded() {
+  const [isExpanded, setExpanded] = useState(false);
+  return (
+    <div data-lab-demo="host-expanded" style={{ maxWidth: 560 }}>
+      <Button size="sm" variant="secondary" onPress={() => setExpanded(!isExpanded)}>
+        {isExpanded ? 'Host hides the sources' : 'Host shows the sources'}
+      </Button>
+      <ChatSources sources={sources} isExpanded={isExpanded} onExpandedChange={setExpanded} />
+      <output data-lab-output="expanded">{String(isExpanded)}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -91,6 +106,12 @@ mountLab(
       description="createCitationOverride turns the [n] markers of a Markdown answer into citations of its sources, listed below it behind a collapsed Sources (3) trigger. Unknown numbers and code stay text, as do markers inside a link or a task label, where a citation's link or button cannot nest."
     >
       <AnswerDemo />
+    </LabSection>
+    <LabSection
+      title="Shown by the host"
+      description="isExpanded and onExpandedChange: the host's button opens and closes the list, and the list's own trigger reports back."
+    >
+      <HostExpanded />
     </LabSection>
   </>,
 );

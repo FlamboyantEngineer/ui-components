@@ -74,6 +74,37 @@ function HostedFeed() {
   );
 }
 
+const olderEvents: ActivityFeedItem[] = [
+  { id: 'older', person: jon, action: 'renamed', target: 'Stew', time: '2026-04-12T08:00:00Z' },
+];
+
+/** A feed whose older page fails the first time, reported to the host, then loads on retry. */
+function FailingPage() {
+  const [items, setItems] = useState(nightEvents);
+  const [attempts, setAttempts] = useState(0);
+  const [failed, setFailed] = useState('none');
+  const loadOlder = async () => {
+    setAttempts((count) => count + 1);
+    if (attempts === 0) throw new Error('The server is busy');
+    await Promise.resolve();
+    setItems((list) => [...list, ...olderEvents]);
+  };
+  return (
+    <div data-lab-demo="feed-load-error">
+      <ActivityFeed
+        aria-label="Feed whose next page fails once"
+        items={items}
+        getNow={getNearMidnightNow}
+        onLoadMore={items.length > nightEvents.length ? undefined : loadOlder}
+        onLoadMoreError={(error) =>
+          setFailed(error instanceof Error ? error.message : String(error))
+        }
+      />
+      <LabOutput name="load error">{failed}</LabOutput>
+    </div>
+  );
+}
+
 export function ActivityFeedHostCases() {
   return (
     <div data-lab-family="activity-feed-host-cases">
@@ -88,6 +119,12 @@ export function ActivityFeedHostCases() {
         description="Inside a level 3 section the day headings would be level 4; headingLevel sets them to 3, beside the section's own. While empty, the caller's renderEmptyState draws an action that logs an event."
       >
         <HostedFeed />
+      </LabSection>
+      <LabSection
+        title="A next page that fails"
+        description="The older page fails the first time it is asked for: onLoadMoreError hears the error and the feed offers the page again, which then loads."
+      >
+        <FailingPage />
       </LabSection>
     </div>
   );
