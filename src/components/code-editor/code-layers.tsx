@@ -86,9 +86,10 @@ export const CodeHighlight = memo(function CodeHighlight({
 
 /**
  * Line numbers beside the input. Each row holds a hidden copy of its line, so a wrapped line keeps
- * one number and the rows stay as tall as the lines they number.
+ * one number and the rows stay as tall as the lines they number. It renders again only when its
+ * lines or marks change, not when the caret moves or a hover tip shows.
  */
-export function CodeGutter({
+export const CodeGutter = memo(function CodeGutter({
   lines,
   measurement,
   firstLineNumber,
@@ -113,7 +114,7 @@ export function CodeGutter({
       ))}
     </div>
   );
-}
+});
 
 /** The worst severity on each line that a diagnostic points at. */
 export function severitiesByLine(

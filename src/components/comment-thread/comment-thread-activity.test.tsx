@@ -68,6 +68,45 @@ describe('CommentThread activity', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
+  it('UIC-COMMENT-THREAD-1.13 leaves focus where it is when it reveals a highlighted reply', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <>
+        <button type="button">Elsewhere</button>
+        <CommentThread visibleReplies={1}>{thread(4)}</CommentThread>
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    rerender(
+      <>
+        <button type="button">Elsewhere</button>
+        <CommentThread visibleReplies={1} highlightedId="comment-2">
+          {thread(4)}
+        </CommentThread>
+      </>,
+    );
+    expect(screen.getAllByRole('article')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: 'Elsewhere' })).toHaveFocus();
+  });
+
+  it('UIC-COMMENT-THREAD-1.13 scrolls to a highlighted comment that loads after its id', () => {
+    const scrolled: Element[] = [];
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function scrollIntoView() {
+      scrolled.push(this);
+    };
+    try {
+      const { container, rerender } = render(
+        <CommentThread highlightedId="comment-3">{thread(2)}</CommentThread>,
+      );
+      expect(scrolled).toHaveLength(0);
+      rerender(<CommentThread highlightedId="comment-3">{thread(3)}</CommentThread>);
+      expect(scrolled).toEqual([container.querySelector('[data-highlighted]')]);
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
   it('UIC-COMMENT-THREAD-1.13 highlights the comment with the given id and reveals it', () => {
     const scrolled: Element[] = [];
     const original = Element.prototype.scrollIntoView;

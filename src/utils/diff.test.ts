@@ -145,6 +145,31 @@ describe('diffLines', () => {
     expect(rebuild('delete')).toEqual(after);
   });
 
+  it('UIC-DIFF-1.3 bounds the search on texts under ten thousand lines that differ throughout', () => {
+    // Half the lines change, so a shortest path needs thousands of steps.
+    const before = Array.from({ length: 4999 }, (_, index) =>
+      index % 2 ? `same ${index}` : `a ${index}`,
+    );
+    const after = Array.from({ length: 4999 }, (_, index) =>
+      index % 2 ? `same ${index}` : `b ${index}`,
+    );
+    const started = performance.now();
+    const hunks = diffLines(before.join('\n'), after.join('\n'));
+    expect(performance.now() - started).toBeLessThan(500);
+    const rebuild = (kind: 'insert' | 'delete') =>
+      hunks.filter((hunk) => hunk.kind !== kind).flatMap((hunk) => hunk.lines);
+    expect(rebuild('insert')).toEqual(before);
+    expect(rebuild('delete')).toEqual(after);
+  });
+
+  it('UIC-DIFF-1.3 keeps a large text with many scattered one-line changes exact', () => {
+    const before = Array.from({ length: 50_000 }, (_, index) => `Line ${index}`);
+    const after = before.map((line, index) => (index % 80 === 40 ? `${line} edited` : line));
+    const hunks = diffLines(before.join('\n'), after.join('\n'));
+    expect(hunks.filter((hunk) => hunk.kind === 'delete')).toHaveLength(625);
+    expect(hunks.every((hunk) => hunk.kind === 'equal' || hunk.lines.length === 1)).toBe(true);
+  });
+
   it('UIC-DIFF-1.3 replaces texts with no line in common at once, at any length', () => {
     // The search would take tens of seconds here; texts with nothing in common skip it.
     const lines = 20_000;

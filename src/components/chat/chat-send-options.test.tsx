@@ -42,14 +42,30 @@ describe('Chat sending options', () => {
     expect(within(menu).getByRole('menuitemcheckbox', { name: /^Send with/ })).not.toBeChecked();
   });
 
-  it('UIC-CHAT-3.14 offers steering only with onSendNow and onQueueChange', async () => {
-    const { user } = renderOptions({
+  it('UIC-CHAT-3.14 always offers steering, with no reply running and without onSendNow', async () => {
+    const { user, onSend } = renderOptions({
       showSendOptions: true,
+      isPending: true,
       onSendNow: undefined,
     });
     await user.click(plus()[0] as HTMLElement);
-    expect(screen.queryByRole('menuitemcheckbox', { name: /^Steer/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('menuitemcheckbox', { name: /^Steer automatically/ }));
+    expect(screen.getByRole('menuitemcheckbox', { name: /^Steer automatically/ })).toBeChecked();
     expect(screen.getByRole('menuitemcheckbox', { name: /^Send with/ })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(box());
+    await user.keyboard('Later');
+    await user.keyboard('{Enter}');
+    // Without onSendNow the choice is kept but the message queues as before.
+    expect(onSend).toHaveBeenCalledWith('Later', []);
+  });
+
+  it('UIC-CHAT-3.14 offers steering while no reply runs', async () => {
+    const { user } = renderOptions({ showSendOptions: true, isPending: false });
+    await user.click(plus()[0] as HTMLElement);
+    expect(
+      screen.getByRole('menuitemcheckbox', { name: /^Steer automatically/ }),
+    ).toBeInTheDocument();
   });
 
   it('UIC-CHAT-3.14 UIC-MESSAGE-COMPOSER-5.6 joins the host\'s own "+" menu after its sections', async () => {

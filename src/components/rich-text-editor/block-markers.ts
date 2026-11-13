@@ -1,6 +1,7 @@
 import type { Node as DocNode } from 'prosemirror-model';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import type { FieldSeverity } from '../field/field.js';
+import { readBlockStarts } from './block-starts.js';
 
 /**
  * A finding the host reports about a run of top-level blocks, such as a broken reference its own
@@ -30,10 +31,7 @@ export interface PlacedMarker {
 
 /** The start position of each top-level block, and the document's size after the last. */
 function blockStarts(doc: DocNode): number[] {
-  const starts: number[] = [];
-  doc.forEach((_node, offset) => starts.push(offset));
-  starts.push(doc.content.size);
-  return starts;
+  return [...readBlockStarts(doc), doc.content.size];
 }
 
 /** The markers whose first block is in `doc`, with their blocks clamped to it. */

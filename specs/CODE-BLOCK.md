@@ -50,7 +50,7 @@ Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.s
 
 ### UIC-CODE-BLOCK-2.1 - Copy
 
-The header's `ui-code-block__actions` shall hold a [Copy Button](COPY-BUTTON.md) (`ui-code-block__copy`) that copies the block's value: the code exactly as given, or for a `terminal` block with command lines, its commands without their prompts, one per line. It is named by the provider's `codeBlockCopy` string (`Copy code`), or in a terminal block by `codeBlockCopyCommands` with the number of commands, or `codeBlockCopyOutput` when it holds only output. It announces the copy as Copy Button does.
+The header's `ui-code-block__actions` shall hold a [Copy Button](COPY-BUTTON.md) (`ui-code-block__copy`) that copies the block's value: the code exactly as given, or for a `terminal` block with command lines, its commands without their prompts, one per line, with each command's continuation lines as written. It is named by the provider's `codeBlockCopy` string (`Copy code`), or in a terminal block by `codeBlockCopyCommands` with the number of commands, or `codeBlockCopyOutput` when it holds only output. It announces the copy as Copy Button does.
 
 Implementation: `src/components/code-block/code-block.tsx`, `src/core/strings/code.ts`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
@@ -66,7 +66,7 @@ Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.s
 
 ### UIC-CODE-BLOCK-3.1 - Commands and output
 
-A `terminal` block shall render each line of its code in a `ui-code-block__line` span, joined by line breaks. A line that is the `prompt` (`$` by default), or starts with it and a space, is a command: it publishes `data-kind="command"` and shows the prompt and a space in a `ui-code-block__prompt` span hidden from assistive technology, followed by the command. Every other line is output (`data-kind="output"`), shown as written. `tokenize` does not apply to a terminal block.
+A `terminal` block shall render each line of its code in a `ui-code-block__line` span, joined by line breaks. A line that is the `prompt` (`$` by default), or starts with it and a space, is a command: it publishes `data-kind="command"` and shows the prompt and a space in a `ui-code-block__prompt` span hidden from assistive technology, followed by the command. A line after a command line that ends in a line continuation (an odd number of backslashes) continues that command: it is a command line too, shown as written without a prompt, and counts as part of the command above it; here-documents and open quotes are not followed, so their lines read as output. Every other line is output (`data-kind="output"`), shown as written. `tokenize` does not apply to a terminal block.
 
 Implementation: `src/components/code-block/code-block-content.tsx`, `labs/reference/code-block.css`
 Verification: `src/components/code-block/code-block-content.test.ts`, `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`

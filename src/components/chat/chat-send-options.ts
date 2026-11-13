@@ -12,9 +12,9 @@ import type {
 /** The reader's sending options: steering during a reply, and sending with Ctrl+Enter. */
 export interface ChatSendOptionsProps {
   /**
-   * Offers the reader's sending options in the composer's "+" menu: Steer automatically (with
-   * `onSendNow` and `onQueueChange`) and Send with Ctrl+Enter. Off by default; the options apply
-   * whether or not they are offered.
+   * Offers the reader's sending options in the composer's "+" menu: Steer automatically and Send
+   * with Ctrl+Enter, both always shown. Off by default; the options apply whether or not they are
+   * offered.
    */
   showSendOptions?: boolean | undefined;
   /** Sends a message written during a reply at once through `onSendNow`, instead of queuing it (controlled). */
@@ -108,8 +108,9 @@ export function useChatSendOptions(input: ChatSendOptionsInput) {
       isSelected: withModifier,
       onSelectedChange: setWithModifier,
     };
-    const items = canSteer ? [steerItem, modifierItem] : [modifierItem];
-    return [{ id: 'chat-send-options', title: strings.chatSendOptions, items }];
-  }, [showSendOptions, canSteer, steers, withModifier, setSteers, setWithModifier, strings]);
+    return [
+      { id: 'chat-send-options', title: strings.chatSendOptions, items: [steerItem, modifierItem] },
+    ];
+  }, [showSendOptions, steers, withModifier, setSteers, setWithModifier, strings]);
   return { steers: canSteer && steers, shortcuts: composerShortcuts, menuSections };
 }

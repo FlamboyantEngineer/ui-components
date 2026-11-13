@@ -205,6 +205,27 @@ describe('FormatToolbar', () => {
     expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR');
   });
 
+  it('UIC-RICH-TEXT-EDITOR-6.3 links a bare host as a web address and keeps relative ones', async () => {
+    const { user, value } = renderEditor({
+      defaultValue: note,
+      toolbar: <FormatToolbar />,
+      children: <ViewProbe />,
+    });
+    const linkOf = () => value()?.content?.[0]?.content?.[1]?.marks?.[0]?.attrs?.href;
+    for (const [typed, href] of [
+      ['www.example.org', 'https://www.example.org'],
+      ['/guide#pears', '/guide#pears'],
+      ['mailto:a@example.org', 'mailto:a@example.org'],
+    ] as const) {
+      selectRange(6, 11);
+      await user.click(within(toolbar()).getByRole('button', { name: 'Link' }));
+      const address = screen.getByRole('textbox', { name: 'Link address' });
+      await user.clear(address);
+      await user.type(address, `${typed}{Enter}`);
+      expect(linkOf()).toBe(href);
+    }
+  });
+
   it.each([
     ['an ordinary form', 'plain'],
     ['the library Form', 'library'],

@@ -6,7 +6,7 @@
 
 ### UIC-TEXT-MATCH-1.1 - Normalized terms
 
-`normalizeMatchText` shall lower-case a text, compose each letter with its combining marks (NFC) and turn `/`, `_` and `-` into spaces, so a letter matches whether the text writes it composed or with combining marks. `splitMatchTerms` shall split a query into normalized, non-empty terms on whitespace, and the matching functions normalize the terms they are given the same way. Matching therefore ignores letter case and composition, and `line height` matches both words of `Line-height`.
+`normalizeMatchText` shall lower-case a text, compose each letter with its combining marks (NFC) and turn `/`, `_` and `-` into spaces, so a letter matches whether the text writes it composed or with combining marks; a Hangul syllable written as conjoining jamo composes to that syllable too. `splitMatchTerms` shall split a query into normalized, non-empty terms on whitespace, and the matching functions normalize the terms they are given the same way. Matching therefore ignores letter case and composition, and `line height` matches both words of `Line-height`.
 
 Implementation: `src/components/text-match/match-ranges.ts`
 Verification: `src/components/text-match/text-match.test.tsx`

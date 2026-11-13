@@ -13,6 +13,17 @@ export interface TerminalLine {
   kind: 'command' | 'output';
   /** The line without its prompt. */
   text: string;
+  /**
+   * A command line that continues the command above it, which ended in a line continuation (an
+   * odd number of backslashes): drawn without a prompt and copied as written.
+   */
+  isContinuation?: boolean | undefined;
+}
+
+/** Whether a command's line ends in a line continuation: an odd run of backslashes at its end. */
+function endsInContinuation(text: string): boolean {
+  const run = /\\+$/.exec(text)?.[0].length ?? 0;
+  return run % 2 === 1;
 }
 
 export const codeBlockHooks = createHooks('code-block', [
@@ -30,13 +41,23 @@ export const codeBlockHooks = createHooks('code-block', [
 
 const hooks = codeBlockHooks;
 
-/** Reads terminal lines: a line that is the prompt, or starts with it and a space, is a command. */
+/**
+ * Reads terminal lines: a line that is the prompt, or starts with it and a space, is a command, and
+ * so is each line after a command line ending in a line continuation. Here-documents and open
+ * quotes are not followed: their lines read as output.
+ */
 export function splitTerminalLines(code: string, prompt: string): TerminalLine[] {
-  return code.split('\n').map((line) => {
-    if (line === prompt) return { kind: 'command', text: '' };
-    if (line.startsWith(`${prompt} `))
-      return { kind: 'command', text: line.slice(prompt.length + 1) };
-    return { kind: 'output', text: line };
+  let continues = false;
+  return code.split('\n').map((line): TerminalLine => {
+    const read: TerminalLine = continues
+      ? { kind: 'command', text: line, isContinuation: true }
+      : line === prompt
+        ? { kind: 'command', text: '' }
+        : line.startsWith(`${prompt} `)
+          ? { kind: 'command', text: line.slice(prompt.length + 1) }
+          : { kind: 'output', text: line };
+    continues = read.kind === 'command' && endsInContinuation(read.text);
+    return read;
   });
 }
 
@@ -148,7 +169,7 @@ export function TerminalLines({ lines, prompt, numbered }: TerminalLinesProps) {
       kind={line.kind}
       isBroken={index < lines.length - 1}
     >
-      {line.kind === 'command' ? (
+      {line.kind === 'command' && !line.isContinuation ? (
         <span {...hooks.slot('prompt')} aria-hidden="true">
           {`${prompt} `}
         </span>

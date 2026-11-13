@@ -24,8 +24,13 @@ const wordCharacter = /^[\p{L}\p{N}\p{M}]/u;
 const separators = /[/_-]/g;
 const combiningMarks = /\p{M}/gu;
 const combiningMark = /\p{M}/u;
-/** A character as matching sees it: one code point and the combining marks after it. */
-const characterCluster = /\P{M}\p{M}*|\p{M}+/gsu;
+/**
+ * A character as matching sees it: a Hangul syllable written as conjoining jamo (leading consonant,
+ * vowel and optional trailing consonant, or a syllable and a trailing consonant), which composes
+ * to one syllable; else one code point and the combining marks after it.
+ */
+const characterCluster =
+  /[\u1100-\u1112][\u1161-\u1175][\u11a8-\u11c2]?|[\uac00-\ud7a3][\u11a8-\u11c2]|\P{M}\p{M}*|\p{M}+/gsu;
 /** Text whose clusters are single ASCII characters, which fold by case and separators alone. */
 const asciiText = /^[\0-\x7f]*$/;
 

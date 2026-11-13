@@ -194,6 +194,13 @@ While `isStreaming`, a text `source` that continues the previous one shall not b
 Implementation: `src/components/markdown/parse-streaming-markdown.ts`, `src/components/markdown/parse-markdown.ts`, `src/components/markdown/markdown.tsx`
 Verification: `src/components/markdown/parse-streaming-markdown.test.ts`, `src/components/markdown/markdown-block-cache.test.tsx`
 
+### UIC-MARKDOWN-2.14 - Image policy
+
+`images` shall choose how images show. With `show`, the default, each image is an `<img>` loaded from its source ([UIC-MARKDOWN-2.1](#uic-markdown-21---elements)). With `link`, no image loads: each is a [Link](LINK.md) to its source in the `ui-markdown__image-link` slot, named by its text, or by its source when it has none, with its title as the anchor's `title`, opening an absolute `http` or `https` source in a new tab like other links ([UIC-MARKDOWN-2.3](#uic-markdown-23---links)). Inside another link or a task item's label, where links do not nest, the image is its text in a `<span>` in the same slot. Content from a writer the reader does not trust takes `link`, so opening it reveals nothing to an image's server. A `renderNode` override that draws images comes first under either policy.
+
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
+Verification: `src/components/markdown/markdown-images.test.tsx`
+
 ## UIC-MARKDOWN-3 - Accessibility
 
 ### UIC-MARKDOWN-3.1 - Native semantics
@@ -212,5 +219,6 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 | `ui-markdown__code`       | slot      |        | Inline `<code>`.                            |
 | `ui-markdown__task`       | slot      |        | A task item's `<li>`, around its Checkbox.  |
 | `ui-markdown__image`      | slot      |        | An `<img>`.                                 |
+| `ui-markdown__image-link` | slot      |        | An image drawn as a link, or as its text.   |
 | `data-language`           | attribute |        | On a code block, the language of its fence. |
 | `data-streaming`          | state     | `true` | On the root, while `isStreaming`.           |
