@@ -27,7 +27,7 @@ Verification: `src/components/inline-text-field/inline-text-field.test.tsx`, `e2
 
 ### UIC-INLINE-TEXT-FIELD-1.4 - New values
 
-A new `value` shall replace the draft while the reader has not changed it; a changed draft is kept until it is committed or cancelled.
+A new `value` shall replace the draft while the reader has not changed it; a changed draft is kept until it is committed or cancelled. A draft that still holds the text it last committed takes the new value, so a host that stores the text changed (trimmed, say) shows what it stored, and the field is no longer dirty.
 
 Implementation: `src/components/inline-text-field/inline-text-field.tsx`
 Verification: `src/components/inline-text-field/inline-text-field.test.tsx`

@@ -78,11 +78,32 @@ export function unmaskText(text: string, mask: TextMask): string {
 }
 
 /**
+ * The raw value of a value a host gives: read as raw when it is no longer than the mask's slots and
+ * each character is one its slot accepts, in order, else as formatted text (`unmaskText`). A
+ * literal that a slot also accepts, as `I` in `ID-AAA`, so stays a character of a raw value.
+ */
+export function readMaskValue(value: string, mask: TextMask): string {
+  const characters = [...value];
+  if (characters.length <= mask.size) {
+    const tokens = mask.parts.flatMap((part) => ('token' in part ? [part.token] : []));
+    let raw = '';
+    const isRaw = characters.every((character, index) => {
+      const token = tokens[index];
+      if (!token?.pattern.test(character)) return false;
+      raw += token.transform?.(character) ?? character;
+      return true;
+    });
+    if (isRaw) return raw;
+  }
+  return unmaskText(value, mask);
+}
+
+/**
  * The formatted text of a raw value: its characters in their slots, with each literal written once
  * a slot after it holds a character. Characters past the last slot are dropped.
  */
 export function maskText(raw: string, mask: TextMask): string {
-  const characters = [...unmaskText(raw, mask)];
+  const characters = [...readMaskValue(raw, mask)];
   let text = '';
   let pending = '';
   let filled = 0;

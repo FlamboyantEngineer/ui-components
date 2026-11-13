@@ -640,6 +640,7 @@
   "moveSelectedTo": "選択した項目を{label}へ移動",
   "moveAllTo": "すべてを{label}へ移動",
   "cascaderLoadFailed": "これらのオプションを読み込めませんでした",
+  "cascaderOpensLevel": "さらにオプションを開きます",
   "cascaderPathSeparator": "/",
   "addCard": "カードを追加",
   "noCards": "カードはありません",

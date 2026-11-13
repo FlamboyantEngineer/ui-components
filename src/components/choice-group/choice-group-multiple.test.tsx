@@ -241,6 +241,20 @@ describe('ChoiceGroup', () => {
     expectHooksMatchSpec(container, 'CHOICE-GROUP', { callerAttributes: ['data-test'] });
   });
 
+  it('UIC-CHOICE-GROUP-1.6 puts a choice’s caller data attributes on its root', () => {
+    render(
+      <ChoiceGroup selectionMode="multiple" label="Toppings">
+        <Choice value="basil" data-test="basil">
+          Basil
+        </Choice>
+      </ChoiceGroup>,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Basil' });
+    const choice = box.closest('.ui-choice');
+    expect(choice).toHaveAttribute('data-test', 'basil');
+    expect(choice?.querySelectorAll('[data-test]')).toHaveLength(0);
+  });
+
   it('UIC-CHOICE-GROUP-4.1 UIC-FIELD-1.10 gives its checkboxes the field size', () => {
     const { container } = render(
       <ChoiceGroup selectionMode="multiple" label="Toppings" size="sm" selectAllLabel="All">

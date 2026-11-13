@@ -98,4 +98,29 @@ describe('TimeZoneField', () => {
     );
     expect(screen.getByText('Not a known time zone')).toBeInTheDocument();
   });
+
+  it('UIC-TIME-ZONE-FIELD-1.2 describes the listed zones once while the chosen zone changes', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <TimeZoneField label="Zone" zones={zones} referenceDate={july} value="UTC" />,
+    );
+    await user.click(trigger());
+    const formats = vi.spyOn(Intl, 'DateTimeFormat');
+    // Formats that describe a zone; checking that a value is a zone makes a plain one.
+    const described = () =>
+      formats.mock.calls.filter(([, options]) => options?.timeZoneName !== undefined).length;
+    try {
+      rerender(
+        <TimeZoneField label="Zone" zones={zones} referenceDate={july} value="Asia/Kolkata" />,
+      );
+      expect(described()).toBe(0);
+      // A chosen zone outside the list is described alone.
+      rerender(
+        <TimeZoneField label="Zone" zones={zones} referenceDate={july} value="Europe/Paris" />,
+      );
+      expect(described()).toBe(3);
+    } finally {
+      formats.mockRestore();
+    }
+  });
 });

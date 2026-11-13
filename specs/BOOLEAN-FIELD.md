@@ -27,7 +27,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`
 
 ### UIC-BOOLEAN-FIELD-1.4 - Accessibility
 
-The checkbox and the switch shall be named by the field label, which is a native label for their input, so pressing the label text works the control as pressing the box does. The segmented choice is a radio group named by the label. Each control is described by the field's description, decoration and message, and reports required, invalid, read-only and disabled states.
+The checkbox and the switch shall be named by the field label, which is a native label for their input, so pressing the label text works the control as pressing the box does. The segmented choice is a radio group named by the label. Each control is described by the field's description, decoration and message, and reports required, invalid, read-only and disabled states. A switch reports only on and off, so while unset its caption (`unsetLabel`) also describes it, before the field's description.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`

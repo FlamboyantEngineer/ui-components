@@ -2,7 +2,7 @@
 
 import { type ReactNode, type Ref, useContext, useId } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import {
   CheckboxGroupStateContext,
@@ -60,7 +60,9 @@ export function Choice({ ref, children, description, className, ...rest }: Choic
         )}
       </RadioField>
     );
-  const { render, ...props } = rest;
+  // The caller's `data-*` attributes go on the root, as in single mode, not on the checkbox.
+  const { render, ...withData } = rest;
+  const [, props] = splitDataAttributes(withData);
   const state: ChoiceRenderState = {
     ...settings,
     isSelected: group?.value.includes(rest.value) ?? false,
@@ -76,6 +78,7 @@ export function Choice({ ref, children, description, className, ...rest }: Choic
       ref: rootRef,
       ...hooks.root({
         className,
+        props: rest,
         data: {
           selected: state.isSelected,
           disabled: state.isDisabled,

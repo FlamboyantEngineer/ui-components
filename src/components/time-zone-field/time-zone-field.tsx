@@ -65,7 +65,8 @@ function toOption(entry: TimeZoneEntry): SelectFieldOption {
 /**
  * The options: until the list first opens only the chosen zone, so a field that stays closed
  * describes one zone; then every offered zone, described at the reference instant (read to the
- * quarter hour, which every offset change falls on) and in offset order.
+ * quarter hour, which every offset change falls on) and in offset order. The offered zones are
+ * described once for the list, and a change of the chosen zone describes that zone alone.
  */
 function useZoneOptions(props: TimeZoneFieldProps, isOpened: boolean): SelectFieldOption[] {
   const { locale } = useLocale();
@@ -74,12 +75,17 @@ function useZoneOptions(props: TimeZoneFieldProps, isOpened: boolean): SelectFie
   const instant = at ? Math.floor(at.getTime() / quarterHour) * quarterHour : null;
   const chosen = props.value ?? props.defaultValue ?? null;
   const { zones } = props;
+  const offered = useMemo(() => {
+    const ids = isOpened ? (zones ?? listPlatformZones()) : [];
+    return describeZones(ids, locale, instant === null ? null : new Date(instant));
+  }, [isOpened, zones, locale, instant]);
   return useMemo(() => {
-    const offered = isOpened ? (zones ?? listPlatformZones()) : [];
-    const ids = chosen !== null && isTimeZone(chosen) ? [...offered, chosen] : offered;
-    const reference = instant === null ? null : new Date(instant);
-    return sortZones(describeZones(ids, locale, reference)).map(toOption);
-  }, [isOpened, zones, chosen, locale, instant]);
+    const isOffered = chosen === null || offered.some((entry) => entry.id === chosen);
+    const extra = isOffered
+      ? []
+      : describeZones([chosen], locale, instant === null ? null : new Date(instant));
+    return sortZones([...offered, ...extra]).map(toOption);
+  }, [offered, chosen, locale, instant]);
 }
 
 /**

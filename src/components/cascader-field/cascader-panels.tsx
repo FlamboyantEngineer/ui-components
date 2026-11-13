@@ -4,7 +4,8 @@ import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { ChevronRightGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { ListBox, ListBoxItem, useLocale } from '../../primitives/index.js';
+import { ListBox, ListBoxItem, Text, useLocale } from '../../primitives/index.js';
+import { containsFocus } from '../../utils/composed-focus.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -46,6 +47,7 @@ interface CascaderPanelsProps {
 }
 
 function CascaderOptionRow({ id, option }: { id: string; option: CascaderOption }) {
+  const strings = useUiStrings();
   const isBranch = isCascaderBranch(option);
   return (
     <ListBoxItem
@@ -71,7 +73,13 @@ function CascaderOptionRow({ id, option }: { id: string; option: CascaderOption 
         </>
       )}
       {isBranch ? (
-        <Glyph icon={ChevronRightGlyph} className={hooks.slotClass('branch-icon')} />
+        <>
+          <Glyph icon={ChevronRightGlyph} className={hooks.slotClass('branch-icon')} />
+          {/* Describes the option, outside its name, as one that opens a level of its own. */}
+          <Text slot="description" hidden>
+            {strings.cascaderOpensLevel}
+          </Text>
+        </>
       ) : null}
     </ListBoxItem>
   );
@@ -155,9 +163,17 @@ function useRequestedFocus(focus: CascaderFocusRequest | null, onFocused: () => 
     const target =
       options.find((option) => option.dataset.key === wanted) ??
       options.find((option) => option.getAttribute('aria-disabled') !== 'true');
-    if (!target) return;
-    target.focus();
-    onFocused();
+    if (target) {
+      target.focus();
+      onFocused();
+      return;
+    }
+    // A level still loading keeps the request; focus waits on the branch that opens it.
+    const panels = panelsRef.current;
+    const waiting = panels?.querySelector<HTMLElement>(
+      `[data-level="${String(focus.level - 1)}"] [role="option"][aria-selected="true"]`,
+    );
+    if (waiting && !containsFocus(panels)) waiting.focus();
   });
   return panelsRef;
 }
@@ -189,10 +205,13 @@ export function CascaderPanels(props: CascaderPanelsProps) {
       ref={panelsRef}
       {...hooks.slot('panels')}
       onKeyDown={onKeyDown}
-      // An option taking focus settles the request, so a later render never pulls focus back. A
-      // listbox focuses itself first while it mounts empty, and keeps its request until its items.
+      // An option of the requested level taking focus settles the request, so a later render never
+      // pulls focus back. A listbox focuses itself first while it mounts empty, and keeps its
+      // request until its items; a branch holding focus while its level loads keeps it too.
       onFocus={(event) => {
-        if (props.focus && (event.target as Element).getAttribute('role') === 'option') {
+        const target = event.target as Element;
+        const level = Number(target.closest('[data-level]')?.getAttribute('data-level'));
+        if (props.focus?.level === level && target.getAttribute('role') === 'option') {
           props.onFocused();
         }
       }}

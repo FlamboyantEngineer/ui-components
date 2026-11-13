@@ -15,7 +15,7 @@ import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { FieldFormValue, type FieldIssues } from '../field/field.js';
+import { FieldFormValue, type FieldIssues, useScopedDisabled } from '../field/field.js';
 import {
   TextField,
   type TextFieldControlProps,
@@ -30,6 +30,7 @@ import {
   maskText,
   type MaskToken,
   parseTextMask,
+  readMaskValue,
   type TextMask,
   unmaskText,
 } from './text-mask.js';
@@ -171,12 +172,14 @@ export function MaskedTextField({
 }: MaskedTextFieldProps) {
   const strings = useUiStrings();
   const mask = useMemo(() => parseTextMask(pattern, tokens), [pattern, tokens]);
+  // Typed text is formatted; a value the host gives may be raw or formatted.
   const toRaw = (text: string) => unmaskText(text, mask);
-  const toText = (raw: string | undefined) =>
-    raw === undefined ? undefined : maskText(toRaw(raw), mask);
+  const readValue = (given: string) => readMaskValue(given, mask);
+  const toText = (given: string | undefined) =>
+    given === undefined ? undefined : maskText(readValue(given), mask);
   const [raw, setRaw] = useControllableState(
-    value === undefined ? undefined : toRaw(value),
-    toRaw(defaultValue ?? ''),
+    value === undefined ? undefined : readValue(value),
+    readValue(defaultValue ?? ''),
     onChange,
   );
   const input = useRef<HTMLInputElement | null>(null);
@@ -191,6 +194,8 @@ export function MaskedTextField({
     return validate?.(characters);
   };
   const deleteKey = useLiteralDeletion({ input, mask, setRaw });
+  // The hidden raw value follows a disabled scope (a fieldset, a form section) as the field does.
+  const isScopeDisabled = useScopedDisabled(props.isDisabled);
   return (
     <>
       <TextField
@@ -214,12 +219,7 @@ export function MaskedTextField({
         }}
       />
       {formValue === 'raw' ? (
-        <FieldFormValue
-          name={name}
-          value={raw}
-          isDisabled={props.isDisabled ?? false}
-          form={props.form}
-        />
+        <FieldFormValue name={name} value={raw} isDisabled={isScopeDisabled} form={props.form} />
       ) : null}
     </>
   );

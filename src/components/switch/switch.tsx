@@ -22,7 +22,10 @@ export interface SwitchProps extends BaseProps, RefProps<HTMLLabelElement>, Aria
   form?: string | undefined;
   /** The value submitted while on. Defaults to `on`. */
   value?: string | undefined;
-  /** Draws neither state: the thumb sits in the middle, as for an unset value. */
+  /**
+   * Draws neither state: the thumb sits in the middle, as for an unset value. Visual only: the input
+   * still reports off, so the owner names or describes the third state itself.
+   */
   isIndeterminate?: boolean | undefined;
   isRequired?: boolean | undefined;
   isInvalid?: boolean | undefined;

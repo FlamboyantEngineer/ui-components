@@ -1,10 +1,13 @@
 'use client';
 
-import { Fragment, useId, useState } from 'react';
+import { Fragment, useEffect, useId, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button as AriaButton, Dialog, DialogTrigger } from '../../primitives/index.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
+import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   Field,
   type FieldControlProps,
@@ -23,6 +26,7 @@ import {
   isCascaderBranch,
   isSameCascaderPath,
   resolveCascaderPath,
+  toCascaderPathKey,
 } from './cascader-options.js';
 import {
   type CascaderFocusRequest,
@@ -38,6 +42,12 @@ export interface CascaderFieldProps extends FieldInputProps<CascaderValue> {
   loadChildren?: CascaderLoader | undefined;
   /** Shown while nothing is chosen. Defaults to the provider's `selectPlaceholder`. */
   placeholder?: string | undefined;
+  /** Whether the panels are open, for an owner that controls it. */
+  isOpen?: boolean | undefined;
+  /** Whether the panels start open, when the field owns its open state. */
+  defaultOpen?: boolean | undefined;
+  /** Called when the panels open or close. */
+  onOpenChange?: ((isOpen: boolean) => void) | undefined;
 }
 
 /** The panels of the active path: the top level, then the children of each active branch. */
@@ -80,28 +90,73 @@ function buildPanels({
  * The open state and the active path while the panels are open: opening starts the path at the
  * chosen value and asks to focus its deepest option; it opens only while the field is editable.
  */
-function useCascaderNavigation(state: FieldState<CascaderValue>) {
-  const [isOpen, setOpen] = useState(false);
+function useCascaderNavigation(
+  state: FieldState<CascaderValue>,
+  props: Pick<CascaderFieldProps, 'isOpen' | 'defaultOpen' | 'onOpenChange'>,
+) {
+  const isEditable = !state.isReadOnly && !state.isDisabled;
+  const [isOpen, setOpen] = useControllableState(
+    props.isOpen,
+    Boolean(props.defaultOpen),
+    props.onOpenChange,
+  );
   const [active, setActive] = useState<readonly Key[]>([]);
   const [focus, setFocus] = useState<CascaderFocusRequest | null>(null);
-  const isEditable = !state.isReadOnly && !state.isDisabled;
-  if (isOpen && !isEditable) setOpen(false);
+  // Each opening, by a press or by an owner of the open state, starts again at the chosen value.
+  const isShown = isOpen && isEditable;
+  const [wasShown, setWasShown] = useState(false);
+  if (isShown !== wasShown) {
+    setWasShown(isShown);
+    if (isShown) {
+      const path = state.value ?? [];
+      setActive(path);
+      setFocus(focusOnPath(path));
+    }
+  }
+  useCloseWhenLocked(isOpen, !isEditable, () => setOpen(false));
   return {
-    isOpen,
+    isOpen: isShown,
     active,
     focus,
     setActive,
     setFocus,
     changeOpen: (next: boolean) => {
-      if (next && !isEditable) return;
-      if (next) {
-        const path = state.value ?? [];
-        setActive(path);
-        setFocus({ level: Math.max(0, path.length - 1), key: path.at(-1) ?? null });
-      }
-      setOpen(next);
+      if (!next || isEditable) setOpen(next);
     },
   };
+}
+
+/** Focus on a path's deepest option, or on the first top-level option of an empty path. */
+function focusOnPath(path: readonly Key[]): CascaderFocusRequest {
+  return { level: Math.max(0, path.length - 1), key: path.at(-1) ?? null };
+}
+
+/**
+ * The deepest option of the active path when it is a branch whose children are neither given nor
+ * loading, loaded or failed: a path opened from the saved value loads it as a press would.
+ */
+function findUnloadedBranch(
+  trail: readonly CascaderOption[],
+  options: { getChildren: CascaderChildren; loads: ReturnType<typeof useCascaderLoads> },
+): readonly CascaderOption[] | null {
+  const branch = trail.at(-1);
+  if (!branch || !isCascaderBranch(branch) || !options.loads.hasLoader) return null;
+  if (options.getChildren(trail) || options.loads.read(trail)) return null;
+  return trail;
+}
+
+/** Loads the unloaded branch at the end of the active path while the panels are open. */
+function useLoadOnOpen(
+  trail: readonly CascaderOption[] | null,
+  loads: ReturnType<typeof useCascaderLoads>,
+) {
+  const key = trail ? toCascaderPathKey(trail.map((option) => option.id)) : null;
+  const load = useLatest(() => {
+    if (trail) loads.load(trail);
+  });
+  useEffect(() => {
+    if (key !== null) load.current();
+  }, [key, load]);
 }
 
 /** Everything the field draws: its state, the loaded children, the panels and their actions. */
@@ -113,7 +168,7 @@ function useCascaderField(props: CascaderFieldProps) {
     isEqual: isSameCascaderPath,
   });
   const loads = useCascaderLoads(rest.loadChildren);
-  const navigation = useCascaderNavigation(state);
+  const navigation = useCascaderNavigation(state, rest);
   const getChildren: CascaderChildren = (path) => {
     const branch = path.at(-1);
     if (branch?.children) return branch.children;
@@ -123,6 +178,10 @@ function useCascaderField(props: CascaderFieldProps) {
   const { active, setActive, setFocus } = navigation;
   const trailOf = (path: readonly Key[]) =>
     resolveCascaderPath(rest.options, { path, getChildren });
+  useLoadOnOpen(
+    navigation.isOpen ? findUnloadedBranch(trailOf(active), { getChildren, loads }) : null,
+    loads,
+  );
   return {
     state,
     field,

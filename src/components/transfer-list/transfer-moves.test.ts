@@ -4,6 +4,7 @@ import {
   canStepChosenKeys,
   dropChosenKeys,
   stepChosenKeys,
+  stepShownKeys,
 } from './transfer-moves.js';
 
 describe('addChosenKeys', () => {
@@ -86,5 +87,33 @@ describe('stepChosenKeys', () => {
         );
       }
     }
+  });
+});
+
+describe('stepShownKeys', () => {
+  it('UIC-TRANSFER-LIST-2.4 steps among the shown keys and keeps hidden keys in place', () => {
+    const order = ['a', 'x', 'b', 'y', 'c'];
+    const shown = ['a', 'b', 'c'];
+    expect(stepShownKeys(order, { shown, selected: new Set(['b']), step: -1 })).toEqual([
+      'b',
+      'x',
+      'a',
+      'y',
+      'c',
+    ]);
+    expect(stepShownKeys(order, { shown, selected: new Set(['b']), step: 1 })).toEqual([
+      'a',
+      'x',
+      'c',
+      'y',
+      'b',
+    ]);
+    expect(stepShownKeys(order, { shown: order, selected: new Set(['b']), step: -1 })).toEqual([
+      'a',
+      'b',
+      'x',
+      'y',
+      'c',
+    ]);
   });
 });

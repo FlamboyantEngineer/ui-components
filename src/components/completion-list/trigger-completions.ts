@@ -12,6 +12,11 @@ export interface CompletionTrigger {
   getCompletions: (query: string) => readonly Completion[] | Promise<readonly Completion[]>;
   /** Lets the query hold spaces, as a person's full name does. */
   allowsSpaces?: boolean | undefined;
+  /**
+   * With `allowsSpaces`, the most words a query holds (3 by default): typing on past them, as after
+   * a completed name, asks for nothing more.
+   */
+  maxWords?: number | undefined;
 }
 
 interface TriggerMatch {
@@ -23,9 +28,14 @@ interface TriggerMatch {
 
 const spacePattern = /\s/;
 
+const defaultMaxWords = 3;
+
 function isQuery(query: string, trigger: CompletionTrigger): boolean {
   if (query.startsWith(' ')) return false;
-  return trigger.allowsSpaces ? !query.includes('\n') : !spacePattern.test(query);
+  if (!trigger.allowsSpaces) return !spacePattern.test(query);
+  // A space after the last word starts another, so `Ann Lee Ray ` already holds four.
+  const words = query.split(/\s+/u).length;
+  return !query.includes('\n') && words <= (trigger.maxWords ?? defaultMaxWords);
 }
 
 /** Whether a trigger character at `at` starts a query: at the start or after white space. */

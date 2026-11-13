@@ -71,7 +71,7 @@ Verification: `src/components/completion-list/text-completions.test.tsx`, `e2e/t
 
 ### UIC-COMPLETION-LIST-2.5 - Trigger characters
 
-`createTriggerCompletions(triggers)` shall return a source that, when a trigger's `character` sits at the start of the text or after white space, on the caret's line, and the text from it to the caret is a query (no white space, or with `allowsSpaces` no line break and no leading space), asks that trigger's `getCompletions(query)`, at once or as a promise, and answers its completions as given (not filtered again), replacing the trigger character and its query. Elsewhere it answers nothing, so `alice@example.com` opens no list.
+`createTriggerCompletions(triggers)` shall return a source that, when a trigger's `character` sits at the start of the text or after white space, on the caret's line, and the text from it to the caret is a query (no white space, or with `allowsSpaces` no line break, no leading space and at most `maxWords` words, three by default, a space after the last word starting another), asks that trigger's `getCompletions(query)`, at once or as a promise, and answers its completions as given (not filtered again), replacing the trigger character and its query. Elsewhere it answers nothing, so `alice@example.com` opens no list.
 
 Implementation: `src/components/completion-list/trigger-completions.ts`
 Verification: `src/components/completion-list/trigger-completions.test.ts`, `e2e/completion-list.spec.ts`

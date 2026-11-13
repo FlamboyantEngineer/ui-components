@@ -20,7 +20,7 @@ Verification: `src/components/snippet-field/snippet-request.test.ts`, `src/compo
 
 ### UIC-SNIPPET-FIELD-1.3 - Value
 
-The value shall be `{ source, lines, code, language }` or `null`, following the field's value contract (`value`/`defaultValue`/`committedValue`, `onChange`, `onCommit`, required and dirty state, UIC-FIELD-1). Typing in the source and line inputs edits a draft request only; the value changes only through Apply ([UIC-SNIPPET-FIELD-2.2](#uic-snippet-field-22---apply-and-cancel)) and the field's own restore, undo and menu actions. A new value from the caller starts the draft again from it.
+The value shall be `{ source, lines, code, language }` or `null`, following the field's value contract (`value`/`defaultValue`/`committedValue`, `onChange`, `onCommit`, required and dirty state, UIC-FIELD-1). Typing in the source and line inputs edits a draft request only; the value changes only through Apply ([UIC-SNIPPET-FIELD-2.2](#uic-snippet-field-22---apply-and-cancel)) and the field's own restore, undo and menu actions. A new value from the caller starts the draft again from it; values are compared by structure, so a caller that passes an equal value inline on each render keeps the draft.
 
 Implementation: `src/components/snippet-field/snippet-field.tsx`
 Verification: `src/components/snippet-field/snippet-field.test.tsx`
@@ -29,7 +29,7 @@ Verification: `src/components/snippet-field/snippet-field.test.tsx`
 
 ### UIC-SNIPPET-FIELD-2.1 - Loading
 
-Preview shall call `loadSnippet({ source, lines }, { signal })`, with the source trimmed. The loader resolves `{ ok: true, code, language }` or `{ ok: false, message }`; a rejection reports its error's message. While it loads, the preview panel (`ui-snippet-field__preview`) shows the provider string `snippetLoading` in its status (`ui-snippet-field__status`, `role="status"`); a failure shows the message there. The panel and the root publish `data-status` (`loading`, `ready`, `error`). Each preview aborts the signal of the one before it, and so do Cancel, editing the source or lines, and unmounting: an answer for an aborted or replaced request never shows. A failed preview leaves the saved snippet as it was.
+Preview shall call `loadSnippet({ source, lines }, { signal })`, with the source trimmed. The loader resolves `{ ok: true, code, language }` or `{ ok: false, message }`; a rejection, or a loader that throws at once, reports its error's message. While it loads, the preview panel (`ui-snippet-field__preview`) shows the provider string `snippetLoading` in its status (`ui-snippet-field__status`, `role="status"`); a failure shows the message there. The panel and the root publish `data-status` (`loading`, `ready`, `error`). Each preview aborts the signal of the one before it, and so do Cancel, editing the source or lines, and unmounting: an answer for an aborted or replaced request never shows. A failed preview leaves the saved snippet as it was.
 
 Implementation: `src/components/snippet-field/use-snippet-preview.ts`, `src/components/snippet-field/snippet-field.tsx`
 Verification: `src/components/snippet-field/snippet-field.test.tsx`, `e2e/snippet-field.spec.ts`

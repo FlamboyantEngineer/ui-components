@@ -256,6 +256,27 @@ describe('TransferList', () => {
     expect(onChange).toHaveBeenLastCalledWith(['lisbon', 'quito']);
   });
 
+  it('UIC-TRANSFER-LIST-2.4 steps over the rows the chosen side shows while it filters', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <TransferList
+        aria-label="Cities"
+        items={cities}
+        defaultValue={['lisbon', 'oslo', 'lima']}
+        onChange={onChange}
+        reorderable
+      />,
+    );
+    await user.type(screen.getByRole('searchbox', { name: 'Filter chosen' }), 'li');
+    expect(rows('Chosen')).toEqual(['Lisbon', 'Lima']);
+    await user.click(within(side('Chosen')).getByRole('row', { name: 'Lima' }));
+    await user.click(screen.getByRole('button', { name: 'Move up' }));
+    expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo', 'lisbon']);
+    expect(rows('Chosen')).toEqual(['Lima', 'Lisbon']);
+    expect(screen.getByRole('button', { name: 'Move up' })).toBeDisabled();
+  });
+
   it('UIC-TRANSFER-LIST-2.4 reorders the chosen side with move up and move down', async () => {
     const user = userEvent.setup();
     const { container } = render(

@@ -13,7 +13,7 @@ Verification: `src/components/masked-text-field/text-mask.test.ts`, `src/compone
 
 ### UIC-MASKED-TEXT-FIELD-1.2 - Raw value and formatted text
 
-The value shall be the raw characters, in slot order and after each token's transform, without any literal: `5551234567` for `(555) 123-4567`. `value`, `defaultValue`, `committedValue`, `onChange`, `onCommit` and `validate` all take and give raw values. The input shows the formatted text: each character in its slot, and each literal written once a slot after it is filled, so a partial value never ends in a separator (`(555`, then `(555) 1`). Reading a text through the mask keeps, character by character, the literal at its place and each character the next slot accepts, and drops the rest; characters past the last slot are dropped. A value the host gives is read the same way, so a raw or a formatted value shows alike and the host's value is kept as given until an edit.
+The value shall be the raw characters, in slot order and after each token's transform, without any literal: `5551234567` for `(555) 123-4567`. `value`, `defaultValue`, `committedValue`, `onChange`, `onCommit` and `validate` all take and give raw values. The input shows the formatted text: each character in its slot, and each literal written once a slot after it is filled, so a partial value never ends in a separator (`(555`, then `(555) 1`). Reading a text through the mask keeps, character by character, the literal at its place and each character the next slot accepts, and drops the rest; characters past the last slot are dropped. A value the host gives (`value`, `defaultValue`, `committedValue`) is read as raw first: when it is no longer than the mask's slots and each character is one its slot accepts, in order, it is the raw value, else it is read through the mask as typed text. So a raw or a formatted value shows alike, also when a literal is a character a slot accepts (`ICE` under `ID-AAA` shows `ID-ICE`), and the host's value is kept as given until an edit.
 
 Implementation: `src/components/masked-text-field/masked-text-field.tsx`, `src/components/masked-text-field/text-mask.ts`
 Verification: `src/components/masked-text-field/text-mask.test.ts`, `src/components/masked-text-field/masked-text-field.test.tsx`
@@ -27,7 +27,7 @@ Verification: `src/components/masked-text-field/text-mask.test.ts`, `src/compone
 
 ### UIC-MASKED-TEXT-FIELD-1.4 - Form value
 
-With `name`, the field shall submit the raw value (`formValue="raw"`, the default) through a hidden input beside the field, or the formatted text (`formValue="formatted"`) from the input itself. A disabled field submits nothing.
+With `name`, the field shall submit the raw value (`formValue="raw"`, the default) through a hidden input beside the field, or the formatted text (`formValue="formatted"`) from the input itself. A disabled field submits nothing, nor does one inside a disabled fieldset or form scope.
 
 Implementation: `src/components/masked-text-field/masked-text-field.tsx`
 Verification: `src/components/masked-text-field/masked-text-field.test.tsx`, `e2e/masked-text-field.spec.ts`

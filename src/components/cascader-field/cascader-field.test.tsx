@@ -187,6 +187,104 @@ describe('CascaderField', () => {
     expect(calls).toHaveLength(3);
   });
 
+  it('UIC-CASCADER-FIELD-2.1 UIC-CASCADER-FIELD-3.1 loads the saved path’s branch when it opens', async () => {
+    const user = userEvent.setup();
+    const { loadChildren, calls } = createLoader();
+    const remote: CascaderOption[] = [
+      { id: 'east', label: 'East', hasChildren: true },
+      { id: 'west', label: 'West' },
+    ];
+    render(
+      <CascaderField
+        label="Place"
+        options={remote}
+        loadChildren={loadChildren}
+        defaultValue={['east', 'mesa']}
+      />,
+    );
+    await user.click(trigger());
+    expect(calls.map((call) => call.option.id)).toEqual(['east']);
+    expect(screen.getByRole('status')).toHaveTextContent('Loading');
+    // Focus waits on the branch until its level arrives, then moves onto the saved leaf.
+    expect(screen.getByRole('option', { name: 'East' })).toHaveFocus();
+    await act(async () =>
+      calls[0]?.resolve([
+        { id: 'dune', label: 'Dune Field' },
+        { id: 'mesa', label: 'Mesa' },
+      ]),
+    );
+    expect(within(panel('East')).getByRole('option', { name: 'Mesa' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await user.click(trigger());
+    expect(calls).toHaveLength(1);
+  });
+
+  it('UIC-CASCADER-FIELD-3.1 fails a load whose loader throws at once', async () => {
+    const user = userEvent.setup();
+    const loadChildren: CascaderLoader = () => {
+      throw new Error('No loader yet');
+    };
+    render(
+      <CascaderField
+        label="Place"
+        options={[{ id: 'east', label: 'East', hasChildren: true }]}
+        loadChildren={loadChildren}
+      />,
+    );
+    await user.click(trigger());
+    await user.keyboard('{ArrowRight}');
+    expect(await screen.findByRole('status')).toHaveTextContent('Could not load these options');
+  });
+
+  it('UIC-CASCADER-FIELD-1.2 describes each branch as opening more options', async () => {
+    const user = userEvent.setup();
+    render(<CascaderField label="Place" options={places} />);
+    await user.click(trigger());
+    expect(screen.getByRole('option', { name: 'North' })).toHaveAccessibleDescription(
+      'Opens more options',
+    );
+    expect(screen.getByRole('option', { name: 'Zone one' })).not.toHaveAccessibleDescription();
+  });
+
+  it('UIC-CASCADER-FIELD-2.1 follows an open state owned by the host', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    function Owned() {
+      const [isOpen, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Show places
+          </button>
+          <CascaderField
+            label="Place"
+            options={places}
+            defaultValue={['north', 'lakes', 'reed']}
+            isOpen={isOpen}
+            onOpenChange={(next) => {
+              onOpenChange(next);
+              setOpen(next);
+            }}
+          />
+        </>
+      );
+    }
+    render(<Owned />);
+    await user.click(screen.getByRole('button', { name: 'Show places' }));
+    expect(within(panel('Lakes')).getByRole('option', { name: 'Reed Point' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(trigger());
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(screen.getByRole('dialog', { name: 'Place' })).toBeInTheDocument();
+  });
+
+  it('UIC-CASCADER-FIELD-2.1 starts open with defaultOpen', () => {
+    render(<CascaderField label="Place" options={places} defaultOpen />);
+    expect(screen.getByRole('dialog', { name: 'Place' })).toBeInTheDocument();
+  });
+
   it('UIC-CASCADER-FIELD-3.2 keeps a controlled replacement while a branch loads, and aborts on unmount', async () => {
     const user = userEvent.setup();
     const { loadChildren, calls } = createLoader();

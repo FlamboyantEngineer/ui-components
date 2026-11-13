@@ -640,6 +640,7 @@
   "moveSelectedTo": "Move selected to {label}",
   "moveAllTo": "Move all to {label}",
   "cascaderLoadFailed": "Could not load these options",
+  "cascaderOpensLevel": "Opens more options",
   "cascaderPathSeparator": "/",
   "addCard": "Add card",
   "noCards": "No cards",

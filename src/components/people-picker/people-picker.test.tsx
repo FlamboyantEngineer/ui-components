@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent, userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -75,6 +76,45 @@ describe('PeoplePicker', () => {
     expect(input()).toBeDisabled();
     rerender(<PeoplePicker aria-label="Owner" isReadOnly loadItems={vi.fn()} />);
     expect(input()).toHaveAttribute('readonly');
+  });
+
+  it('UIC-PEOPLE-PICKER-1.1 joins a form and takes focus as its host asks', () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(
+      <form aria-label="Task">
+        <PeoplePicker
+          aria-label="Owner"
+          name="owner"
+          defaultValue="ada"
+          knownPeople={directory}
+          inputRef={inputRef}
+          autoFocus
+          minSearchLength={2}
+          loadItems={vi.fn()}
+        />
+      </form>,
+    );
+    expect(new FormData(screen.getByRole<HTMLFormElement>('form')).get('owner')).toBe('ada');
+    expect(inputRef.current).toBe(input());
+    expect(input()).toHaveFocus();
+  });
+
+  it('UIC-PEOPLE-PICKER-1.1 reports opening to a host that owns the open state', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <PeoplePicker
+        aria-label="Owner"
+        currentUser={me}
+        isOpen={false}
+        onOpenChange={onOpenChange}
+        loadItems={vi.fn()}
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    expect(onOpenChange).toHaveBeenCalledWith(true, expect.anything());
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-PEOPLE-PICKER-1.2 UIC-PEOPLE-PICKER-2.1 UIC-PEOPLE-PICKER-3.1 searches and picks one person', async () => {

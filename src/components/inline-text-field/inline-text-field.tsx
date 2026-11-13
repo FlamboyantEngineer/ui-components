@@ -40,6 +40,8 @@ interface Draft {
   /** The `value` the draft started from. */
   base: string;
   text: string;
+  /** The text last committed from this draft, which a host may store changed, such as trimmed. */
+  committed?: string | undefined;
 }
 
 /**
@@ -49,14 +51,21 @@ interface Draft {
  */
 type Settled = { kind: 'committed'; text: string } | { kind: 'discarded' } | null;
 
-/** The draft, which starts again from a new `value` unless the reader has changed it. */
+/**
+ * The draft, which starts again from a new `value` unless the reader has changed it since: a draft
+ * still holding the text it committed takes the stored value, as the host normalised it.
+ */
 function useDraft(value: string) {
   const [draft, setDraft] = useState<Draft>({ base: value, text: value });
   if (draft.base !== value) {
-    const isEdited = draft.text !== draft.base;
+    const isEdited = draft.text !== draft.base && draft.text !== draft.committed;
     setDraft({ base: value, text: isEdited ? draft.text : value });
   }
-  return [draft.text, (text: string) => setDraft({ base: value, text })] as const;
+  return {
+    text: draft.text,
+    setText: (text: string) => setDraft({ base: value, text }),
+    markCommitted: (text: string) => setDraft((current) => ({ ...current, committed: text })),
+  };
 }
 
 /**
@@ -69,8 +78,8 @@ function useDraft(value: string) {
 export function InlineTextField(props: InlineTextFieldProps) {
   const { ref, value, onCommit, onCancel, onBlur, isReadOnly = false, className, ...rest } = props;
   const [input, setInput] = useState<HTMLInputElement | null>(null);
-  const [text, setText] = useDraft(value);
-  const latest = useLatest({ text, value, onCommit, onCancel, isReadOnly, setText });
+  const { text, setText, markCommitted } = useDraft(value);
+  const latest = useLatest({ text, value, onCommit, onCancel, isReadOnly, setText, markCommitted });
   const settledRef = useRef<Settled>(null);
   useEffect(() => {
     if (!input) return;
@@ -84,6 +93,7 @@ export function InlineTextField(props: InlineTextFieldProps) {
       if (event.key === 'Enter') {
         event.preventDefault();
         settledRef.current = { kind: 'committed', text: current.text };
+        current.markCommitted(current.text);
         current.onCommit?.(current.text);
       } else if (event.key === 'Escape') {
         event.preventDefault();
@@ -114,7 +124,10 @@ export function InlineTextField(props: InlineTextFieldProps) {
         const settled = settledRef.current;
         const isSettled =
           settled?.kind === 'discarded' || (settled?.kind === 'committed' && settled.text === text);
-        if (!isReadOnly && !isSettled && text !== value) onCommit?.(text);
+        if (!isReadOnly && !isSettled && text !== value) {
+          markCommitted(text);
+          onCommit?.(text);
+        }
         onBlur?.(event);
       }}
       {...hooks.root({

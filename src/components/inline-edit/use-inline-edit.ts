@@ -5,6 +5,7 @@
 import {
   type FocusEvent,
   type KeyboardEvent,
+  type PointerEvent,
   type RefObject,
   useEffect,
   useLayoutEffect,
@@ -12,6 +13,7 @@ import {
   useState,
 } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { containsFocus } from '../../utils/composed-focus.js';
 import { isFocused } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
@@ -75,13 +77,16 @@ function useEditFocus(isEditing: boolean) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const readRef = useRef<HTMLButtonElement | null>(null);
   const focusReturnRef = useRef<FocusReturn>('none');
-  const hasMounted = useRef(false);
+  // Focus moves only as editing turns on or off: not on mounting, and not when effects run again
+  // over the same state (Strict Mode, a hidden `Activity` shown again).
+  const wasEditing = useRef(isEditing);
   useLayoutEffect(() => {
-    const isFirst = !hasMounted.current;
-    hasMounted.current = true;
-    if (isEditing && !isFirst) {
+    const hasChanged = wasEditing.current !== isEditing;
+    wasEditing.current = isEditing;
+    if (!hasChanged) return;
+    if (isEditing) {
       focusEditor(editorRef.current);
-    } else if (!isEditing && focusReturnRef.current === 'read') {
+    } else if (focusReturnRef.current === 'read') {
       readRef.current?.focus();
     }
     focusReturnRef.current = 'none';
@@ -225,6 +230,8 @@ function useEditorHandlers<T>(options: {
 }) {
   const { cancel, timerRef, session } = options;
   const latest = useLatest({ commit: options.commit, session });
+  // A press inside the editor, and whether the editor lost focus during it.
+  const press = useRef<{ isBlurred: boolean } | null>(null);
   // A session that ends (closed by its owner, or closed and reopened) drops the save it scheduled.
   useEffect(() => () => clearTimeout(timerRef.current), [session, timerRef]);
   const commitLater = (focusReturn: FocusReturn) => {
@@ -253,9 +260,27 @@ function useEditorHandlers<T>(options: {
     },
     // Focus moving into an overlay the editor opened (a list, a calendar) comes back through React.
     onFocus: () => clearTimeout(timerRef.current),
+    // Some browsers focus no button on a press, so pressing Cancel blurs the editor to nothing: a
+    // press inside the editor decides for itself, and saves only if focus has left once it ends.
+    onPointerDownCapture: (event: PointerEvent<HTMLDivElement>) => {
+      const editor = event.currentTarget;
+      press.current = { isBlurred: false };
+      editor.ownerDocument.addEventListener(
+        'pointerup',
+        () => {
+          setTimeout(() => {
+            const isBlurred = press.current?.isBlurred === true;
+            press.current = null;
+            if (isBlurred && !containsFocus(editor)) commitLater('none');
+          }, 0);
+        },
+        { once: true, capture: true },
+      );
+    },
     onBlur: (event: FocusEvent<HTMLDivElement>) => {
       if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-      commitLater('none');
+      if (press.current) press.current.isBlurred = true;
+      else commitLater('none');
     },
   };
 }

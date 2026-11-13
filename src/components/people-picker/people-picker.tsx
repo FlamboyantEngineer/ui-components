@@ -62,6 +62,14 @@ export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
       | 'isInvalid'
       | 'isRequired'
       | 'searchDelay'
+      | 'minSearchLength'
+      | 'name'
+      | 'form'
+      | 'autoFocus'
+      | 'inputRef'
+      | 'isOpen'
+      | 'defaultOpen'
+      | 'onOpenChange'
     > {
   /** Field size. Defaults to `md`. */
   size?: Extract<ControlSize, 'sm' | 'md' | 'lg'> | undefined;

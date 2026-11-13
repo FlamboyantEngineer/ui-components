@@ -208,6 +208,18 @@ describe('BooleanField', () => {
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD', { callerAttributes: ['data-test'] });
   });
 
+  it('UIC-BOOLEAN-FIELD-1.4 UIC-BOOLEAN-FIELD-3.5 describes an unset switch by its caption', () => {
+    const { rerender } = render(
+      <BooleanField label="Ripe" variant="switch" value={null} description="Picked today" />,
+    );
+    const toggle = screen.getByRole('switch', { name: 'Ripe' });
+    expect(toggle).toHaveAccessibleDescription('Unset Picked today');
+    rerender(
+      <BooleanField label="Ripe" variant="switch" value={false} description="Picked today" />,
+    );
+    expect(toggle).toHaveAccessibleDescription('Picked today');
+  });
+
   it('UIC-BOOLEAN-FIELD-2.1 flips and commits on press and Space, and sets a picked segment', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
