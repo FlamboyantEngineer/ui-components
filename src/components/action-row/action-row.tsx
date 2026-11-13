@@ -13,6 +13,9 @@ import { ActionRowActions, createClearKey } from './action-row-actions.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
 import { type ActionRowAction, orderActions } from './action-verbs.js';
 
+/** An element, by ref or by a function that returns it, that focus moves to. */
+export type ActionRowFocusTarget = FocusTarget;
+
 /** `visible` keeps every action in the row; `menu` collapses those that do not fit into a menu. */
 export type ActionRowOverflow = 'visible' | 'menu';
 
@@ -45,7 +48,7 @@ export interface ActionRowProps
    * Where focus goes when the selection bar leaves (its count reaches zero) while it holds focus,
    * as after its clear button or Escape; usually the collection the bar acts on.
    */
-  finalFocus?: FocusTarget | undefined;
+  finalFocus?: ActionRowFocusTarget | undefined;
 }
 
 /** The selected count and the button that clears the selection. */

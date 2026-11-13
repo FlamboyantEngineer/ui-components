@@ -1,6 +1,7 @@
 export type {
   ActionRowAction,
   ActionRowCustomAction,
+  ActionRowFocusTarget,
   ActionRowOverflow,
   ActionRowProps,
   ActionRowVerbAction,
