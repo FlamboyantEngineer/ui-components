@@ -3,6 +3,7 @@
 import { type RefObject, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
+import { REANNOUNCE_MARK } from '../../utils/reannounce.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 import {
   canPlaceFormLayoutNode,
@@ -97,7 +98,12 @@ function useFormLayoutEdits<D>({
 }: EditContext<D>) {
   const { types, palette = [], onChange } = props;
   const strings = useUiStrings();
-  const [announcement, setAnnouncement] = useState('');
+  // Every other announcement carries the mark, so the same words in a row are read again.
+  const [announced, setAnnounced] = useState({ text: '', count: 0 });
+  const setAnnouncement = (text: string) =>
+    setAnnounced((previous) => ({ text, count: previous.count + 1 }));
+  const isMarked = announced.count > 0 && announced.count % 2 === 0;
+  const announcement = isMarked ? announced.text + REANNOUNCE_MARK : announced.text;
   const isEditable = !props.isReadOnly && !props.isDisabled;
   const labelOf = (node: FormLayoutNode<D>) => formLayoutNodeLabel(node, types);
   const containerName = (next: FormLayoutValue<D>, parentId: string | null) => {

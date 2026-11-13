@@ -13,7 +13,7 @@ Verification: `src/components/multi-date-field/multi-date-field.test.tsx`, `e2e/
 
 ### UIC-MULTI-DATE-FIELD-1.2 - Values
 
-The value shall be a list of `YYYY-MM-DD` calendar dates (`[]` by default and when cleared). Every set the field writes holds each date once, earliest first, so the same days always make the same value; a value the caller passes with repeats or in another order shows as that set, unchanged until the reader changes it. A date is a calendar day with no time or zone, so it reads, orders and submits the same in every time zone and across daylight saving changes. A text that is no `YYYY-MM-DD` date leaves the calendar and the tags without it and makes the field invalid with the provider string `dateUnreadable`; the next change drops it.
+The value shall be a list of `YYYY-MM-DD` calendar dates (`[]` by default and when cleared). Every set the field writes holds each date once, earliest first, so the same days always make the same value; a value the caller passes with repeats or in another order shows as that set, unchanged until the reader changes it. A date is a calendar day with no time or zone, so it reads, orders and submits the same in every time zone and across daylight saving changes. A text that is no `YYYY-MM-DD` date leaves the calendar, the tags and the form's entries without it and makes the field invalid with the provider string `dateUnreadable`; the next change drops it.
 
 Implementation: `src/components/multi-date-field/multi-date-values.ts`, `src/components/multi-date-field/multi-date-parts.tsx`
 Verification: `src/components/multi-date-field/multi-date-values.test.ts`, `src/components/multi-date-field/multi-date-field.test.tsx`

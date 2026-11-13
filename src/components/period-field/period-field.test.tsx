@@ -87,4 +87,36 @@ describe('PeriodField', () => {
     await user.keyboard('{Delete}');
     expect(trigger(/^Period/)).toHaveTextContent('Select an option');
   });
+
+  it('UIC-PERIOD-FIELD-1.2 closes when the chosen period is picked again', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<PeriodField label="Period" defaultValue="2026-03" onCommit={onCommit} />);
+    await user.click(trigger(/^Period/));
+    await user.click(screen.getByRole('option', { name: 'March 2026' }));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(trigger(/^Period/)).toHaveAccessibleName('Period March 2026');
+    await user.click(trigger(/^Period/));
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(trigger(/^Period/)).toHaveAccessibleName('Period March 2026');
+  });
+
+  it('UIC-PERIOD-FIELD-1.1 names Gregorian months where the locale counts other months', async () => {
+    const user = userEvent.setup();
+    render(
+      <UiProvider locale="fa-IR">
+        <PeriodField label="Period" defaultValue="2026-03" />
+      </UiProvider>,
+    );
+    const name = new Intl.DateTimeFormat('fa-IR', {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+      calendar: 'gregory',
+    }).format(Date.UTC(2026, 2, 1));
+    expect(trigger(/^Period/)).toHaveAccessibleName(`Period ${name}`);
+    await user.click(trigger(/^Period/));
+    expect(screen.getByRole('option', { name })).toHaveAttribute('aria-selected', 'true');
+  });
 });

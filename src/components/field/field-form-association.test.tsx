@@ -38,6 +38,23 @@ const controls: Array<[string, ReactNode, string[][]]> = [
     [['a', 'x']],
   ],
   [
+    'NumberField',
+    <NumberField key="n" label="N" name="n" form="owner" defaultValue={5} />,
+    [['n', '5']],
+  ],
+  [
+    'NumberField with step values',
+    <NumberField
+      key="s"
+      label="S"
+      name="s"
+      form="owner"
+      stepValues={[8, 10, 12]}
+      defaultValue={10}
+    />,
+    [['s', '10']],
+  ],
+  [
     'NumberField range',
     <NumberField
       key="b"

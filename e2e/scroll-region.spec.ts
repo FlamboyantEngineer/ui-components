@@ -463,7 +463,7 @@ test.describe('Scroll Region lab', () => {
   }) => {
     await lab.open('scroll-region');
     for (const scrollbar of ['native', 'overlay']) {
-      const root = page.locator(`[data-lab-edges="${scrollbar}"]`);
+      const root = page.locator(`[data-lab-edges="${scrollbar}"][data-lab-fades="off"]`);
       const viewport = root.locator('.ui-scroll-region__viewport');
       await expect(root).not.toHaveAttribute('data-overflow-y-start');
       await expect(root).toHaveAttribute('data-overflow-y-end', 'true');
@@ -491,29 +491,34 @@ test.describe('Scroll Region lab', () => {
     }
   });
 
-  test('UIC-SCROLL-REGION-4.1 shades each edge the content reaches past, up to 8px', async ({
+  test('UIC-SCROLL-REGION-4.6 fades each edge the content reaches past, up to 8px, only when asked', async ({
     page,
     lab,
   }) => {
     await lab.open('scroll-region');
-    const root = page.locator('[data-lab-edges="native"]');
+    const root = page.locator('[data-lab-edges="native"][data-lab-fades="on"]');
+    const plain = page.locator('[data-lab-edges="native"][data-lab-fades="off"]');
     const viewport = root.locator('.ui-scroll-region__viewport');
-    // The four shades' sizes, top, bottom, left and right: block axis heights, inline axis widths.
-    const shades = () =>
+    await expect(root).toHaveAttribute('data-edge-fades', 'true');
+    await expect(plain).not.toHaveAttribute('data-edge-fades');
+    await expect(plain).toHaveAttribute('data-overflow-y-end', 'true');
+    expect(await plain.evaluate((node) => getComputedStyle(node, '::before').content)).toBe('none');
+    // The four fades' sizes, top, bottom, left and right: block axis heights, inline axis widths.
+    const fades = () =>
       root.evaluate((node) =>
         getComputedStyle(node, '::before')
           .backgroundSize.split(', ')
           .map((size, index) => size.split(' ')[index < 2 ? 1 : 0]),
       );
-    await expect.poll(shades).toEqual(['0px', '8px', '0px', '0px']);
+    await expect.poll(fades).toEqual(['0px', '8px', '0px', '0px']);
     await viewport.evaluate((node) => {
       node.scrollTop = 5;
     });
-    await expect.poll(shades).toEqual(['5px', '8px', '0px', '0px']);
+    await expect.poll(fades).toEqual(['5px', '8px', '0px', '0px']);
     await viewport.evaluate((node) => {
       node.scrollTop = node.scrollHeight;
     });
-    await expect.poll(shades).toEqual(['8px', '0px', '0px', '0px']);
+    await expect.poll(fades).toEqual(['8px', '0px', '0px', '0px']);
   });
 
   test('UIC-SCROLL-REGION-4.3 UIC-SCROLL-REGION-4.4 follows new lines at the bottom and counts the edges', async ({

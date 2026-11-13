@@ -4,7 +4,9 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button } from '../button/button.js';
 import { Fieldset } from '../field/field.js';
+import { Form } from '../form/form.js';
 import { MultiDateField, type MultiDateFieldProps } from './multi-date-field.js';
 
 const getNow = () => new Date('2026-04-13T12:00:00Z');
@@ -90,6 +92,48 @@ describe('MultiDateField', () => {
     const { container } = renderField({ defaultValue: ['2026-02-30'] });
     expect(container.querySelector('.ui-field')).toHaveAttribute('data-validation', 'invalid');
     expect(screen.getByText('Enter a valid date.')).toBeInTheDocument();
+  });
+
+  it('UIC-MULTI-DATE-FIELD-1.2 UIC-MULTI-DATE-FIELD-1.5 shows, submits and keeps no text that is no date', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <UiProvider locale="en-US" getNow={getNow}>
+        <form>
+          <MultiDateField
+            label="Days off"
+            name="day"
+            defaultValue={['2026-04-14', 'nope', '2026-04-16']}
+            onChange={onChange}
+          />
+        </form>
+      </UiProvider>,
+    );
+    const form = container.querySelector('form');
+    if (!form) throw new Error('no form');
+    expect([...new FormData(form).entries()]).toEqual([
+      ['day', '2026-04-14'],
+      ['day', '2026-04-16'],
+    ]);
+    const tags = screen.getByRole('grid', { name: 'Days off selected values' });
+    expect(within(tags).getAllByRole('row')).toHaveLength(2);
+    expect(tags).not.toHaveTextContent('nope');
+    await user.click(within(tags).getAllByRole('button', { name: /Remove/ })[0] as HTMLElement);
+    expect(onChange).toHaveBeenLastCalledWith(['2026-04-16']);
+  });
+
+  it('UIC-FIELD-3.12 focuses the calendar day, not the month buttons, when its form asks', async () => {
+    const user = userEvent.setup();
+    render(
+      <UiProvider locale="en-US" getNow={getNow}>
+        <Form aria-label="Leave" validationBehavior="aria">
+          <MultiDateField label="Days off" isRequired />
+          <Button type="submit">Send</Button>
+        </Form>
+      </UiProvider>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(day(/April 13, 2026/)).toHaveFocus();
   });
 
   it('UIC-MULTI-DATE-FIELD-1.4 refuses days outside the bounds and unavailable days', async () => {

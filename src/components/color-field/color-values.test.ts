@@ -45,7 +45,7 @@ describe('color values', () => {
     expect(describeFormatInputs('hsb').channels).toEqual(['hue', 'saturation', 'brightness']);
   });
 
-  it('UIC-COLOR-FIELD-3.4 stores hex in lower case and other formats as written', () => {
+  it('UIC-COLOR-FIELD-3.4 UIC-COLOR-FIELD-4.3 stores hex in lower case and other formats as written', () => {
     const typed = 'rgba(51, 102, 153, 0.5)';
     expect(storeColorText(typed, 'hex')).toBe('#33669980');
     expect(storeColorText(typed, 'rgb')).toBe('rgba(51, 102, 153, 0.5)');
@@ -55,6 +55,9 @@ describe('color values', () => {
     expect(storeColorText('336699', 'hex')).toBe('#336699');
     expect(storeColorText('hsl(210, 50%, 40%)', 'hex')).toBe('#336699');
     expect(storeColorText('not a colour', 'hex')).toBeNull();
+    // Hex has no digits for a fraction: the channels round to whole numbers.
+    expect(storeColorText('rgb(10.5, 20, 30)', 'hex')).toBe('#0b141e');
+    expect(formatColor('rgb(10.4, 20.6, 30)', 'hex')).toBe('#0A151E');
     expect(toStoredValue({ toString: () => '#AABBCC', getChannelValue: () => 1 }, 'hex')).toBe(
       '#aabbcc',
     );

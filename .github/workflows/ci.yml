@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  gates:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -26,10 +26,45 @@ jobs:
           cache: npm
       - run: npm ci
       # scripts/check.mjs is the one list of gates, shared with `npm run check` locally: lint,
-      # format, types, references, specs, labs, structure, client boundaries, builds, unit tests,
-      # public types against the real build, the labs archive and the package contents.
+      # format, types, references, specs, labs, structure, client boundaries, builds, public types
+      # against the real build, the labs archive and the package contents. The unit tests run in the
+      # unit job's shards beside it.
       - name: Checks
-        run: npm run check
+        run: npm run check -- --skip test
+
+  unit:
+    # The unit tests, the longest check, split across runners so the required check finishes sooner.
+    # Some tests read the built package, so each shard builds it first.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    name: unit (${{ matrix.shard }} of 2)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:package
+      - name: Unit tests (${{ matrix.shard }} of 2)
+        run: npx vitest run --shard=${{ matrix.shard }}/2
+
+  check:
+    # The status the dev branch rules require: it passes only when the gates and every unit test
+    # shard passed, so a failed, cancelled or skipped job fails it.
+    if: ${{ !cancelled() }}
+    needs: [gates, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Gates and unit tests passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: for result in $RESULTS; do test "$result" = success || exit 1; done
 
   git-install:
     # A clean consumer installs the commit as a Git dependency through npm install and npm ci, with

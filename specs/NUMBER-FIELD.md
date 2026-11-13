@@ -200,7 +200,7 @@ Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-
 
 ### UIC-NUMBER-FIELD-6.3 - Disabled and read-only
 
-A disabled slider (`isDisabled`, or a disabled `Fieldset` around it) shall disable its thumb inputs natively, leave the tab order and publish `data-disabled` on the box, the track, the fill, the output and the thumbs. A read-only slider keeps its thumbs focusable and its value readable but refuses every change: its thumbs do not move and `onChange`, `onCommit` and `onChangeEnd` are not called.
+A disabled slider (`isDisabled`, or a disabled `Fieldset` around it) shall disable its thumb inputs natively, leave the tab order and publish `data-disabled` on the box, the track, the fill, the output and the thumbs. A read-only slider keeps its thumbs focusable and its value readable, marks each thumb `aria-readonly="true"`, and refuses every change: its thumbs do not move and `onChange`, `onCommit` and `onChangeEnd` are not called.
 
 Implementation: `src/components/number-field/number-slider-parts.tsx`, `src/components/field/field-state.ts`
 Verification: `src/components/number-field/number-slider.test.tsx`

@@ -89,6 +89,38 @@ test.describe('Form Layout lab', () => {
     ).toHaveCount(0);
   });
 
+  test("UIC-FORM-LAYOUT-3.4 places a drop on a row node's right half before it, right to left", async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form-layout');
+    const rtl = page.locator('[data-lab-demo="rtl"]');
+    const rtlNode = (name: string) => rtl.getByRole('group', { name, exact: true });
+    const city = rtlNode('City');
+    await rtl.scrollIntoViewIfNeeded();
+    const from = await rtl
+      .locator(
+        '[data-key="zip"] > .ui-form-layout-designer__header > .ui-form-layout-designer__handle',
+      )
+      .boundingBox();
+    const to = await city.boundingBox();
+    if (!from || !to) throw new Error('Nothing to drag');
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2 - 5, from.y + from.height / 2 + 5, { steps: 4 });
+    // The right quarter of City: before it in a right-to-left row.
+    await page.mouse.move(to.x + to.width * 0.75, to.y + to.height / 2, { steps: 12 });
+    await expect(city).toHaveAttribute('data-position', 'before');
+    await page.mouse.up();
+    await expect
+      .poll(() =>
+        rtl
+          .locator('.ui-form-layout-designer__node')
+          .evaluateAll((nodes) => nodes.map((element) => (element as HTMLElement).dataset.key)),
+      )
+      .toEqual(['contact', 'name', 'place', 'zip', 'city']);
+  });
+
   test('UIC-FORM-LAYOUT-3.4 drags nodes by their handles and refuses forbidden drops', async ({
     page,
     lab,

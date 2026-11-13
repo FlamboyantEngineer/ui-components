@@ -92,7 +92,7 @@ describe('ToolbarScroller', () => {
 
   it('UIC-TOOLBAR-SCROLLER-1.1 keeps the tools as direct children of one strip', () => {
     const { container } = render(
-      <ToolbarScroller aria-label="Format">
+      <ToolbarScroller aria-label="Format" showEdgeFades>
         <Tools />
       </ToolbarScroller>,
     );
@@ -176,9 +176,24 @@ describe('ToolbarScroller', () => {
     });
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.1 UIC-TOOLBAR-SCROLLER-2.2 UIC-TOOLBAR-SCROLLER-2.3 publishes each hidden edge with its fade and scroll button', async () => {
+  it('UIC-TOOLBAR-SCROLLER-2.2 draws no fades without showEdgeFades', async () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">
+        <Tools />
+      </ToolbarScroller>,
+    );
+    const { root, strip, button } = parts(container);
+    stubStrip(strip, 400, 100);
+    fireEvent.scroll(strip);
+    await nextFrame();
+    expect(root).toHaveAttribute('data-overflow-end', 'true');
+    expect(button('end')?.hidden).toBe(false);
+    expect(container.querySelector('.ui-toolbar-scroller__fade')).toBeNull();
+  });
+
+  it('UIC-TOOLBAR-SCROLLER-2.1 UIC-TOOLBAR-SCROLLER-2.2 UIC-TOOLBAR-SCROLLER-2.3 publishes each hidden edge with its fade and scroll button', async () => {
+    const { container } = render(
+      <ToolbarScroller aria-label="Format" showEdgeFades>
         <Tools />
       </ToolbarScroller>,
     );
@@ -310,7 +325,7 @@ describe('ToolbarScroller', () => {
     expect(button('start')?.hidden).toBe(true);
 
     rerender(
-      <ToolbarScroller aria-label="Format" scrollButtons={false}>
+      <ToolbarScroller aria-label="Format" scrollButtons={false} showEdgeFades>
         <Tools />
       </ToolbarScroller>,
     );
@@ -453,7 +468,7 @@ describe('ToolbarScroller', () => {
 
   it('UIC-TOOLBAR-SCROLLER-2.5 scrolls a focused tool clear of the covering scroll button', async () => {
     const { container } = render(
-      <ToolbarScroller aria-label="Format">
+      <ToolbarScroller aria-label="Format" showEdgeFades>
         <Tools />
       </ToolbarScroller>,
     );

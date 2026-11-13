@@ -57,6 +57,18 @@ function attemptParse(text: string) {
 }
 
 /**
+ * A colour in hex from its RGB channels rounded to whole numbers: hex has no digits
+ * for a fraction, so `rgb(10.5, 20, 30)` writes `#0B141E`.
+ */
+function toHexText(color: FormattableColor, notation: ColorNotation): string {
+  let rgb = parseColor(color.toString('rgba'));
+  for (const channel of ['red', 'green', 'blue'] as const) {
+    rgb = rgb.withChannelValue(channel, Math.round(rgb.getChannelValue(channel)));
+  }
+  return rgb.toString(notation);
+}
+
+/**
  * A colour text as the CSS colour it spells, trimmed and with a `#` added to bare hex digits;
  * `null` when it is no colour.
  */
@@ -80,7 +92,7 @@ export function formatColor(
   const color = attemptParse(text);
   if (!color) return text;
   const notation = toNotation(color, format, allowsTransparency);
-  if (format === 'hex') return color.toString(notation);
+  if (format === 'hex') return toHexText(color, notation);
   const alpha = color.getChannelValue('alpha');
   return color.withChannelValue('alpha', Math.round(alpha * 100) / 100).toString(notation);
 }
@@ -94,8 +106,8 @@ export function toStoredValue(
   format: ColorFieldFormat,
   allowsTransparency = false,
 ): string {
-  const text = color.toString(toNotation(color, format, allowsTransparency));
-  return format === 'hex' ? text.toLowerCase() : text;
+  const notation = toNotation(color, format, allowsTransparency);
+  return format === 'hex' ? toHexText(color, notation).toLowerCase() : color.toString(notation);
 }
 
 /** A typed colour text as the stored text, or `null` when it is no colour. */
