@@ -7,6 +7,7 @@ import { NodeSelection, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { type RefObject, useState } from 'react';
 import { isHTMLElement, isNode } from '../../utils/is-element.js';
+import { readBlockStarts } from './block-starts.js';
 
 /** A dragged block: its position in the document it was dragged from. */
 export interface BlockDragSource {
@@ -19,20 +20,6 @@ interface BlockGap {
   index: number;
   /** The gap's offset from the surface's top, in its scrolled content, in pixels. */
   top: number;
-}
-
-/** The start of each top-level block, per document: documents are immutable, so it holds. */
-const blockStarts = new WeakMap<DocNode, readonly number[]>();
-
-function readBlockStarts(doc: DocNode): readonly number[] {
-  let starts = blockStarts.get(doc);
-  if (!starts) {
-    const list: number[] = [];
-    doc.forEach((_child, offset) => list.push(offset));
-    starts = list;
-    blockStarts.set(doc, starts);
-  }
-  return starts;
 }
 
 /** The top-level block at `index`'s box, if it is drawn. */

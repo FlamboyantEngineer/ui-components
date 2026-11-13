@@ -13,7 +13,7 @@ Verification: `src/components/text-diff/diff-rows.test.ts`, `src/components/text
 
 ### UIC-TEXT-DIFF-1.2 - Word changes
 
-Within a change, the first removed line shall pair with the first added line, the second with the second, and so on. A paired line whose word diff (`diffWords`, [UIC-DIFF-2](DIFF.md#uic-diff-2---word-diff)) shares at least one word with its partner wraps each changed run in a `ui-text-diff__word` element; a line without a partner, or one that shares no word with it, has no word marks.
+Within a change, the first removed line shall pair with the first added line, the second with the second, and so on. A paired line whose word diff (`diffWords`, [UIC-DIFF-2](DIFF.md#uic-diff-2---word-diff)) shares at least one word with its partner wraps each changed run in a `ui-text-diff__word` element; a line without a partner, or one that shares no word with it, has no word marks. Word diffs share one budget across the whole comparison: once the paired lines diffed by words reach 100,000 characters, counting both lines of each pair, a pair that would pass it has no word marks, so many long changed lines do not each take their own search.
 
 Implementation: `src/components/text-diff/diff-rows.ts`, `src/components/text-diff/text-diff-table.tsx`
 Verification: `src/components/text-diff/diff-rows.test.ts`, `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec.ts`

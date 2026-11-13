@@ -7,6 +7,8 @@ import { usePersistentState, useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { useDraftSubmission } from '../../utils/use-draft-submission.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 import type { CommentMentionFieldProps, CommentMentions } from './comment-mentions.js';
@@ -138,6 +140,11 @@ function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
   }
 }
 
+/** The composer's text box, whichever field draws it. */
+function findTextBox(root: HTMLElement | null) {
+  return root?.querySelector<HTMLElement>('textarea, [role="textbox"]');
+}
+
 /** The text box: a multi-line `TextField`, or the one `mentions` draws. */
 function ComposerField({
   field,
@@ -172,15 +179,13 @@ export function CommentComposer({
   autoFocus,
   mentions,
   className,
+  ref,
   ...rest
 }: CommentComposerProps) {
   const strings = useUiStrings();
-  const [draft, setDraft] = useDraft({
-    value,
-    defaultValue,
-    onChange,
-    persistKey,
-  });
+  const [rootRef, setRootRef] = useForwardedRef(ref);
+  const requestFocus = useFocusRequest();
+  const [draft, setDraft] = useDraft({ value, defaultValue, onChange, persistKey });
   const actions = useComposerActions({
     value,
     persistKey,
@@ -194,6 +199,7 @@ export function CommentComposer({
   return (
     <div
       {...rest}
+      ref={setRootRef}
       {...hooks.root({ className, data: { disabled: isDisabled, pending: actions.isPending } })}
       onKeyDown={(event) => handleComposerKey(event, actions)}
     >
@@ -215,7 +221,11 @@ export function CommentComposer({
             size="sm"
             variant="ghost"
             className={hooks.slotClass('cancel')}
-            onPress={actions.cancel}
+            onPress={() => {
+              actions.cancel();
+              // The button goes once the draft clears, so focus moves on to the text box.
+              requestFocus(() => findTextBox(rootRef.current));
+            }}
           >
             {strings.cancel}
           </Button>

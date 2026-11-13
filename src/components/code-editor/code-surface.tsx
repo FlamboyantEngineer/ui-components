@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, Ref, RefObject } from 'react';
+import { type ReactNode, type Ref, type RefObject, useMemo } from 'react';
 import type { BaseProps, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
@@ -166,14 +166,16 @@ function CodeSurfaceBody({ view }: { view: ReturnType<typeof useCodeSurface> }) 
     listId,
   } = view;
   const { layers } = model;
+  const lines = useMemo(() => value.split('\n'), [value]);
+  const severities = useMemo(() => severitiesByLine(located), [located]);
   return (
     <div {...hooks.slot('surface')}>
       {lineNumbers || located.length > 0 ? (
         <CodeGutter
           measurement={!lineNumbers}
-          lines={value.split('\n')}
+          lines={lines}
           firstLineNumber={firstLineNumber}
-          severities={severitiesByLine(located)}
+          severities={severities}
           textWidth={textWidth}
           gutterRef={layers.gutter}
         />

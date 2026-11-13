@@ -53,3 +53,35 @@ describe('Composer insertion while disabled', () => {
     },
   );
 });
+
+describe('Composer insertion at its length limit', () => {
+  it('UIC-MESSAGE-COMPOSER-1.1 inserts only what fits under maxLength, in whole characters', () => {
+    let controls: ComposerControlsValue | null = null;
+    render(
+      <MessageComposer
+        aria-label="Message"
+        defaultValue="Hello"
+        maxLength={8}
+        onSubmit={() => undefined}
+        startControls={
+          <Probe
+            onValue={(value) => {
+              controls = value;
+            }}
+          />
+        }
+      />,
+    );
+    const box = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Message' });
+    box.setSelectionRange(5, 5);
+    act(() => {
+      controls?.insertText(' 🙂🙂 there');
+    });
+    // Three units of room: the space and one emoji (two units); the next emoji would split.
+    expect(box.value).toBe('Hello 🙂');
+    act(() => {
+      controls?.insertText('!');
+    });
+    expect(box.value).toBe('Hello 🙂');
+  });
+});

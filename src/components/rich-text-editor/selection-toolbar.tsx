@@ -82,25 +82,27 @@ function measureSelection(view: EditorView, current: SelectionBox | null): Selec
 }
 
 /**
- * The selected range's box, measured again after each state change and, while there is a range,
- * whenever the layout may have moved it: a scroll, a window resize, the content resizing or moving
- * (a sidebar opening, wrapping, fonts loading), at most once per animation frame.
+ * The selected range's box, measured again after each state change and, while there is a range
+ * the toolbar may show for (`canShow`: the editor is editable and focused, and the reader has not
+ * dismissed this range), whenever the layout may have moved it: a scroll, a window resize, the
+ * content resizing or moving (a sidebar opening, wrapping, fonts loading), at most once per
+ * animation frame. A range the toolbar cannot show for is not followed.
  */
-function useSelectionBox(): SelectionBox | null {
+function useSelectionBox(canShow: (box: SelectionBox) => boolean): SelectionBox | null {
   const state = useEditorState();
   const [box, setBox] = useState<SelectionBox | null>(null);
   useEditorEffect((view) => setBox((current) => measureSelection(view, current)), [state]);
-  const hasRange = box !== null;
+  const isFollowed = box !== null && canShow(box);
   useEditorEffect(
     (view) => {
-      if (!hasRange) return undefined;
+      if (!isFollowed) return undefined;
       return autoUpdateOverlay({
         anchor: view.dom,
         everyFrame: true,
         update: () => setBox((current) => measureSelection(view, current)),
       });
     },
-    [hasRange],
+    [isFollowed],
   );
   return box;
 }
@@ -115,18 +117,15 @@ export function SelectionToolbar({ ref, className, children, ...rest }: Selectio
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const { surfaceRef } = useRichTextEditorContext('SelectionToolbar');
   const zIndex = useLayerZIndex('dropdown');
-  const box = useSelectionBox();
   const rowRef = useRef<HTMLDivElement>(null);
   const [hasEditorFocus, setEditorFocus] = useState(false);
   const [hasOwnFocus, setOwnFocus] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);
+  const canShow = (range: SelectionBox) =>
+    controller.isEditable && dismissed !== range.key && (hasEditorFocus || hasOwnFocus);
+  const box = useSelectionBox(canShow);
   const placement = useFollowedPlacement(box?.key ?? '');
-  const isOpen =
-    box !== null &&
-    box.isVisible &&
-    controller.isEditable &&
-    dismissed !== box.key &&
-    (hasEditorFocus || hasOwnFocus);
+  const isOpen = box !== null && box.isVisible && canShow(box);
 
   useEditorEventListener('focus', () => (setEditorFocus(true), false));
   useEditorEventListener('blur', (_view, event) => {

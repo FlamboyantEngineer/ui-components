@@ -24,13 +24,26 @@ export function attachChosenFiles(list: FileList | null, onAttach: (files: File[
   if (files.length > 0) onAttach(files);
 }
 
-/** The files a paste carries, handed to `onAttach` instead of pasting; whether there were any. */
+/**
+ * Whether a clipboard holds text copied from an application, which may carry a picture of it: rich
+ * text beside non-empty plain text. A copied file carries its name as plain text and no HTML, and
+ * a copied image carries HTML and no plain text; both attach.
+ */
+function isCopiedText(data: DataTransfer): boolean {
+  return data.types.includes('text/html') && data.getData('text/plain').trim() !== '';
+}
+
+/**
+ * The files a paste carries, handed to `onAttach` instead of pasting; whether there were any. Text
+ * copied from an application pastes as text, even when the clipboard holds a picture of it too.
+ */
 export function attachPastedFiles(
   event: { clipboardData: DataTransfer | null; preventDefault: () => void },
   onAttach: ((files: File[]) => void) | undefined,
 ): boolean {
-  const files = Array.from(event.clipboardData?.files ?? []);
-  if (!onAttach || files.length === 0) return false;
+  const data = event.clipboardData;
+  const files = Array.from(data?.files ?? []);
+  if (!onAttach || !data || files.length === 0 || isCopiedText(data)) return false;
   event.preventDefault();
   onAttach(files);
   return true;

@@ -27,7 +27,7 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`, `src/
 
 ### UIC-COMMENT-COMPOSER-1.4 - Cancelling
 
-A ghost `Button` in `ui-comment-composer__cancel`, reading the provider's `cancel` string, shall show while the draft is not blank, or always with `onCancel`, unless the composer is disabled or pending. Pressing it, or Escape in the composer while it shows, shall clear the draft and call `onCancel`. Escape with nothing to cancel is left to the surface around the composer, such as an overlay that closes on it.
+A ghost `Button` in `ui-comment-composer__cancel`, reading the provider's `cancel` string, shall show while the draft is not blank, or always with `onCancel`, unless the composer is disabled or pending. Pressing it, or Escape in the composer while it shows, shall clear the draft and call `onCancel`. Pressing the button shall then move focus to the text box, since the button goes once the draft clears, unless `onCancel` removed the composer. Escape with nothing to cancel is left to the surface around the composer, such as an overlay that closes on it.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`

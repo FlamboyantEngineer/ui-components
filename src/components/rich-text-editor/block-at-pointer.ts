@@ -1,5 +1,6 @@
 import type { EditorView } from 'prosemirror-view';
 import { isHTMLElement } from '../../utils/is-element.js';
+import { readBlockStarts } from './block-starts.js';
 
 /** The distance from `y` to a block's vertical span; zero inside it. */
 function distanceTo(view: EditorView, pos: number, y: number): number {
@@ -18,8 +19,7 @@ function distanceTo(view: EditorView, pos: number, y: number): number {
 export function findBlockAtY(view: EditorView, y: number): number | null {
   const { doc } = view.state;
   if (doc.childCount === 0) return null;
-  const starts: number[] = [];
-  doc.forEach((_node, offset) => starts.push(offset));
+  const starts = readBlockStarts(doc);
   let low = 0;
   let high = starts.length - 1;
   while (low < high) {

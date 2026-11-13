@@ -7,7 +7,7 @@ import { useMarkdownBlocks } from './markdown-block-cache.js';
 import { listMarkdownHeadings } from './markdown-headings.js';
 import type { MarkdownDocument } from './markdown-nodes.js';
 import type { MarkdownRenderNode } from './markdown-place.js';
-import { markdownHooks as hooks } from './markdown-render.js';
+import { markdownHooks as hooks, type MarkdownImagePolicy } from './markdown-render.js';
 import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import { parseMarkdown } from './parse-markdown.js';
 import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-streaming-markdown.js';
@@ -26,6 +26,12 @@ export interface MarkdownProps extends RefProps<HTMLDivElement>, BaseProps {
    * default rendering, `null` to render nothing.
    */
   renderNode?: MarkdownRenderNode | undefined;
+  /**
+   * How images show. `show` (the default) loads each from its source, without a referrer and
+   * lazily. `link` loads nothing: each image is a link to its source named by its text, for
+   * content from an untrusted writer whose images could track who reads it.
+   */
+  images?: MarkdownImagePolicy | undefined;
   /**
    * The source is still arriving: incomplete syntax at its end renders as it will once complete,
    * and finished blocks keep their elements. Keep `renderNode` stable while streaming.
@@ -68,6 +74,7 @@ export function Markdown({
   source,
   headingIdPrefix,
   renderNode,
+  images = 'show',
   isStreaming = false,
   className,
   id,
@@ -79,8 +86,8 @@ export function Markdown({
     useMemo(() => listMarkdownHeadings(tree).map((heading) => heading.id), [tree]),
   );
   const context = useMemo(
-    () => ({ renderNode, headingIdPrefix, headingIds: new Set(headings) }),
-    [renderNode, headingIdPrefix, headings],
+    () => ({ renderNode, headingIdPrefix, headingIds: new Set(headings), images }),
+    [renderNode, headingIdPrefix, headings, images],
   );
   const blocks = useMarkdownBlocks(tree.children, context, isStreaming);
   return (

@@ -1,13 +1,15 @@
 'use client';
 
-import type { KeyboardEvent, Ref } from 'react';
+import { type KeyboardEvent, type Ref, type RefObject, useEffect, useLayoutEffect } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { ArrowDownGlyph, ArrowUpGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { getComposedActiveElement } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { isNode } from '../../utils/is-element.js';
+import { isElement, isNode } from '../../utils/is-element.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { Button } from '../button/button.js';
 import { SearchField } from '../search-field/search-field.js';
 import { findBarHooks as hooks } from './find-bar-hooks.js';
@@ -181,6 +183,47 @@ function FindBarFind({
   );
 }
 
+/** Moves focus to the bar's find box. */
+function focusQuery(bar: HTMLElement) {
+  bar.querySelector<HTMLInputElement>(`.${hooks.slotClass('query')} input`)?.focus();
+}
+
+/**
+ * A button of the bar that disables itself as it is pressed (the last Replace, or a step with no
+ * matches left) keeps focus where no key reaches the bar, or, where the browser drops focus from a
+ * disabled element, loses it to the page: the find box takes it instead either way.
+ */
+function useFocusLeavesDisabledButtons(root: RefObject<HTMLDivElement | null>) {
+  useLayoutEffect(() => {
+    const element = root.current;
+    const active = element ? getComposedActiveElement(element.ownerDocument) : null;
+    if (!element || !active || !element.contains(active) || !active.matches(':disabled')) return;
+    focusQuery(element);
+  });
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return undefined;
+    const onFocusOut = (event: FocusEvent) => {
+      if (event.relatedTarget !== null || !isElement(event.target)) return;
+      if (event.target.matches(':disabled')) focusQuery(element);
+    };
+    element.addEventListener('focusout', onFocusOut);
+    return () => element.removeEventListener('focusout', onFocusOut);
+  }, [root]);
+}
+
+/**
+ * Escape closes the bar before the find box would empty itself; a menu's Escape is the menu's own,
+ * and a composing Escape the input method's.
+ */
+function closeOnEscape(event: KeyboardEvent<HTMLDivElement>, onClose: (() => void) | undefined) {
+  if (event.key !== 'Escape' || !onClose || isComposingKey(event.nativeEvent)) return;
+  if (!isNode(event.target) || !event.currentTarget.contains(event.target)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  onClose();
+}
+
 /**
  * A find row: the find box with the match count, previous and next match, optional matching
  * options, an optional replacement with Replace and Replace all, and an optional Close button. The
@@ -220,15 +263,8 @@ export function FindBar({
   ...rest
 }: FindBarProps) {
   const strings = useUiStrings();
-  // Escape closes the bar before the find box would empty itself; a menu's Escape is the menu's own,
-  // and a composing Escape the input method's.
-  const onKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Escape' || !onClose || isComposingKey(event.nativeEvent)) return;
-    if (!isNode(event.target) || !event.currentTarget.contains(event.target)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    onClose();
-  };
+  const [rootRef, setRootRef] = useForwardedRef(ref);
+  useFocusLeavesDisabledButtons(rootRef);
   const find = { label, placeholder, query, defaultQuery, onQueryChange, inputRef };
   const steps = { matchCount, currentIndex, isPending, onNext, onPrevious, emptyNavigation };
   // The bar, not its optional controls, owns their values, so they outlast the controls.
@@ -249,10 +285,10 @@ export function FindBar({
   const hasMatches = (matchCount ?? 0) > 0;
   return (
     <div
-      ref={ref}
+      ref={setRootRef}
       {...hooks.root({ className, props: rest, data: { pending: isPending } })}
       id={id}
-      onKeyDownCapture={onKeyDownCapture}
+      onKeyDownCapture={(event) => closeOnEscape(event, onClose)}
     >
       <FindBarFind {...find} {...steps} />
       {options && options.length > 0 ? (

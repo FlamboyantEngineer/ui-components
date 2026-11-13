@@ -23,6 +23,20 @@ describe('text matching helpers', () => {
     expect(normalizeMatchText('ÉCOLE', { ignoreAccents: true })).toBe('ecole');
   });
 
+  it('UIC-TEXT-MATCH-1.1 matches Hangul written as conjoining jamo against composed syllables', () => {
+    const composed = '\ud55c\uad6d'; // 한국
+    const decomposed = composed.normalize('NFD');
+    expect(decomposed).not.toBe(composed);
+    expect(normalizeMatchText(decomposed)).toBe(composed);
+    expect(textMatchesTerms(`${decomposed}어`, [composed])).toBe(true);
+    expect(textMatchesTerms(composed, [decomposed])).toBe(true);
+    expect(findTermRanges(`x ${decomposed}`, [composed])).toEqual([
+      { start: 2, end: 2 + decomposed.length, term: 0 },
+    ]);
+    // A syllable followed by a trailing consonant composes too.
+    expect(normalizeMatchText('\uac00\u11a8')).toBe('\uac01');
+  });
+
   it('UIC-TEXT-MATCH-1.2 tests many folded texts against terms folded once', () => {
     const matches = createFoldedTermsTest(['Pear', 'TREE']);
     expect(matches(normalizeMatchText('A pear tree'))).toBe(true);

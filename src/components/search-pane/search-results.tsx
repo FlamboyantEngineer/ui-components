@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ListBox, ListBoxItem, type Selection, useLocale } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import { Button } from '../button/button.js';
 import { buildSearchSnippet } from './build-search-snippet.js';
@@ -52,6 +53,10 @@ function readSelectedKey(keys: Selection): Key | null {
 }
 
 /** One result: its label and description, a mark when it cannot be replaced, and its snippet. */
+function scrollIntoNearestView(element: HTMLElement | null): void {
+  element?.scrollIntoView?.({ block: 'nearest' });
+}
+
 function SearchResultRow({ result, isReadOnly, isCurrent, onActivate }: SearchResultRowProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
@@ -70,6 +75,9 @@ function SearchResultRow({ result, isReadOnly, isCurrent, onActivate }: SearchRe
     .join(' ');
   return (
     <ListBoxItem
+      // The current row scrolls into view as it mounts or becomes current: on a page turned to it,
+      // or when the list first draws, not again on each render.
+      ref={isCurrent ? scrollIntoNearestView : undefined}
       id={toCollectionKey(result.id)}
       textValue={name}
       onPressStart={() => {
@@ -128,10 +136,12 @@ export function SearchResults({
   );
   const listRef = useRef<HTMLDivElement>(null);
   const current = results[currentIndex];
-  useEffect(() => {
-    const row = listRef.current?.querySelector('[role="option"][aria-selected="true"]');
-    row?.scrollIntoView?.({ block: 'nearest' });
-  }, [current, first]);
+  const requestFocus = useFocusRequest();
+  // The Show button pressed may go with the page it turned: the new page's first row takes focus.
+  const turnPage = (turn: () => void) => {
+    turn();
+    requestFocus(() => listRef.current?.querySelector<HTMLElement>('[role="option"]'));
+  };
   const onSelectionChange = (keys: Selection) => {
     const key = readSelectedKey(keys);
     const index = results.findIndex((result) => result.id === key);
@@ -144,7 +154,7 @@ export function SearchResults({
           className={hooks.slotClass('show-earlier')}
           size="sm"
           variant="ghost"
-          onPress={showEarlier}
+          onPress={() => turnPage(showEarlier)}
         >
           {strings.showEarlierResults(first)}
         </Button>
@@ -173,7 +183,7 @@ export function SearchResults({
           className={hooks.slotClass('show-later')}
           size="sm"
           variant="ghost"
-          onPress={showLater}
+          onPress={() => turnPage(showLater)}
         >
           {strings.showLaterResults(results.length - last)}
         </Button>

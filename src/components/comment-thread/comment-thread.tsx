@@ -9,6 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Focusable } from '../../primitives/index.js';
 import { flattenChildren } from '../../utils/flatten-children.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { Badge } from '../badge/badge.js';
 import { Button } from '../button/button.js';
 import {
@@ -98,10 +99,7 @@ function CommentList({
   const [isExpanded, setIsExpanded] = useState(false);
   const revealedRef = useRef<HTMLLIElement>(null);
   const highlightedRef = useRef<HTMLLIElement>(null);
-  // The first revealed reply takes focus from the button, which disappears.
-  useEffect(() => {
-    if (isExpanded) revealedRef.current?.focus();
-  }, [isExpanded]);
+  const requestFocus = useFocusRequest();
   const [first, ...replies] = comments;
   const highlightedIndex =
     highlightedId === undefined ? -1 : replies.findIndex((reply) => hasId(reply, highlightedId));
@@ -110,9 +108,13 @@ function CommentList({
     highlightedIndex >= 0 &&
     highlightedIndex < replies.length - visibleReplies;
   if (isHighlightHidden && !isExpanded) setIsExpanded(true);
+  // Scrolls once the highlighted comment is drawn, also when it arrives after its id.
+  const isHighlightShown =
+    highlightedId !== undefined && comments.some((c) => hasId(c, highlightedId));
   useEffect(() => {
-    highlightedRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-  }, [highlightedId]);
+    if (isHighlightShown)
+      highlightedRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [highlightedId, isHighlightShown]);
   if (first === undefined) return null;
   const hidden = isExpanded || visibleReplies === undefined ? 0 : replies.length - visibleReplies;
   const shown = hidden > 0 ? replies.slice(hidden) : replies;
@@ -132,7 +134,12 @@ function CommentList({
             variant="ghost"
             size="sm"
             className={hooks.slotClass('show-more')}
-            onPress={() => setIsExpanded(true)}
+            onPress={() => {
+              setIsExpanded(true);
+              // The first revealed reply takes focus from the button, which disappears; a reveal
+              // for a highlighted comment leaves focus where it is.
+              requestFocus(() => revealedRef.current);
+            }}
           >
             {strings.showMoreReplies(hidden)}
           </Button>
