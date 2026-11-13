@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Rating, RatingField } from '../../src/components/rating-field/index.js';
 import { ThumbsDownGlyph, ThumbsUpGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
@@ -97,5 +98,14 @@ mountLab(
         Average <Rating value={4.3} valueLabel="4.3 out of 5, 128 reviews" /> from 128 reviews
       </p>
     </LabSection>
+    <FieldBehaviours<number | null>
+      committed={3}
+      changed={4}
+      empty={null}
+      refused={1}
+      isRefused={(value) => value === 1}
+      refusedText="A rating of 1"
+      render={(props) => <RatingField {...props} />}
+    />
   </>,
 );
