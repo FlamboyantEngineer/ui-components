@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { execFileSync, spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
@@ -73,10 +73,10 @@ describe('client boundaries', { timeout: 60_000 }, () => {
         encoding: 'utf8',
       });
       expect(result.status).toBe(1);
-      expect(result.stderr).toContain(
+      expect(result.stderr.replaceAll('\\', '/')).toContain(
         "src/server.ts: uses makeLabel from client src/client.ts as a value, so it starts with 'use client';",
       );
-      expect(result.stderr).toContain(
+      expect(result.stderr.replaceAll('\\', '/')).toContain(
         'src/index.ts: re-exports client src/client.ts with `export *`',
       );
       expect(result.stderr).not.toContain('Badge');
@@ -114,7 +114,7 @@ describe('client boundaries', { timeout: 60_000 }, () => {
         encoding: 'utf8',
       });
       expect(result.status).toBe(1);
-      expect(result.stderr).toContain(
+      expect(result.stderr.replaceAll('\\', '/')).toContain(
         'src/server.ts: uses isReady through client src/widget.tsx; import it from src/pure.ts',
       );
     } finally {
@@ -157,7 +157,7 @@ describe('client boundaries', { timeout: 60_000 }, () => {
   });
 
   it('UIC-SERVER-COMPONENTS-1.2 leaves every entry point on the server', () => {
-    const entries = walk(join(root, 'src')).filter((path) => path.endsWith('/index.ts'));
+    const entries = walk(join(root, 'src')).filter((path) => basename(path) === 'index.ts');
     expect(entries.length).toBeGreaterThan(100);
     expect(entries.filter((path) => readFileSync(path, 'utf8').includes('use client'))).toEqual([]);
   });

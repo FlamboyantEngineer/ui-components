@@ -83,18 +83,18 @@ describe('Chat sending options', () => {
     await user.click(box());
     await user.keyboard('Turn left');
     await user.keyboard('{Enter}');
-    expect(onSendNow).toHaveBeenCalledWith('Turn left', []);
+    expect(onSendNow).toHaveBeenCalledWith('Turn left', [], undefined);
     expect(onSend).not.toHaveBeenCalled();
     await user.keyboard('Turn right');
     await user.keyboard('{Control>}{Enter}{/Control}');
-    expect(onSendNow).toHaveBeenLastCalledWith('Turn right', []);
+    expect(onSendNow).toHaveBeenLastCalledWith('Turn right', [], undefined);
     unmount();
     // The choice is stored, so the next chat starts with it.
     const view = renderOptions({ isPending: true }, storage);
     await view.user.click(box());
     await view.user.keyboard('Go on');
     await view.user.click(screen.getByRole('button', { name: 'Send' }));
-    expect(view.onSendNow).toHaveBeenCalledWith('Go on', []);
+    expect(view.onSendNow).toHaveBeenCalledWith('Go on', [], undefined);
     expect(view.onSend).not.toHaveBeenCalled();
   });
 

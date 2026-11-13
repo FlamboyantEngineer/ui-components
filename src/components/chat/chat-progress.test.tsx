@@ -138,7 +138,8 @@ describe('Chat progress', () => {
     await user.click(screen.getByRole('button', { name: 'Remove queued message 2' }));
     expect(onQueueChange).toHaveBeenLastCalledWith([queue[2]]);
     // A saved edit builds on the same queue.
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 3' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 3' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 3' }));
     await user.keyboard(' draft{Enter}');
     expect(onQueueChange).toHaveBeenLastCalledWith([
       expect.objectContaining({ id: 'q3', text: 'Third draft' }),
@@ -157,7 +158,8 @@ describe('Chat progress', () => {
     ];
     const host = { onQueueChange: () => undefined, onSteer: () => undefined };
     const { user, rerenderWith } = setup({ queue, ...host });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 2' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 2' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 2' }));
     expect(box()).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Steer with queued message 1' }));
     rerenderWith({ queue: queue.slice(1), ...host });
@@ -288,7 +290,8 @@ describe('Chat progress', () => {
     const saving = deferred();
     const onQueueChange = vi.fn(() => saving.promise);
     const { user } = setup({ queue: [{ id: 'q1', text: 'First' }], onQueueChange });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     await user.keyboard(' draft');
     await user.keyboard('{Enter}');
     expect(onQueueChange).toHaveBeenCalledWith([

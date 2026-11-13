@@ -13,7 +13,7 @@ export type ChatStatusLineActivity = 'thinking' | 'writing';
 export interface ChatStatusLineProps extends RefProps<HTMLDivElement>, BaseProps {
   /** What the assistant is doing now, such as "Searching trains…". Defaults to "Thinking…". */
   text?: string | undefined;
-  /** A decorative icon in place of the busy indicator. */
+  /** Omitted uses the busy indicator; `null` hides it; a supplied node replaces it. */
   icon?: ReactNode;
   /** `writing` shows the indicator alone, without text or announcement. Defaults to `thinking`. */
   activity?: ChatStatusLineActivity | undefined;
@@ -42,9 +42,9 @@ export function ChatStatusLine({
   const label = activity === 'writing' ? '' : text || strings.chatThinking;
   return (
     <div {...rest} {...hooks.root({ className, props: rest, data: { activity } })}>
-      {isEmptyNode(icon) ? (
+      {icon === undefined ? (
         <span {...hooks.slot('spinner')} aria-hidden="true" />
-      ) : (
+      ) : isEmptyNode(icon) ? null : (
         <span {...hooks.slot('icon')} aria-hidden="true">
           {icon}
         </span>

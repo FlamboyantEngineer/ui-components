@@ -73,10 +73,12 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-3.1 - Blocking while loading
 
+The reference region and content wrapper shall form shrinking flex columns, so bounded embedded content can fill the available height without overriding the content hook. Host ancestors supply their own flex sizing and bounded height. Inertness, overlays and focus restoration remain unchanged.
+
 While `isLoading` is true, `LoadingRegion` shall set `data-loading` on its root, mark its `ui-loading-region__content` busy (`aria-busy="true"`) and inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. The overlay's status card is never inside a busy element, so its label is announced during the wait rather than held back until the region is ready. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)). Keyboard focus inside the content when blocking starts moves to the region's root, which is focusable (`tabindex="-1"`) only while blocking, so focus is not lost to the document; when blocking ends, focus returns to the element that had it, unless the reader has moved focus elsewhere meanwhile.
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/components/loading-overlay/use-blocked-focus.ts`, `labs/reference/loading-overlay.css`
-Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
+Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`, `e2e/chat-native.spec.ts`
 
 ### UIC-LOADING-OVERLAY-3.2 - Show delay
 

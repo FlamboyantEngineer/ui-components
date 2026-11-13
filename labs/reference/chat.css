@@ -4,10 +4,12 @@
 .ui-chat {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 8px;
   box-sizing: border-box;
   height: 100%;
   min-height: 0;
+  min-width: 0;
   color: var(--ref-text);
   font: var(--ref-font-size)/1.45 var(--ref-font);
 }
@@ -55,9 +57,42 @@
   flex: none;
   gap: 4px;
   padding: 6px 8px;
-  border: 1px dashed var(--ref-border-strong);
-  border-radius: var(--ref-radius);
-  background: var(--ref-surface);
+  padding-inline-start: 4px;
+  border: 1px solid var(--ref-field-border);
+  border-bottom: 0;
+  border-radius: var(--ref-radius) var(--ref-radius) 0 0;
+  background: var(--ref-field-fill);
+}
+
+.ui-chat__compose {
+  flex: none;
+  min-width: 0;
+}
+
+.ui-chat__queue + .ui-chat__composer {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.ui-chat__queue-menu {
+  flex: none;
+}
+
+.ui-chat__queue-handle {
+  flex: none;
+  cursor: grab;
+}
+
+.ui-chat__queue-item[data-dragging] {
+  opacity: var(--ref-dragging-opacity);
+}
+
+.ui-chat__queue-item[data-drop-position='before'] {
+  box-shadow: 0 -2px var(--ref-accent);
+}
+
+.ui-chat__queue-item[data-drop-position='after'] {
+  box-shadow: 0 2px var(--ref-accent);
 }
 
 .ui-chat__queue-label {
@@ -79,7 +114,6 @@
   align-items: center;
   gap: 4px;
   min-width: 0;
-  padding-inline-start: 6px;
   border-radius: var(--ref-radius-sm);
 }
 

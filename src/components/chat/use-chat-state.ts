@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { getOwnerWindow } from '../../utils/owner-window.js';
+import { focusWithRetry } from '../../utils/use-focus-request.js';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */
 interface ChatEditing {
@@ -88,6 +88,8 @@ function useJumpExpiry(jump: ChatOwnState['jump'], endJump: (jump: { id: string 
 export function useChatState(conversationId: string | undefined): ChatState {
   const [own, setOwn] = useState(() => createState(conversationId, 0));
   const composerRef = useRef<HTMLDivElement>(null);
+  const cancelFocus = useRef(() => {});
+  useEffect(() => () => cancelFocus.current(), []);
   // The editor detaches and reattaches its ref on each render, after the layout effects of the
   // queue above it; keeping the last text box lets those effects still find it.
   const setComposer = useCallback((element: HTMLDivElement | null) => {
@@ -99,22 +101,10 @@ export function useChatState(conversationId: string | undefined): ChatState {
     current = createState(conversationId, own.session + 1);
     setOwn(current);
   }
-  // Focus moves at once, and again once an overlay that ran the command, such as a context menu,
-  // has handed focus back to where it opened. A key or a pointer pressed meanwhile is the reader
-  // moving on, so the focus they chose stays.
+  // An overlay may restore focus after the command, but a newer user action owns focus.
   const focusComposer = useCallback(() => {
-    composerRef.current?.focus();
-    const view = getOwnerWindow(composerRef.current);
-    const wait = new AbortController();
-    const listening = { capture: true, signal: wait.signal };
-    view.addEventListener('pointerdown', () => wait.abort(), listening);
-    view.addEventListener('keydown', () => wait.abort(), listening);
-    view.requestAnimationFrame(() =>
-      view.requestAnimationFrame(() => {
-        if (!wait.signal.aborted) composerRef.current?.focus();
-        wait.abort();
-      }),
-    );
+    cancelFocus.current();
+    cancelFocus.current = focusWithRetry(() => composerRef.current);
   }, []);
   const commands = useMemo(() => {
     const update = (patch: Partial<ChatOwnState>) => setOwn((state) => ({ ...state, ...patch }));

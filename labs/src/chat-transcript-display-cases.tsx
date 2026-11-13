@@ -46,16 +46,31 @@ function DisplayMessage({
 /** The message display cases of the Chat Transcript lab: avatar, name, time and background. */
 export function ChatTranscriptDisplayCases() {
   return (
-    <LabSection
-      title="Avatar, name, time and background"
-      description="A message in a bubble or as plain text, with or without its author's avatar and name, and its time in the header, in the footer (shown with the actions while the message is hovered or holds focus, its line kept meanwhile; Footer time line shows it collapsing), in a tooltip over the message while it is hovered or holds focus, or left out. A plain received message takes the whole width; the accessible name keeps the author and the time either way."
-    >
-      <StateMatrix
-        axes={{ variant: variants, author: authors, time: times, from: ['received', 'sent'] }}
-        render={({ variant, author, time, from }) => (
-          <DisplayMessage variant={variant} author={author} time={time} from={from} />
-        )}
-      />
-    </LabSection>
+    <>
+      <LabSection
+        title="Sending presentation"
+        description="Label is the default. Fade dims only the sending message content and keeps Sending accessible; settled and failed messages use their normal presentation."
+      >
+        <StateMatrix
+          axes={{ presentation: ['label', 'fade'], delivery: ['sending', 'sent', 'failed'] }}
+          render={({ presentation, delivery }) => (
+            <ChatMessage origin="sent" delivery={delivery} deliveryPresentation={presentation}>
+              The notes are ready.
+            </ChatMessage>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Avatar, name, time and background"
+        description="A message in a bubble or as plain text, with or without its author's avatar and name, and its time in the header, in the footer (shown with the actions while the message is hovered or holds focus, its line kept meanwhile; Footer time line shows it collapsing), in a tooltip over the message while it is hovered or holds focus, or left out. A plain received message takes the whole width; the accessible name keeps the author and the time either way."
+      >
+        <StateMatrix
+          axes={{ variant: variants, author: authors, time: times, from: ['received', 'sent'] }}
+          render={({ variant, author, time, from }) => (
+            <DisplayMessage variant={variant} author={author} time={time} from={from} />
+          )}
+        />
+      </LabSection>
+    </>
   );
 }

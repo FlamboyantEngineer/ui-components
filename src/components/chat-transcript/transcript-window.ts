@@ -37,12 +37,33 @@ export function resolveTailRange(keys: readonly string[]): WindowRange | null {
   return first === undefined || last === undefined ? null : { first, last };
 }
 
+/** A wider retention band prevents measured boundary rows repeatedly entering and leaving. */
+function retainWindowRange(
+  keys: readonly string[],
+  previous: WindowRange | null,
+  { desired, retained }: { desired: WindowRange; retained: WindowRange },
+): WindowRange {
+  if (!previous) return desired;
+  const first = keys.indexOf(previous.first);
+  const last = keys.indexOf(previous.last);
+  if (first < 0 || last < 0) return desired;
+  return {
+    first: keys[
+      Math.min(keys.indexOf(desired.first), Math.max(first, keys.indexOf(retained.first)))
+    ] as string,
+    last: keys[
+      Math.max(keys.indexOf(desired.last), Math.min(last, keys.indexOf(retained.last)))
+    ] as string,
+  };
+}
+
 /** Creates the model; children it has not measured count as the measured average. */
 export function createWindowModel(): WindowModel {
   const heights = new Map<string, number>();
   const spacers = new WeakSet<Element>();
   let gap = 0;
   let total = 0;
+  let previousRange: WindowRange | null = null;
 
   const estimate = (key: string) =>
     heights.get(key) ?? (heights.size > 0 ? total / heights.size : fallbackHeight);
@@ -56,6 +77,7 @@ export function createWindowModel(): WindowModel {
       heights.clear();
       total = 0;
       gap = 0;
+      previousRange = null;
     },
     measure(feed, mounted) {
       const elements = [...feed.children].filter((child) => !spacers.has(child));
@@ -84,13 +106,22 @@ export function createWindowModel(): WindowModel {
       let offset = 0;
       let first: string | undefined;
       let last: string | undefined;
+      let retainedFirst: string | undefined;
+      let retainedLast: string | undefined;
       for (const key of keys) {
         const height = estimate(key);
         if (first === undefined && offset + height > top) first = key;
         if (offset < bottom) last = key;
+        if (retainedFirst === undefined && offset + height > top - view / 2) retainedFirst = key;
+        if (offset < bottom + view / 2) retainedLast = key;
         offset += height + gap;
       }
-      return first === undefined || last === undefined ? resolveTailRange(keys) : { first, last };
+      if (first === undefined || last === undefined) return resolveTailRange(keys);
+      previousRange = retainWindowRange(keys, previousRange, {
+        desired: { first, last },
+        retained: { first: retainedFirst ?? first, last: retainedLast ?? last },
+      });
+      return previousRange;
     },
     gapHeight(keys, start, end) {
       let height = 0;

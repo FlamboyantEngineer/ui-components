@@ -223,7 +223,8 @@ describe('Chat composer handle', () => {
       return result;
     };
     expect(insert()).toBe('inserted');
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     expect(insert()).toBe('editing');
     rerenderWith({ isDisabled: true, onSend: vi.fn() });
     expect(insert()).toBe('disabled');

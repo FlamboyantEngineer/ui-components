@@ -300,6 +300,35 @@ describe('ChatMessage avatar, name and background', () => {
 });
 
 describe('ChatMessage status, delivery and errors', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.8 supports faded sending content while retaining its accessible delivery label', () => {
+    const { container, rerender } = render(
+      <ChatMessage origin="sent" delivery="sending" deliveryPresentation="fade">
+        Notes
+      </ChatMessage>,
+    );
+    expect(screen.getByRole('article')).toHaveAttribute('data-delivery-presentation', 'fade');
+    expect(container.querySelector('.ui-chat-message__delivery')).toHaveClass('ui-visually-hidden');
+    expect(container.querySelector('.ui-chat-message__delivery')).toHaveTextContent('Sending');
+    expect(container.querySelector('.ui-chat-message__delivery-label')).toBeNull();
+    rerender(
+      <ChatMessage
+        origin="sent"
+        delivery="failed"
+        deliveryPresentation="fade"
+        onRetry={() => undefined}
+      >
+        Notes
+      </ChatMessage>,
+    );
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(container.querySelector('.ui-chat-message__delivery-label')).not.toBeNull();
+    rerender(
+      <ChatMessage origin="sent" delivery="sent" deliveryPresentation="fade">
+        Notes
+      </ChatMessage>,
+    );
+    expect(container.querySelector('.ui-chat-message__delivery-label')).toHaveTextContent('Sent');
+  });
   it('UIC-CHAT-TRANSCRIPT-2.2 keeps a cancelled reply and marks it stopped', () => {
     const { container } = render(
       <ChatMessage status="cancelled">Checking the notes for</ChatMessage>,

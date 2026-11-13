@@ -22,7 +22,7 @@ export interface ChatStepsItem {
 export type ChatPartsItem = ChatPartItem | ChatStepsItem;
 
 function isStepPart(part: ChatPart): part is ChatStepPart {
-  return part.type === 'reasoning' || part.type === 'tool-call';
+  return part.type === 'reasoning' || (part.type === 'tool-call' && part.grouping !== 'standalone');
 }
 
 /** A part's React key: its type and id, or its type and position when it has no id. */

@@ -1,17 +1,17 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { CloseGlyph, EditGlyph, SendGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
-import { Button } from '../button/button.js';
-import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatComposerOptions } from './chat-composer.js';
 import { chatHooks as hooks } from './chat-hooks.js';
-import { type ChatProgress, chatProgressDelay } from './chat-progress.js';
+import type { ChatProgress } from './chat-progress.js';
+import { ChatQueueItem } from './chat-queue-item.js';
+import { useQueueReorder } from './chat-queue-reorder.js';
 import type { ChatState } from './use-chat-state.js';
 
 const noQueue: readonly ChatQueuedMessage[] = [];
@@ -112,71 +112,64 @@ export function ChatQueue({ options, state, track, removals }: ChatQueueProps) {
   const labelId = useId();
   const removal = useRemovalFocus(queue, composerRef);
   const { steeringId, steer } = useSteering(options, track);
+  const reorder = useQueueReorder(
+    queue,
+    onQueueChange
+      ? (next) => {
+          try {
+            const result = onQueueChange(removals.without(next));
+            if (isThenable(result))
+              void Promise.resolve(result).catch((error: unknown) => {
+                if (!options.onSendError) throw error;
+                options.onSendError(error);
+              });
+          } catch (error) {
+            if (!options.onSendError) throw error;
+            options.onSendError(error);
+          }
+        }
+      : undefined,
+  );
   if (queue.length === 0) return null;
   return (
     <div {...hooks.slot('queue')}>
-      <div id={labelId} {...hooks.slot('queue-label')}>
+      <VisuallyHidden as="div" id={labelId} className={hooks.slotClass('queue-label')}>
         {strings.chatQueuedMessages(queue.length)}
-      </div>
+      </VisuallyHidden>
       <ol {...hooks.slot('queue-list')} aria-labelledby={labelId}>
         {queue.map((entry, index) => (
-          <li
+          <ChatQueueItem
             key={entry.id}
-            {...hooks.slot('queue-item', {
-              editing: entry.id === editingId,
-              steering: entry.id === steeringId,
-            })}
-          >
-            {entry.text ? <span {...hooks.slot('queue-text')}>{entry.text}</span> : null}
-            {entry.attachments?.length ? (
-              <ChatAttachmentList
-                attachments={entry.attachments}
-                className={hooks.slotClass('queue-attachments')}
-              />
-            ) : null}
-            {onSteer && entry.id !== editingId ? (
-              <Button
-                icon={SendGlyph}
-                label={strings.chatSteerQueued(index + 1)}
-                size="sm"
-                className={hooks.slotClass('queue-steer')}
-                isDisabled={steeringId !== undefined && steeringId !== entry.id}
-                pendingDelay={chatProgressDelay}
-                onError={options.onSendError}
-                onPress={() => {
-                  removal.willRemove(entry.id);
-                  return steer(entry.id);
-                }}
-              />
-            ) : null}
-            {onQueueChange ? (
-              <>
-                <Button
-                  icon={EditGlyph}
-                  label={strings.chatEditQueued(index + 1)}
-                  size="sm"
-                  className={hooks.slotClass('queue-edit')}
-                  onPress={() => state.startEdit({ kind: 'queued', id: entry.id })}
-                />
-                <Button
-                  ref={(button) => removal.register(entry.id, button)}
-                  icon={CloseGlyph}
-                  label={strings.chatRemoveQueued(index + 1)}
-                  size="sm"
-                  className={hooks.slotClass('queue-remove')}
-                  pendingDelay={chatProgressDelay}
-                  onError={options.onSendError}
-                  onPress={() => {
+            entry={entry}
+            position={index + 1}
+            isEditing={entry.id === editingId}
+            isSteering={entry.id === steeringId}
+            isSteerDisabled={steeringId !== undefined && steeringId !== entry.id}
+            reorder={reorder}
+            onSteer={
+              onSteer && entry.id !== editingId
+                ? () => {
                     removal.willRemove(entry.id);
-                    // The edit ends with the press, whenever the host drops the message.
+                    return steer(entry.id);
+                  }
+                : undefined
+            }
+            onEdit={
+              onQueueChange ? () => state.startEdit({ kind: 'queued', id: entry.id }) : undefined
+            }
+            onRemove={
+              onQueueChange
+                ? () => {
+                    removal.willRemove(entry.id);
                     if (entry.id === editingId) cancelEdit();
                     const rest = removals.without(queue).filter((item) => item.id !== entry.id);
                     return removals.hold(entry.id, track('remove', onQueueChange(rest)));
-                  }}
-                />
-              </>
-            ) : null}
-          </li>
+                  }
+                : undefined
+            }
+            onError={options.onSendError}
+            registerRemove={(button) => removal.register(entry.id, button)}
+          />
         ))}
       </ol>
     </div>

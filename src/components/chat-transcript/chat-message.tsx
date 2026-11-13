@@ -14,7 +14,6 @@ import { AnchoredTooltip } from '../tooltip/tooltip.js';
 import {
   ChatMessageAvatar,
   ChatMessageBody,
-  ChatMessageDeleted,
   ChatMessageHeader,
   chatMessageHooks as hooks,
   useAbsoluteTime,
@@ -82,6 +81,8 @@ export interface ChatMessageProps
   groupPosition?: ChatMessageGroupPosition | undefined;
   /** Where a message the reader sent has got to. */
   delivery?: ChatMessageDelivery | undefined;
+  /** `fade` dims a sending message and keeps its delivery label visually hidden. Defaults to `label`. */
+  deliveryPresentation?: 'label' | 'fade' | undefined;
   /** Why the message or its reply failed: an alert, or announced by the transcript it is in. */
   error?: string | undefined;
   /** Retries a failed send or a failed reply; shows a Retry button with `error` or `failed`. */
@@ -230,6 +231,13 @@ function MessageTimeTooltip({
   return time && isUsed ? <MessageTimePanel {...panel} time={time} isOpen={isOpen} /> : null;
 }
 
+function resolveDeliveryPresentation(
+  origin: ChatMessageOrigin,
+  presentation: ChatMessageProps['deliveryPresentation'],
+) {
+  return origin === 'sent' ? presentation : 'label';
+}
+
 /**
  * One message in a conversation: an `<article>` named by its author and absolute time, with the
  * author's avatar and name at the start of a group and a relative time (each unless hidden), the content
@@ -248,6 +256,7 @@ export function ChatMessage({
   status = 'complete',
   groupPosition = 'single',
   delivery,
+  deliveryPresentation = 'label',
   isDeleted = false,
   readers,
   getNow,
@@ -268,7 +277,12 @@ export function ChatMessage({
   });
   const [body, own] = splitBodyProps(rest);
   const data = {
-    ...{ variant: display.variant, origin, status, groupPosition, delivery },
+    variant: display.variant,
+    origin,
+    status,
+    groupPosition,
+    delivery,
+    deliveryPresentation,
     ...{ deleted: isDeleted, hovered: isHovered, focusWithin: isFocusWithin },
     ...{ avatarHidden: display.avatarHidden, collapseFooterTime },
     streamingCaret: showsCaret({ streamingCaret: rest.streamingCaret, status, origin, isDeleted }),
@@ -288,17 +302,15 @@ export function ChatMessage({
           time={display.headerTime}
           getNow={getNow}
         />
-        {isDeleted ? (
-          <ChatMessageDeleted time={display.footerTime} getNow={getNow} />
-        ) : (
-          <ChatMessageBody
-            {...body}
-            isCancelled={status === 'cancelled'}
-            delivery={delivery}
-            time={display.footerTime}
-            getNow={getNow}
-          />
-        )}
+        <ChatMessageBody
+          {...body}
+          isDeleted={isDeleted}
+          isCancelled={status === 'cancelled'}
+          delivery={delivery}
+          deliveryPresentation={resolveDeliveryPresentation(origin, deliveryPresentation)}
+          time={display.footerTime}
+          getNow={getNow}
+        />
         {isEmptyNode(readers) ? null : <div {...hooks.slot('readers')}>{readers}</div>}
       </div>
       <MessageTimeTooltip

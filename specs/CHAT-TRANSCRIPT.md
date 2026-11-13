@@ -43,10 +43,12 @@ Verification: `src/components/chat-transcript/transcript-anchor.test.tsx`, `e2e/
 
 ### UIC-CHAT-TRANSCRIPT-1.6 - Virtualized history
 
+Virtual window edges shall retain a half-viewport band beyond their normal overscan before dropping measured rows. Fractional size changes at an edge shall not repeatedly mount and unmount the same row; moving away shall still release it and keep the window bounded.
+
 With `virtualized`, the root shall publish `data-virtualized` and mount only the children within one view height above and below the visible area (the viewport's height, or the window's when the viewport is taller), plus the focused message, the anchored one, the one about to be focused (with a separator right before it, which comes into view with it), the highlighted one, the newest two children and received arrivals still streaming. Other arrivals stay mounted through their first registration and measurement commit, then release unless the window or another required exception retains them. A received streaming arrival stays mounted until its terminal status is registered, its final presentation is measured and any completion announcement is queued, then follows the same window and required exceptions. Each run of unmounted children is replaced by a spacer as tall as their measured heights (the average measured height until measured, with the feed's row gap between them), rounded to a whole pixel, so when a spacer above the view changes, the scroll position (which browsers keep in whole pixels) can keep the reader's place exactly. The measurements restart with each conversation ([UIC-CHAT-TRANSCRIPT-3.7](#uic-chat-transcript-37---messages-register-with-the-transcript)), so a new conversation's spacers average only its own messages. A transcript that turns `virtualized` while it shows its messages keeps them all through one commit, which measures them, so its spacers start from their true heights and the reader's place does not move. Following, anchoring, keeping the reader's place as history loads, the keyboard model, unread counts and announcements work as without it: moving focus to an unmounted message mounts it first, then brings it into view and focuses it.
 
 Implementation: `src/components/chat-transcript/transcript-window.ts`, `src/components/chat-transcript/transcript-parts.tsx`, `src/components/chat-transcript/use-transcript.ts`
-Verification: `src/components/chat-transcript/transcript-virtual.test.tsx`, `src/components/chat-transcript/transcript-announcer.test.tsx`, `src/components/chat-transcript/transcript-conversation-reset.test.tsx`, `e2e/chat-transcript.spec.ts`
+Verification: `src/components/chat-transcript/transcript-virtual.test.tsx`, `src/components/chat-transcript/transcript-announcer.test.tsx`, `src/components/chat-transcript/transcript-conversation-reset.test.tsx`, `e2e/chat-transcript.spec.ts`, `src/components/chat-transcript/transcript-window.test.tsx`, `e2e/chat-native.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-1.7 - Presentation
 
@@ -108,10 +110,12 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.8 - Delivery
 
+`deliveryPresentation?: 'label' | 'fade'` shall default to label and publish `data-delivery-presentation`. For a sent message with delivery sending, fade keeps the Sending label visually hidden and the reference stylesheet dims the content. Once delivery settles, the normal content opacity and delivery/error controls remain. Full Chat forwards the same option to its messages.
+
 A message with `delivery` shall publish it as `data-delivery` (`sending`, `sent`, `delivered`, `read` or `failed`) and show, in its footer, `ui-chat-message__delivery` holding a decorative glyph (`ui-chat-message__delivery-icon`: `clock`, `check`, `success`, `eye` or `error`) and the provider string `chatDelivery` (`Sending`, `Sent`, `Delivered`, `Read`, `Not sent`) in `ui-chat-message__delivery-label`, so the status never depends on colour or shape alone. A `failed` message with `onRetry` and no `error` adds a Retry `Button` (`ui-chat-message__retry`, named by the provider string `retry`) to the footer, which calls `onRetry`.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `src/core/strings/chat-message.ts`
-Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
+Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `e2e/chat-native.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.9 - Error
 
@@ -373,3 +377,4 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-typing-indicator__dot`   | slot      |                                                  | Each of the three dots.                                                                         |
 | `ui-chat-typing-indicator__text`  | slot      |                                                  | Who is typing, in words.                                                                        |
 | `ui-chat-read-receipts`           | root      |                                                  | The readers of a message (also `ui-avatar-group`).                                              |
+| `data-delivery-presentation`      | attribute | `label`, `fade`                                  | Message delivery presentation.                                                                  |

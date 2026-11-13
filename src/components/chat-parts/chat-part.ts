@@ -50,6 +50,10 @@ export interface ChatReasoningPart extends ChatReasoningData {
 /** A tool call, with its approval while it waits for the reader. */
 export interface ChatToolCallPart extends ChatToolCallData {
   type: 'tool-call';
+  /** `auto` (default) groups consecutive activity; `standalone` keeps this row's label visible. */
+  grouping?: 'auto' | 'standalone' | undefined;
+  /** Whether details show before the reader chooses. Defaults to following approval status. */
+  defaultExpanded?: boolean | undefined;
 }
 
 /** Questions the agent asks the reader. */

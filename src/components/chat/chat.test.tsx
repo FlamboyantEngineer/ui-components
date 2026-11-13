@@ -91,9 +91,7 @@ describe('Chat', () => {
       'ui-chat-header',
       'ui-chat-transcript',
       'ui-chat-typing-indicator',
-      'ui-chat__queue',
-      'ui-chat__progress',
-      'ui-message-composer',
+      'ui-chat__compose',
     ]);
     expect(screen.getByRole('feed', { name: 'Hiking group' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT', {
@@ -109,7 +107,7 @@ describe('Chat', () => {
     const last = root.lastElementChild as HTMLElement;
     expect(last).toHaveClass('ui-chat__disclaimer');
     expect(last).toHaveTextContent(note);
-    expect(last.previousElementSibling).toHaveClass('ui-message-composer');
+    expect(last.previousElementSibling).toHaveClass('ui-chat__compose');
     expect(within(screen.getByRole('feed')).queryByText(note)).not.toBeInTheDocument();
     // Ordinary content: no live region announces it again as replies stream.
     expect(last.closest('[aria-live], [role="status"], [role="alert"], [role="log"]')).toBeNull();

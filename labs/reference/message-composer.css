@@ -181,6 +181,7 @@
 }
 
 .ui-message-composer__end {
+  margin-inline-start: auto;
   justify-content: flex-end;
 }
 

@@ -32,7 +32,8 @@ describe('Chat edit target', () => {
       queue: [{ id: 'm1', text: 'Same text' }],
       onQueueChange,
     });
-    await user.click(screen.getByRole('button', { name: 'Edit queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));
     await waitFor(() => expect(box()).toHaveFocus());
     await user.keyboard(' for the queue');
     await user.hover(article('m1'));

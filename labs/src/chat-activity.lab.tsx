@@ -252,7 +252,7 @@ mountLab(
       <StateMatrix
         axes={{
           running: ['running', 'stopped'],
-          content: ['text', 'thinking', 'icon', 'writing'],
+          content: ['text', 'thinking', 'icon', 'writing', 'text-only'],
         }}
         render={({ running, content }) => (
           <ChatStatusLine
@@ -260,7 +260,11 @@ mountLab(
               content === 'text' || content === 'writing' ? 'Searching trains to Porto…' : undefined
             }
             activity={content === 'writing' ? 'writing' : 'thinking'}
-            icon={content === 'icon' ? <Icon icon={SearchGlyph} size="sm" /> : undefined}
+            icon={
+              content === 'text-only' ? null : content === 'icon' ? (
+                <Icon icon={SearchGlyph} size="sm" />
+              ) : undefined
+            }
             isRunning={running === 'running'}
           />
         )}

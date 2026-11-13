@@ -119,6 +119,15 @@
   align-self: flex-end;
 }
 
+.ui-chat-message[data-origin='sent'][data-delivery='sending'][data-delivery-presentation='fade']
+  .ui-chat-message__content {
+  opacity: 0.7;
+}
+
+.ui-chat-message[data-origin='received'][data-variant='plain'] {
+  align-self: flex-start;
+}
+
 .ui-chat-message[data-origin='system'] {
   align-self: center;
   color: var(--ref-muted);

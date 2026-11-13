@@ -874,5 +874,9 @@
   "status": "ステータス",
   "stateTrigger": "{label}: {state}",
   "transitionTo": "{state}へ移動",
-  "selectOptionIndeterminate": "一部のレコードで選択済み"
+  "selectOptionIndeterminate": "一部のレコードで選択済み",
+  "chatComposerHint": "{shortcut} で{action, select, queue {キューに追加} steer {方向を変更} save {保存} other {送信}}",
+  "chatReorderQueued": "待機中のメッセージ {position} を並べ替え",
+  "chatQueueActions": "待機中のメッセージ {position} の操作",
+  "chatSteer": "方向を変更"
 }

@@ -18,6 +18,7 @@ import { formatAbsoluteTime } from '../../utils/relative-time.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatMessageAuthor, ChatMessageDelivery, ChatMessageProps } from './chat-message.js';
 import { ChatQuote } from './chat-quote.js';
 import { useIsInTranscript, useTranscriptContentRef } from './transcript-context.js';
@@ -33,6 +34,8 @@ type ChatMessageBodyProps = Pick<
   | 'children'
   | 'time'
   | 'getNow'
+  | 'deliveryPresentation'
+  | 'isDeleted'
 > & {
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
@@ -142,11 +145,12 @@ export function ChatMessageFooter({
   isEdited,
   isCancelled,
   delivery,
+  deliveryPresentation,
   onRetry,
 }: Partial<
   Pick<
     ChatMessageBodyProps,
-    'time' | 'getNow' | 'isEdited' | 'isCancelled' | 'delivery' | 'onRetry'
+    'time' | 'getNow' | 'isEdited' | 'isCancelled' | 'delivery' | 'deliveryPresentation' | 'onRetry'
   >
 >) {
   const strings = useUiStrings();
@@ -157,7 +161,11 @@ export function ChatMessageFooter({
       <MessageTime time={time} getNow={getNow} />
       {isEdited ? <span {...hooks.slot('edited')}>{strings.edited}</span> : null}
       {isCancelled ? <span {...hooks.slot('stopped')}>{strings.chatStopped}</span> : null}
-      {delivery ? (
+      {delivery === 'sending' && deliveryPresentation === 'fade' ? (
+        <VisuallyHidden as="span" className={hooks.slotClass('delivery')}>
+          {strings.chatDelivery(delivery)}
+        </VisuallyHidden>
+      ) : delivery ? (
         <span {...hooks.slot('delivery')}>
           <Glyph icon={deliveryGlyphs[delivery]} className={hooks.slotClass('delivery-icon')} />
           <span {...hooks.slot('delivery-label')}>{strings.chatDelivery(delivery)}</span>
@@ -179,20 +187,6 @@ function ChatMessageSlot({
   return children ? <div {...hooks.slot(name)}>{children}</div> : null;
 }
 
-/** What a deleted message shows under its header: the placeholder for its content, and its time. */
-export function ChatMessageDeleted({ time, getNow }: Pick<ChatMessageProps, 'time' | 'getNow'>) {
-  const strings = useUiStrings();
-  const contentRef = useTranscriptContentRef();
-  return (
-    <>
-      <div ref={contentRef} {...hooks.slot('content')}>
-        {strings.chatMessageDeleted}
-      </div>
-      <ChatMessageFooter time={time} getNow={getNow} />
-    </>
-  );
-}
-
 /**
  * Everything a message that is not deleted shows under its header: the quote, the content, the
  * footer, the error with Retry, the reactions and the actions.
@@ -205,18 +199,30 @@ export function ChatMessageBody({
   isEdited,
   isCancelled,
   delivery,
+  deliveryPresentation,
   reactions,
   actions,
   children,
+  isDeleted,
   time,
   getNow,
 }: ChatMessageBodyProps) {
-  const quotedId = quote?.messageId;
+  const strings = useUiStrings();
   // The transcript announces the text of this element, whatever else the message draws.
   const contentRef = useTranscriptContentRef();
   // A transcript announces the failure through its own live region, once: an alert here would be
   // read again each time a virtualized transcript mounts the message.
   const isInTranscript = useIsInTranscript();
+  if (isDeleted)
+    return (
+      <>
+        <div ref={contentRef} {...hooks.slot('content')}>
+          {strings.chatMessageDeleted}
+        </div>
+        <ChatMessageFooter time={time} getNow={getNow} />
+      </>
+    );
+  const quotedId = quote?.messageId;
   return (
     <>
       {quote ? (
@@ -236,6 +242,7 @@ export function ChatMessageBody({
         isEdited={isEdited}
         isCancelled={isCancelled}
         delivery={delivery}
+        deliveryPresentation={deliveryPresentation}
         onRetry={error ? undefined : onRetry}
       />
       {error ? (
