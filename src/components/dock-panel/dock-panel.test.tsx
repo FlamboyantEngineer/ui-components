@@ -20,7 +20,9 @@ afterEach(() => {
 
 describe('DockPanel structure', () => {
   it('UIC-DOCK-PANEL-1.1 UIC-DOCK-PANEL-1.5 renders a named region with tabs, a separator and the panes', () => {
-    const { container } = render(<Panel className="inspector" id="details" data-area="side" />);
+    const { container } = render(
+      <Panel className="inspector" id="details" data-area="side" showEdgeFades />,
+    );
     const panel = screen.getByRole('region', { name: 'Details' });
     expect(panel.tagName).toBe('SECTION');
     expect(panel).toHaveAttribute('id', 'details');
@@ -50,6 +52,13 @@ describe('DockPanel structure', () => {
       ],
       callerAttributes: ['data-area'],
     });
+  });
+
+  it('UIC-DOCK-PANEL-2.5 draws strip fades only with showEdgeFades', () => {
+    const { container, rerender } = render(<Panel />);
+    expect(container.querySelector('.ui-dock-panel__fade')).toBeNull();
+    rerender(<Panel showEdgeFades />);
+    expect(container.querySelectorAll('.ui-dock-panel__fade')).toHaveLength(2);
   });
 
   it('UIC-DOCK-PANEL-1.1 publishes each position', () => {

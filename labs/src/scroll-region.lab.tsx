@@ -514,18 +514,20 @@ mountLab(
     <ScrollRegionOptionCases />
     <LabSection
       title="Edge distances"
-      description="The reference stylesheet shades each edge the content reaches past, as deep as the distance the region publishes up to 8px, with native and overlay scrollbars."
+      description="Every region publishes how far the content reaches past each edge, with native and overlay scrollbars. Edge fades are opt-in: with showEdgeFades the reference stylesheet fades each such edge, as deep as the distance up to 8px."
     >
       <StateMatrix
-        axes={{ scrollbar: ['native', 'overlay'] as const }}
-        render={({ scrollbar }) => (
+        axes={{ scrollbar: ['native', 'overlay'] as const, fades: ['off', 'on'] as const }}
+        render={({ scrollbar, fades }) => (
           <div style={frame(220, 120)}>
             <ScrollRegion
               scrollbar={scrollbar}
+              showEdgeFades={fades === 'on'}
               role="region"
-              aria-label={`Faded cities, ${scrollbar}`}
+              aria-label={`Cities, ${scrollbar}, fades ${fades}`}
               tabIndex={0}
               data-lab-edges={scrollbar}
+              data-lab-fades={fades}
             >
               <ol style={{ margin: 0 }}>
                 {cities.map((city) => (

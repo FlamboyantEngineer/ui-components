@@ -174,6 +174,22 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.locator('.ui-tabs__scroll-button')).toHaveCount(0);
   });
 
+  test('UIC-DOCK-PANEL-2.5 draws no fades without showEdgeFades', async ({ page, lab }) => {
+    await lab.open('dock-panel');
+    const panel = frame(page, 'overflow-expanded-plain').locator('.ui-dock-panel');
+    const list = panel.getByRole('tablist');
+    const selected = panel.getByRole('tab', { selected: true });
+    await expect(selected).toContainText('Change history');
+    await expect(panel.locator('.ui-dock-panel__fade')).toHaveCount(0);
+    await expect
+      .poll(async () => {
+        const tab = await box(selected);
+        const strip = await box(list);
+        return tab.x >= strip.x - 1 && tab.x + tab.width <= strip.x + strip.width + 1;
+      })
+      .toBe(true);
+  });
+
   test('UIC-DOCK-PANEL-2.5 reveals the selected tab when the panel expands', async ({
     page,
     lab,

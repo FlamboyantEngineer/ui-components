@@ -450,19 +450,27 @@ const projects = [
 ];
 
 /** Many panes with long labels: the tabs scroll freely, and the rail scrolls on a short frame. */
-function Overflowing({ state }: { state: 'expanded' | 'collapsed' }) {
+function Overflowing({
+  state,
+  showEdgeFades = true,
+}: {
+  state: 'expanded' | 'collapsed';
+  showEdgeFades?: boolean;
+}) {
+  const name = showEdgeFades ? state : `${state} without fades`;
   return (
     <Frame
       position="end"
       width={560}
       height={state === 'expanded' ? 220 : 180}
-      data-lab-frame={`overflow-${state}`}
+      data-lab-frame={showEdgeFades ? `overflow-${state}` : `overflow-${state}-plain`}
       panel={
         <DockPanel
-          label={`Project ${state}`}
+          label={`Project ${name}`}
           defaultExpanded={state === 'expanded'}
           defaultSize={300}
           defaultSelectedKey="Change history"
+          showEdgeFades={showEdgeFades}
         >
           {projects.map((name, index) => (
             <DockPanelPane
@@ -480,8 +488,9 @@ function Overflowing({ state }: { state: 'expanded' | 'collapsed' }) {
       }
     >
       <p>
-        Wheel over the tabs to scroll them; fades mark the edges that hide tabs. The selected tab
-        shows clear of the fades when the panel expands or resizes.
+        {showEdgeFades
+          ? 'Wheel over the tabs to scroll them; with showEdgeFades, fades mark the edges that hide tabs, and the selected tab shows clear of them when the panel expands or resizes.'
+          : 'Edge fades are opt-in: without showEdgeFades the strip draws none, and the selected tab only needs to be inside the strip.'}
       </p>
     </Frame>
   );
@@ -612,10 +621,11 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overflow"
-      description="Seven panes with long labels. Expanded, the tabs scroll freely by wheel or swipe, without snapping or steppers; collapsed, the short rail keeps its labels and scrolls natively."
+      description="Seven panes with long labels. Expanded, the tabs scroll freely by wheel or swipe, without snapping or steppers; collapsed, the short rail keeps its labels and scrolls natively. The first two pass showEdgeFades; the last draws no fades, as by default."
     >
       <Overflowing state="expanded" />
       <Overflowing state="collapsed" />
+      <Overflowing state="expanded" showEdgeFades={false} />
     </LabSection>
     <LabSection
       title="Drag to expand"
