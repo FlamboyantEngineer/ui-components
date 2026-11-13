@@ -300,7 +300,7 @@ describe('CodeEditor', () => {
     vi.unstubAllGlobals();
   });
 
-  it('UIC-CODE-EDITOR-12.3 watches the gutter, not each line, and keeps its watch while typing', async () => {
+  it('UIC-CODE-EDITOR-12.3 watches each line once and keeps its watch while typing within a line', async () => {
     const user = userEvent.setup();
     const observed: Element[] = [];
     class CountingObserver {
@@ -328,10 +328,12 @@ describe('CodeEditor', () => {
     const { container } = render(<Editor />);
     const gutter = container.querySelector('.ui-code-editor__gutter');
     expect(observed).toContain(gutter);
-    expect(observed.some((element) => element.matches('.ui-code-editor__line'))).toBe(false);
+    expect(observed.filter((element) => element.matches('.ui-code-editor__line'))).toHaveLength(
+      200,
+    );
     const before = observed.length;
     await user.type(screen.getByRole('textbox', { name: 'Source' }), 'x');
-    expect(observed.slice(before)).not.toContain(gutter);
+    expect(observed.slice(before)).toEqual([]);
     vi.unstubAllGlobals();
   });
 
