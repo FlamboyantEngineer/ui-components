@@ -55,6 +55,7 @@
   "noConversations": "まだ会話はありません",
   "noMatchingConversations": "一致する会話はありません",
   "loadingConversations": "会話を読み込み中",
+  "loadingMoreConversations": "さらに会話を読み込み中",
   "unreadMessages": "未読メッセージ {count} 件",
   "conversationMuted": "ミュート中",
   "conversationLabel": "{title}{hasPresence, select, true {、{presence}} other {}}{unreadCount, plural, =0 {} other {、未読メッセージ # 件}}{isMuted, select, true {、ミュート中} other {}}{hasStatus, select, true {、{status}} other {}}{hasActivity, select, true {、{activity}} other {}}{hasTime, select, true {、{time}} other {}}",

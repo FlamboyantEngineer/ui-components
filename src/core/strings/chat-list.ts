@@ -31,6 +31,8 @@ interface ChatListStrings {
   noMatchingConversations: string;
   /** Announces that the conversations are loading. */
   loadingConversations: string;
+  /** Announces that more conversations are loading, and names the pending Load more row. */
+  loadingMoreConversations: string;
   /** Reads a conversation's unread count. */
   unreadMessages: (count: number) => string;
   /** Marks a conversation whose notifications are off. */
