@@ -41,7 +41,7 @@ interface Engine {
 const headlessViews = new WeakSet<object>();
 
 /** The key name of the `reactKeys` plugin a rendered view adds, which a headless engine drops. */
-const REACT_KEYS = '@handlewithcare/react-prosemirror/reactKeys$';
+const reactKeysKey = '@handlewithcare/react-prosemirror/reactKeys$';
 
 function createPluginViews(engine: Engine) {
   engine.generation += 1;
@@ -173,7 +173,7 @@ function createView(engine: () => Engine): EditorView {
 
 /** Whether a plugin is the `reactKeys` plugin of a rendered view. */
 export function isReactKeysPlugin(plugin: Plugin): boolean {
-  return (plugin as unknown as { key: string }).key.startsWith(REACT_KEYS);
+  return (plugin as unknown as { key: string }).key.startsWith(reactKeysKey);
 }
 
 /**

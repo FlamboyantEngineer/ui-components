@@ -33,7 +33,7 @@ export interface PreviewStateOptions {
 }
 
 /** How long after a card closes the next one still opens at once, at the least. */
-const COOLDOWN = 500;
+const minCooldown = 500;
 
 /** The open cards, each with the function that closes it at once. */
 const openCards = new Map<object, () => void>();
@@ -53,7 +53,7 @@ function coolDown(closeDelay: number) {
       cooldown = null;
       isWarm = false;
     },
-    Math.max(COOLDOWN, closeDelay),
+    Math.max(minCooldown, closeDelay),
   );
 }
 
