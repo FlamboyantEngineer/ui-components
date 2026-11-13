@@ -706,7 +706,8 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     await user.keyboard('{Control>}a{/Control}Changed');
     // As in browsers that focus no button on a press: the editor blurs to nothing, then the click.
     const pressWithoutFocus = async (target: HTMLElement) => {
-      /* eslint-disable testing-library/prefer-user-event -- user-event always focuses the pressed button */
+      // user-event always focuses the pressed button, so the press is made of separate events.
+      /* eslint-disable testing-library/prefer-user-event */
       fireEvent.pointerDown(target);
       act(() => textbox().blur());
       // A press lasts longer than the editor's wait before it saves on leaving.
