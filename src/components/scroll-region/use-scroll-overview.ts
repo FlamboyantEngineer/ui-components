@@ -1,12 +1,14 @@
 'use client';
 
 import { type RefObject, useEffect, useMemo, useState } from 'react';
+import { isSameOverviewLayers } from '../../utils/same-overview-layers.js';
 import {
   buildScrollOverviewImage,
   resolveLayeredScrollOverviewSegments,
   type ScrollOverviewLayer,
   type ScrollOverviewMarker,
 } from '../../utils/scroll-overview.js';
+import { useEqualValue } from '../../utils/use-equal-value.js';
 import type { SharedViewportObserver } from './use-shared-viewport-observer.js';
 
 interface ScrollOverviewOptions {
@@ -33,9 +35,14 @@ export function useScrollOverview(
   observer: SharedViewportObserver,
   { markers, layers }: ScrollOverviewOptions,
 ): ScrollOverviewPaint {
-  const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(
-    () => layers ?? (markers ? [{ name: 'markers', markers }] : []),
-    [layers, markers],
+  // Markers written inline are new objects each render: equal ones keep the subscription and the
+  // painted image.
+  const activeLayers = useEqualValue(
+    useMemo<readonly ScrollOverviewLayer[]>(
+      () => layers ?? (markers ? [{ name: 'markers', markers }] : []),
+      [layers, markers],
+    ),
+    isSameOverviewLayers,
   );
   const hasMarkers = activeLayers.some((layer) => layer.markers.length > 0);
   const [metrics, setMetrics] = useState({ height: 0, scrollHeight: 0 });
@@ -52,7 +59,7 @@ export function useScrollOverview(
       );
     };
     return observer.subscribe(measure);
-  }, [activeLayers, hasMarkers, observer, viewport]);
+  }, [hasMarkers, observer, viewport]);
 
   const image = useMemo(
     () =>

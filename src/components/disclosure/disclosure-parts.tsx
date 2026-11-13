@@ -15,6 +15,7 @@ import {
   type KeyboardEvent,
   useFocusManager,
 } from '../../primitives/index.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
@@ -85,7 +86,7 @@ function useGroupNavigation() {
   const focusManager = useFocusManager();
   return (event: KeyboardEvent) => {
     const move = groupKeys[event.key];
-    if (!group || !focusManager || !move) {
+    if (!group || !focusManager || !move || !isFreeEditKey(event.nativeEvent)) {
       event.continuePropagation();
       return;
     }

@@ -15,7 +15,7 @@ Verification: `src/components/scroll-overview/scroll-overview.test.tsx`, `e2e/sc
 
 A marker may name an `element` (with its `color` and `priority`) in place of a content `top` and `height`. The overview shall measure the element's box from the top of the container's scrolled content, so the mark sits where the element is whatever the scroll position, and measure again on the next frame when the container or a marked element resizes, the content changes (nodes, text or attributes anywhere inside), an image in it loads, or fonts finish loading. An element outside the container, or no longer in the document, marks nothing. The observers and the pending frame are released when the markers change or the overview unmounts. Markers are compared by their fields, so markers or layers written inline, new objects with equal fields on each render, neither rebuild the observers nor measure again.
 
-Implementation: `src/components/scroll-overview/scroll-overview.tsx`, `src/components/scroll-overview/scroll-overview-markers.ts`, `src/utils/observe-viewport.ts`
+Implementation: `src/components/scroll-overview/scroll-overview.tsx`, `src/components/scroll-overview/scroll-overview-markers.ts`, `src/utils/observe-viewport.ts`, `src/utils/same-overview-layers.ts`
 Verification: `src/components/scroll-overview/scroll-overview.test.tsx`, `e2e/scroll-overview.spec.ts`
 
 ### UIC-SCROLL-OVERVIEW-1.3 - Activating a marker

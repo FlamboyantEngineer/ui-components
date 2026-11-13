@@ -83,12 +83,17 @@ function isAnchored(text: string): boolean {
   return /T.*(?:Z|[+-]\d{2}(?::?\d{2})?|\])$/i.test(text);
 }
 
+/** A bracketed zone name ending a date-time text, as in `…-04:00[America/New_York]`. */
+const zoneName = /\[[^\]]*\]$/;
+
 /**
- * A date-time the editor wrote, in the form of the event's start: kept zoned when the start names
- * its offset or zone, else as the wall clock in the calendar's zone, as the event gave it.
+ * A date-time the editor wrote, in the form of the event's start: with its offset and zone name
+ * when the start names a zone, with its offset alone when the start gives an offset or `Z` (a text
+ * `Date` reads), else as the wall clock in the calendar's zone, as the event gave it.
  */
 export function toEventText(text: string, like: string, timeZone: string): string {
-  if (isAnchored(like)) return text;
+  if (zoneName.test(like)) return text;
+  if (isAnchored(like)) return text.replace(zoneName, '');
   const value = parseIsoDateTime(text, timeZone);
   return value ? formatIsoDate(toCalendarDateTime(value)) : text;
 }

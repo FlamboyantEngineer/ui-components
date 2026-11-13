@@ -80,7 +80,11 @@ export function OverflowList<T>({
   ref,
   ...rest
 }: OverflowListProps<T>) {
-  const { containerRef, visibleItems, hiddenItems } = useOverflowItems({ items, collapseFrom });
+  const { containerRef, visibleItems, hiddenItems } = useOverflowItems({
+    items,
+    collapseFrom,
+    getKey,
+  });
   const { rootRef, itemContainerRef } = useOverflowRefs(containerRef, ref);
   const isOverflowing = hiddenItems.length > 0;
   const offset = collapseFrom === 'start' ? items.length - visibleItems.length : 0;

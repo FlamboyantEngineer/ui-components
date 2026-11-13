@@ -98,6 +98,16 @@ describe('split layout', () => {
     expect(expandSplitPane(tools, collapsed, { index: 1, size: 200 })).toEqual([100, 200]);
   });
 
+  it('UIC-SPLIT-VIEW-2.6 gives a collapsible flexible pane squeezed below zero its smallest size', () => {
+    const panes = [{}, {}, { collapsible: true }];
+    const sizes = normalizeSplitSizes(panes, [60, 60, 30]);
+    expect(sizes.every((size) => size >= 0)).toBe(true);
+    expect(sizes.reduce((sum, size) => sum + size, 0)).toBeCloseTo(100);
+    // The flexible pane stays open at its smallest size (10 by default); the pane before it gives.
+    expect(sizes).toEqual([60, 30, 10]);
+    expect(normalizeSplitSizes(panes, sizes)).toEqual(sizes);
+  });
+
   it('UIC-SPLIT-VIEW-2.6 snaps a collapsible pane shut below half its smallest size', () => {
     const separator = resolveSplitSeparator(drawer, [60, 40], { index: 0, available: 0 });
     expect(separator).toMatchObject({ min: 10, max: 100 });

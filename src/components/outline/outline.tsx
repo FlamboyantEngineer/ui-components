@@ -164,7 +164,9 @@ function useCurrentHeading(
   { currentKey, viewportRef, trackingOffset }: OutlineProps,
 ) {
   const ids = useMemo(() => entries.map((entry) => entry.heading.id), [entries]);
-  const tracked = useScrollSpy(viewportRef ?? noViewport, { ids, offset: trackingOffset });
+  // A controlled heading is the caller's: the viewport's scrolling is not followed meanwhile.
+  const spied = currentKey === undefined ? (viewportRef ?? noViewport) : noViewport;
+  const tracked = useScrollSpy(spied, { ids, offset: trackingOffset });
   const current = currentKey === undefined ? tracked : currentKey;
   const ancestors = entries.find((entry) => entry.heading.id === current)?.ancestors ?? [];
   return { current, currentAncestors: new Set(ancestors) };

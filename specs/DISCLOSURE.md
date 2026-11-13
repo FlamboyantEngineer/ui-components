@@ -103,7 +103,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-4.2 - Keyboard
 
-Each enabled trigger shall be one tab stop, and Enter or Space toggles its disclosure. Inside a group, ArrowDown and ArrowUp move focus to the next and previous enabled trigger of the same group, wrapping at the ends, and Home and End to the first and last; triggers of groups nested in a panel and disabled triggers are skipped. A trigger outside a group ignores these keys.
+Each enabled trigger shall be one tab stop, and Enter or Space toggles its disclosure. Inside a group, ArrowDown and ArrowUp move focus to the next and previous enabled trigger of the same group, wrapping at the ends, and Home and End to the first and last; triggers of groups nested in a panel and disabled triggers are skipped. These keys with Alt, Control or Meta, or during a text composition, are left to the browser and the system. A trigger outside a group ignores these keys.
 
 Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`

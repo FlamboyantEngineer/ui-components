@@ -208,6 +208,13 @@ describe('Outline', () => {
     expect(currentName()).toBe('Terms');
     rerender(<Reader currentKey="design" />);
     expect(currentName()).toBe('Design');
+    // A controlled heading does not follow the viewport: scrolling schedules no measuring.
+    frames.splice(0);
+    fireEvent.scroll(viewport);
+    expect(frames).toHaveLength(0);
+    rerender(<Reader />);
+    scroll(viewport);
+    expect(currentName()).toBe('Scope');
   });
 
   it('UIC-OUTLINE-2.2 follows a viewport that mounts late or is replaced under the same ref', () => {

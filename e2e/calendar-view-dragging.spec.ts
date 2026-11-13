@@ -114,12 +114,40 @@ test.describe('Calendar View dragging', () => {
     await page.mouse.up();
     await expect(output(page)).toHaveText('No change yet');
     await expect(editor(page)).toHaveCount(0);
+    // The abandoned drag leaves no mark that would swallow the next key press.
+    await eventNamed(page, 'Deadline').focus();
+    await page.keyboard.press('Enter');
+    await expect(editor(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(editor(page)).toHaveCount(0);
 
     const end = grid.getByRole('button', { name: 'Change end of Offsite' });
     await dragTo(page, end, day(page, '2026-11-06').locator('.ui-calendar-view__all-day'));
     await page.mouse.up();
     await expect(output(page)).toHaveText('Offsite: 2026-11-03 to 2026-11-06');
     await expect(eventNamed(page, 'Offsite')).toHaveCount(1);
+  });
+
+  test('UIC-CALENDAR-VIEW-6.2 keeps a drag while the host re-renders with copies of its events', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('calendar-view');
+    await demo(page).getByText('Re-render with copied events').click();
+    await expect(
+      demo(page).getByRole('checkbox', { name: 'Re-render with copied events' }),
+    ).toBeChecked();
+    await dragTo(
+      page,
+      eventNamed(page, 'Deadline'),
+      day(page, '2026-11-04').locator('.ui-calendar-view__all-day'),
+    );
+    await expectGhost(eventNamed(page, 'Deadline'));
+    // Several host renders pass while the pointer is held.
+    await page.waitForTimeout(800);
+    await expect(demo(page).locator('[data-preview]')).toHaveCount(1);
+    await page.mouse.up();
+    await expect(output(page)).toHaveText('Deadline: 2026-11-04 to 2026-11-04');
   });
 
   test('UIC-CALENDAR-VIEW-6.1 UIC-CALENDAR-VIEW-6.2 changes the start and end alone in the resize mode', async ({

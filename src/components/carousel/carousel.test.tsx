@@ -721,5 +721,34 @@ describe('Carousel', () => {
       await user.pointer({ keys: '[/MouseLeft]', target: viewport });
       expect(onIndexChange).toHaveBeenCalledTimes(1);
     });
+
+    it('UIC-CAROUSEL-2.3 drops a press released outside before it became a swipe', async () => {
+      const user = userEvent.setup();
+      const onIndexChange = vi.fn();
+      const { container } = render(
+        <Carousel aria-label="Cities" allowsSwiping onIndexChange={onIndexChange}>
+          {slides()}
+        </Carousel>,
+      );
+      const viewport = container.querySelector('.ui-carousel__viewport') as HTMLElement;
+      // Pressed, moved a few pixels and released outside: the viewport never sees the release.
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: viewport, coords: { clientX: 200, clientY: 50 } },
+        { target: viewport, coords: { clientX: 196, clientY: 50 } },
+        { keys: '[/MouseLeft]', target: document.body },
+      ]);
+      // Back over the viewport with no button held, the pointer drags nothing.
+      await user.pointer({ target: viewport, coords: { clientX: 120, clientY: 50 } });
+      expect(viewport).not.toHaveAttribute('data-swiping');
+      // The next press is a swipe of its own.
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: viewport, coords: { clientX: 200, clientY: 50 } },
+        { target: viewport, coords: { clientX: 160, clientY: 50 } },
+        { target: viewport, coords: { clientX: 120, clientY: 50 } },
+      ]);
+      expect(viewport).toHaveAttribute('data-swiping', 'true');
+      await user.pointer({ keys: '[/MouseLeft]', target: viewport });
+      expect(onIndexChange).toHaveBeenLastCalledWith(1);
+    });
   });
 });

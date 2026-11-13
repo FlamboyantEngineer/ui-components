@@ -71,7 +71,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-2.2 - Arrow-key navigation
 
-While a crumb has focus, the arrow key along the reading direction (ArrowRight, or ArrowLeft in right-to-left locales) and the opposite key shall move focus to the next and previous crumb other than the current one, stopping at both ends; Home and End shall move to the first and last of them. The current crumb and disabled crumbs are skipped. The set follows re-renders that change the trail.
+While a crumb has focus, the arrow key along the reading direction (ArrowRight, or ArrowLeft in right-to-left locales) and the opposite key shall move focus to the next and previous crumb other than the current one, stopping at both ends; Home and End shall move to the first and last of them. The current crumb and disabled crumbs are skipped. These keys with Alt, Control or Meta, or during a text composition, are left to the browser and the system, so Alt+ArrowLeft still goes back. The set follows re-renders that change the trail.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`

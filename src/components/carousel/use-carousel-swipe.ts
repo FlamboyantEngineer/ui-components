@@ -44,9 +44,23 @@ const ownGestureSelector = [
   '[data-carousel-no-swipe]',
 ].join(',');
 
+/**
+ * Whether a press comes while another pointer's drag is under way: a pinch or a stray touch, so
+ * neither is a swipe. The same pointer pressing again was released where the viewport never saw it
+ * (outside, before the swipe took the capture), so its press starts afresh.
+ */
+function isSecondPointer(previous: SwipeGesture | null, press: PointerEvent): boolean {
+  return previous !== null && previous.pointerId !== press.pointerId;
+}
+
 /** The travel that makes a swipe: the fixed distance, or a fifth of a narrower viewport. */
 function findSwipeDistance(viewport: HTMLElement): number {
   return Math.min(swipeDistance, viewport.clientWidth / 5 || swipeDistance);
+}
+
+/** The step in reading order a swipe makes: toward the start of the reading direction goes back. */
+function findStep(dx: number, direction: 'ltr' | 'rtl'): -1 | 1 {
+  return dx > 0 === (direction === 'ltr') ? -1 : 1;
 }
 
 function startsOwnGesture(target: EventTarget | null, viewport: Element): boolean {
@@ -58,7 +72,8 @@ function startsOwnGesture(target: EventTarget | null, viewport: Element): boolea
  * Swipe navigation for a carousel's viewport: a touch, pen or mouse drag that travels mostly across
  * the slides and far enough moves one step, a leftward drag moving on in left-to-right reading.
  * Drags along the page stay the page's scroll, a second finger (a pinch) and a cancelled or lost
- * pointer abandon the drag, and a drag that starts on a control, editable text or draggable
+ * pointer abandon the drag, as does a release the viewport never saw (the pointer moving with no
+ * button held, or pressing again), and a drag that starts on a control, editable text or draggable
  * content stays theirs. While dragging, the offset is measured for the stylesheet.
  */
 export function useCarouselSwipe({ isEnabled, direction, onStep }: CarouselSwipeOptions) {
@@ -74,11 +89,9 @@ export function useCarouselSwipe({ isEnabled, direction, onStep }: CarouselSwipe
   }
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
     suppressClickRef.current = false;
-    if (gestureRef.current !== null) {
-      // A second pointer is a pinch or a stray touch: the drag is not a swipe.
-      end();
-      return;
-    }
+    const previous = gestureRef.current;
+    if (previous !== null) end();
+    if (isSecondPointer(previous, event)) return;
     if (!event.isPrimary || event.button !== 0) return;
     if (startsOwnGesture(event.target, event.currentTarget)) return;
     gestureRef.current = {
@@ -91,6 +104,11 @@ export function useCarouselSwipe({ isEnabled, direction, onStep }: CarouselSwipe
   const onPointerMove = (event: PointerEvent<HTMLElement>) => {
     const gesture = gestureRef.current;
     if (gesture?.pointerId !== event.pointerId) return;
+    // A mouse or pen that moves with no button held was released where the viewport never saw it.
+    if (event.pointerType !== 'touch' && event.buttons === 0) {
+      end();
+      return;
+    }
     const dx = event.clientX - gesture.x;
     const dy = event.clientY - gesture.y;
     if (gesture.axis === null) {
@@ -115,9 +133,7 @@ export function useCarouselSwipe({ isEnabled, direction, onStep }: CarouselSwipe
     // A drag across the slides is no click on what it started over, whether or not it moved.
     suppressClickRef.current = gesture.axis === 'horizontal';
     end();
-    if (!isSwipe) return;
-    const towardStart = dx > 0;
-    onStep((towardStart === (direction === 'ltr') ? -1 : 1) as -1 | 1);
+    if (isSwipe) onStep(findStep(dx, direction));
   };
   const onClickCapture = (event: MouseEvent<HTMLElement>) => {
     if (!suppressClickRef.current) return;

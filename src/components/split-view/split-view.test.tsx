@@ -985,6 +985,34 @@ describe('ResizeHandle', () => {
     expect(separator).toHaveAttribute('aria-valuenow', '30');
   });
 
+  it('UIC-SPLIT-VIEW-3.4 reports no end for a press that never moves or a key at the limit', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onChangeEnd = vi.fn();
+    const onChangeCancel = vi.fn();
+    render(
+      <ResizeHandle
+        {...handleProps}
+        orientation="vertical"
+        value={handleProps.minValue}
+        onChange={onChange}
+        onChangeEnd={onChangeEnd}
+        onChangeCancel={onChangeCancel}
+      />,
+    );
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    Object.assign(handle, { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() });
+    pointer('pointerDown', handle, { clientX: 100 });
+    pointer('pointerUp', handle, { clientX: 100 });
+    expect(onChangeEnd).not.toHaveBeenCalled();
+    expect(onChangeCancel).toHaveBeenCalledOnce();
+    expect(handle).not.toHaveAttribute('data-resizing');
+    handle.focus();
+    await user.keyboard('{Home}{ArrowLeft}');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
   it('UIC-SPLIT-VIEW-3.4 abandons a drag when the handle unmounts and reports the cancel', () => {
     const onChangeCancel = vi.fn();
     const onResizingChange = vi.fn();
@@ -1086,6 +1114,11 @@ describe('ResizeHandle', () => {
     await user.keyboard('{ArrowLeft}');
     expect(separator).toHaveAttribute('aria-valuenow', '10');
     await user.keyboard('{End}');
+    expect(separator).toHaveAttribute('aria-valuenow', '80');
+    // Alt, Control and Meta chords are the browser's and the system's.
+    await user.keyboard(
+      '{Alt>}{ArrowLeft}{/Alt}{Control>}{Home}{/Control}{Meta>}{ArrowLeft}{/Meta}',
+    );
     expect(separator).toHaveAttribute('aria-valuenow', '80');
   });
 

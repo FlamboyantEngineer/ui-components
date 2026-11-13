@@ -38,7 +38,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.3 - Thumb semantics and keyboard
 
-Each thumb shall be a focusable `role="scrollbar"` named by the provider's `scrollVertically` or `scrollHorizontally` string, controlling the viewport (`aria-controls`), with `aria-orientation` and its value from 0 to the scroll range. Arrow keys along its axis scroll 40 pixels, Page Up and Page Down one visible length, Home and End to the ends.
+Each thumb shall be a focusable `role="scrollbar"` named by the provider's `scrollVertically` or `scrollHorizontally` string, controlling the viewport (`aria-controls`), with `aria-orientation` and its value from 0 to the scroll range. Arrow keys along its axis scroll 40 pixels, Page Up and Page Down one visible length, Home and End to the ends. A horizontal thumb's value counts from the inline start, so in a right-to-left region it is 0 at the right; Home goes to the inline start and End to the inline end, while the arrow keys keep their physical direction. These keys with Alt, Control or Meta, or during a text composition, are left to the browser and the system.
 
 Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
@@ -91,9 +91,9 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-3.1 - Overview paint
 
-With `overview` markers (or `overviewLayers`), in either scrollbar mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the native scrollbar or to paint the scrollbar track with; in overlay mode it comes before the tracks, so the reference sheet paints it on the vertical track's place, under the thumb. Scrolling and the scrollbars are untouched. A scroll container other than a region takes the same paint from [Scroll Overview](SCROLL-OVERVIEW.md). Content that fits paints nothing. Removing the markers or unmounting releases the observers and the pending frame.
+With `overview` markers (or `overviewLayers`), in either scrollbar mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the native scrollbar or to paint the scrollbar track with; in overlay mode it comes before the tracks, so the reference sheet paints it on the vertical track's place, under the thumb. Scrolling and the scrollbars are untouched. A scroll container other than a region takes the same paint from [Scroll Overview](SCROLL-OVERVIEW.md). Content that fits paints nothing. Markers equal field by field to the previous ones, as a host that writes them inline passes, keep the subscription and the painted image. Removing the markers or unmounting releases the observers and the pending frame.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `src/utils/observe-viewport.ts`, `labs/reference/scroll-region.css`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `src/utils/same-overview-layers.ts`, `src/utils/observe-viewport.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-3.2 - Marker mapping

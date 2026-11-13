@@ -461,6 +461,9 @@ describe('Disclosure accessibility', () => {
     expect(button('One')).toHaveFocus();
     await user.keyboard('{End}');
     expect(button('Four')).toHaveFocus();
+    // Chords are the browser's and the system's.
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}{Control>}{Home}{/Control}');
+    expect(button('Four')).toHaveFocus();
     button('Inner').focus();
     await user.keyboard('{ArrowDown}');
     expect(button('Inner')).toHaveFocus();

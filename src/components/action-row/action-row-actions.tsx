@@ -203,6 +203,7 @@ export function ActionRowActions({
 }: ActionRowActionsProps) {
   const { containerRef, visibleItems, hiddenItems } = useOverflowItems({
     items: isCollapsing ? actions : [],
+    getKey: toActionKey,
   });
   const focusRef = useOverflowFocus(focusSelectors);
   const toPress = useActionPending();

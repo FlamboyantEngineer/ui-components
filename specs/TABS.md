@@ -103,9 +103,9 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.8 - Removable and added tabs
 
-With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and announce `Delete` in `aria-keyshortcuts` (UIC-TABS-3.6). Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
+With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and announce `Delete` in `aria-keyshortcuts` (UIC-TABS-3.6). Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. Delete or Backspace with Alt, Control, Meta or Shift, or during a text composition, is left to the browser and the system and removes nothing. The caller removes the tab, and focus moves to a neighbouring tab. When the selected tab leaves the list, by these actions or otherwise, the list selects the tab that followed it, else the one before it (enabled tabs only), through the selection, so `onSelectionChange` reports it whether the selection is controlled or not and its panel shows; a selected key the list never held selects the first enabled tab. It asks once for each change of the tabs. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
 
-Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `labs/reference/tabs.css`
+Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-selection.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ## UIC-TABS-3 - Editing

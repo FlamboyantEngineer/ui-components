@@ -346,7 +346,7 @@ test.describe('Tabs lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-TABS-2.8 removes tabs by close mark or Delete and adds new ones', async ({
+  test('UIC-TABS-2.8 removes tabs by close mark or Delete, selects the next, and adds new ones', async ({
     page,
     lab,
   }) => {
@@ -360,9 +360,18 @@ test.describe('Tabs lab', () => {
     const groceries = demo.getByRole('tab', { name: 'Groceries' });
     await expect(groceries).toHaveAttribute('aria-selected', 'true');
     await groceries.focus();
+    // Chords are the browser's and the system's.
+    for (const chord of ['Alt+Backspace', 'Control+Delete', 'Shift+Delete']) {
+      await page.keyboard.press(chord);
+    }
+    await expect(output).toHaveText('Notes: Groceries, Travel');
     await page.keyboard.press('Delete');
     await expect(output).toHaveText('Notes: Travel');
-    await expect(demo.getByRole('tab', { name: 'Travel' })).toBeFocused();
+    // The host only removed the selected tab: the one after it is selected and focused.
+    const travel = demo.getByRole('tab', { name: 'Travel' });
+    await expect(travel).toBeFocused();
+    await expect(travel).toHaveAttribute('aria-selected', 'true');
+    await expect(demo.getByRole('tabpanel')).toHaveText('The travel note.');
     await demo.getByRole('button', { name: 'Add tab' }).click();
     await expect(output).toHaveText('Notes: Travel, Note 2');
     await expect(demo.getByRole('tab', { name: 'Note 2' })).toHaveAttribute(

@@ -275,7 +275,8 @@ describe('ScrollRegion', () => {
     expectHooksMatchSpec(container, 'SCROLL-REGION', { slots: ['viewport', 'track', 'thumb'] });
   });
 
-  it('UIC-SCROLL-REGION-2.2 measures a right-to-left horizontal thumb from the left edge', () => {
+  it('UIC-SCROLL-REGION-2.2 UIC-SCROLL-REGION-2.3 measures a right-to-left horizontal thumb from the left edge and counts its value from the right', async () => {
+    const user = userEvent.setup();
     viewports.set('wide', {
       clientHeight: 100,
       scrollHeight: 100,
@@ -296,7 +297,14 @@ describe('ScrollRegion', () => {
     // Track 110, thumb max(24, 110 * 100 / 400) = 27.5, at the right end at scroll start.
     expect(horizontal.style.width).toBe('27.5px');
     expect(horizontal.style.left).toBe('82.5px');
-    expect(horizontal).toHaveAttribute('aria-valuenow', '300');
+    // The value counts from the inline start, the right: 0 at the scroll start.
+    expect(horizontal).toHaveAttribute('aria-valuenow', '0');
+    // End goes to the inline end, the left, and Home back to the start.
+    horizontal.focus();
+    await user.keyboard('{End}');
+    expect(viewport.scrollLeft).toBe(-300);
+    await user.keyboard('{Home}');
+    expect(viewport.scrollLeft).toBe(0);
   });
 
   it.each([false, true])(
@@ -415,6 +423,9 @@ describe('ScrollRegion', () => {
     await user.keyboard('{Home}');
     expect(first.scrollTop).toBe(0);
     await user.keyboard('{PageDown}{ArrowDown}');
+    expect(first.scrollTop).toBe(120);
+    // Chords are the browser's and the system's.
+    await user.keyboard('{Control>}{End}{/Control}{Alt>}{ArrowDown}{/Alt}{Meta>}{Home}{/Meta}');
     expect(first.scrollTop).toBe(120);
   });
 
@@ -673,6 +684,33 @@ describe('ScrollRegion', () => {
     expect(root).not.toHaveAttribute('data-overview');
     expect(root.style.getPropertyValue('--ui-scroll-region-overview-image')).toBe('');
     expect(container.querySelector('.ui-scroll-region__overview')).toBeNull();
+  });
+
+  it('UIC-SCROLL-REGION-3.1 keeps its measuring while a host passes equal markers inline', () => {
+    let reads = 0;
+    const geometry = { clientHeight: 100, scrollHeight: 1000, clientWidth: 100, scrollWidth: 100 };
+    viewports.set(
+      'inline',
+      new Proxy(geometry, {
+        get(target, key: keyof Geometry) {
+          if (key === 'scrollHeight') reads += 1;
+          return target[key];
+        },
+      }),
+    );
+    const region = () => (
+      <ScrollRegion id="inline" overview={[{ top: 500, height: 10, color: 'red', priority: 0 }]} />
+    );
+    const { container, rerender } = render(region());
+    flushFrames();
+    const root = container.firstElementChild as HTMLElement;
+    const image = root.style.getPropertyValue('--ui-scroll-region-overview-image');
+    const before = reads;
+    for (let index = 0; index < 5; index += 1) rerender(region());
+    flushFrames();
+    // Equal markers neither subscribe again nor measure the viewport again.
+    expect(reads).toBe(before);
+    expect(root.style.getPropertyValue('--ui-scroll-region-overview-image')).toBe(image);
   });
 
   it('UIC-SCROLL-REGION-3.1 paints nothing for fitting content', () => {

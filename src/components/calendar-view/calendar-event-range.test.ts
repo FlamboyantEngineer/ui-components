@@ -115,10 +115,20 @@ describe('calendar event range', () => {
       start: '2026-03-16T10:00',
       end: '2026-03-16T11:30',
     });
+    // A start with Z or an offset takes the offset alone; one naming its zone keeps the name.
     const anchored = { ...wall, start: '2026-03-16T13:00:00Z' };
     expect(
       applyEdit(anchored, { title: 'Plan', isAllDay: false, range }, 'America/New_York'),
-    ).toEqual({ id: 1, title: 'Plan', ...range });
+    ).toEqual({
+      id: 1,
+      title: 'Plan',
+      start: '2026-03-16T10:00:00-04:00',
+      end: '2026-03-16T11:30:00-04:00',
+    });
+    const named = { ...wall, start: '2026-03-16T09:00:00-04:00[America/New_York]' };
+    expect(applyEdit(named, { title: 'Plan', isAllDay: false, range }, 'America/New_York')).toEqual(
+      { id: 1, title: 'Plan', ...range },
+    );
     expect(
       applyEdit(
         wall,

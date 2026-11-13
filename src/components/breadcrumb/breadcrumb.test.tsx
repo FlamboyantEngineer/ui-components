@@ -216,6 +216,9 @@ describe('Breadcrumb', () => {
     expect(await press(crumb('Alpha'), '{End}')).toBe('Charlie');
     expect(await press(crumb('Charlie'), '{Home}')).toBe('Alpha');
     expect(await press(crumb('Charlie'), '{ArrowLeft}')).toBe('Bravo');
+    // Alt+ArrowLeft goes back in the browser, and other chords are the browser's too.
+    expect(await press(crumb('Charlie'), '{Alt>}{ArrowLeft}{/Alt}')).toBe('Charlie');
+    expect(await press(crumb('Alpha'), '{Control>}{End}{/Control}')).toBe('Alpha');
   });
 
   it('UIC-BREADCRUMB-2.2 follows a re-render that changes the current crumb', async () => {

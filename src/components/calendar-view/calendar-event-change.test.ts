@@ -83,9 +83,19 @@ describe('calendar event change', () => {
       start: '2026-11-01T22:00',
       end: '2026-11-02T07:00',
     });
-    // A start with an offset keeps the editor's zoned form.
+    // A start with an offset or Z comes back with an offset alone, which Date reads.
     const anchored = place({ id: 'a', title: 'Audit', start: '2026-03-07T10:00:00-05:00' }, zone);
-    expect(changeEvent(anchored, move(1), zone)?.start).toBe(
+    const moved = changeEvent(anchored, move(1), zone)?.start;
+    expect(moved).toBe('2026-03-08T10:00:00-04:00');
+    expect(Number.isNaN(Date.parse(moved ?? ''))).toBe(false);
+    const utc = place({ id: 'u', title: 'Sync', start: '2026-05-04T14:00:00Z' }, zone);
+    expect(changeEvent(utc, move(1), zone)?.start).toBe('2026-05-05T10:00:00-04:00');
+    // A start that names its zone keeps the name.
+    const named = place(
+      { id: 'z', title: 'Review', start: '2026-03-07T10:00:00-05:00[America/New_York]' },
+      zone,
+    );
+    expect(changeEvent(named, move(1), zone)?.start).toBe(
       '2026-03-08T10:00:00-04:00[America/New_York]',
     );
   });

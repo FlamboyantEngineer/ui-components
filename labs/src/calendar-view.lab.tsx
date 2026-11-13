@@ -1,4 +1,4 @@
-import { type CSSProperties, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -185,6 +185,13 @@ function DraggableCalendar() {
   const [log, setLog] = useState('No change yet');
   const [dragMode, setDragMode] = useState<CalendarEventDragMode>('move');
   const [isDeclining, setDeclining] = useState(false);
+  const [isTicking, setTicking] = useState(false);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!isTicking) return undefined;
+    const timer = window.setInterval(() => setTick((tick) => tick + 1), 250);
+    return () => window.clearInterval(timer);
+  }, [isTicking]);
   return (
     <div style={frame(900)} data-lab-demo="dragging">
       <SegmentedChoice
@@ -203,9 +210,12 @@ function DraggableCalendar() {
       <Checkbox isSelected={isDeclining} onChange={setDeclining}>
         Decline changes
       </Checkbox>
+      <Checkbox isSelected={isTicking} onChange={setTicking}>
+        Re-render with copied events
+      </Checkbox>
       <CalendarView
         eventDragMode={dragMode}
-        events={items}
+        events={isTicking ? items.map((item) => ({ ...item })) : items}
         timeZone="America/New_York"
         getNow={getNow}
         defaultDate="2026-11-02"
@@ -533,7 +543,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving and resizing"
-      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Arrows with Shift, Control, Alt or Meta are left to the browser and change nothing. While held, the preview sits at the left of its day or on the first row of bars, over the others, which keep their places; the events are packed as usual once it is released. Escape or a cancelled pointer abandons a drag, and with Decline changes the host keeps each event as it was. Wednesday is crowded with blocks side by side and two rows of bars. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
+      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Arrows with Shift, Control, Alt or Meta are left to the browser and change nothing. While held, the preview sits at the left of its day or on the first row of bars, over the others, which keep their places; the events are packed as usual once it is released. Escape or a cancelled pointer abandons a drag, and with Decline changes the host keeps each event as it was. Re-render with copied events re-renders the host four times a second with fresh copies of its events, and a drag carries on. Wednesday is crowded with blocks side by side and two rows of bars. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
     >
       <DraggableCalendar />
     </LabSection>

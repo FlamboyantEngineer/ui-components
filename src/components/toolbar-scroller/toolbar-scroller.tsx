@@ -101,6 +101,7 @@ function useScrollerStrip<T extends ToolbarScrollerItem>(
   const collapse = useOverflowItems({
     items: isMenu && items ? items : noItems,
     getPriority: (item) => item.priority ?? 0,
+    getKey: (item) => item.id,
   });
   const focusRef = useOverflowFocus(focusSelectors);
   const { stripRef } = scroll;

@@ -12,6 +12,7 @@ import {
   useSlottedContext,
 } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -158,6 +159,8 @@ function useListKeys({ state, onRemove, rename, onReorderKey }: ListKeyOptions) 
     handlers.onKeyDown = (event) => {
       const key = focusedKey();
       if ((event.key !== 'Delete' && event.key !== 'Backspace') || key === null) return;
+      // A chord, such as Alt+Backspace or Shift+Delete, is the browser's or the system's.
+      if (!isFreeEditKey(event.nativeEvent) || event.shiftKey) return;
       event.preventDefault();
       onRemove(new Set([key]));
     };
