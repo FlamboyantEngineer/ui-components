@@ -296,6 +296,26 @@ describe('FindBar', () => {
     expect(onReplaceAll).not.toHaveBeenCalled();
   });
 
+  it('UIC-FIND-BAR-1.5 moves focus to the find box when a pressed button disables itself', async () => {
+    const user = userEvent.setup();
+    function Replacing() {
+      const [count, setCount] = useState(1);
+      return (
+        <FindBar
+          defaultQuery="pear"
+          matchCount={count}
+          currentIndex={0}
+          onReplace={() => setCount(0)}
+          onReplaceAll={() => setCount(0)}
+        />
+      );
+    }
+    render(<Replacing />);
+    await user.click(screen.getByRole('button', { name: 'Replace' }));
+    expect(screen.getByRole('button', { name: 'Replace' })).toBeDisabled();
+    expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveFocus();
+  });
+
   it('UIC-FIND-BAR-1.5 shows only the replace buttons asked for, with a controlled replacement', () => {
     const { rerender } = render(<FindBar matchCount={1} />);
     expect(screen.queryByRole('textbox', { name: 'Replace with' })).not.toBeInTheDocument();

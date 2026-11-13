@@ -10,6 +10,7 @@ import {
 } from '../scroll-region/scroll-region.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import type { CodeDiagnostic } from './code-layers.js';
+import { findLineStarts } from './find-line-starts.js';
 
 interface CodeScrollbarsProps {
   input: RefObject<HTMLTextAreaElement | null>;
@@ -25,7 +26,11 @@ interface CodeScrollMark {
   severity: string;
 }
 
-function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): CodeScrollMark[] {
+function measureMarks({
+  input,
+  gutter,
+  diagnostics,
+}: Pick<CodeScrollbarsProps, 'input' | 'gutter' | 'diagnostics'>): CodeScrollMark[] {
   const viewport = input.current;
   const lines = gutter.current?.children;
   if (!viewport || !lines || viewport.scrollHeight <= viewport.clientHeight) return [];
@@ -55,7 +60,8 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
 
 /** The editor's custom scrollbars share the native viewport, with diagnostics painted inside the vertical track. */
 export function CodeScrollbars(props: CodeScrollbarsProps) {
-  const { input, inputId, gutter, value, wrap } = props;
+  const { input, inputId, gutter, diagnostics, value, wrap } = props;
+  const lineCount = findLineStarts(value).length;
   const observer = useSharedViewportObserver(input);
   const measurement = useOverlayMetrics({
     viewport: input,
@@ -74,7 +80,7 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
   }, [input, schedule, value, wrap]);
   useEffect(() => {
     const update = () => {
-      const next = measureMarks(props);
+      const next = measureMarks({ input, gutter, diagnostics });
       setMarks((previous) =>
         previous.length === next.length &&
         previous.every(
@@ -88,6 +94,8 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
       );
     };
     update();
+    // A line that wraps anew moves the marks after it without resizing the gutter, so each row is
+    // watched; the rows are watched again only when lines are added or removed, not per keystroke.
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
     if (input.current) observer?.observe(input.current);
     if (gutter.current) {
@@ -95,7 +103,7 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
       for (const line of gutter.current.children) observer?.observe(line);
     }
     return () => observer?.disconnect();
-  }, [props, input, gutter]);
+  }, [input, gutter, diagnostics, wrap, lineCount]);
   const { metrics } = measurement;
   return (
     <div {...hooks.slot('scrollbars')}>

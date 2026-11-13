@@ -23,4 +23,5 @@ export type {
   MarkdownThematicBreak,
 } from './markdown-nodes.js';
 export type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
+export type { MarkdownImagePolicy } from './markdown-render.js';
 export { parseMarkdown } from './parse-markdown.js';

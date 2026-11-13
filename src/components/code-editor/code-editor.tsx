@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { FieldInputProps } from '../field/field.js';
 import { CodeField } from './code-field.js';
 import { type CodeLanguage, type CodeSyntax, resolveCodeTokenizer } from './code-languages.js';
@@ -30,17 +31,19 @@ export interface CodeEditorSurfaceProps extends CodeSurfaceProps, CodeLanguageOp
 }
 export type CodeEditorProps = CodeEditorFieldProps | CodeEditorSurfaceProps;
 
+/** An embedded surface; a custom `syntax` builds its tokenizer once, not on every render. */
+function SurfaceEditor(props: CodeEditorSurfaceProps) {
+  const { variant: _variant, syntax, language = 'text', ...surface } = props;
+  const tokenize = useMemo(
+    () => surface.tokenize ?? resolveCodeTokenizer({ language, syntax }),
+    [surface.tokenize, language, syntax],
+  );
+  return <CodeSurface {...surface} language={language} tokenize={tokenize} />;
+}
+
 /** A code field, or an embedded surface, with preset or custom syntax and located diagnostics. */
 export function CodeEditor(props: CodeEditorProps) {
-  if (props.variant !== 'surface') return <CodeField {...props} />;
-  const { variant: _variant, syntax, language = 'text', ...surface } = props;
-  return (
-    <CodeSurface
-      {...surface}
-      language={language}
-      tokenize={surface.tokenize ?? resolveCodeTokenizer({ language, syntax })}
-    />
-  );
+  return props.variant === 'surface' ? <SurfaceEditor {...props} /> : <CodeField {...props} />;
 }
 
 export type { CodeLanguage, CodeSyntax, CodeSyntaxRule } from './code-languages.js';

@@ -5,7 +5,7 @@ import {
   useEditorEventCallback,
   useStopEvent,
 } from '@handlewithcare/react-prosemirror';
-import { useContext, useRef } from 'react';
+import { useContext, useId, useRef } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -32,6 +32,8 @@ export function TaskItemView({
   // The editor leaves events on the checkbox to it, so a press ticks the box instead of moving the caret.
   useStopEvent((_view, event) => box.current?.contains(event.target as Node | null) ?? false);
   const hookProps = hooks.slot('task-item', { checked: isChecked });
+  // Every checkbox has the same name; the item's text describes it, so each one is told apart.
+  const contentId = useId();
   return (
     <li
       {...props}
@@ -43,13 +45,14 @@ export function TaskItemView({
         <Checkbox
           size="sm"
           aria-label={strings.taskDone}
+          aria-describedby={contentId}
           isSelected={isChecked}
           isDisabled={isDisabled}
           isReadOnly={!isEditable && !isDisabled}
           onChange={setChecked}
         />
       </span>
-      <div {...hooks.slot('task-content')} ref={contentDOMRef}>
+      <div {...hooks.slot('task-content')} id={contentId} ref={contentDOMRef}>
         {children}
       </div>
     </li>

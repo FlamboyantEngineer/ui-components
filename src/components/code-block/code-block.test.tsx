@@ -118,6 +118,28 @@ describe('CodeBlock', () => {
     expect(await navigator.clipboard.readText()).toBe('ok\ndone');
   });
 
+  it('UIC-CODE-BLOCK-2.1 UIC-CODE-BLOCK-3.1 keeps a command’s continuation lines', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <CodeBlock
+        variant="terminal"
+        code={'$ rm -rf build \\\n    dist\n$ echo a\\\\\nfile.txt\n$ ls'}
+      />,
+    );
+    // The second line continues the first; an even run of backslashes ends its line.
+    await user.click(screen.getByRole('button', { name: 'Copy commands' }));
+    expect(await navigator.clipboard.readText()).toBe('rm -rf build \\\n    dist\necho a\\\\\nls');
+    const lines = [...container.querySelectorAll('.ui-code-block__line')];
+    expect(lines.map((line) => line.getAttribute('data-kind'))).toEqual([
+      'command',
+      'command',
+      'command',
+      'output',
+      'command',
+    ]);
+    expect(lines[1]?.querySelector('.ui-code-block__prompt')).toBeNull();
+  });
+
   it('UIC-CODE-BLOCK-2.2 offers Apply only with onApply and hands over the value', async () => {
     const user = userEvent.setup();
     const onApply = vi.fn();

@@ -300,6 +300,34 @@ describe('SearchPane', () => {
     }
   });
 
+  it('UIC-SEARCH-PANE-2.2 scrolls the current row into view when the list mounts, and once only', () => {
+    const original = Element.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      const results = makeResults(30);
+      const { rerender } = render(pane({ results, currentKey: 'r25', maxMountedResults: 10 }));
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(scrollIntoView.mock.contexts[0]).toHaveTextContent('Section 25');
+      // A host render with fresh but equal results does not scroll again.
+      rerender(pane({ results: makeResults(30), currentKey: 'r25', maxMountedResults: 10 }));
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('UIC-SEARCH-PANE-2.3 moves focus to the first row of a turned page', async () => {
+    const user = userEvent.setup();
+    render(pane({ results: makeResults(6), maxMountedResults: 2 }));
+    await user.click(screen.getByRole('button', { name: 'Show 4 more results' }));
+    await waitFor(() => expect(within(list()).getAllByRole('option')[0]).toHaveFocus());
+    await user.click(screen.getByRole('button', { name: 'Show 2 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 5');
+    // The list box first takes focus from the row that went; the request takes it back.
+    await waitFor(() => expect(within(list()).getAllByRole('option')[0]).toHaveFocus());
+  });
+
   it('UIC-SEARCH-PANE-2.3 mounts the requested page size while counting every result', () => {
     const results = makeResults(650);
     const { container } = render(pane({ results, maxMountedResults: 200 }));

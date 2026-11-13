@@ -11,6 +11,7 @@ import { Separator } from '../separator/separator.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type {
   MarkdownBlock,
+  MarkdownImage,
   MarkdownInline,
   MarkdownListItem,
   MarkdownNode,
@@ -23,7 +24,11 @@ export interface RenderContext {
   renderNode: MarkdownRenderNode | undefined;
   headingIdPrefix: string | undefined;
   headingIds: ReadonlySet<string>;
+  images: MarkdownImagePolicy;
 }
+
+/** How a Markdown image shows: loaded from its source, or as a link to it named by its text. */
+export type MarkdownImagePolicy = 'show' | 'link';
 
 /**
  * A node to render, whether it sits directly in an item of a tight list, whether it sits inside a
@@ -36,7 +41,13 @@ interface RenderEntry extends MarkdownNodePlace {
   key?: number;
 }
 
-export const markdownHooks = createHooks('markdown', ['code-block', 'code', 'task', 'image']);
+export const markdownHooks = createHooks('markdown', [
+  'code-block',
+  'code',
+  'task',
+  'image',
+  'image-link',
+]);
 
 const hooks = markdownHooks;
 
@@ -125,7 +136,7 @@ function renderNode(entry: RenderEntry, mapped: ReactNode[], context: RenderCont
   const custom = context.renderNode?.(node, children, { isInteractive: entry.isInteractive });
   if (custom !== undefined) return custom;
   return isInline(node)
-    ? renderInline(node, children, context)
+    ? renderInline(node, children, { context, isInteractive: entry.isInteractive })
     : renderBlock({ node, isTight: entry.isTight }, mapped, context);
 }
 
@@ -163,7 +174,41 @@ function resolveHref(href: string, context: RenderContext): string {
   return id === undefined ? href : `#${headingIdPrefix}${id}`;
 }
 
-function renderInline(node: MarkdownInline, children: ReactNode, context: RenderContext) {
+/**
+ * An image: loaded from its source, or with the `link` policy a link to the source named by its
+ * text (the address where it has none), as plain text inside another link.
+ */
+function renderImage(node: MarkdownImage, context: RenderContext, isInteractive: boolean) {
+  if (context.images === 'show') {
+    return (
+      <img
+        {...hooks.slot('image')}
+        {...untrustedImageProps}
+        src={node.src}
+        alt={node.alt}
+        title={node.title || undefined}
+      />
+    );
+  }
+  const text = node.alt || node.src;
+  if (isInteractive) return <span {...hooks.slot('image-link')}>{text}</span>;
+  return (
+    <Link
+      className={hooks.slotClass('image-link')}
+      href={node.src}
+      isExternal={externalUrl.test(node.src)}
+      title={node.title || undefined}
+    >
+      {text}
+    </Link>
+  );
+}
+
+function renderInline(
+  node: MarkdownInline,
+  children: ReactNode,
+  { context, isInteractive }: { context: RenderContext; isInteractive: boolean },
+) {
   switch (node.type) {
     case 'text':
       return <TextMatch>{node.text}</TextMatch>;
@@ -190,15 +235,7 @@ function renderInline(node: MarkdownInline, children: ReactNode, context: Render
         </Link>
       );
     case 'image':
-      return (
-        <img
-          {...hooks.slot('image')}
-          {...untrustedImageProps}
-          src={node.src}
-          alt={node.alt}
-          title={node.title || undefined}
-        />
-      );
+      return renderImage(node, context, isInteractive);
     case 'lineBreak':
       return <br />;
   }

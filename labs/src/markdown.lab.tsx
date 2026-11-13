@@ -255,6 +255,18 @@ mountLab(
     >
       <Markdown source={overrides} renderNode={renderOverride} data-lab-overrides />
     </LabSection>
+    <LabSection
+      title="Images as links"
+      description="With images=link, an untrusted reply loads no image: each is a link to its source named by its text, and inside another link only its text."
+    >
+      <Markdown
+        images="link"
+        source={
+          'A note with ![a pear](https://example.com/pear.png "Pear") and [a link with ![a fig](fig.png)](#figs).'
+        }
+        data-lab-image-links
+      />
+    </LabSection>
     <MarkdownOverrideSections />
     <LabSection
       title="Streaming"

@@ -12,13 +12,14 @@ import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useSyncedScroll } from '../../utils/use-synced-scroll.js';
 import { ChangeNavigation } from '../text-diff/text-diff.js';
 import type { MergeSide } from './merge-blocks.js';
+import type { MergeViewResult } from './merge-result.js';
 import { mergeViewHooks as hooks } from './merge-view-hooks.js';
 import { getConflictId, type MergeLabels, MergeResultPane } from './merge-view-result.js';
 import { MergeSidePane } from './merge-view-sides.js';
-import { type MergeViewResult, useMergeState } from './use-merge-state.js';
+import { useMergeState } from './use-merge-state.js';
 
 export type { MergeResolution } from './merge-blocks.js';
-export type { MergeViewResult } from './use-merge-state.js';
+export type { MergeViewResult } from './merge-result.js';
 
 export interface MergeViewProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The common ancestor both sides changed. */

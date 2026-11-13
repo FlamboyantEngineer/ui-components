@@ -70,13 +70,13 @@ describe('merge blocks', () => {
   it('UIC-MERGE-VIEW-2.5 joins clean lines and conflict results into the merged text', () => {
     const blocks = createMergeBlocks(mergeThreeWay(base, ours, theirs));
     const merge = (states: ConflictState[], hasFinalBreak = false) =>
-      createMergeText({ blocks, states, markers, hasFinalBreak });
+      createMergeText({ blocks, states, markers, ours: hasFinalBreak ? `${ours}\n` : ours });
     expect(merge([{ resolution: 'theirs' }])).toBe('flour\nbrown sugar\neggs\ncream\nbutter\nsalt');
     expect(merge([{ resolution: 'edited', text: '' }], true)).toBe(
       'flour\nbrown sugar\neggs\nsalt\n',
     );
     expect(merge([{ resolution: 'unresolved' }])).toContain('<<<<<<< Ours\noat milk\n=======');
-    expect(createMergeText({ blocks: [], states: [], markers, hasFinalBreak: true })).toBe('');
+    expect(createMergeText({ blocks: [], states: [], markers, ours: 'a\n' })).toBe('');
   });
 
   it('UIC-MERGE-VIEW-2.5 keeps empty lines a resolution takes, apart from deleted ones', () => {
@@ -86,7 +86,7 @@ describe('merge blocks', () => {
         resolution === 'edited' ? { resolution, text: '' } : { resolution }
       ) as ConflictState;
       const states = blocks.flatMap((block) => (block.conflict === null ? [] : [state]));
-      return createMergeText({ blocks, states, markers, hasFinalBreak: sides[1].endsWith('\n') });
+      return createMergeText({ blocks, states, markers, ours: sides[1] });
     };
     expect(merge(['a\nX\nb', 'a\n\nb', 'a\nY\nb'], 'ours')).toBe('a\n\nb');
     expect(merge(['a\n\nb', 'a\nX\nb', 'a\nY\nb'], 'base')).toBe('a\n\nb');

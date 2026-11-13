@@ -76,6 +76,21 @@ describe('text diff rows', () => {
     expect(requireDefined(block.added[2]).words).toBeNull();
   });
 
+  it('UIC-TEXT-DIFF-1.2 shares one word budget across the comparison', () => {
+    // Twenty pairs of long lines, each pair 10,000 characters: the first ten fit the budget.
+    const long = (word: string, index: number) => `${index} ${word} ${'shared words '.repeat(384)}`;
+    const before = Array.from({ length: 40 }, (_, index) =>
+      index % 2 ? `kept ${index}` : long('old', index),
+    );
+    const after = Array.from({ length: 40 }, (_, index) =>
+      index % 2 ? `kept ${index}` : long('new', index),
+    );
+    const marked = createDiffBlocks(before.join('\n'), after.join('\n')).flatMap((block) =>
+      block.kind === 'change' ? block.removed.map((line) => line.words !== null) : [],
+    );
+    expect(marked).toEqual([...Array<boolean>(10).fill(true), ...Array<boolean>(10).fill(false)]);
+  });
+
   it('UIC-TEXT-DIFF-1.3 lists a change as its removed lines, then its added lines', () => {
     const blocks = createDiffBlocks('a\nb\nc', 'a\nB\nC\nD');
     expect(describeUnified(createUnifiedRows(blocks, { context: 3, expanded: new Set() }))).toEqual(

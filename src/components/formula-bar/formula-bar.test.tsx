@@ -229,6 +229,8 @@ describe('FormulaBar', () => {
     await user.keyboard('0');
     await user.click(screen.getByRole('button', { name: 'Confirm' }));
     expect(onCommit).toHaveBeenLastCalledWith('=B1*2+10', { row: 0, column: 0 });
+    // The button disabled itself: the editor takes focus back, and its keys work again.
+    expect(contentBox()).toHaveFocus();
   });
 
   it('UIC-FORMULA-BAR-3.4 drops the buttons and describes the keys instead', async () => {
@@ -330,6 +332,7 @@ describe('FormulaBar', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(contentBox()).toHaveValue('=B1*2');
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(contentBox()).toHaveFocus();
     expect(onCommit).not.toHaveBeenCalled();
   });
 

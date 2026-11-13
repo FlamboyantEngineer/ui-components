@@ -120,21 +120,25 @@ export function getConflictText(
 }
 
 /**
- * The merged text: clean chunks' lines and each conflict's result lines in order, ending with a
- * line break when our text does and the merge has a line, even an empty one.
+ * The merged text: clean chunks' lines and each conflict's result lines in order, joined by the
+ * first line break `ours` uses (`\n` when it has none), and ending with one when `ours` does and the
+ * merge has a line, even an empty one.
  */
 export function createMergeText(options: {
   blocks: readonly MergeBlock[];
   states: readonly ConflictState[];
   markers: ConflictMarkers;
-  hasFinalBreak: boolean;
+  ours: string;
 }): string {
-  const { blocks, states, markers, hasFinalBreak } = options;
+  const { blocks, states, markers, ours } = options;
   const lines = blocks.flatMap((block) =>
     block.conflict === null
       ? getCleanLines(block.chunk)
       : getConflictLines(block.chunk, requireDefined(states[block.conflict]), markers),
   );
-  const text = lines.join('\n');
-  return hasFinalBreak && lines.length > 0 ? `${text}\n` : text;
+  const lineBreak = /\r\n|\r|\n/.exec(ours)?.[0] ?? '\n';
+  const text = lines.join(lineBreak);
+  return finalBreak.test(ours) && lines.length > 0 ? `${text}${lineBreak}` : text;
 }
+
+const finalBreak = /(?:\r\n|\r|\n)$/;

@@ -43,14 +43,14 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 
 ### UIC-SEARCH-PANE-2.2 - Current row in view
 
-Whenever the current result changes, by stepping, by choosing a row or from the host, its row shall scroll into view (to the nearest edge), so the list follows the stepping even while focus stays in the query box.
+Whenever the current result changes, by stepping, by choosing a row or from the host, its row shall scroll into view (to the nearest edge), so the list follows the stepping even while focus stays in the query box; so does the current row when the list first draws it or a turned page shows it, and a render that changes nothing scrolls nothing.
 
 Implementation: `src/components/search-pane/search-results.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
 
 ### UIC-SEARCH-PANE-2.3 - Mounted rows
 
-The list shall mount at most `maxMountedResults` rows (200 by default), a page of results that starts at a multiple of that number and holds the current result. A Show earlier button (`ui-search-pane__show-earlier`, the provider's `showEarlierResults` string with how many come before) before the list and a Show more button (`ui-search-pane__show-later`, `showLaterResults` with how many come after) after it turn the page until the current result changes; a later change back to an earlier current result follows it again rather than restoring the page turned for it. The cap never limits the count or stepping, which cover every result.
+The list shall mount at most `maxMountedResults` rows (200 by default), a page of results that starts at a multiple of that number and holds the current result. A Show earlier button (`ui-search-pane__show-earlier`, the provider's `showEarlierResults` string with how many come before) before the list and a Show more button (`ui-search-pane__show-later`, `showLaterResults` with how many come after) after it turn the page until the current result changes, and move focus to the first row of the page they turn to, as the button pressed may go; a later change back to an earlier current result follows it again rather than restoring the page turned for it. The cap never limits the count or stepping, which cover every result.
 
 Implementation: `src/components/search-pane/search-results.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`

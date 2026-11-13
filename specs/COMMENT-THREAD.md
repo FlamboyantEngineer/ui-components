@@ -90,7 +90,7 @@ Verification: `src/components/comment-thread/comment-thread-activity.test.tsx`, 
 
 ### UIC-COMMENT-THREAD-1.13 - Highlighted comment
 
-`highlightedId` shall name the comment, by its element's `id` prop (a `CommentThreadReply`'s `id`), to point the reader at, such as the one a link opened: its `ui-comment-thread__item` publishes `data-highlighted`, a hidden reply behind the show-more button is revealed with the rest, and each time `highlightedId` changes the item scrolls into view with the nearest alignment, so a thread inside a scrolled panel moves no more than needed. Focus stays where it is.
+`highlightedId` shall name the comment, by its element's `id` prop (a `CommentThreadReply`'s `id`), to point the reader at, such as the one a link opened: its `ui-comment-thread__item` publishes `data-highlighted`, a hidden reply behind the show-more button is revealed with the rest, and each time `highlightedId` changes, or the comment it names arrives after it, the item scrolls into view with the nearest alignment, so a thread inside a scrolled panel moves no more than needed. Focus stays where it is.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread-activity.test.tsx`, `e2e/comment-thread.spec.ts`

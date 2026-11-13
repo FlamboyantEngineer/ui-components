@@ -48,22 +48,37 @@ export function toComposerLabelling(props: MessageComposerSharedProps, fallback:
   };
 }
 
+/** The longest start of `text`, in whole characters, that fits in `room` UTF-16 units. */
+function fitText(text: string, room: number): string {
+  if (text.length <= room) return text;
+  let fitted = '';
+  for (const character of text) {
+    if (fitted.length + character.length > room) break;
+    fitted += character;
+  }
+  return fitted;
+}
+
 /**
  * Inserting text at the text area's caret, and putting the caret after it once focus is back. A
  * mention or command goes in as its text, since the plain composer has no pills. A disabled
- * composer takes nothing, such as an emoji chosen as it locked.
+ * composer takes nothing, such as an emoji chosen as it locked; with `maxLength`, only what fits
+ * goes in, as typing would.
  */
 function useCaretInsertion(
   inputRef: RefObject<HTMLTextAreaElement | null>,
   text: { value: string; setValue: (value: string) => void },
-  isDisabled: boolean,
+  { isDisabled, maxLength }: { isDisabled: boolean; maxLength: number | undefined },
 ) {
   const caret = useRef<number | null>(null);
-  const insertText = (inserted: string) => {
+  const insertText = (given: string) => {
     if (isDisabled) return;
     const area = inputRef.current;
     const start = area?.selectionStart ?? text.value.length;
     const end = area?.selectionEnd ?? start;
+    const room = maxLength === undefined ? Infinity : maxLength - text.value.length + end - start;
+    const inserted = fitText(given, room);
+    if (inserted === '' && given !== '') return;
     caret.current = start + inserted.length;
     text.setValue(`${text.value.slice(0, start)}${inserted}${text.value.slice(end)}`);
   };
@@ -106,7 +121,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
     setValue: state.setValue,
   });
   const model = completions ? completion.model : null;
-  const caret = useCaretInsertion(inputRef, state, isDisabled);
+  const caret = useCaretInsertion(inputRef, state, { isDisabled, maxLength: props.maxLength });
   const actions = { ...state, keys, onCancel: props.onCancel };
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),

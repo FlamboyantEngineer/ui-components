@@ -93,6 +93,29 @@ describe('MessageComposer frame', () => {
     expect(onAttach).toHaveBeenCalledTimes(3);
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.2 pastes text copied with a picture of it as text, and attaches a copied image', async () => {
+    const user = userEvent.setup();
+    const onAttach = vi.fn();
+    render(<MessageComposer onAttach={onAttach} />);
+    const picture = file('Copied.png', 'image/png');
+    const clipboard = (data: Record<string, string>) => ({
+      ...filesTransfer([picture]),
+      types: ['Files', ...Object.keys(data)],
+      getData: (type: string) => data[type === 'text' ? 'text/plain' : type] ?? '',
+    });
+    await user.click(input());
+    await user.paste(
+      clipboard({ 'text/html': '<b>Pears</b>', 'text/plain': 'Pears' }) as unknown as DataTransfer,
+    );
+    expect(onAttach).not.toHaveBeenCalled();
+    expect(input()).toHaveValue('Pears');
+    await user.paste(clipboard({ 'text/html': '<img src="x.png">' }) as unknown as DataTransfer);
+    expect(onAttach).toHaveBeenLastCalledWith([picture]);
+    await user.paste(clipboard({ 'text/plain': 'Copied.png' }) as unknown as DataTransfer);
+    expect(onAttach).toHaveBeenCalledTimes(2);
+    expect(input()).toHaveValue('Pears');
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.2 renders no attach button without onAttach', () => {
     render(<MessageComposer startControls={<MessageComposerAttachButton />} />);
     expect(screen.queryByRole('button', { name: 'Attach files' })).not.toBeInTheDocument();
