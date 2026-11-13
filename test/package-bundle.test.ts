@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -54,6 +54,42 @@ globalThis.selectedGlyph = PlusGlyph;`,
     const withoutCssEffects = await bundleConsumer(consumer, cssImport);
     expect(withoutCssEffects).not.toContain('.ui-button');
     expect(withoutCssEffects).not.toContain('@layer ui-reference');
+  } finally {
+    rmSync(consumer, { recursive: true, force: true });
+  }
+}, 120_000);
+
+it('UIC-LABS-1.9 emits self-hosted fonts only when fonts.css is explicitly imported in a production consumer', async () => {
+  // Packing and two real production compilations outlive the default DOM test timeout.
+  const consumer = mkdtempSync(join(tmpdir(), 'ui-font-consumer-'));
+  try {
+    installPackedConsumer(consumer);
+    const without = (await bundle(consumer, cssImport, { name: 'without-fonts' })) as {
+      code: string;
+    };
+    expect(without.code).not.toContain('@font-face');
+    expect(
+      readdirSync(join(consumer, 'output/without-fonts')).filter((file) => file.endsWith('.woff2')),
+    ).toEqual([]);
+    const withFonts = (await bundle(
+      consumer,
+      `${cssImport}\nimport '@flamboyantengineer/ui-components/fonts.css';`,
+      { name: 'with-fonts' },
+    )) as { code: string };
+    expect(withFonts.code).toContain('@font-face');
+    expect(withFonts.code).toContain('Geist Mono');
+    expect(withFonts.code).toContain('.ui-button');
+    const fonts = readdirSync(join(consumer, 'output/with-fonts')).filter((file) =>
+      file.endsWith('.woff2'),
+    );
+    expect(fonts.length).toBeGreaterThanOrEqual(4);
+    for (const font of fonts) {
+      expect(
+        readFileSync(join(consumer, 'output/with-fonts', font))
+          .subarray(0, 4)
+          .toString(),
+      ).toBe('wOF2');
+    }
   } finally {
     rmSync(consumer, { recursive: true, force: true });
   }

@@ -1,0 +1,3 @@
+# Keep generated font declarations canonical and upstream assets byte-for-byte in release tags.
+labs/build/fonts.css text eol=lf
+labs/build/vendor/fonts/* -text

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds and checks the package once, then tags the version in package.json as `v<version>` on a
 // release commit: the current commit plus every built file the package exports (`dist/` and the
-// reference stylesheet), with a manifest that has no `prepare` script. Installing the tag therefore
+// reference stylesheet and optional fonts), with a manifest that has no `prepare` script. Installing the tag therefore
 // installs no development dependencies and builds nothing. Packs the library tarball, from the tree
 // it tagged, and the standalone labs archive for the GitHub Release.
 // Run on `main`, up to date with `origin/main`, with a clean tree, after the version bump merged:
@@ -12,12 +12,13 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { FONT_DIRECTORY, FONT_STYLESHEET } from './lib/fonts.mjs';
 import { packTarball, runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/script.mjs';
 import { extractTarGz } from './lib/tar.mjs';
 
-const BUILT = ['dist', REFERENCE_STYLESHEET];
+const BUILT = ['dist', REFERENCE_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY];
 
 const git = (args, options = {}) =>
   execFileSync('git', args, { cwd: root, encoding: 'utf8', ...options }).trim();

@@ -55,6 +55,7 @@
       "default": "./dist/components/*/index.js"
     },
     "./reference.css": "./labs/build/reference.css",
+    "./fonts.css": "./labs/build/fonts.css",
     "./package.json": "./package.json"
   },
   "bin": {
@@ -66,6 +67,8 @@
     "src",
     "!src/**/*.test.*",
     "labs/build/reference.css",
+    "labs/build/fonts.css",
+    "labs/build/vendor/fonts",
     "bin/serve-labs.mjs",
     "bin/lab-server.mjs",
     "specs",

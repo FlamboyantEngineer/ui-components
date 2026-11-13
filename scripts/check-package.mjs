@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
+import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
 import { packTarball } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 import { reportProblems, root } from './lib/script.mjs';
@@ -36,6 +37,11 @@ for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
 }
 
 const problems = [];
+const labAssets = new Set([
+  REFERENCE_STYLESHEET,
+  FONT_STYLESHEET,
+  ...Object.keys(createFontBundle().files),
+]);
 const workDir = mkdtempSync(join(tmpdir(), 'ui-package-'));
 
 try {
@@ -52,12 +58,12 @@ try {
     'dist/labs/index.d.ts',
     'bin/serve-labs.mjs',
     'bin/lab-server.mjs',
-    REFERENCE_STYLESHEET,
+    ...labAssets,
   ]) {
     if (!files.has(required)) problems.push(`tarball is missing ${required}`);
   }
   for (const file of files) {
-    if (file.startsWith('labs/') && file !== REFERENCE_STYLESHEET) {
+    if (file.startsWith('labs/') && !labAssets.has(file)) {
       problems.push(`library tarball must not contain ${file}`);
     }
     if (
@@ -87,6 +93,7 @@ try {
   extractTarGz(join(workDir, pack.filename), extractDir);
 
   const installed = join(extractDir, 'package');
+  problems.push(...fontBundleProblems(installed));
   if (files.has(REFERENCE_STYLESHEET)) {
     const css = readFileSync(join(installed, REFERENCE_STYLESHEET), 'utf8');
     problems.push(...referenceStylesheetProblems(css));

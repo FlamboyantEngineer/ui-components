@@ -26,6 +26,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
 import { runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 import { reportProblems, root } from './lib/script.mjs';
@@ -69,6 +70,9 @@ if (library.Button !== Button || !markup.includes('ui-button') || !markup.includ
 }
 if (!import.meta.resolve('${PACKAGE}/reference.css').endsWith('/${REFERENCE_STYLESHEET}')) {
   throw new Error('${PACKAGE}/reference.css does not resolve to ${REFERENCE_STYLESHEET}');
+}
+if (!import.meta.resolve('${PACKAGE}/fonts.css').endsWith('/${FONT_STYLESHEET}')) {
+  throw new Error('${PACKAGE}/fonts.css does not resolve to ${FONT_STYLESHEET}');
 }
 `,
   'render-rich-text.mjs': `
@@ -117,6 +121,12 @@ function npm(args) {
 
 function check(phase) {
   const installed = join(consumer, 'node_modules', ...PACKAGE.split('/'));
+  const labAssets = new Set([
+    REFERENCE_STYLESHEET,
+    FONT_STYLESHEET,
+    ...Object.keys(createFontBundle().files),
+  ]);
+  for (const problem of fontBundleProblems(installed)) problems.push(`${phase}: ${problem}`);
   for (const file of ['dist/index.js', 'dist/index.d.ts', REFERENCE_STYLESHEET]) {
     const path = join(installed, file);
     if (!existsSync(path) || statSync(path).size === 0) {
@@ -130,13 +140,18 @@ function check(phase) {
   }
   const labFiles = existsSync(join(installed, 'labs'))
     ? readdirSync(join(installed, 'labs'), { recursive: true })
-        .map((name) => `labs/${String(name)}`)
-        .filter((path) => statSync(join(installed, path)).isFile() && path !== REFERENCE_STYLESHEET)
+        .map((name) => `labs/${String(name).replaceAll('\\', '/')}`)
+        .filter((path) => statSync(join(installed, path)).isFile() && !labAssets.has(path))
     : [];
   if (labFiles.length > 0) {
     problems.push(`${phase}: the installed package contains labs, such as ${labFiles[0]}`);
   }
-  for (const name of [...richTextPeers, 'katex']) {
+  for (const name of [
+    ...richTextPeers,
+    'katex',
+    '@fontsource-variable/geist',
+    '@fontsource-variable/geist-mono',
+  ]) {
     if (existsSync(join(consumer, 'node_modules', ...name.split('/')))) {
       problems.push(`${phase}: the optional peer ${name} was installed`);
     }

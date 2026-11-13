@@ -14,6 +14,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
 import { labsDir, listLabPages, root } from './lib/labs.mjs';
 import { createTarGz, extractTarGz } from './lib/tar.mjs';
 
@@ -30,9 +31,8 @@ const required = [
   'build/vendor/pdf.min.mjs',
   'build/vendor/pdf.worker.min.mjs',
   'build/vendor/LICENSE',
-  'build/vendor/fonts/LICENSE',
-  'build/vendor/fonts/geist-latin-wght-normal.woff2',
-  'build/vendor/fonts/geist-mono-latin-wght-normal.woff2',
+  FONT_STYLESHEET.replace(/^labs\//, ''),
+  ...Object.keys(createFontBundle().files).map((file) => file.replace(/^labs\//, '')),
   'build/samples/seasonal-report.pdf',
   'build/samples/seasonal-report-locked.pdf',
   'build/samples/landscape.svg',
@@ -55,6 +55,8 @@ try {
   const extract = join(workDir, 'extract');
   mkdirSync(extract);
   extractTarGz(archive, extract);
+  const fontProblems = fontBundleProblems(extract);
+  if (fontProblems.length > 0) throw new Error(fontProblems.join('\n'));
   for (const file of required) {
     if (statSync(join(extract, 'labs', file)).size === 0) throw new Error(`Empty labs/${file}`);
   }
