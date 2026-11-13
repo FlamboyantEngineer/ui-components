@@ -270,11 +270,67 @@ describe('ChatList', () => {
   it('UIC-CHAT-LIST-1.8 stands placeholder rows in for loading conversations', () => {
     const { container } = render(<ChatList conversations={conversations} isLoading />);
     expect(container.firstElementChild).toHaveAttribute('data-loading', 'true');
-    expect(container.querySelectorAll('.ui-chat-list__skeleton')).toHaveLength(4);
+    expect(container.firstElementChild).toHaveAttribute('data-loading-rows', 'titles');
+    const placeholders = container.querySelectorAll('.ui-chat-list__skeleton');
+    expect(placeholders).toHaveLength(6);
+    expect(placeholders[0]).toHaveAttribute('aria-hidden', 'true');
+    expect(placeholders[0]?.querySelector('.ui-chat-list__skeleton-start')).toBeNull();
+    expect(placeholders[0]?.querySelectorAll('.ui-skeleton-text__line')).toHaveLength(1);
     expect(screen.getByRole('status')).toHaveTextContent('Loading conversations');
     expect(container.querySelector('[aria-busy="true"] [role="status"]')).toBeNull();
     expect(screen.queryByRole('row', { name: /Ana Lima/ })).not.toBeInTheDocument();
-    expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['skeleton'] });
+    expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['skeleton', 'skeleton-text'] });
+  });
+
+  it('UIC-CHAT-LIST-1.8 shapes the placeholder rows by loadingRows', () => {
+    const { container, rerender } = render(
+      <ChatList conversations={[]} isLoading loadingRows="icons" />,
+    );
+    const root = container.firstElementChild;
+    expect(root).toHaveAttribute('data-loading-rows', 'icons');
+    const start = container.querySelector('.ui-chat-list__skeleton-start');
+    expect(start).toHaveAttribute('data-shape', 'rectangle');
+    expectHooksMatchSpec(container, 'CHAT-LIST', {
+      slots: ['skeleton', 'skeleton-start', 'skeleton-text'],
+    });
+    rerender(<ChatList conversations={[]} isLoading loadingRows="avatars" />);
+    const avatarRow = container.querySelector('.ui-chat-list__skeleton');
+    expect(avatarRow?.querySelector('.ui-chat-list__skeleton-start')).toHaveAttribute(
+      'data-shape',
+      'circle',
+    );
+    expect(avatarRow?.querySelectorAll('.ui-skeleton-text__line')).toHaveLength(2);
+    rerender(<ChatList conversations={[]} />);
+    expect(root).not.toHaveAttribute('data-loading-rows');
+  });
+
+  it('UIC-CHAT-LIST-1.11 follows the rows with placeholder rows while isLoadingMore', () => {
+    const onLoadMore = vi.fn();
+    const { container, rerender } = render(
+      <ChatList conversations={conversations} onLoadMore={onLoadMore} />,
+    );
+    const root = container.firstElementChild;
+    expect(root).not.toHaveAttribute('data-loading-more');
+    expect(container.querySelectorAll('.ui-chat-list__skeleton')).toHaveLength(0);
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} isLoadingMore />);
+    expect(root).toHaveAttribute('data-loading-more', 'true');
+    expect(root).toHaveAttribute('data-loading-rows', 'titles');
+    expect(container.querySelectorAll('.ui-chat-list__skeleton')).toHaveLength(2);
+    expect(screen.getByRole('row', { name: /Ana Lima/ })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading more conversations');
+    const button = screen.getByRole('button', { name: 'Loading' });
+    expect(button).toHaveAttribute('data-pending', 'true');
+    expect(within(button).getByRole('progressbar')).toHaveAccessibleName(
+      'Loading more conversations',
+    );
+    expectHooksMatchSpec(container, 'CHAT-LIST', {
+      slots: ['body', 'skeleton', 'skeleton-text', 'load-more'],
+    });
+    rerender(
+      <ChatList conversations={conversations} onLoadMore={onLoadMore} isLoadingMore isLoading />,
+    );
+    expect(root).not.toHaveAttribute('data-loading-more');
   });
 
   it('UIC-CHAT-LIST-1.9 shows the empty state without conversations', () => {
@@ -379,8 +435,13 @@ describe('ChatList', () => {
     await user.click(button);
     expect(onLoadMore).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(button).toHaveAttribute('data-pending', 'true'));
+    expect(root).toHaveAttribute('data-loading-more', 'true');
+    expect(button).toHaveAccessibleName('Loading');
+    expect(container.querySelectorAll('.ui-chat-list__skeleton')).toHaveLength(2);
     await act(async () => finish());
     expect(button).not.toHaveAttribute('data-pending');
+    expect(root).not.toHaveAttribute('data-loading-more');
+    expect(button).toHaveAccessibleName('Load more');
     expectHooksMatchSpec(container, 'CHAT-LIST', { slots: ['body', 'load-more'] });
     rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} isLoading />);
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();

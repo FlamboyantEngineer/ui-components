@@ -1,6 +1,7 @@
 export type {
   ChatConversation,
   ChatConversationStatus,
+  ChatListLoadingRows,
   ChatListParticipant,
   ChatListProps,
 } from './chat-list.js';

@@ -137,17 +137,21 @@ test.describe('Segmented Choice lab', () => {
     await expect(width.locator('.ui-segmented-choice__label')).toHaveCount(0);
     // A scroll closes an open tooltip (React Aria), and the scroll event of a focus can arrive
     // after the next Tab, so the target is brought into view first and nothing scrolls after.
-    await width.scrollIntoViewIfNeeded();
-    await page
-      .getByRole('radiogroup', { name: 'Zoom, sm' })
-      .getByRole('radio')
-      .first()
-      .evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
-    await page.keyboard.press('Tab');
-    await expect(width).toBeFocused();
-    await expect(
-      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Fit width' }),
-    ).toBeVisible();
+    // Late layout (a web font, a lab above settling) can still scroll the page by anchoring and
+    // close the tooltip, so the Tab is repeated until the page holds still.
+    await expect(async () => {
+      await width.scrollIntoViewIfNeeded();
+      await page
+        .getByRole('radiogroup', { name: 'Zoom, sm' })
+        .getByRole('radio')
+        .first()
+        .evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
+      await page.keyboard.press('Tab');
+      await expect(width).toBeFocused();
+      await expect(
+        page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Fit width' }),
+      ).toBeVisible({ timeout: 2000 });
+    }).toPass();
     await expect(width).toHaveAccessibleDescription('');
     await page.keyboard.press('ArrowRight');
     await expect(group.getByRole('radio', { name: 'Fit page' })).toBeFocused();

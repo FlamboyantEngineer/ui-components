@@ -235,9 +235,69 @@
   margin: 0;
 }
 
+/* A placeholder row takes a real row's place: the same height, start and gap as the row it stands for. */
 .ui-chat-list__skeleton {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  height: 34px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 2px 10px;
+  box-sizing: border-box;
+}
+
+.ui-chat-list__skeleton-start.ui-skeleton {
+  grid-column: 1;
+  width: 18px;
+  height: 18px;
+  margin-inline-end: 10px;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat-list__skeleton-start.ui-skeleton[data-shape='circle'] {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.ui-chat-list__skeleton-text {
+  grid-column: 2;
+  display: grid;
+}
+
+/* Titles of different lengths, so the placeholders read as a list rather than a block. */
+.ui-chat-list__skeleton .ui-skeleton-text__line {
+  width: 72%;
+}
+
+.ui-chat-list__skeleton:nth-child(3n + 2) .ui-skeleton-text__line {
+  width: 54%;
+}
+
+.ui-chat-list__skeleton:nth-child(3n + 3) .ui-skeleton-text__line {
+  width: 84%;
+}
+
+.ui-chat-list__skeleton:nth-child(4n + 4) .ui-skeleton-text__line {
+  width: 62%;
+}
+
+/* With an avatar, the second line is a shorter last message under the title. */
+.ui-chat-list__skeleton .ui-skeleton-text__line:nth-child(2) {
+  width: 88%;
+  height: 0.65em;
+  margin-block: 0.2em 0.3em;
+}
+
+.ui-chat-list__skeleton .ui-skeleton-text__line:first-child:not(:only-child) {
+  width: 46%;
+}
+
+/* While the next page loads, the row reads Loading and its spinner sits at the row's end, out of the text's way. */
+.ui-chat-list__load-more.ui-button[data-pending] > :not(.ui-button__spinner) {
+  opacity: 1;
+}
+
+.ui-chat-list__load-more .ui-button__spinner {
+  --ref-spinner-size: var(--ref-icon-size-md);
+  inset: 0 10px 0 auto;
 }

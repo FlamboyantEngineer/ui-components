@@ -98,6 +98,8 @@ export const listHooks = createHooks('chat-list', [
   'unread',
   'empty',
   'skeleton',
+  'skeleton-start',
+  'skeleton-text',
   'load-more',
 ]);
 
