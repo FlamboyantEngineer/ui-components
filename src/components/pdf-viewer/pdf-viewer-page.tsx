@@ -2,9 +2,10 @@
 
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { useDevicePixelRatio } from '../../utils/use-device-pixel-ratio.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { highlightTextRuns } from './highlights.js';
-import { measureCanvasPixels } from './page-bitmap.js';
+import { capCanvasPixels } from './page-bitmap.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import type { PdfLinkService, PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
 import type { PdfMatchRange } from './pdf-search.js';
@@ -12,6 +13,8 @@ import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import { usePageRender } from './use-page-render.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
+
+const noSize = { width: 0, height: 0 };
 
 interface PdfViewerPageProps<
   V extends PdfViewport = PdfViewport,
@@ -64,6 +67,26 @@ function useMatchHighlights({
 }
 
 /**
+ * A page's size in CSS pixels at the zoom, and its canvas's size in device pixels while it is near
+ * the view, which follows the pixel ratio of the canvas's window.
+ */
+function usePageSize<V extends PdfViewport, C extends PdfTextContent>({
+  loaded,
+  pageIndex,
+  scale,
+  isNear,
+  canvas,
+}: Pick<PdfViewerPageProps<V, C>, 'loaded' | 'pageIndex' | 'scale' | 'isNear'> & {
+  canvas: HTMLCanvasElement | null;
+}) {
+  const size = loaded.sizes[pageIndex] ?? noSize;
+  const width = size.width * scale;
+  const height = size.height * scale;
+  const ratio = useDevicePixelRatio(canvas);
+  return { width, height, pixels: isNear ? capCanvasPixels(width, height, ratio) : noSize };
+}
+
+/**
  * One page: its bitmap with the selectable text layer and the links over it, sized to the zoom.
  */
 export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
@@ -88,22 +111,20 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
     (element: HTMLDivElement | null) => registerPage(pageIndex, element),
     [pageIndex, registerPage],
   );
+  const { width, height, pixels } = usePageSize({ loaded, pageIndex, scale, isNear, canvas });
   const { textLayer, failure, retry } = usePageRender({
     loaded,
     pageIndex,
     scale,
     isNear,
     canvas,
+    pixels,
     layerRef,
     annotationLayerRef,
     linkService,
     onPageError,
   });
   useMatchHighlights({ textLayer, ranges, revealKey, revealElement });
-  const size = loaded.sizes[pageIndex] ?? { width: 0, height: 0 };
-  const width = size.width * scale;
-  const height = size.height * scale;
-  const pixels = isNear ? measureCanvasPixels(width, height, canvas) : { width: 0, height: 0 };
   const viewport = isNear ? loaded.getViewport(pageIndex, scale) : undefined;
   return (
     <div

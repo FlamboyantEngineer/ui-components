@@ -126,6 +126,27 @@ describe('Tour', () => {
     expect(document.querySelector('.ui-tour__arrow')).toBeNull();
     vi.restoreAllMocks();
   });
+  it('UIC-TOUR-1.2 scrolls a target that appears after its step shows into view', async () => {
+    const scrolled = vi.fn();
+    HTMLElement.prototype.scrollIntoView = function (this: HTMLElement) {
+      scrolled(this.textContent);
+    };
+    const { rerender } = render(
+      <Tour steps={[{ target: '#late', title: 'Late', targetTimeout: 1000 }]} defaultOpen />,
+    );
+    expect(scrolled).not.toHaveBeenCalled();
+    rerender(
+      <>
+        <button id="late" type="button">
+          Export
+        </button>
+        <Tour steps={[{ target: '#late', title: 'Late', targetTimeout: 1000 }]} defaultOpen />
+      </>,
+    );
+    await waitFor(() => expect(scrolled).toHaveBeenCalledWith('Export'));
+    // @ts-expect-error -- jsdom has no scrollIntoView; the test's own goes again.
+    delete HTMLElement.prototype.scrollIntoView;
+  });
 
   it('UIC-TOUR-2.1 moves with next and back, and finishes on the last step', async () => {
     const user = userEvent.setup();

@@ -198,6 +198,8 @@ describe('DecimalField', () => {
       <DecimalField label="Amount" step="0.001" scale={2} defaultValue="0.125" key="scale" />,
     );
     expect(spinbutton()).toHaveAccessibleErrorMessage('Enter a value in steps of 0.01.');
+    rerender(<DecimalField label="Amount" scale={0} defaultValue="2.5" key="whole" />);
+    expect(spinbutton()).toHaveAccessibleErrorMessage('Enter a value in steps of 1.');
     rerender(<DecimalField label="Amount" minValue="1" key="empty" />);
     expect(spinbutton()).not.toHaveAttribute('aria-invalid');
   });

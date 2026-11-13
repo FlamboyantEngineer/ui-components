@@ -27,7 +27,7 @@ Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `
 
 ### UIC-TRUNCATION-TOOLTIP-1.4 - Dismissal
 
-The tooltip shall close when the pointer leaves the text, when the text is pressed (and stay closed until the pointer enters again), on blur, on scroll and on Escape. Escape is consumed only while the tooltip is open, and never while it belongs to an input method's composition (`isComposing`, or the legacy key code 229): the focused editor receives that Escape and the tooltip stays open.
+The tooltip shall close when the pointer leaves the text, when the text is pressed (and stay closed until the pointer enters again), on blur, on scroll and on Escape. Escape is never consumed: it closes the tooltip and goes on, so a dialog or menu around the text closes on the same press. An Escape that belongs to an input method's composition (`isComposing`, or the legacy key code 229), or that something already handled, leaves the tooltip open.
 
 Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `e2e/truncation-tooltip.spec.ts`

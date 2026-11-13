@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -150,6 +150,20 @@ describe('ColorField picker', () => {
     expect(onChange).toHaveBeenLastCalledWith('hsba(359, 50%, 40%, 0.5)');
     await user.keyboard('{ArrowRight}{ArrowRight}');
     expect(onChange).toHaveBeenLastCalledWith('hsba(1, 50%, 40%, 0.5)');
+  });
+
+  it('UIC-COLOR-FIELD-1.3 UIC-COLOR-FIELD-1.5 moves the hue slider on a grey', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorField label="Accent" defaultValue="#808080" onChange={onChange} />);
+    await user.click(trigger('Accent'));
+    const dialog = await screen.findByRole('dialog');
+    const hue = within(dialog).getByRole('slider', { name: 'Hue' });
+    act(() => hue.focus());
+    await user.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}');
+    // Stored hex cannot hold a grey's hue: the text stays grey while the slider moves.
+    expect(hue).toHaveValue('3');
+    for (const [value] of onChange.mock.calls) expect(value).toBe('#808080');
   });
 
   it('UIC-COLOR-FIELD-1.5 keeps the colour, the open picker and focus when the hue control switches', async () => {

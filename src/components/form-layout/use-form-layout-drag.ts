@@ -2,8 +2,8 @@
 
 import { type HTMLAttributes, type RefObject, useMemo, useRef, useState } from 'react';
 import type { PressEvent } from '../../core/events.js';
-import { useDrag, useDrop } from '../../primitives/index.js';
-import { armElementDrag } from '../../utils/pointer-drag.js';
+import { useDrag, useDrop, useLocale } from '../../primitives/index.js';
+import { armElementDrag, resolveDropPosition } from '../../utils/pointer-drag.js';
 import { useDragType } from '../../utils/use-drag-type.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -104,10 +104,19 @@ export interface FormLayoutNodeDragOptions {
 /** One node's drag and drop: it drags from its handle and takes drops before or after itself. */
 export function useFormLayoutNodeDrag(options: FormLayoutNodeDragOptions) {
   const { ref, id, label, parentId, index, arrangement, drag, isLocked } = options;
+  const { direction } = useLocale();
   const resolveMove = (point: { x: number; y: number }): NodeDropMove | null => {
     const box = ref.current?.getBoundingClientRect();
     if (!drag || !box) return null;
-    const isAfter = arrangement === 'stack' ? point.y > box.height / 2 : point.x > box.width / 2;
+    // A row or grid reads right to left in a right-to-left locale: its right half is before.
+    const isAfter =
+      resolveDropPosition({
+        width: box.width,
+        height: box.height,
+        ...point,
+        orientation: arrangement === 'stack' ? 'vertical' : 'horizontal',
+        isRtl: direction === 'rtl',
+      }) === 'after';
     const place = drag.resolve({ parentId, index: isAfter ? index + 1 : index });
     return place ? { position: isAfter ? 'after' : 'before', place } : null;
   };

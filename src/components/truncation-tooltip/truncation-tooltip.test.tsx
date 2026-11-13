@@ -192,7 +192,7 @@ describe('TruncationTooltip', () => {
     expect(tooltip()).toBeNull();
   });
 
-  it('UIC-TRUNCATION-TOOLTIP-1.4 closes on leave, press and Escape', async () => {
+  it('UIC-TRUNCATION-TOOLTIP-1.4 closes on leave, press and Escape, which goes on to the page', async () => {
     const outer = vi.fn();
     render(
       <div onKeyDown={outer}>
@@ -219,10 +219,9 @@ describe('TruncationTooltip', () => {
     await rest(text);
     await advance(500);
     expect(tooltip()).not.toBeNull();
+    // The tooltip closes and the key goes on, so a dialog around the text closes on the same press.
     await user.keyboard('{Escape}');
     expect(tooltip()).toBeNull();
-    expect(outer).not.toHaveBeenCalled();
-    await user.keyboard('{Escape}');
     expect(outer).toHaveBeenCalledTimes(1);
   });
 
@@ -256,7 +255,7 @@ describe('TruncationTooltip', () => {
     fireEvent.compositionEnd(note);
     await user.keyboard('{Escape}');
     expect(tooltip()).toBeNull();
-    expect(keys).toEqual(['composing', 'Escape']);
+    expect(keys).toEqual(['composing', 'Escape', 'Escape']);
     expect(note).toHaveFocus();
   });
 

@@ -22,6 +22,7 @@ import {
   SearchField as AriaSearchField,
   Text,
 } from '../../primitives/index.js';
+import { toBubblingKeyHandlers } from '../../utils/bubbling-keys.js';
 import { leaveComposingEnter } from '../../utils/is-composing-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -302,6 +303,7 @@ export function SearchField({
   return (
     <AriaSearchField
       {...rest}
+      {...toBubblingKeyHandlers(rest)}
       isDisabled={isDisabled}
       {...hooks.root({ className, props: rest, data })}
       aria-label={hasLabel ? undefined : label}

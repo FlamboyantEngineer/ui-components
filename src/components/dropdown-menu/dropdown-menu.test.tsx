@@ -326,4 +326,53 @@ describe('DropdownMenu', () => {
     expect(onAction).toHaveBeenCalledWith('copy');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
+
+  it('UIC-DROPDOWN-MENU-1.9 names the trigger apart from the menu', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <DropdownMenu label="Bold" triggerLabel="Text style" aria-label="Styles" items={items} />,
+    );
+    // The visible value stays in the name, after what the trigger chooses.
+    const trigger = screen.getByRole('button', { name: 'Text style Bold' });
+    await user.click(trigger);
+    expect(await screen.findByRole('menu', { name: 'Styles' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    rerender(
+      <DropdownMenu
+        label="Bold"
+        triggerLabel="Text style"
+        onPress={() => undefined}
+        items={items}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Bold' })).toHaveClass('ui-dropdown-menu__action');
+    expect(screen.getByRole('button', { name: 'Text style' })).toHaveClass(
+      'ui-dropdown-menu__toggle',
+    );
+  });
+
+  it('UIC-DROPDOWN-MENU-1.10 keeps a disabled trigger focusable to show why in its tooltip', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <DropdownMenu
+        label="Mode"
+        isDisabled
+        focusableWhenDisabled
+        tooltip="Locked while reviewing"
+        onOpenChange={onOpenChange}
+        items={items}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Mode' });
+    expect(trigger).toHaveAttribute('aria-disabled', 'true');
+    await user.tab();
+    expect(trigger).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Locked while reviewing');
+    await user.keyboard('{Enter}');
+    await user.click(trigger);
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
 });

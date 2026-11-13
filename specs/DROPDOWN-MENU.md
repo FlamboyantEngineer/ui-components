@@ -60,6 +60,20 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdo
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`, `src/components/menu/menu-trigger.tsx`
 Verification: `src/components/dropdown-menu/dropdown-menu-locking.test.tsx`
 
+### UIC-DROPDOWN-MENU-1.9 - Trigger name
+
+`triggerLabel` shall name the button that opens the menu, apart from the menu, which `aria-label` or `aria-labelledby` names: a trigger that shows only its current value (a mode, a style) is announced by what it chooses, then by that value, from visually hidden text before the label, so the name still holds the visible text. On an `iconOnly` trigger it is the whole name, and on a split button it names the toggle instead of `moreOptions`.
+
+Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`
+Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
+
+### UIC-DROPDOWN-MENU-1.10 - Hint on a disabled trigger
+
+`tooltip` shall show on the trigger as on a `Button` ([BUTTON.md](BUTTON.md)), and `focusableWhenDisabled` keeps a disabled trigger in the tab order, `aria-disabled`, so the tooltip can say why the menu is unavailable; the menu still does not open. On a split button the tooltip is the action's, and both buttons take `focusableWhenDisabled`.
+
+Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`
+Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
+
 ## Hooks
 
 | Hook                       | Kind  | Values | Description                                                           |

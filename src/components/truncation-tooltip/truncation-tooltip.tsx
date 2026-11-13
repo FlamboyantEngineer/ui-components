@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps } from '../../core/props.js';
@@ -86,17 +87,18 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Man
 }
 
 /**
- * Closes on Escape, consuming the key only while the tooltip is open. An Escape that belongs to an
- * input method's composition is left to the focused editor.
+ * Closes on Escape while the tooltip is open, without consuming the key, so a field, menu or dialog
+ * around the text still applies its own Escape. An Escape that belongs to an input method's
+ * composition, or that something already handled, is left alone.
  */
 function useEscapeToClose({ isOpen, close }: ManualTooltipState, ref: RefObject<Element | null>) {
   useEffect(() => {
     if (!isOpen) return;
     const owner = getOwnerDocument(ref.current);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || isComposingKey(event)) return;
-      event.stopPropagation();
-      close();
+      if (event.key !== 'Escape' || event.defaultPrevented || isComposingKey(event)) return;
+      // Closing synchronously takes React Aria's own Escape listener away before the key reaches it.
+      flushSync(close);
     };
     owner.addEventListener('keydown', onKeyDown, true);
     return () => owner.removeEventListener('keydown', onKeyDown, true);

@@ -107,10 +107,13 @@ function useValidity(
 
 /**
  * The browser fires `invalid` at each invalid control of a native submit it blocked, in document
- * order. Only the first event of that run shows every field's validation, once each, and focuses its
- * control, through its field when it has one, so a collapsed or filtered container opens first.
+ * order, but not at a field whose control is a button or a group (a date, period or colour field).
+ * So the first event of that run does what a blocked submit does: it shows every field's
+ * validation and focuses the first blocking field in document order, through the field, so a
+ * collapsed or filtered container opens first. Only when no field blocks does focus go to the
+ * event's own control, such as a plain input outside any field.
  */
-function useInvalidFocus(fields: Set<FieldRegistration>) {
+function useInvalidFocus(fields: Set<FieldRegistration>, validity: FormValidityStore) {
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
     const element = form.current;
@@ -122,9 +125,7 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
       if (isFocusing) return;
       isFocusing = true;
       queueMicrotask(() => (isFocusing = false));
-      for (const field of fields) field.revealValidation();
-      if (!isHTMLElement(event.target)) return;
-      // The field focuses its own control, revealing it first when a container hides it.
+      if (!validity.validate() || !isHTMLElement(event.target)) return;
       const { target } = event;
       const field = [...fields].find((entry) => entry.getElement()?.contains(target));
       if (field) field.focus();
@@ -132,7 +133,7 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
     };
     element.addEventListener('invalid', onInvalid, true);
     return () => element.removeEventListener('invalid', onInvalid, true);
-  }, [fields]);
+  }, [fields, validity]);
   return form;
 }
 
@@ -221,7 +222,7 @@ export function Form({
     }),
     [problems, validity, boundary],
   );
-  const form = useInvalidFocus(fields);
+  const form = useInvalidFocus(fields, validity);
   useOrderNotify(form, fields, notifyAll);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);

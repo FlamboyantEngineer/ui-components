@@ -126,6 +126,15 @@ describe('UnsavedChangesGuard sources', () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-UNSAVED-CHANGES-GUARD-2.7 lets the reader leave when every source becomes clean under the question', async () => {
+    const { leave, update } = setup({ Profile: { isDirty: true, onSave: vi.fn() } });
+    const result = leave();
+    await screen.findByRole('alertdialog');
+    update({ Profile: { isDirty: false } });
+    await expect(result).resolves.toBe(true);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
+
   it('UIC-UNSAVED-CHANGES-GUARD-2.7 keeps the reader here when a later source loses its save', async () => {
     const user = userEvent.setup();
     const first = deferred();
@@ -281,14 +290,14 @@ describe('UnsavedChangesGuard sources', () => {
     ['becomes clean', { Profile: { isDirty: false } }],
     ['unmounts', {}],
   ])(
-    'UIC-UNSAVED-CHANGES-GUARD-2.6 closes the open question when a clean leave replaces it after the source %s',
+    'UIC-UNSAVED-CHANGES-GUARD-2.6 UIC-UNSAVED-CHANGES-GUARD-2.7 answers the open question yes when the source %s, and a later leave too',
     async (_, clean: Sources) => {
       const { leave, update } = setup({ Profile: { isDirty: true } });
       const first = leave();
       await screen.findByRole('alertdialog');
       update(clean);
+      await expect(first).resolves.toBe(true);
       await expect(leave()).resolves.toBe(true);
-      await expect(first).resolves.toBe(false);
       await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     },
   );
@@ -308,11 +317,11 @@ describe('UnsavedChangesGuard sources', () => {
     update(dirty);
     const third = leave();
     await screen.findByRole('alertdialog');
-    await act(async () => save.resolve());
-    expect(screen.getByRole('alertdialog')).toBeVisible();
     expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
     expect(await settled(third)).toBe('pending');
-    await user.click(screen.getByRole('button', { name: 'Stay' }));
-    await expect(third).resolves.toBe(false);
+    // The late save leaves nothing dirty: nothing is left to lose, so the new question lets the
+    // reader leave (UIC-UNSAVED-CHANGES-GUARD-2.7) rather than asking to discard nothing.
+    await act(async () => save.resolve());
+    await expect(third).resolves.toBe(true);
   });
 });

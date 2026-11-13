@@ -535,6 +535,7 @@ describe('NumberField slider display', () => {
     );
     const [thumb] = thumbs();
     expect(thumb).toBeEnabled();
+    expect(thumb).toHaveAttribute('aria-readonly', 'true');
     await user.tab();
     expect(thumb).toHaveFocus();
     await user.keyboard('{ArrowRight}{End}');
@@ -542,6 +543,8 @@ describe('NumberField slider display', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(onChangeEnd).not.toHaveBeenCalled();
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
+    rerender(<NumberField display="slider" label="Volume" defaultValue={50} />);
+    expect(thumbs()[0]).not.toHaveAttribute('aria-readonly');
   });
 
   it('UIC-NUMBER-FIELD-7.1 shows validation, restores, undoes and sets the default from the menu', async () => {

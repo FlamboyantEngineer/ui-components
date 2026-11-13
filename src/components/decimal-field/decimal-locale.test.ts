@@ -30,4 +30,11 @@ describe('decimal locale text', () => {
       expect(parseLocaleDecimal(text, 'en-US')).toBeNull();
     }
   });
+
+  it('UIC-DECIMAL-FIELD-1.3 reads back the negative decimals right-to-left locales write', () => {
+    for (const locale of ['he-IL', 'ar', 'ar-EG', 'ar-SA', 'fa-IR', 'ur', 'ps', 'ckb', 'sd']) {
+      const text = formatLocaleDecimal('-1234.5', locale);
+      expect(parseLocaleDecimal(text, locale), `${locale} ${text}`).toEqual({ value: '-1234.5' });
+    }
+  });
 });

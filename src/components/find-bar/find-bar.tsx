@@ -133,6 +133,7 @@ function FindBarFind({
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' || isComposingKey(event.nativeEvent)) return;
     event.preventDefault();
+    event.stopPropagation();
     if (!hasMatches) return;
     if (event.shiftKey) onPrevious?.();
     else onNext?.();

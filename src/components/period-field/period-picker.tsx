@@ -18,20 +18,35 @@ import {
   writePeriod,
 } from './period-values.js';
 
+/** Calendars whose months are the Gregorian months, whatever they number the years. */
+const gregorianMonthCalendars = new Set(['gregory', 'buddhist', 'japanese', 'roc', 'iso8601']);
+
+/**
+ * The calendar periods are written in: the locale's own while its months are the Gregorian months
+ * a period holds, else the Gregorian calendar, so `2026-03` never reads as another calendar's month.
+ */
+function toPeriodCalendar(locale: string): { calendar?: string } {
+  const { calendar } = getDateTimeFormat(locale, { timeZone: 'UTC' }).resolvedOptions();
+  return gregorianMonthCalendars.has(calendar) ? {} : { calendar: 'gregory' };
+}
+
 /** The writers of a period in the locale: its full name, and its short text in the grid. */
 export function usePeriodFormats(granularity: PeriodGranularity) {
   const { locale } = useLocale();
   const isMonth = granularity === 'month';
+  const calendar = toPeriodCalendar(locale);
   const full = getDateTimeFormat(locale, {
     ...(isMonth ? { month: 'long' } : {}),
     year: 'numeric',
     timeZone: 'UTC',
+    ...calendar,
   });
   const short = getDateTimeFormat(locale, {
     ...(isMonth ? { month: 'short' } : { year: 'numeric' }),
     timeZone: 'UTC',
+    ...calendar,
   });
-  const year = getDateTimeFormat(locale, { year: 'numeric', timeZone: 'UTC' });
+  const year = getDateTimeFormat(locale, { year: 'numeric', timeZone: 'UTC', ...calendar });
   return {
     full: (index: PeriodIndex) => full.format(toFormatDate(index, granularity)),
     short: (index: PeriodIndex) => short.format(toFormatDate(index, granularity)),
@@ -101,13 +116,14 @@ export function PeriodPicker(props: PeriodPickerProps) {
         aria-label={heading}
         layout="grid"
         selectionMode="single"
-        disallowEmptySelection
         autoFocus={autoFocus}
         escapeKeyBehavior="none"
         selectedKeys={value === null ? [] : [writePeriod(value, granularity)]}
         disabledKeys={periods.filter(isOut).map((index) => writePeriod(index, granularity))}
         onSelectionChange={(keys) => {
-          const [key] = keys === 'all' ? [] : [...keys];
+          // Pressing the chosen period empties the selection: that picks it again.
+          const [key = value === null ? undefined : writePeriod(value, granularity)] =
+            keys === 'all' ? [] : [...keys];
           if (key !== undefined && !props.isReadOnly) onPick(String(key));
         }}
       >

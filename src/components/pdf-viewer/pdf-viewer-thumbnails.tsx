@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ListBox, ListBoxItem, type Selection } from '../../primitives/index.js';
+import { useDevicePixelRatio } from '../../utils/use-device-pixel-ratio.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useInView } from '../../utils/use-in-view.js';
-import { drawPage, measureCanvasPixels } from './page-bitmap.js';
+import { capCanvasPixels, drawPage } from './page-bitmap.js';
 import { toPageRotation } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -49,7 +50,8 @@ function PdfThumbnailCanvas<V extends PdfViewport, C extends PdfTextContent>({
   const width = useElementSize(item)?.width ?? 0;
   const page = view.sizes[pageIndex] ?? noSize;
   const height = page.width > 0 ? (width * page.height) / page.width : 0;
-  const pixels = isInView ? measureCanvasPixels(width, height, canvas) : noSize;
+  const ratio = useDevicePixelRatio(canvas);
+  const pixels = isInView ? capCanvasPixels(width, height, ratio) : noSize;
 
   useEffect(() => {
     const pdfPage = view.pages[pageIndex];

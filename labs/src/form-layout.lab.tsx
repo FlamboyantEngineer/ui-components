@@ -14,6 +14,7 @@ import {
 } from '../../src/components/form-layout/index.js';
 import { PropertyPanel, PropertyRow } from '../../src/components/property-panel/index.js';
 import { TextField } from '../../src/components/text-field/index.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FormLayoutCorners, FormLayoutSizes } from './form-layout-cases.js';
 import { LabOutput } from './lab-output.js';
@@ -219,6 +220,23 @@ function DesignerDemo() {
   );
 }
 
+/** The contact section alone, in a right-to-left locale. */
+function RightToLeftDemo() {
+  const [layout, setLayout] = useState<FormLayoutValue<SampleField>>(sample.slice(0, 1));
+  return (
+    <UiProvider locale="he-IL">
+      <div dir="rtl" data-lab-demo="rtl" style={wide}>
+        <FormLayoutDesigner
+          aria-label="Layout, right to left"
+          value={layout}
+          onChange={setLayout}
+          types={types}
+        />
+      </div>
+    </UiProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -245,6 +263,12 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Right to left"
+      description="In a right-to-left locale a row reads from the right: dropping on a node's right half places before it."
+    >
+      <RightToLeftDemo />
     </LabSection>
     <FormLayoutSizes />
     <FormLayoutCorners />

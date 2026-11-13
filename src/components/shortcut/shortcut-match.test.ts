@@ -89,4 +89,10 @@ describe('readCommandKey', () => {
     expect(readCommandKey({ key: '+', code: 'Equal' })).toBe('+');
     expect(readCommandKey({ key: 'ArrowUp', code: 'ArrowUp' })).toBe('arrowup');
   });
+
+  it('UIC-SHORTCUT-1.8 reads a keydown without a key, as autofill sends, as no press', () => {
+    const autofill = { code: '' } as unknown as KeyboardEvent;
+    expect(matchesChord(autofill, 'Ctrl+S')).toBe(false);
+    expect(readCommandKey(autofill)).toBe('');
+  });
 });

@@ -26,7 +26,7 @@ import {
   toAriaControlProps,
 } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
-import { type MultiDateRules, normalizeDates } from './multi-date-values.js';
+import { type MultiDateRules, normalizeDates, toReadableDates } from './multi-date-values.js';
 
 interface MultiDateControlProps {
   control: FieldControlProps;
@@ -102,7 +102,8 @@ export function MultiDateControl(props: MultiDateControlProps) {
   const isReadable = useIsClockReadable();
   const today = useToday();
   const root = useRef<HTMLDivElement>(null);
-  const dates = useMemo(() => normalizeDates(state.value), [state.value]);
+  // A text that is no date shows as the field's error alone: no tag, no form entry, and a change drops it.
+  const dates = useMemo(() => toReadableDates(state.value), [state.value]);
   const value = useMemo(
     () => dates.map(parseIsoDate).filter((date): date is CalendarDate => date !== null),
     [dates],

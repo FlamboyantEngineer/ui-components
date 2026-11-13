@@ -236,6 +236,16 @@ function LeaveConfirmation({
   const [held, setHeld] = useState<UnsavedChangesSummary | null>(null);
   const { canSave, labels } = held ?? summary;
   const afterCommit = useAfterCommit();
+  const { isOpen, onOpenChange } = rest;
+  // Every source became clean while the question waited, with no action of its own: nothing is
+  // left to lose, so leaving goes ahead rather than asking to discard nothing.
+  useEffect(() => {
+    if (!isOpen || held !== null || summary.isDirty) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- The question holds what it showed while it closes.
+    setHeld(summary);
+    request?.settle(true);
+    onOpenChange(false);
+  }, [isOpen, held, summary, request, onOpenChange]);
   const leaveAfter = (action: LeaveAction) => async (close: () => void) => {
     setHeld(summary);
     try {

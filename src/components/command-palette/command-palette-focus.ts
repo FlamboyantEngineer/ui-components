@@ -4,6 +4,7 @@ import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getDeepActiveElement } from '../../utils/composed-focus.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
+import { usePortalContainer } from '../portal/portal.js';
 
 /**
  * Hands focus back to where it was before the palette opened as soon as it closes, rather than
@@ -15,8 +16,11 @@ import { getOwnerDocument } from '../../utils/owner-window.js';
  */
 export function useReturnFocusOnClose(isOpen: boolean, overlayRef: RefObject<HTMLElement | null>) {
   const returnTo = useRef<HTMLElement | null>(null);
+  // The palette's document is its portal container's, which may be another window's, and the
+  // overlay is not there yet while the palette is closed.
+  const container = usePortalContainer();
   useEffect(() => {
-    const owner = getOwnerDocument(overlayRef.current);
+    const owner = getOwnerDocument(container);
     const remember = (event: FocusEvent) => {
       const target = event.composedPath()[0];
       if (!isHTMLElement(target)) return;
@@ -25,7 +29,7 @@ export function useReturnFocusOnClose(isOpen: boolean, overlayRef: RefObject<HTM
     };
     owner.addEventListener('focusin', remember, true);
     return () => owner.removeEventListener('focusin', remember, true);
-  }, [overlayRef]);
+  }, [container, overlayRef]);
   const wasOpen = useRef(isOpen);
   useLayoutEffect(() => {
     const closed = wasOpen.current && !isOpen;

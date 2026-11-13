@@ -140,6 +140,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
     const step = steps[event.key];
     if (!step || !isMoveChord(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     onStep(columnKey, direction === 'rtl' ? (-step as -1 | 1) : step);
   };
   const data = {
