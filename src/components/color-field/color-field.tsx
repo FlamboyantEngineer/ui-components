@@ -3,7 +3,12 @@
 import { useId, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
+import {
+  Button as AriaButton,
+  type Color,
+  ColorPicker,
+  DialogTrigger,
+} from '../../primitives/index.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   Field,
@@ -117,9 +122,28 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
 }
 
 /**
- * Whether the picker is open: it opens only while the field is editable, closes when the field is
- * locked, and commits the picked colour as it closes.
+ * The colour the picker shows: the one it last picked while the stored text is still the text that
+ * colour was stored as, else the stored colour. Stored text cannot hold a grey's hue or black's
+ * saturation, so reading the picker's colour back from it would stop the hue slider on a grey.
  */
+function usePickerColor(
+  state: FieldState<string | null>,
+  color: string | null,
+  store: { showsAlpha: boolean; valueFormat: ColorFieldFormat; allowsTransparency: boolean },
+) {
+  const [picked, setPicked] = useState<{ color: Color; stored: string } | null>(null);
+  const isCurrent = picked !== null && picked.stored === state.value;
+  return {
+    shown: isCurrent ? picked.color : (color ?? emptyPickerColor),
+    pick: (next: Color) => {
+      const kept = store.showsAlpha ? next : keepAlpha(next, color);
+      const stored = toStoredValue(kept, store.valueFormat, store.allowsTransparency);
+      setPicked({ color: kept, stored });
+      state.setValue(stored);
+    },
+  };
+}
+
 /**
  * Whether the picker offers opacity: always with `allowsTransparency`, and otherwise while the
  * colour is translucent, kept until the picker closes on an opaque colour, so raising the alpha to
@@ -133,6 +157,10 @@ function useShowsAlpha(allowsTransparency: boolean, color: string | null, isOpen
   return allowsTransparency || translucent || isKept;
 }
 
+/**
+ * Whether the picker is open: it opens only while the field is editable, closes when the field is
+ * locked, and commits the picked colour as it closes.
+ */
 function usePickerOpen(state: FieldState<string | null>) {
   const [isOpen, setOpen] = useState(false);
   const isEditable = !state.isReadOnly && !state.isDisabled;
@@ -178,6 +206,11 @@ export function ColorField({
   const shownPlaceholder = placeholder ?? strings.noColor;
   const picker = usePickerOpen(state);
   const showsAlpha = useShowsAlpha(allowsTransparency, color, picker.isOpen);
+  const pickerColor = usePickerColor(state, color, {
+    showsAlpha,
+    valueFormat,
+    allowsTransparency,
+  });
   const triggerText = color
     ? formatColor(color, shownFormat, allowsTransparency)
     : shownPlaceholder;
@@ -189,13 +222,7 @@ export function ColorField({
       commitOnBlur={allowsTyping}
     >
       {(control) => (
-        <ColorPicker
-          value={color ?? emptyPickerColor}
-          onChange={(next) => {
-            const picked = showsAlpha ? next : keepAlpha(next, color);
-            state.setValue(toStoredValue(picked, valueFormat, allowsTransparency));
-          }}
-        >
+        <ColorPicker value={pickerColor.shown} onChange={pickerColor.pick}>
           <DialogTrigger isOpen={picker.isOpen} onOpenChange={picker.changeOpen}>
             {allowsTyping ? (
               <ColorEntry

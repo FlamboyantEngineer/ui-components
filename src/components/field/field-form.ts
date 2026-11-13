@@ -41,15 +41,20 @@ const focusableSelector = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
-/** The chosen option of a group of choices, where focus enters the group. */
+/**
+ * Where focus enters a group: the chosen option of a group of choices, or a grid's roving cell (a
+ * calendar's focused day) rather than the navigation buttons before it.
+ */
 const chosenSelector = [
   'input[type="radio"]:checked:not([disabled])',
   '[role="radio"][aria-checked="true"]:not([disabled])',
+  '[role="grid"] [tabindex="0"]',
 ].join(',');
 
 /**
  * Focuses the control, or when it is a group the element focus enters it by: its chosen option,
- * such as a segment or radio, else its first focusable element, such as the first date segment.
+ * such as a segment or radio, or a grid's focused cell, else its first focusable element, such as
+ * the first date segment.
  */
 export function focusControl(control: HTMLElement | null, options?: FocusOptions) {
   if (!control) return;

@@ -149,6 +149,20 @@ describe('date values', () => {
     expect(formatDateValue('someday', 'date', { locale: 'en-US' })).toBe('someday');
   });
 
+  it('UIC-DATE-TIME-FIELD-1.6 writes a floating time in a daylight saving gap as typed', () => {
+    const gap = { locale: 'en-US', localZone: 'America/New_York' };
+    expect(plain(formatDateValue('2026-03-08T02:30', 'date-time', gap))).toBe(
+      'Mar 8, 2026, 2:30 AM',
+    );
+    expect(
+      formatDateValue('2026-03-08', 'date', { locale: 'en-US', localZone: 'Pacific/Apia' }),
+    ).toBe('Mar 8, 2026');
+    const zoned = { ...gap, timeZone: 'America/New_York' };
+    expect(plain(formatDateValue('2026-03-08T12:00', 'date-time', zoned))).toBe(
+      'Mar 8, 2026, 12:00 PM',
+    );
+  });
+
   it('UIC-DATE-TIME-FIELD-1.6 formats reversed ranges as their localized endpoints', () => {
     const value = { start: '2026-04-03', end: '2026-04-01' };
     expect(formatDateValue(value, 'date-range', { locale: 'en-US' })).toBe(

@@ -84,7 +84,9 @@ function checkStep(value: string, rules: DecimalRules, { strings, format }: Chec
   const { scale, grid } = rules;
   const step =
     scale !== undefined && countFractionDigits(value) > scale
-      ? `0.${'1'.padStart(scale, '0')}`
+      ? scale === 0
+        ? '1'
+        : `0.${'1'.padStart(scale, '0')}`
       : grid !== null && !isOnDecimalStep(value, grid)
         ? grid.step
         : null;

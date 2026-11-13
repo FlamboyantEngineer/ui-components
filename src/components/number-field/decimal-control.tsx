@@ -4,7 +4,12 @@ import { type KeyboardEvent, useMemo, useRef } from 'react';
 import { Group, Input, NumberField as AriaNumberField } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { type FieldControlProps, type FieldState, toAriaControlProps } from '../field/field.js';
+import {
+  type FieldControlProps,
+  type FieldState,
+  toAriaControlProps,
+  useFieldFormOwner,
+} from '../field/field.js';
 import type {
   NumberControlConfig,
   NumberEntryFieldProps,
@@ -170,11 +175,13 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
   const presets = useSortedPresets(stepValues, config.minValue, config.maxValue);
   const { inputRef, ...entry } = useNumberEntry(state, { commitBehavior, bounds, steps, presets });
   const ref = useMergedRefs(inputRef, control.ref);
+  const formOwner = useFieldFormOwner();
   return (
     <AriaNumberField
       {...rest}
       {...toAriaControlProps(control)}
       {...hooks.slot('box')}
+      form={formOwner}
       commitBehavior="validate"
       // The wheel would step by `step`, past the presets.
       isWheelDisabled={presets ? true : undefined}

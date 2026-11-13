@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, type RefObject, useLayoutEffect } from 'react';
+import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
 import type { Orientation } from '../../core/props.js';
 import {
   Slider as AriaSlider,
@@ -199,6 +199,22 @@ interface SliderPartsProps extends Pick<
   field: ReturnType<typeof toAriaControlProps>;
 }
 
+/**
+ * Marks each thumb input of the track `aria-readonly` while the slider is read-only, so assistive
+ * technology does not offer to move a thumb that refuses changes. React Aria's thumb takes no such
+ * prop, so the attribute is set on its input.
+ */
+function useReadOnlyThumbs(isReadOnly: boolean, count: number) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    for (const input of trackRef.current?.querySelectorAll('input') ?? []) {
+      if (isReadOnly) input.setAttribute('aria-readonly', 'true');
+      else input.removeAttribute('aria-readonly');
+    }
+  }, [isReadOnly, count]);
+  return trackRef;
+}
+
 /** The slider's parts: the value output, the track with its fill and marks, and the thumbs. */
 function SliderParts({
   count,
@@ -212,10 +228,11 @@ function SliderParts({
   field,
 }: SliderPartsProps) {
   const form = useFieldFormOwner();
+  const trackRef = useReadOnlyThumbs(field.isReadOnly === true, count);
   return (
     <>
       {valueLabel === 'output' ? <SliderOutput {...hooks.slot('output')} /> : null}
-      <SliderTrack {...hooks.slot('track')}>
+      <SliderTrack {...hooks.slot('track')} ref={trackRef}>
         <SliderFill {...hooks.slot('fill')} offset={fillOffset} />
         {marks.map((mark) => (
           <Mark key={mark.value} mark={mark} bounds={bounds} />

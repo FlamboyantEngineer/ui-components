@@ -34,6 +34,14 @@ export function normalizeDates(dates: readonly string[]): string[] {
 }
 
 /**
+ * The readable dates of a set as the field writes it: what its tags show, its form submits and a
+ * change starts from, so a text that is no date is reported (`findDatesIssue`) but never kept.
+ */
+export function toReadableDates(dates: readonly string[]): string[] {
+  return normalizeDates(dates).filter(isReadableDate);
+}
+
+/**
  * The first reason the set is refused: a text that is no `YYYY-MM-DD` date, a date outside the
  * bounds, an unavailable date, or more dates than `maxValues`.
  */

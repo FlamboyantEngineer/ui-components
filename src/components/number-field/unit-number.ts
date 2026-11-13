@@ -1,5 +1,7 @@
 // Quantities typed with a unit (`5cm`, `0,5 m`) read as numbers in a number field's own unit.
 
+import { bidiMarks } from '../../utils/bidi-marks.js';
+
 /** The units a number field reads typed quantities in, and the unit its value is in. */
 export interface NumberFieldUnits {
   /** The unit of the value, shown after the number (`mm`). A number typed alone is in it. */
@@ -30,7 +32,7 @@ export function toQuantityFormatOptions(
 
 // `\s` covers the no-break spaces some locales group digits with; the marks are the bidi controls
 // right-to-left locales write around signs.
-const spaces = /[\s\u061c\u200e\u200f]/g;
+const spaces = new RegExp(`[\\s${bidiMarks}]`, 'g');
 
 /** How a locale and format options write numbers, as a reader may type them back. */
 interface NumberNotation {

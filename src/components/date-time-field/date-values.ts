@@ -207,13 +207,18 @@ export function isUnavailableValue(
   return false;
 }
 
+/**
+ * The instant `formatDateValue` writes a value as. A floating date or date and time is placed in
+ * UTC and written in UTC, so a wall time the local zone skips (a daylight saving gap) keeps its
+ * digits; a zoned one is its own instant, written in its zone.
+ */
 function toDate(text: string, mode: SingleDateMode, options: DateValueOptions): Date | null {
   const localZone = options.localZone ?? getLocalTimeZone();
-  if (mode === 'date') return parseIsoDate(text)?.toDate(localZone) ?? null;
+  if (mode === 'date') return parseIsoDate(text)?.toDate('UTC') ?? null;
   if (mode === 'date-time') {
     const value = parseIsoDateTime(text, options.timeZone, localZone);
     if (!value) return null;
-    return 'timeZone' in value ? value.toDate() : value.toDate(localZone);
+    return 'timeZone' in value ? value.toDate() : value.toDate('UTC');
   }
   const time = parseIsoTime(text);
   return time ? new Date(2000, 0, 1, time.hour, time.minute, time.second) : null;
@@ -235,11 +240,12 @@ function formatOptions(
   mode: SingleDateMode,
   options: FormatDateOptions,
 ): Intl.DateTimeFormatOptions {
-  if (mode === 'date') return { dateStyle: 'medium', timeZone: options.localZone };
+  if (mode === 'date') return { dateStyle: 'medium', timeZone: 'UTC' };
   const timeStyle = options.granularity === 'second' ? 'medium' : 'short';
   const clock = options.hourCycle === undefined ? {} : { hour12: options.hourCycle === 12 };
   if (mode === 'time') return { timeStyle, ...clock };
-  const timeZone = options.timeZone ?? options.localZone;
+  // Without a zone the value is floating: `toDate` placed it in UTC.
+  const timeZone = options.timeZone ?? 'UTC';
   return { dateStyle: 'medium', timeStyle, timeZone, ...clock };
 }
 
