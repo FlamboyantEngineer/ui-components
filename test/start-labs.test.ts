@@ -35,6 +35,7 @@ function checkout(files: Record<string, number>) {
     'scripts/lib/script.mjs',
     'scripts/lib/labs.mjs',
     'scripts/lib/reference-stylesheet.mjs',
+    'scripts/lib/fonts.mjs',
     'bin/serve-labs.mjs',
     'bin/lab-server.mjs',
   ];
@@ -112,11 +113,21 @@ describe('lab start', () => {
     ]);
   });
 
+  it('UIC-LABS-1.3 UIC-LABS-1.9 rebuilds after the shared font bundle changes', () => {
+    expect(dryRun(checkout({ ...upToDate, 'scripts/lib/fonts.mjs': 400 }))).toEqual([
+      'npm run build:labs: scripts/lib/fonts.mjs changed since the last build',
+    ]);
+  });
+
   it('UIC-LABS-1.3 leaves a node_modules linked from another checkout alone', () => {
     const other = checkout({ 'node_modules/.package-lock.json': 200 });
     const linked = checkout({ ...upToDate, 'package-lock.json': 400 });
     rmSync(join(linked, 'node_modules'), { recursive: true });
-    symlinkSync(join(other, 'node_modules'), join(linked, 'node_modules'));
+    symlinkSync(
+      join(other, 'node_modules'),
+      join(linked, 'node_modules'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
     expect(dryRun(linked)).toEqual([
       'Not installing (package-lock.json changed since the last install): node_modules links elsewhere.',
       'The labs are up to date.',

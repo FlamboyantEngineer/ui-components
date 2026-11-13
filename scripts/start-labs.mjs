@@ -24,6 +24,7 @@ const BUILD_SOURCES = [
   'scripts/build-labs.mjs',
   'scripts/lib/labs.mjs',
   'scripts/lib/reference-stylesheet.mjs',
+  'scripts/lib/fonts.mjs',
 ];
 
 function stat(path, follow = true) {

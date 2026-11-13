@@ -60,6 +60,7 @@ export async function bundleConsumer(consumer, contents, { externals = {}, name 
     module: {
       rules: [
         { test: /\.css$/, use: [require.resolve('style-loader'), require.resolve('css-loader')] },
+        { test: /\.woff2$/, type: 'asset/resource' },
       ],
     },
     performance: { hints: false },
