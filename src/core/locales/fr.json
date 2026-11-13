@@ -55,6 +55,7 @@
   "noConversations": "Aucune conversation pour l’instant",
   "noMatchingConversations": "Aucune conversation correspondante",
   "loadingConversations": "Chargement des conversations",
+  "loadingMoreConversations": "Chargement d’autres conversations",
   "unreadMessages": "{count, plural, one {# message non lu} other {# messages non lus}}",
   "conversationMuted": "Notifications coupées",
   "conversationLabel": "{title}{hasPresence, select, true {, {presence}} other {}}{unreadCount, plural, =0 {} one {, # message non lu} other {, # messages non lus}}{isMuted, select, true {, notifications coupées} other {}}{hasStatus, select, true {, {status}} other {}}{hasActivity, select, true {, {activity}} other {}}{hasTime, select, true {, {time}} other {}}",

@@ -124,7 +124,7 @@ export function ChatProgressCases() {
   return (
     <LabSection
       title="Slow host"
-      description="The host takes a while to accept what the reader does, as a server would. Once it has waited 400 ms, the line above the composer says what the chat waits for (Sending…, Queuing… while a reply runs, Steering…, Saving… an edit of a queued message, Removing…) with the clock a message waiting for delivery shows, or the spinner with Progress icon; the pressed button shows itself busy too, and the line is announced once. A host that answers within 400 ms shows nothing. The + menu holds the reader's sending options, stored for every conversation: Steer automatically sends a message written during a reply at once (Enter, Ctrl+Enter and Send all steer) instead of queuing it, and Send with Ctrl+Enter makes Enter break the line."
+      description="The host takes a while to accept what the reader does, as a server would. Once it has waited 400 ms, the line above the composer says what the chat waits for (Sending…, Queuing… while a reply runs, Steering…, Saving… an edit of a queued message, Removing…) with the clock a message waiting for delivery shows, or the spinner with Progress icon; the pressed button shows itself busy too, and the line is announced once. A host that answers within 400 ms shows nothing. The + menu always holds the reader's sending options, stored for every conversation, whether or not a reply runs: Steer automatically sends a message written during a reply at once (Enter, Ctrl+Enter and Send all steer) instead of queuing it, and Send with Ctrl+Enter makes Enter break the line."
     >
       <SlowHostDemo />
     </LabSection>

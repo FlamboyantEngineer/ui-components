@@ -12,10 +12,16 @@ import {
   useMenuController,
   useMenuControllerState,
 } from '../context-menu/context-menu.js';
-import { LoadMore, type LoadMoreProps } from '../load-more/load-more.js';
+import type { LoadMoreProps } from '../load-more/load-more.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
+import { ListFooter, useLoadingMore } from './chat-list-load-more.js';
 import { type ChatListMenu, openRowMenu } from './chat-list-menu.js';
-import { ListEmptyState, ListHeader } from './chat-list-parts.js';
+import {
+  type ChatListLoadingRows,
+  ListEmptyState,
+  ListHeader,
+  ListHeading,
+} from './chat-list-parts.js';
 import { type ChatConversation, ChatListRow, listHooks } from './chat-list-row.js';
 
 export interface ChatListProps
@@ -51,8 +57,18 @@ export interface ChatListProps
   showEdgeFades?: boolean | undefined;
   /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
   onLoadMoreError?: LoadMoreProps['onError'];
-  /** The conversations are loading: placeholder rows stand in for them. */
+  /** The conversations are loading: placeholder rows stand in for them. Defaults to `false`. */
   isLoading?: boolean | undefined;
+  /**
+   * The next conversations are loading: placeholder rows follow the rows and the Load more row is
+   * pending. A promise `onLoadMore` returns does the same until it settles. Defaults to `false`.
+   */
+  isLoadingMore?: boolean | undefined;
+  /**
+   * The shape of the placeholder rows: `titles` a title line, `icons` an icon and a title, `avatars`
+   * an avatar, a title and a last message. Defaults to `titles`.
+   */
+  loadingRows?: ChatListLoadingRows | undefined;
   /** Shown while there are no conversations. Defaults to the provider's `noConversations` string. */
   emptyState?: ReactNode;
   /**
@@ -152,6 +168,7 @@ interface ConversationGridProps extends AriaLabellingProps {
   selection: ReturnType<typeof useConversationSelection>;
   menu: ReturnType<typeof useConversationMenu>;
   isLoading: boolean;
+  loadingRows: ChatListLoadingRows;
   emptyState: ReactNode;
   timeOptions: Pick<ChatListProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
   /** The host's menu, on which whether each row has a menu depends. */
@@ -165,6 +182,7 @@ function ConversationGrid({
   selection,
   menu,
   isLoading,
+  loadingRows,
   emptyState,
   timeOptions,
   renderContextMenu,
@@ -185,6 +203,7 @@ function ConversationGrid({
         renderEmptyState={() => (
           <ListEmptyState
             isLoading={isLoading}
+            loadingRows={loadingRows}
             isSearching={query.trim() !== ''}
             emptyState={emptyState}
           />
@@ -205,21 +224,27 @@ function ConversationGrid({
   );
 }
 
-/** The Load more row after the rows, while the host has more to load. */
-function ListLoadMore({
+/** The root's state attributes: loading, loading more and its rows' shape, more to load, edge fades. */
+function listState({
+  isLoading,
+  isLoadingMore,
+  loadingRows,
   onLoadMore,
-  onError,
-}: Partial<Pick<LoadMoreProps, 'onLoadMore' | 'onError'>>) {
-  if (!onLoadMore) return null;
-  return (
-    <LoadMore
-      variant="ghost"
-      size="md"
-      onLoadMore={onLoadMore}
-      onError={onError}
-      className={listHooks.slotClass('load-more')}
-    />
-  );
+  showEdgeFades,
+}: {
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  loadingRows: ChatListLoadingRows;
+  onLoadMore: ChatListProps['onLoadMore'];
+  showEdgeFades: boolean;
+}) {
+  return {
+    loading: isLoading,
+    loadingMore: !isLoading && isLoadingMore,
+    loadingRows: isLoading || isLoadingMore ? loadingRows : undefined,
+    hasMore: Boolean(onLoadMore),
+    edgeFades: showEdgeFades,
+  };
 }
 
 /**
@@ -240,6 +265,8 @@ export function ChatList({
   onLoadMoreError,
   showEdgeFades = false,
   isLoading = false,
+  isLoadingMore: isHostLoadingMore = false,
+  loadingRows = 'titles',
   emptyState,
   renderContextMenu,
   fallbackAfterDays,
@@ -257,6 +284,7 @@ export function ChatList({
   const shown = useShownConversations({ conversations, onSearchChange }, query);
   const selection = useConversationSelection(selectedKey, onSelectionChange);
   const menu = useConversationMenu(renderContextMenu, shown);
+  const { load, isLoadingMore } = useLoadingMore(onLoadMore, isHostLoadingMore);
   const labelledBy = ariaLabelledby ?? (hasHeading && !ariaLabel ? headingId : undefined);
   return (
     <div
@@ -264,7 +292,7 @@ export function ChatList({
       {...listHooks.root({
         className,
         props: rest,
-        data: { loading: isLoading, hasMore: Boolean(onLoadMore), edgeFades: showEdgeFades },
+        data: listState({ isLoading, isLoadingMore, loadingRows, onLoadMore, showEdgeFades }),
       })}
       onKeyDown={menu.onKeyDown}
     >
@@ -278,30 +306,35 @@ export function ChatList({
         showSearch={showSearch}
       />
       <div {...listHooks.slot('body')}>
-        {hasHeading ? (
-          <div id={headingId} {...listHooks.slot('heading')}>
-            {heading}
-          </div>
-        ) : null}
+        <ListHeading id={headingId} heading={heading} />
         <ConversationGrid
           query={query}
           items={isLoading ? [] : shown}
           selection={selection}
           menu={menu}
           isLoading={isLoading}
+          loadingRows={loadingRows}
           emptyState={emptyState}
           aria-label={labelledBy ? undefined : (ariaLabel ?? strings.conversations)}
           aria-labelledby={labelledBy}
           timeOptions={{ fallbackAfterDays, getNow, timeZone }}
           renderContextMenu={renderContextMenu}
         />
-        {isLoading ? null : <ListLoadMore onLoadMore={onLoadMore} onError={onLoadMoreError} />}
+        {isLoading ? null : (
+          <ListFooter
+            onLoadMore={load}
+            onError={onLoadMoreError}
+            isLoadingMore={isLoadingMore}
+            shape={loadingRows}
+          />
+        )}
       </div>
       {menu.element}
     </div>
   );
 }
 
+export type { ChatListLoadingRows } from './chat-list-parts.js';
 export type {
   ChatConversation,
   ChatConversationStatus,

@@ -55,9 +55,9 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 
 ### UIC-CHAT-LIST-1.8 - Loading
 
-While `isLoading`, the root shall carry `data-loading` and nothing in the list is marked busy (`aria-busy`), since the rows are replaced and a busy ancestor would hold back the status; four placeholder rows (`ui-chat-list__skeleton`, each a line of [Skeleton](SKELETON.md) text) stand in for the rows, no Load more row shows, with a status reading the provider string `loadingConversations`.
+While `isLoading`, the root shall carry `data-loading` and `data-loading-rows`, and nothing in the list is marked busy (`aria-busy`), since the rows are replaced and a busy ancestor would hold back the status; six placeholder rows (`ui-chat-list__skeleton`, hidden from assistive technology) stand in for the rows, no Load more row shows, with a status reading the provider string `loadingConversations`. A placeholder row is shaped by `loadingRows` like the rows it stands for: `titles` (the default) a line of [Skeleton](SKELETON.md) text (`ui-chat-list__skeleton-text`); `icons` a rectangle skeleton (`ui-chat-list__skeleton-start`) before that line; `avatars` a circle skeleton before two lines, a title and a last message. The reference stylesheet gives the placeholder rows a row's height and titles of different lengths.
 
-Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-parts.tsx`
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-parts.tsx`, `src/core/strings/chat-list.ts`, `labs/reference/chat-list.css`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
 
 ### UIC-CHAT-LIST-1.9 - Empty
@@ -76,16 +76,16 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 
 ### UIC-CHAT-LIST-1.11 - Load more
 
-Given `onLoadMore`, and while not loading, a [Load More](LOAD-MORE.md) row (`ui-chat-list__load-more`, a `ghost` button reading the provider string `loadMore`) shall follow the rows and call `onLoadMore` when pressed, pending while a promise it returns settles (a rejection, or a throw, goes to `onLoadMoreError`; without it the error is rethrown); the root carries `data-has-more` meanwhile. Fading the last rows toward the Load more row is opt-in: with `showEdgeFades` the root also carries `data-edge-fades`, and only then does the reference stylesheet fade the last two rows to hint that the list goes on. The host leaves `onLoadMore` out once nothing is left to load.
+Given `onLoadMore`, and while not loading, a [Load More](LOAD-MORE.md) row (`ui-chat-list__load-more`, a `ghost` button reading the provider string `loadMore`) shall follow the rows and call `onLoadMore` when pressed, pending while a promise it returns settles (a rejection, or a throw, goes to `onLoadMoreError`; without it the error is rethrown); the root carries `data-has-more` meanwhile. While the next conversations load, given by `isLoadingMore` or while that promise is unsettled, and not `isLoading`, the root carries `data-loading-more` and `data-loading-rows`, two placeholder rows shaped by `loadingRows` follow the rows, the Load more row is pending, reading the provider string `loading` beside its spinner, which is named by `loadingMoreConversations`, and a status reads `loadingMoreConversations`; the Load more row stays where it is, so focus on it is kept. Fading the last rows toward the Load more row is opt-in: with `showEdgeFades` the root also carries `data-edge-fades`, and only then does the reference stylesheet fade the last two rows to hint that the list goes on. The host leaves `onLoadMore` out once nothing is left to load.
 
-Implementation: `src/components/chat-list/chat-list.tsx`, `labs/reference/chat-list.css`
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-load-more.tsx`, `labs/reference/chat-list.css`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
 
 ### UIC-CHAT-LIST-1.12 - Heading
 
 Given a `heading`, the list shall show it above the rows (`ui-chat-list__heading`) and name the grid list by it (`aria-labelledby`), unless `aria-label` or `aria-labelledby` names the list.
 
-Implementation: `src/components/chat-list/chat-list.tsx`
+Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-parts.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
 
 ## UIC-CHAT-LIST-2 - Row menus
@@ -106,43 +106,47 @@ Verification: `src/components/chat-list/chat-list-menu.test.tsx`
 
 ## Hooks
 
-| Hook                         | Kind  | Values     | Description                                                    |
-| ---------------------------- | ----- | ---------- | -------------------------------------------------------------- |
-| `ui-chat-list`               | root  |            | The list's frame.                                              |
-| `ui-chat-list__header`       | slot  |            | The New chat button and the search field.                      |
-| `ui-chat-list__search`       | slot  |            | The search field (also `ui-search-field`).                     |
-| `ui-chat-list__new`          | slot  |            | The New chat button (also `ui-button`).                        |
-| `ui-chat-list__body`         | slot  |            | The heading, the grid list and the Load more row.              |
-| `ui-chat-list__heading`      | slot  |            | The heading above the rows, which names the grid list.         |
-| `ui-chat-list__list`         | slot  |            | The grid list (`role="grid"`).                                 |
-| `ui-chat-list__conversation` | slot  |            | A conversation row (`role="row"`).                             |
-| `ui-chat-list__avatar`       | slot  |            | The decorative icon, avatar with presence, or avatar group.    |
-| `ui-chat-list__title`        | slot  |            | The title.                                                     |
-| `ui-chat-list__time`         | slot  |            | The time of the last message (also `ui-attribution`).          |
-| `ui-chat-list__preview`      | slot  |            | The last message, on one line.                                 |
-| `ui-chat-list__muted`        | slot  |            | The muted mark (also `ui-icon`).                               |
-| `ui-chat-list__status`       | slot  |            | The host's status mark (also `ui-icon`).                       |
-| `ui-chat-list__activity`     | slot  |            | The dots showing a participant typing or working.              |
-| `ui-chat-list__activity-dot` | slot  |            | One of the activity's three dots.                              |
-| `ui-chat-list__unread`       | slot  |            | The unread count (also `ui-badge`).                            |
-| `ui-chat-list__empty`        | slot  |            | The empty or no-match notice.                                  |
-| `ui-chat-list__skeleton`     | slot  |            | A placeholder row while loading.                               |
-| `ui-chat-list__load-more`    | slot  |            | The Load more row (also `ui-load-more`, `ui-button`).          |
-| `data-loading`               | state | `true`     | On the root: the conversations are loading.                    |
-| `data-has-more`              | state | `true`     | On the root: more conversations can load (`onLoadMore`).       |
-| `data-edge-fades`            | state | `true`     | On the root: the last rows fade (`showEdgeFades`).             |
-| `data-unread`                | state | `true`     | On a row: it has unread messages.                              |
-| `data-muted`                 | state | `true`     | On a row: its notifications are off.                           |
-| `data-menu-open`             | state | `true`     | On a row: its context menu is open.                            |
-| `data-selected`              | state | `true`     | On a row: the selected conversation (React Aria).              |
-| `data-selection-mode`        | state | `single`   | On a row: the list's selection mode (React Aria).              |
-| `data-hovered`               | state | `true`     | On a row: under the pointer (React Aria).                      |
-| `data-pressed`               | state | `true`     | On a row: being pressed (React Aria).                          |
-| `data-focused`               | state | `true`     | On the grid list or a row: has focus (React Aria).             |
-| `data-focus-visible`         | state | `true`     | On the grid list or a row: has keyboard focus (React Aria).    |
-| `data-focus-visible-within`  | state | `true`     | On a row: keyboard focus inside it (React Aria).               |
-| `data-empty`                 | state | `true`     | On the grid list: it has no rows (React Aria).                 |
-| `data-layout`                | state | `stack`    | On the grid list: its layout (React Aria).                     |
-| `data-orientation`           | state | `vertical` | On the grid list: its orientation (React Aria).                |
-| `data-collection`            | state |            | React Aria's collection marker, on the grid list and its rows. |
-| `data-key`                   | state |            | On a row: opaque collection key (React Aria); not for styling. |
+| Hook                           | Kind  | Values                       | Description                                                    |
+| ------------------------------ | ----- | ---------------------------- | -------------------------------------------------------------- |
+| `ui-chat-list`                 | root  |                              | The list's frame.                                              |
+| `ui-chat-list__header`         | slot  |                              | The New chat button and the search field.                      |
+| `ui-chat-list__search`         | slot  |                              | The search field (also `ui-search-field`).                     |
+| `ui-chat-list__new`            | slot  |                              | The New chat button (also `ui-button`).                        |
+| `ui-chat-list__body`           | slot  |                              | The heading, the grid list and the Load more row.              |
+| `ui-chat-list__heading`        | slot  |                              | The heading above the rows, which names the grid list.         |
+| `ui-chat-list__list`           | slot  |                              | The grid list (`role="grid"`).                                 |
+| `ui-chat-list__conversation`   | slot  |                              | A conversation row (`role="row"`).                             |
+| `ui-chat-list__avatar`         | slot  |                              | The decorative icon, avatar with presence, or avatar group.    |
+| `ui-chat-list__title`          | slot  |                              | The title.                                                     |
+| `ui-chat-list__time`           | slot  |                              | The time of the last message (also `ui-attribution`).          |
+| `ui-chat-list__preview`        | slot  |                              | The last message, on one line.                                 |
+| `ui-chat-list__muted`          | slot  |                              | The muted mark (also `ui-icon`).                               |
+| `ui-chat-list__status`         | slot  |                              | The host's status mark (also `ui-icon`).                       |
+| `ui-chat-list__activity`       | slot  |                              | The dots showing a participant typing or working.              |
+| `ui-chat-list__activity-dot`   | slot  |                              | One of the activity's three dots.                              |
+| `ui-chat-list__unread`         | slot  |                              | The unread count (also `ui-badge`).                            |
+| `ui-chat-list__empty`          | slot  |                              | The empty or no-match notice.                                  |
+| `ui-chat-list__skeleton`       | slot  |                              | A placeholder row while loading.                               |
+| `ui-chat-list__skeleton-start` | slot  |                              | A placeholder row's icon or avatar (also `ui-skeleton`).       |
+| `ui-chat-list__skeleton-text`  | slot  |                              | A placeholder row's lines (also `ui-skeleton-text`).           |
+| `ui-chat-list__load-more`      | slot  |                              | The Load more row (also `ui-load-more`, `ui-button`).          |
+| `data-loading`                 | state | `true`                       | On the root: the conversations are loading.                    |
+| `data-loading-more`            | state | `true`                       | On the root: the next conversations are loading.               |
+| `data-loading-rows`            | state | `titles`, `icons`, `avatars` | On the root while loading: the placeholder rows' shape.        |
+| `data-has-more`                | state | `true`                       | On the root: more conversations can load (`onLoadMore`).       |
+| `data-edge-fades`              | state | `true`                       | On the root: the last rows fade (`showEdgeFades`).             |
+| `data-unread`                  | state | `true`                       | On a row: it has unread messages.                              |
+| `data-muted`                   | state | `true`                       | On a row: its notifications are off.                           |
+| `data-menu-open`               | state | `true`                       | On a row: its context menu is open.                            |
+| `data-selected`                | state | `true`                       | On a row: the selected conversation (React Aria).              |
+| `data-selection-mode`          | state | `single`                     | On a row: the list's selection mode (React Aria).              |
+| `data-hovered`                 | state | `true`                       | On a row: under the pointer (React Aria).                      |
+| `data-pressed`                 | state | `true`                       | On a row: being pressed (React Aria).                          |
+| `data-focused`                 | state | `true`                       | On the grid list or a row: has focus (React Aria).             |
+| `data-focus-visible`           | state | `true`                       | On the grid list or a row: has keyboard focus (React Aria).    |
+| `data-focus-visible-within`    | state | `true`                       | On a row: keyboard focus inside it (React Aria).               |
+| `data-empty`                   | state | `true`                       | On the grid list: it has no rows (React Aria).                 |
+| `data-layout`                  | state | `stack`                      | On the grid list: its layout (React Aria).                     |
+| `data-orientation`             | state | `vertical`                   | On the grid list: its orientation (React Aria).                |
+| `data-collection`              | state |                              | React Aria's collection marker, on the grid list and its rows. |
+| `data-key`                     | state |                              | On a row: opaque collection key (React Aria); not for styling. |

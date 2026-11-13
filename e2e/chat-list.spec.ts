@@ -151,7 +151,7 @@ test.describe('Chat List lab', () => {
     const loading = cell(page, 'state=loading');
     await expect(loading).toHaveAttribute('data-loading', 'true');
     await expect(loading.locator('[aria-busy="true"]')).toHaveCount(0);
-    await expect(loading.locator('.ui-chat-list__skeleton')).toHaveCount(4);
+    await expect(loading.locator('.ui-chat-list__skeleton')).toHaveCount(6);
     await expect(loading.getByRole('status')).toHaveText('Loading conversations');
     await expect(cell(page, 'state=empty').locator('.ui-chat-list__empty')).toHaveText(
       'No conversations yet',
@@ -162,6 +162,62 @@ test.describe('Chat List lab', () => {
     await expect(
       cell(page, 'state=selected').getByRole('row', { name: /^Lisbon trip/ }),
     ).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('UIC-CHAT-LIST-1.8 UIC-CHAT-LIST-1.11 shapes placeholder rows like the rows they stand for', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    const box = (locator: ReturnType<typeof cell>) =>
+      locator.evaluate((element) => element.getBoundingClientRect().toJSON() as DOMRect);
+    const titles = cell(page, 'shape=titles state=isLoading');
+    const placeholders = titles.locator('.ui-chat-list__skeleton');
+    await expect(placeholders).toHaveCount(6);
+    expect((await box(placeholders.first())).height).toBeGreaterThanOrEqual(34);
+    const lineWidth = (index: number) =>
+      placeholders
+        .nth(index)
+        .locator('.ui-skeleton-text__line')
+        .evaluate((element) => element.getBoundingClientRect().width);
+    expect(await lineWidth(0)).not.toBe(await lineWidth(1));
+    const avatars = cell(page, 'shape=avatars state=isLoading').locator('.ui-chat-list__skeleton');
+    const avatar = await box(avatars.first().locator('.ui-chat-list__skeleton-start'));
+    expect(avatar.width).toBe(avatar.height);
+    await expect(avatars.first().locator('.ui-skeleton-text__line')).toHaveCount(2);
+    const more = cell(page, 'shape=icons state=isLoadingMore');
+    await expect(more).toHaveAttribute('data-loading-more', 'true');
+    await expect(more.getByRole('row')).toHaveCount(3);
+    await expect(more.locator('.ui-chat-list__skeleton')).toHaveCount(2);
+    const loadMore = more.getByRole('button', { name: 'Loading' });
+    await expect(loadMore).toHaveAttribute('data-pending', 'true');
+    const label = await box(loadMore.locator('.ui-button__label'));
+    const spinner = await box(loadMore.locator('.ui-button__spinner'));
+    expect(spinner.left).toBeGreaterThanOrEqual(label.right);
+    await expect(loadMore.locator('.ui-button__label')).toHaveCSS('opacity', '1');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-CHAT-LIST-1.8 UIC-CHAT-LIST-1.11 shows placeholder rows while a slow host loads', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    const slow = page.locator('[data-lab-demo="slow-history"]');
+    const list = slow.locator('.ui-chat-list');
+    await page.getByRole('button', { name: 'Reload the history' }).click();
+    await expect(list).toHaveAttribute('data-loading', 'true');
+    await expect(list.locator('.ui-chat-list__skeleton')).toHaveCount(6);
+    await expect(list).not.toHaveAttribute('data-loading');
+    await expect(list.getByRole('row')).toHaveCount(10);
+    await list.getByRole('button', { name: 'Load more' }).click();
+    await expect(list).toHaveAttribute('data-loading-more', 'true');
+    await expect(list.locator('.ui-chat-list__skeleton')).toHaveCount(2);
+    await expect(list.getByRole('status')).toHaveText('Loading more conversations');
+    await expect(list.getByRole('button', { name: 'Loading' })).toBeFocused();
+    await expect(list.getByRole('row')).toHaveCount(20);
+    await expect(list).not.toHaveAttribute('data-loading-more');
+    await expect(list.locator('.ui-chat-list__skeleton')).toHaveCount(0);
   });
 
   test('UIC-CHAT-LIST-1.6 UIC-CHAT-LIST-1.7 keeps the search and New chat inside a narrow list', async ({

@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { type ChatConversation, ChatList } from '../../src/components/chat-list/chat-list.js';
+import { Button } from '../../src/components/button/button.js';
+import {
+  type ChatConversation,
+  ChatList,
+  type ChatListLoadingRows,
+} from '../../src/components/chat-list/chat-list.js';
 import { Menu, MenuItem } from '../../src/components/menu/menu.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import {
@@ -14,6 +19,12 @@ import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 const kinds = ['person', 'group', 'assistant', 'title', 'icon', 'status', 'activity'] as const;
 const rowStates = ['read', 'unread', 'muted', 'muted-unread'] as const;
 const listStates = ['loading', 'empty', 'custom-empty', 'selected'] as const;
+const loadingShapes = [
+  'titles',
+  'icons',
+  'avatars',
+] as const satisfies readonly ChatListLoadingRows[];
+const loadingStates = ['isLoading', 'isLoadingMore'] as const;
 
 /** A conversation's commands: mark as read and mute. */
 function ConversationMenu({
@@ -205,6 +216,68 @@ function FallbackCell({ fallback }: { fallback: (typeof fallbacks)[number] }) {
   );
 }
 
+/** Each shape of placeholder rows, loading the first conversations or the next ones. */
+function LoadingCell({
+  shape,
+  state,
+}: {
+  shape: (typeof loadingShapes)[number];
+  state: (typeof loadingStates)[number];
+}) {
+  const rows = shape === 'avatars' ? manyConversations : historyConversations;
+  return (
+    <div style={{ height: 320, width: 300 }}>
+      <ChatList
+        aria-label={`Loading ${shape} ${state}`}
+        heading="Recents"
+        conversations={rows.slice(0, 3)}
+        loadingRows={shape}
+        isLoading={state === 'isLoading'}
+        isLoadingMore={state === 'isLoadingMore'}
+        onLoadMore={() => {}}
+        getNow={getNow}
+      />
+    </div>
+  );
+}
+
+/** How long the slow host takes to answer, in milliseconds. */
+const slowHostDelay = 1500;
+
+/** A history that takes a while: its first page and each next page load slowly. */
+function SlowHistory() {
+  const [shown, setShown] = useState(historyPage);
+  const [isLoading, setIsLoading] = useState(false);
+  const wait = () => new Promise((resolve) => setTimeout(resolve, slowHostDelay));
+  const reload = async () => {
+    setIsLoading(true);
+    setShown(0);
+    await wait();
+    setShown(historyPage);
+    setIsLoading(false);
+  };
+  const loadMore = async () => {
+    await wait();
+    setShown((count) => count + historyPage);
+  };
+  return (
+    <div style={{ display: 'grid', gap: 8, width: 300 }}>
+      <Button variant="secondary" onPress={reload}>
+        Reload the history
+      </Button>
+      <div data-lab-demo="slow-history" style={{ height: 520 }}>
+        <ChatList
+          heading="Recents"
+          conversations={historyConversations.slice(0, shown)}
+          isLoading={isLoading}
+          onLoadMore={shown > 0 && shown < historyConversations.length ? loadMore : undefined}
+          getNow={getNow}
+        />
+      </div>
+    </div>
+  );
+}
+
 /** History whose next page fails the first time, reported to the host, then loads on retry. */
 function FailingHistory() {
   const [shown, setShown] = useState(3);
@@ -263,6 +336,21 @@ mountLab(
         axes={{ state: listStates }}
         render={({ state }) => <StateCell state={state} />}
       />
+    </LabSection>
+    <LabSection
+      title="Loading"
+      description="Placeholder rows shaped like the rows they stand for (loadingRows): titles, an icon and a title, or an avatar, a title and a last message. With isLoading six of them replace the rows; with isLoadingMore two follow the rows and the Load more row reads Loading with a spinner at its end."
+    >
+      <StateMatrix
+        axes={{ shape: loadingShapes, state: loadingStates }}
+        render={({ shape, state }) => <LoadingCell shape={shape} state={state} />}
+      />
+    </LabSection>
+    <LabSection
+      title="A slow host"
+      description="Reload the history to see the first page load for a second and a half under isLoading. Each Load more returns a promise that settles as slowly; until it does, placeholder rows follow the rows and the Load more row is pending."
+    >
+      <SlowHistory />
     </LabSection>
     <LabSection
       title="Time options"
