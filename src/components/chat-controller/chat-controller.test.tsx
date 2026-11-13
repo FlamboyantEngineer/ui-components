@@ -20,6 +20,26 @@ import {
 afterEach(() => vi.useRealTimers());
 
 describe('useChatController runs', () => {
+  it('UIC-CHAT-CONTROLLER-2.5 admits pending follow-ups directly to the queue without a transient transcript message', () => {
+    const { result } = renderController();
+    act(() => result.current.send('First'));
+    const messages = result.current.messages;
+    act(() => result.current.send('Queued only'));
+    expect(result.current.messages).toBe(messages);
+    expect(result.current.queue).toMatchObject([{ text: 'Queued only' }]);
+  });
+
+  it('UIC-CHAT-CONTROLLER-2.5 sends a quoted immediate instruction with its tokens exactly once', () => {
+    const { result } = renderController();
+    act(() => result.current.send('First'));
+    const id = result.current.messages[0]?.id;
+    const tokens = [{ start: 0, end: 4, kind: 'mention', id: 'ana', label: '@Ana' }] as const;
+    act(() => result.current.sendNow('@Ana check', tokens, id));
+    const sent = result.current.messages.filter((message) => message.replyTo === id);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.parts).toEqual([{ type: 'text', text: '@Ana check', tokens }]);
+    expect(result.current.queue).toEqual([]);
+  });
   it('UIC-CHAT-CONTROLLER-2.1 sends the reader message and streams the reply into it', async () => {
     const { result, at, send } = renderController();
     const tokens = [{ start: 0, end: 5, kind: 'mention', id: 'ben', label: 'Ben' }] as const;

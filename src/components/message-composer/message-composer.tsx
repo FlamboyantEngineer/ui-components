@@ -18,6 +18,7 @@ import { useMessageComposer } from './use-message-composer.js';
 
 export { ComposerControlButton } from './composer-control-button.js';
 export { composerSubmittingDelay, useMessageComposerControls } from './composer-controls.js';
+export { useComposerKeys } from './composer-keys.js';
 export type { MessageComposerMenuSection } from './composer-menu.js';
 export { MessageComposerAttachButton, MessageComposerEmojiButton } from './composer-tools.js';
 

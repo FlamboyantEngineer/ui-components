@@ -7,6 +7,7 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readOwn } from '../../utils/read-own.js';
+import { RetainedStateContext, useRetainedStateScope } from '../../utils/use-retained-state.js';
 import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import {
   ChatDateSeparator,
@@ -44,6 +45,7 @@ export type {
   ChatDraft,
   ChatMessageTextHandler,
 } from './chat-composer-handle.js';
+export type { ChatComposerHint } from './chat-composer-hint.js';
 export type { ChatHeaderProps } from './chat-header.js';
 export { ChatHeader } from './chat-header.js';
 export type { ChatThinkingUntil } from './chat-model.js';
@@ -86,6 +88,8 @@ export interface ChatProps
   title?: string | undefined;
   /** Controls at the end of the header, such as the conversation's commands; shows the header. */
   headerActions?: ReactNode;
+  /** Shows participant avatars in the header, independently of message avatars. Defaults to `true`. */
+  showHeaderIdentity?: boolean | undefined;
   /** Offers the search within the conversation in the header; shows the header. */
   showSearch?: boolean | undefined;
   /**
@@ -178,6 +182,7 @@ export function Chat(props: ChatProps) {
   const participants = useMemo(() => indexParticipants(list), [list]);
   const isAssistantChat = useMemo(() => hasAssistant(list), [list]);
   const state = useChatState(props.conversationId);
+  const retained = useRetainedStateScope(props.conversationId);
   const search = useChatSearch(messages);
   const context = useMessageContext(props, state, { participants, isAssistantChat });
   const display = useMessageDisplay(props);
@@ -197,6 +202,7 @@ export function Chat(props: ChatProps) {
         <ChatHeader
           title={props.title ?? ''}
           participants={others}
+          showIdentity={props.showHeaderIdentity}
           status={headerStatus}
           actions={
             <>
@@ -207,29 +213,31 @@ export function Chat(props: ChatProps) {
         />
       ) : null}
       <ChatSearchBar search={search} />
-      <TextMatchProvider query={search.query} ignoreAccents>
-        <ChatTranscript
-          conversationId={props.conversationId}
-          className={hooks.slotClass('transcript')}
-          aria-label={ariaLabel ?? (labelledBy ? undefined : props.title || undefined)}
-          aria-labelledby={labelledBy}
-          aria-describedby={describedBy}
-          aria-details={details}
-          emptyState={props.emptyState}
-          presentation={props.presentation}
-          scrollMode={props.scrollMode ?? (isAssistantChat ? 'anchor' : 'follow')}
-          onEscape={props.onSend ? () => state.composerRef.current?.focus() : undefined}
-          onLoadOlder={props.onLoadOlder}
-          hasOlder={props.hasOlder}
-          isLoadingOlder={props.isLoadingOlder}
-          highlightedMessageId={search.highlightedId ?? state.jumpedId}
-          firstUnreadId={props.firstUnreadId}
-          onRead={props.onRead}
-          virtualized={props.virtualized ?? true}
-        >
-          {sequence}
-        </ChatTranscript>
-      </TextMatchProvider>
+      <RetainedStateContext value={retained}>
+        <TextMatchProvider query={search.query} ignoreAccents>
+          <ChatTranscript
+            conversationId={props.conversationId}
+            className={hooks.slotClass('transcript')}
+            aria-label={ariaLabel ?? (labelledBy ? undefined : props.title || undefined)}
+            aria-labelledby={labelledBy}
+            aria-describedby={describedBy}
+            aria-details={details}
+            emptyState={props.emptyState}
+            presentation={props.presentation}
+            scrollMode={props.scrollMode ?? (isAssistantChat ? 'anchor' : 'follow')}
+            onEscape={props.onSend ? () => state.composerRef.current?.focus() : undefined}
+            onLoadOlder={props.onLoadOlder}
+            hasOlder={props.hasOlder}
+            isLoadingOlder={props.isLoadingOlder}
+            highlightedMessageId={search.highlightedId ?? state.jumpedId}
+            firstUnreadId={props.firstUnreadId}
+            onRead={props.onRead}
+            virtualized={props.virtualized ?? true}
+          >
+            {sequence}
+          </ChatTranscript>
+        </TextMatchProvider>
+      </RetainedStateContext>
       <ChatTyping props={props} participants={participants} />
       <ChatComposer
         options={props}

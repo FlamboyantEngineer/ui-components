@@ -117,10 +117,12 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 
 ### UIC-CHAT-TOOL-CALL-4.2 - Deny with a reason
 
+Within full Chat, an open denial form and its literal draft shall survive virtual unmounts by conversation, message and part identity. Remounting restores the form without taking focus. A decision or conversation change resets it; standalone cards keep local state.
+
 Pressing Deny shall replace the buttons with a `ui-chat-tool-call__deny-form` holding a [Text Field](TEXT-FIELD.md) (`ui-chat-tool-call__reason`, labelled by the provider's `toolCallDenyReason`), which takes focus, then Send (the provider's `send`) and Cancel (`cancel`). Send, or Enter in the field, calls `onDeny` with the trimmed reason, or with no reason when it is blank, closes the form and moves focus to Deny. Cancel closes the form, forgets the reason and moves focus to Deny without calling `onDeny`. The form closes, forgetting the reason, when the approval stops being pending, so a later request starts with the buttons. The form and its reason belong to the call's `id`: when the card shows another call, it starts with the buttons and no reason, while updates to the same call keep the form, its reason and its focus. When the form closes this way while it holds focus, focus moves to Deny.
 
-Implementation: `src/components/chat-tool-call/tool-call-approval.tsx`, `src/components/chat-tool-call/use-tool-call-approval.ts`
-Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `src/components/chat-tool-call/tool-call-identity.test.tsx`, `e2e/chat-tool-call.spec.ts`
+Implementation: `src/components/chat-tool-call/tool-call-approval.tsx`, `src/components/chat-tool-call/use-tool-call-approval.ts`, `src/utils/use-retained-state.ts`
+Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `src/components/chat-tool-call/tool-call-identity.test.tsx`, `e2e/chat-tool-call.spec.ts`, `src/components/chat/chat-retained-inputs.test.tsx`, `e2e/chat-native.spec.ts`
 
 ### UIC-CHAT-TOOL-CALL-4.3 - Keyboard shortcuts
 

@@ -3,6 +3,7 @@
 import { type KeyboardEvent, type RefObject, useCallback, useRef, useState } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { useRetainedState, useRetainedStateReset } from '../../utils/use-retained-state.js';
 
 interface ToolCallApprovalOptions {
   /** The call's identity: a new one starts with no denial draft. */
@@ -19,6 +20,8 @@ export interface ToolCallApprovalState {
   isDenying: boolean;
   /** The reason typed so far. */
   reason: string;
+  /** Focuses a reason form opened in this mount, without stealing focus on virtual remount. */
+  focusesReason: boolean;
   setReason: (reason: string) => void;
   /** The Deny button, which Escape focuses and the closed form returns focus to. */
   denyRef: RefObject<HTMLButtonElement | null>;
@@ -62,7 +65,12 @@ export function useToolCallApproval({
   onApprove,
   onDeny,
 }: ToolCallApprovalOptions): ToolCallApprovalState {
-  const [stored, setStored] = useState(() => startDraft(callId));
+  const [stored, setStored] = useRetainedState(
+    isPending ? `tool-denial:${callId}` : undefined,
+    () => startDraft(callId),
+  );
+  const [focusesReason, setFocusesReason] = useState(false);
+  useRetainedStateReset([`tool-denial:${callId}`], !isPending);
   const denyRef = useRef<HTMLButtonElement>(null);
   const requestFocus = useFocusRequest();
   let draft = stored;
@@ -105,9 +113,13 @@ export function useToolCallApproval({
   return {
     isDenying,
     reason,
+    focusesReason,
     setReason: (next) => setStored({ callId, isOpen: true, reason: next }),
     denyRef,
-    openDenyForm: () => setStored({ callId, isOpen: true, reason: '' }),
+    openDenyForm: () => {
+      setFocusesReason(true);
+      setStored({ callId, isOpen: true, reason: '' });
+    },
     closeDenyForm,
     sendDenial,
     onKeyDownCapture,

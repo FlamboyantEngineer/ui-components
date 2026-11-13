@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { readOwn } from '../../utils/read-own.js';
+import { useRetainedState } from '../../utils/use-retained-state.js';
 import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { QuestionItem } from './chat-question-item.js';
@@ -22,6 +23,7 @@ import { QuestionTabs } from './chat-question-tabs.js';
 type Drafts = Readonly<Record<string, QuestionDraft>>;
 
 interface PendingQuestionsProps {
+  retainKey?: string | undefined;
   questions: readonly ChatQuestionItem[];
   /** Sends the answers; without it the card is read-only. */
   onSubmit?: ((answers: ChatQuestionAnswer[]) => void) | undefined;
@@ -155,8 +157,14 @@ function QuestionActions(props: QuestionActionsProps) {
  */
 export function PendingQuestions(props: PendingQuestionsProps) {
   const { questions, onSubmit, onDismiss, running, failure, answeredMark } = props;
-  const [drafts, setDrafts] = useState<Drafts>({});
-  const [step, setStep] = useState(0);
+  const [drafts, setDrafts] = useRetainedState<Drafts>(
+    props.retainKey && `question-drafts:${props.retainKey}`,
+    {},
+  );
+  const [step, setStep] = useRetainedState(
+    props.retainKey && `question-step:${props.retainKey}`,
+    0,
+  );
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set());
   const itemRef = useRef<HTMLDivElement>(null);
   const hasStepped = useRef(false);

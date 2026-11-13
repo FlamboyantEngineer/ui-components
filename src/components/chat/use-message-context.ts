@@ -36,7 +36,7 @@ export interface ChatMessageOptions
   onDelete?: ((messageId: string) => void) | undefined;
   /** What a reply that streams says while the assistant thinks, unless it says what it is doing. Defaults to "Thinking…". */
   thinkingText?: string | undefined;
-  /** A decorative icon in place of the busy indicator while the assistant thinks. */
+  /** Omitted uses the busy indicator; `null` gives text only; a supplied node replaces it. */
   thinkingIcon?: ReactNode;
   /** Until what a reply's thinking line shows: its first `content`, its `text` or its `end`. Defaults to `text`. */
   thinkingUntil?: ChatThinkingUntil | undefined;

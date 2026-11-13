@@ -225,7 +225,8 @@ test.describe('Chat lab', () => {
       await page.keyboard.press('Enter');
     }
     await expect(demo.getByRole('list', { name: '2 queued messages' })).toBeVisible();
-    await demo.getByRole('button', { name: 'Edit queued message 1' }).click();
+    await demo.getByRole('button', { name: 'Actions for queued message 1' }).click();
+    await page.getByRole('menuitem', { name: 'Edit queued message 1' }).click();
     await expect(demo.locator('.ui-chat__banner')).toHaveText('Editing a queued message');
     await page.keyboard.type(' nearby');
     await demo.getByRole('button', { name: 'Remove queued message 1' }).click();
@@ -248,7 +249,8 @@ test.describe('Chat lab', () => {
       await page.keyboard.type(text);
       await page.keyboard.press('Enter');
     }
-    await demo.getByRole('button', { name: 'Edit queued message 1' }).click();
+    await demo.getByRole('button', { name: 'Actions for queued message 1' }).click();
+    await page.getByRole('menuitem', { name: 'Edit queued message 1' }).click();
     await page.keyboard.type(' nearby');
     await expect(state).toHaveText('idle', { timeout: 30_000 });
     await expect(demo.locator('[data-lab-output="queue-count"]')).toHaveText('1');

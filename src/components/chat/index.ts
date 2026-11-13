@@ -2,6 +2,7 @@ export type {
   ChatComposerContent,
   ChatComposerEditResult,
   ChatComposerHandle,
+  ChatComposerHint,
   ChatComposerInsertOptions,
   ChatComposerInsertResult,
   ChatDraft,

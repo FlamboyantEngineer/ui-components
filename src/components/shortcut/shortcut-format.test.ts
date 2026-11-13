@@ -144,6 +144,7 @@ describe('key sequences', () => {
 
 describe('platform detection', () => {
   it('UIC-SHORTCUT-1.4 prefers the client hint, then the platform, then the user agent', () => {
+    vi.stubGlobal('navigator', undefined);
     const cases: Array<[Parameters<typeof detectShortcutPlatform>[0], string]> = [
       [undefined, 'linux'],
       [{}, 'linux'],

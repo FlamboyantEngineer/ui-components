@@ -31,11 +31,12 @@ describe('ChatStatusLine', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('UIC-CHAT-ACTIVITY-4.1 keeps the busy indicator for an empty icon and draws a zero one', () => {
+  it('UIC-CHAT-ACTIVITY-4.1 hides the busy indicator for an explicit empty icon and draws a zero one', () => {
     for (const icon of [null, false, '']) {
       const { container, unmount } = render(<ChatStatusLine icon={icon} />);
-      expect(container.querySelector('.ui-chat-status-line__spinner')).not.toBeNull();
+      expect(container.querySelector('.ui-chat-status-line__spinner')).toBeNull();
       expect(container.querySelector('.ui-chat-status-line__icon')).toBeNull();
+      expect(screen.getByRole('status')).toHaveTextContent('Thinking\u2026');
       unmount();
     }
     const { container } = render(<ChatStatusLine icon={0} />);

@@ -160,7 +160,7 @@ function DenyForm({ state }: { state: ToolCallApprovalState }) {
         label={strings.toolCallDenyReason}
         value={state.reason}
         onChange={state.setReason}
-        autoFocus
+        autoFocus={state.focusesReason}
       />
       <Button type="submit" size="sm" variant="danger">
         {strings.send}

@@ -58,7 +58,7 @@ export interface ChatControllerProps {
   /** Sends the reader's message, or queues it while a reply runs. */
   onSend: (text: string, tokens?: readonly ChatTextToken[]) => void;
   /** Stops the running reply and sends the reader's message at once, ahead of the queue. */
-  onSendNow: (text: string, tokens?: readonly ChatTextToken[]) => void;
+  onSendNow: (text: string, tokens?: readonly ChatTextToken[], replyTo?: string) => void;
   /** Stops the running reply and sends the queued message `id` at once, ahead of the rest of the queue. */
   onSteer: (id: string) => void;
   /** Stops the running reply. */
@@ -104,7 +104,7 @@ export interface ChatController {
   /** Sends the reader's message, or queues it while a reply runs. */
   send: (text: string, tokens?: readonly ChatTextToken[]) => void;
   /** Stops the running reply and sends the reader's message at once, ahead of the queue. */
-  sendNow: (text: string, tokens?: readonly ChatTextToken[]) => void;
+  sendNow: (text: string, tokens?: readonly ChatTextToken[], replyTo?: string) => void;
   /** Stops the running reply and sends the queued message `id` at once, ahead of the rest of the queue. */
   steer: (id: string) => void;
   /** Stops the running reply, keeping what it streamed. */

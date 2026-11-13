@@ -5,6 +5,7 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useRetainedStateReset } from '../../utils/use-retained-state.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   type ChatQuestionAnswer,
@@ -95,6 +96,10 @@ export function ChatQuestion({
   const first = questions[0]?.question;
   const name = first === undefined ? undefined : strings.questionAsked(first, questions.length);
   const isPending = status === 'pending';
+  useRetainedStateReset(
+    [`question-drafts:${id}`, `question-step:${id}`, `question-request:${id}`],
+    !isPending,
+  );
   const request = useQuestionRequest(isPending ? id : undefined);
   const data = {
     status,
@@ -114,6 +119,7 @@ export function ChatQuestion({
       {isPending ? (
         <PendingQuestions
           key={id}
+          retainKey={id}
           questions={questions}
           running={request.running}
           failure={request.failure}

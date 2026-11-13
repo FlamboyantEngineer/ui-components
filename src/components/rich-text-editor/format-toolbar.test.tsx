@@ -244,16 +244,11 @@ describe('FormatToolbar', () => {
       selectRange(6, 11);
       const link = within(toolbar()).getByRole('button', { name: 'Link' });
       await user.click(link);
-      await user.type(
-        screen.getByRole('textbox', { name: 'Link address' }),
-        'https://example.com/a{Enter}',
-      );
+      await user.paste('https://example.com/a');
+      await user.keyboard('{Enter}');
       await user.click(link);
       await user.clear(screen.getByRole('textbox', { name: 'Link address' }));
-      await user.type(
-        screen.getByRole('textbox', { name: 'Link address' }),
-        'https://example.com/b',
-      );
+      await user.paste('https://example.com/b');
       await user.click(screen.getByRole('button', { name: 'Apply' }));
       await user.click(link);
       await user.keyboard('{Escape}');

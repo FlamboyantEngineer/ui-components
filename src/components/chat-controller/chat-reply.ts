@@ -110,11 +110,11 @@ export function createOutgoingMessage(
   outgoing: ChatQueuedMessage,
   author: { authorId: string; createdAt: string },
 ): ChatMessageData {
-  const { id, text, tokens, attachments } = outgoing;
+  const { id, text, tokens, attachments, replyTo } = outgoing;
   const parts: ChatPart[] = [];
   if (attachments?.length) parts.push({ type: 'files', attachments });
   if (text) parts.push(tokens?.length ? { type: 'text', text, tokens } : { type: 'text', text });
-  return { id, ...author, parts };
+  return { id, ...author, parts, ...(replyTo === undefined ? {} : { replyTo }) };
 }
 
 /** The text of every message the reader wrote, oldest first, for the composer's recall. */

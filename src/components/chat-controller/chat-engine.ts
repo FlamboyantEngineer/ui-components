@@ -139,11 +139,14 @@ function send(engine: ChatEngineContext, text: string, tokens?: readonly ChatTex
  * Stops the running reply, keeping what it streamed, and sends the reader's message at once, ahead
  * of the queue, which goes on once the new reply finishes.
  */
-function sendNow(engine: ChatEngineContext, text: string, tokens?: readonly ChatTextToken[]) {
+function sendNow(
+  engine: ChatEngineContext,
+  { text, tokens, replyTo }: { text: string; tokens?: readonly ChatTextToken[]; replyTo?: string },
+) {
   const outgoing = takeOutgoing(engine, text, tokens);
   if (!outgoing) return;
   if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });
-  startTurn(engine, outgoing);
+  startTurn(engine, { ...outgoing, ...(replyTo === undefined ? {} : { replyTo }) });
 }
 
 /**
@@ -243,7 +246,8 @@ export function createChatEngine(
   return {
     store: engine.store,
     send: (text: string, tokens?: readonly ChatTextToken[]) => send(engine, text, tokens),
-    sendNow: (text: string, tokens?: readonly ChatTextToken[]) => sendNow(engine, text, tokens),
+    sendNow: (text: string, tokens?: readonly ChatTextToken[], replyTo?: string) =>
+      sendNow(engine, { text, tokens, replyTo }),
     steer: (id: string) => steer(engine, id),
     stop: () => {
       if (engine.run) endRun(engine, engine.run, { status: 'cancelled' });

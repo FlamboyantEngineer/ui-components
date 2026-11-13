@@ -874,5 +874,9 @@
   "status": "Statut",
   "stateTrigger": "{label} : {state}",
   "transitionTo": "Passer à {state}",
-  "selectOptionIndeterminate": "Sélectionné pour certains enregistrements"
+  "selectOptionIndeterminate": "Sélectionné pour certains enregistrements",
+  "chatComposerHint": "{shortcut} pour {action, select, queue {mettre en attente} steer {réorienter} save {enregistrer} other {envoyer}}",
+  "chatReorderQueued": "Réordonner le message en attente {position}",
+  "chatQueueActions": "Actions du message en attente {position}",
+  "chatSteer": "Réorienter"
 }

@@ -111,6 +111,7 @@ function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
       durationMs={part.durationMs}
       approval={part.approval}
       variant="row"
+      defaultExpanded={part.defaultExpanded}
       {...handlers}
       isExpanded={readOwn(expansion.expanded, part.id)}
       onExpandedChange={(isExpanded) => expansion.setExpanded(part.id, isExpanded)}

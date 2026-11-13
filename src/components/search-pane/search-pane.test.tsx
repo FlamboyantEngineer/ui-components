@@ -300,30 +300,35 @@ describe('SearchPane', () => {
     }
   });
 
-  it('UIC-SEARCH-PANE-2.3 mounts a page of rows while the count and stepping cover every result', async () => {
-    const user = userEvent.setup();
+  it('UIC-SEARCH-PANE-2.3 mounts the requested page size while counting every result', () => {
     const results = makeResults(650);
     const { container } = render(pane({ results, maxMountedResults: 200 }));
     expect(within(list()).getAllByRole('option')).toHaveLength(200);
     expect(status()).toHaveTextContent('650 matches');
     expect(screen.queryByRole('button', { name: /earlier result/ })).not.toBeInTheDocument();
-    const later = screen.getByRole('button', { name: 'Show 450 more results' });
+    expect(screen.getByRole('button', { name: 'Show 450 more results' })).toBeInTheDocument();
+    expectHooksMatchSpec(container, 'SEARCH-PANE', { slots: ['show-later'] });
+  });
+
+  it('UIC-SEARCH-PANE-2.3 steps across every result and turns pages in both directions', async () => {
+    const user = userEvent.setup();
+    render(pane({ results: makeResults(650), maxMountedResults: 20 }));
+    const later = screen.getByRole('button', { name: 'Show 630 more results' });
     await user.click(queryBox());
     await user.keyboard('{Shift>}{Enter}{/Shift}');
     expect(status()).toHaveTextContent('650 of 650');
     const rows = within(list()).getAllByRole('option');
-    expect(rows).toHaveLength(50);
+    expect(rows).toHaveLength(10);
     expect(rows.at(-1)).toHaveAttribute('aria-selected', 'true');
     expect(later).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Show 600 earlier results' }));
-    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 401');
-    await user.click(screen.getByRole('button', { name: 'Show 50 more results' }));
-    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 601');
+    await user.click(screen.getByRole('button', { name: 'Show 640 earlier results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 621');
+    await user.click(screen.getByRole('button', { name: 'Show 10 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 641');
     await user.click(queryBox());
     await user.keyboard('{Enter}');
     expect(status()).toHaveTextContent('1 of 650');
     expect(within(list()).getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
-    expectHooksMatchSpec(container, 'SEARCH-PANE', { slots: ['show-later'] });
   });
 
   it('UIC-SEARCH-PANE-2.2 UIC-SEARCH-PANE-2.3 follows the current result back after a turned page', async () => {
