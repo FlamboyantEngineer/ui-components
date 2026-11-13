@@ -62,43 +62,42 @@ async function expectSharpZoom(page: Page, lab: { open(name: string): Promise<vo
       return half / Math.max(ink, 1);
     }, png);
   };
+  // The same text set natively at `scale` times the label's size, beside the canvas, for comparison.
+  const setSample = (scale: number) =>
+    label.evaluate((node, size) => {
+      document.querySelector('[data-lab-sample="native"]')?.remove();
+      const style = getComputedStyle(node);
+      const sample = document.createElement('span');
+      sample.textContent = node.textContent;
+      Object.assign(sample.style, {
+        position: 'fixed',
+        left: '0',
+        top: '0',
+        zIndex: '2147483647',
+        background: getComputedStyle(node.closest('.ui-diagram-canvas__node') ?? node)
+          .backgroundColor,
+        color: style.color,
+        fontFamily: style.fontFamily,
+        fontWeight: style.fontWeight,
+        fontSize: `${Number.parseFloat(style.fontSize) * size}px`,
+        lineHeight: 'normal',
+      });
+      sample.dataset.labSample = 'native';
+      document.body.append(sample);
+    }, scale);
+  const sample = page.locator('[data-lab-sample="native"]');
   // Whole and fractional zooms: wheel steps zoom around the pointer by a factor per pixel.
   for (const delta of [-300, 100, -600]) {
+    const before = (await output(page, 'zoom').textContent()) ?? '';
     await page.keyboard.down('Control');
     await page.mouse.wheel(0, delta);
     await page.keyboard.up('Control');
-    await expect(output(page, 'zoom')).not.toHaveText('100%');
-    const zoom = (await output(page, 'zoom').textContent()) ?? '';
-    // The same text set natively at the zoomed size, beside the canvas, for comparison.
-    const native = await label.evaluate(
-      (node, scale) => {
-        const style = getComputedStyle(node);
-        const sample = document.createElement('span');
-        sample.textContent = node.textContent;
-        Object.assign(sample.style, {
-          position: 'fixed',
-          left: '0',
-          top: '0',
-          zIndex: '2147483647',
-          background: getComputedStyle(node.closest('.ui-diagram-canvas__node') ?? node)
-            .backgroundColor,
-          color: style.color,
-          fontFamily: style.fontFamily,
-          fontWeight: style.fontWeight,
-          fontSize: `${Number.parseFloat(style.fontSize) * scale}px`,
-          lineHeight: 'normal',
-        });
-        sample.dataset.labSample = 'native';
-        document.body.append(sample);
-        return true;
-      },
-      Number.parseInt(zoom, 10) / 100,
-    );
-    expect(native).toBe(true);
-    const sample = page.locator('[data-lab-sample="native"]');
-    // The browser draws the zoomed label again a frame or more after the zoom shows, so the
-    // comparison waits for that drawing rather than reading the label once.
+    await expect(output(page, 'zoom')).not.toHaveText(before);
+    // The wheel may land over more than one frame, and the browser draws the zoomed label again a
+    // frame or more after the zoom shows, so each attempt reads the zoom it compares against.
     await expect(async () => {
+      const zoom = (await output(page, 'zoom').textContent()) ?? '';
+      await setSample(Number.parseInt(zoom, 10) / 100);
       const [zoomed, reference] = [await halfTones(label), await halfTones(sample)];
       expect(zoomed, zoom).toBeLessThan(reference * 1.15 + 0.03);
     }).toPass();

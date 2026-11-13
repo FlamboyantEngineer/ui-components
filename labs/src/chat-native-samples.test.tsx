@@ -44,23 +44,28 @@ describe('Immutable JSON transport example', () => {
     expect(retainChatSnapshot(original, clone(original).slice(1))).toEqual(original.slice(1));
   });
 
-  it('UIC-CHAT-1.5 UIC-CHAT-1.7 renders no historical message while typing or receiving an unchanged 1,002-message snapshot', async () => {
-    const messages = nativeMessages.map((message) => ({
-      ...message,
-      parts: [
-        ...message.parts,
-        { type: 'custom' as const, id: `probe-${message.id}`, name: 'render-probe' },
-      ],
-    }));
-    const renderPart = vi.fn(() => null);
-    const { user, container, rerenderWith } = renderChat({ messages, renderPart });
-    expect(container.querySelectorAll('article').length).toBeLessThan(40);
-    expect(renderPart).toHaveBeenCalled();
-    renderPart.mockClear();
-    await user.click(screen.getByRole('textbox', { name: 'Message' }));
-    await user.keyboard('Keep typing');
-    expect(renderPart).not.toHaveBeenCalled();
-    rerenderWith({ messages: retainChatSnapshot(messages, clone(messages)), renderPart });
-    expect(renderPart).not.toHaveBeenCalled();
-  });
+  it(
+    'UIC-CHAT-1.5 UIC-CHAT-1.7 renders no historical message while typing or receiving an unchanged 1,002-message snapshot',
+    // Mounting a 1,002-message chat takes over two seconds alone, more on a loaded runner.
+    { timeout: 15_000 },
+    async () => {
+      const messages = nativeMessages.map((message) => ({
+        ...message,
+        parts: [
+          ...message.parts,
+          { type: 'custom' as const, id: `probe-${message.id}`, name: 'render-probe' },
+        ],
+      }));
+      const renderPart = vi.fn(() => null);
+      const { user, container, rerenderWith } = renderChat({ messages, renderPart });
+      expect(container.querySelectorAll('article').length).toBeLessThan(40);
+      expect(renderPart).toHaveBeenCalled();
+      renderPart.mockClear();
+      await user.click(screen.getByRole('textbox', { name: 'Message' }));
+      await user.keyboard('Keep typing');
+      expect(renderPart).not.toHaveBeenCalled();
+      rerenderWith({ messages: retainChatSnapshot(messages, clone(messages)), renderPart });
+      expect(renderPart).not.toHaveBeenCalled();
+    },
+  );
 });
