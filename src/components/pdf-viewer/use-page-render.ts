@@ -2,7 +2,7 @@
 
 import { type RefObject, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
-import { drawPage, type PageBitmap } from './page-bitmap.js';
+import { type CanvasPixels, drawPage, type PageBitmap } from './page-bitmap.js';
 import {
   createAnnotationLayer,
   createTextLayer,
@@ -25,6 +25,8 @@ interface UsePageRenderOptions<
   /** Only pages near the view render; the others release their bitmap and layers. */
   isNear: boolean;
   canvas: HTMLCanvasElement | null;
+  /** The canvas's size in device pixels: a new size clears the bitmap, which is drawn again. */
+  pixels: CanvasPixels;
   layerRef: RefObject<HTMLDivElement | null>;
   annotationLayerRef: RefObject<HTMLDivElement | null>;
   /** Follows the links the annotation layer draws. */
@@ -122,60 +124,71 @@ function buildAnnotationLayer<V extends PdfViewport, C extends PdfTextContent>(
 }
 
 /**
+ * Draws a page's bitmap into its canvas while the page is near the view: again at every scale and
+ * rotation, on a retry, and when the canvas's pixel size changes, which clears what it held (a
+ * zoom of the browser, a window moved to a screen with another pixel ratio). Returns the failure
+ * of the drawing until the page draws again.
+ */
+function usePageBitmap<V extends PdfViewport, C extends PdfTextContent>(
+  { loaded, pageIndex, scale, isNear, canvas, pixels, onPageError }: UsePageRenderOptions<V, C>,
+  attempt: number,
+): Error | null {
+  const [failure, setFailure] = useState<Error | null>(null);
+  const latestOnPageError = useLatest(onPageError);
+  useEffect(() => {
+    const page = loaded.pages[pageIndex];
+    const viewport = loaded.getViewport(pageIndex, scale);
+    if (!isNear || !canvas || !page || !viewport) return undefined;
+    const cancel = drawPage({ loaded, page, viewport }, canvas, (error) => {
+      setFailure(error);
+      latestOnPageError.current?.(pageIndex, error);
+    });
+    return () => {
+      cancel();
+      setFailure(null);
+    };
+  }, [
+    attempt,
+    canvas,
+    isNear,
+    latestOnPageError,
+    loaded,
+    pageIndex,
+    pixels.height,
+    pixels.width,
+    scale,
+  ]);
+  return failure;
+}
+
+/**
  * Draws a page into its canvas and builds its text and annotation layers while the page is near
  * the view, again at every scale and rotation and on a retry. Returns the text layer once it has
  * rendered, and the failure of the bitmap's drawing until the page draws again.
  */
-export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
-  loaded,
-  pageIndex,
-  scale,
-  isNear,
-  canvas,
-  layerRef,
-  annotationLayerRef,
-  linkService,
-  onPageError,
-}: UsePageRenderOptions<V, C>): PageRender {
+export function usePageRender<V extends PdfViewport, C extends PdfTextContent>(
+  options: UsePageRenderOptions<V, C>,
+): PageRender {
+  const { loaded, pageIndex, scale, isNear, layerRef, annotationLayerRef, linkService } = options;
   const [textLayer, setTextLayer] = useState<PdfTextLayer | null>(null);
-  const [failure, setFailure] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const latestOnPageError = useLatest(onPageError);
+  const failure = usePageBitmap(options, attempt);
   useEffect(() => {
     const container = layerRef.current;
     const annotationLayer = annotationLayerRef.current;
     const page = loaded.pages[pageIndex];
     const viewport = loaded.getViewport(pageIndex, scale);
-    if (!isNear || !canvas || !container || !annotationLayer || !page || !viewport) {
-      return undefined;
-    }
+    if (!isNear || !container || !annotationLayer || !page || !viewport) return undefined;
     const drawing = { loaded, page, pageIndex, viewport };
-    const onFailure = (error: Error) => {
-      setFailure(error);
-      latestOnPageError.current?.(pageIndex, error);
-    };
     const cancels = [
-      drawPage(drawing, canvas, onFailure),
       buildTextLayer(drawing, container, setTextLayer),
       loaded.hidesAnnotations ? null : buildAnnotationLayer(drawing, annotationLayer, linkService),
     ];
     return () => {
       for (const cancel of cancels) cancel?.();
       setTextLayer(null);
-      setFailure(null);
     };
-  }, [
-    annotationLayerRef,
-    attempt,
-    canvas,
-    isNear,
-    latestOnPageError,
-    layerRef,
-    linkService,
-    loaded,
-    pageIndex,
-    scale,
-  ]);
+  }, [annotationLayerRef, attempt, isNear, layerRef, linkService, loaded, pageIndex, scale]);
   const retry = useMemo(() => () => setAttempt((count) => count + 1), []);
   return { textLayer, failure, retry };
 }

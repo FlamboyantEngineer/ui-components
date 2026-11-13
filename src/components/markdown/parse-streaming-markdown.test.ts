@@ -97,6 +97,21 @@ describe('parseStreamingMarkdown', () => {
     expect(parseStreamingMarkdown(listed, null).settled).toBe('');
   });
 
+  it('UIC-MARKDOWN-2.13 reads a line of many list markers in one pass', () => {
+    const rest = '\n\nMore\n\nEnd';
+    // Forty markers with spaces to spare took a backtracking pattern longer than any test waits.
+    const nested = `${'-   '.repeat(40)}x${rest}`;
+    const parse = parseStreamingMarkdown(nested, null);
+    expect(parse.document).toEqual(parseMarkdown(nested));
+    expect(parse.settled).not.toBe('');
+    const defined = `${'-   '.repeat(40)}[docs]: /docs${rest}`;
+    expect(parseStreamingMarkdown(defined, null).settled).toBe('');
+    const mixed = ` > 1.  -\t>  12) [docs]: /docs${rest}`;
+    expect(parseStreamingMarkdown(mixed, null).settled).toBe('');
+    // A marker needs a space after it, as before.
+    expect(parseStreamingMarkdown(`Text\n\n-[docs]: /docs${rest}`, null).settled).not.toBe('');
+  });
+
   it('UIC-MARKDOWN-2.13 keeps settling text that only contains a bracket and a colon', () => {
     const source = 'Text\n\n```py\nif x[0]:\n    pass\n```\n\nSee items[1]: two\n\nMore';
     const parse = parseStreamingMarkdown(source, null);

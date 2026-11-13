@@ -32,7 +32,9 @@ const freshStart = /^[\p{L}\p{N}#|!(]/u;
  * Definitions can change the blocks before them, so a source with one is parsed whole; text such
  * as `x[0]:` inside a line does not match.
  */
-const definitionStart = /^[ \t>]*(?:(?:[-+*]|\d{1,9}[.)])[ \t]+[ \t>]*)*\[[^\]]{0,999}\]:/m;
+// Each character of the prefix has one reading (a space, a tab or `>`, else a marker before a space),
+// so a line of many markers that defines nothing is given up in one pass.
+const definitionStart = /^(?:[ \t>]|(?:[-+*]|\d{1,9}[.)])(?=[ \t]))*\[[^\]]{0,999}\]:/m;
 
 /** A paragraph that only the end of a source can reach; it stays out of an unclosed fence. */
 const sentinel = '﷐';

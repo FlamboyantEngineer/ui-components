@@ -24,8 +24,36 @@ interface FocusReturnOptions {
   containerRef: RefObject<HTMLElement | null>;
   /** The caller's choice of where focus goes when the container leaves the page. */
   finalFocus?: FocusTarget | undefined;
-  /** Where focus goes when the caller chose nothing; `null` leaves it to React Aria. */
-  fallback: Element | null;
+  /**
+   * Where focus goes when the caller chose nothing, asked when the container leaves; nothing (or
+   * `null`) leaves it to React Aria.
+   */
+  fallback?: (() => Element | null) | undefined;
+}
+
+/**
+ * The control that stands in for `element` once it is gone: the one whose `aria-controls` names
+ * `element` or a container around it, as a menu button names its menu. Read while `element` is in
+ * the page, through the shadow roots around it.
+ */
+export function findControllingElement(element: Element | null): HTMLElement | null {
+  for (let node: Element | null = element; node;) {
+    const root = node.getRootNode() as Document | ShadowRoot;
+    const control = node.id ? findControlOf(node, root) : null;
+    if (control) return control;
+    node = node.parentElement ?? (root as Partial<ShadowRoot>).host ?? null;
+  }
+  return null;
+}
+
+/** The focusable control in `root`, outside `node`, whose `aria-controls` names `node`. */
+function findControlOf(node: Element, root: Document | ShadowRoot): HTMLElement | null {
+  for (const control of root.querySelectorAll('[aria-controls]')) {
+    const ids = control.getAttribute('aria-controls')?.split(/\s+/) ?? [];
+    if (ids.includes(node.id) && isFocusableElement(control) && !node.contains(control))
+      return control;
+  }
+  return null;
 }
 
 /** Whether a value is an element that takes focus (an HTML or SVG element), from any window. */
@@ -61,7 +89,8 @@ export function useFocusReturn({ containerRef, finalFocus, fallback }: FocusRetu
       if (!isFocusLost(owner) && !(container && containsComposed(container, active))) return;
       // A frame keeps its focused element while the page around it holds focus; that is not ours.
       if (owner.defaultView?.frameElement && !owner.hasFocus()) return;
-      const { finalFocus: chosen, fallback: opener } = optionsRef.current;
+      const { finalFocus: chosen, fallback } = optionsRef.current;
+      const opener = fallback?.() ?? null;
       const target =
         resolveFocusTarget(chosen) ??
         (isFocusableElement(opener) && opener.isConnected ? opener : null);
