@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { PeriodField } from '../../src/components/period-field/index.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 

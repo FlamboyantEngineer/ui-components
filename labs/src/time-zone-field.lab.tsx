@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TimeZoneField } from '../../src/components/time-zone-field/index.js';
-import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 

@@ -219,7 +219,7 @@ test.describe('Mini App lab', () => {
       'navigation',
     );
     const count = await frames.count();
-    expect(count).toBe(5);
+    expect(count).toBe(6);
     for (let index = 0; index < count; index += 1) {
       const frame = frames.nth(index);
       // Browsers pause rendering in frames of another origin while they are off screen.

@@ -1,6 +1,7 @@
 import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/index.js';
 import {
+  type ConstraintCompare,
   ConstraintEditor,
   type ConstraintEditorKind,
   type ConstraintIssue,
@@ -31,6 +32,34 @@ const samples: Readonly<Record<ConstraintEditorKind, { title: string; set: Const
   date: { title: 'Start date', set: { minimum: '2026-01-01', maximum: '2026-12-31' } },
   options: { title: 'Colours', set: { default: 'red', minCount: 1, maxCount: 2 } },
 };
+
+/** The host's own number type: hexadecimal, which decimal text would order wrongly. */
+const compareHex: ConstraintCompare = (left, right) => {
+  const a = Number.parseInt(left, 16);
+  const b = Number.parseInt(right, 16);
+  return Number.isNaN(a) || Number.isNaN(b) ? null : a - b;
+};
+
+function HexDemo() {
+  const [set, setSet] = useState<ConstraintSet>({ minimum: '0A', maximum: 'FF', default: '1F' });
+  const [issues, setIssues] = useState<readonly ConstraintIssue[]>([]);
+  return (
+    <div data-lab-demo="compare" style={column}>
+      <ConstraintEditor
+        kind="number"
+        aria-label="Channel constraints"
+        value={set}
+        compare={compareHex}
+        onChange={(next, found) => {
+          setSet(next);
+          setIssues(found);
+        }}
+      />
+      <LabOutput name="hex constraints">{JSON.stringify(set)}</LabOutput>
+      <LabOutput name="hex issues">{JSON.stringify(issues)}</LabOutput>
+    </div>
+  );
+}
 
 function SchemaDemo({ kind }: { kind: ConstraintEditorKind }) {
   const sample = samples[kind];
@@ -114,6 +143,12 @@ mountLab(
       description="The minimum is inherited, so it is locked. A server error lands on the constraint it names."
     >
       <ServerErrorDemo />
+    </LabSection>
+    <LabSection
+      title="The host's own ordering"
+      description="Bounds and default in hexadecimal, ordered by the host's compare: 1F sits between 0A and FF, though as decimal text it would not. Set the default to 05 to see it fall below the minimum."
+    >
+      <HexDemo />
     </LabSection>
   </>,
 );

@@ -116,6 +116,17 @@ function Opener({ set, opens }: { set: SetName; opens: 'first' | 'last' }) {
   );
 }
 
+/** A viewer whose images open at twice their fit. */
+function ZoomedAtFirst() {
+  const [isOpen, setOpen] = useState(false);
+  return (
+    <div data-lab-demo="default-zoom">
+      <Button onPress={() => setOpen(true)}>Open the photos zoomed in</Button>
+      <MediaViewer items={photos} defaultZoom={200} isOpen={isOpen} onOpenChange={setOpen} />
+    </div>
+  );
+}
+
 /** A gallery of thumbnails, each opening the viewer at its photo. */
 function Gallery() {
   const [selected, setSelected] = useState<Key | null>(null);
@@ -206,6 +217,12 @@ mountLab(
       description="The viewer opens before its items load. Once they do, the first item shows; a moment later the list reverses and that item stays shown, by its id, with no selection reported."
     >
       <ArrivingItems />
+    </LabSection>
+    <LabSection
+      title="Starting zoom"
+      description="defaultZoom 200: each photo opens at twice its fit, and moving to the next photo starts it there again."
+    >
+      <ZoomedAtFirst />
     </LabSection>
   </>,
 );

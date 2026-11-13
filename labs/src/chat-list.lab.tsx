@@ -195,6 +195,33 @@ function FallbackCell({ fallback }: { fallback: (typeof fallbacks)[number] }) {
   );
 }
 
+/** History whose next page fails the first time, reported to the host, then loads on retry. */
+function FailingHistory() {
+  const [shown, setShown] = useState(3);
+  const [attempts, setAttempts] = useState(0);
+  const [failed, setFailed] = useState('none');
+  const loadMore = async () => {
+    setAttempts((count) => count + 1);
+    if (attempts === 0) throw new Error('The server is busy');
+    await Promise.resolve();
+    setShown((count) => count + historyPage);
+  };
+  return (
+    <div data-lab-demo="history-load-error" style={{ height: 360, width: 300 }}>
+      <ChatList
+        heading="History that fails once"
+        conversations={historyConversations.slice(0, shown)}
+        getNow={getNow}
+        onLoadMore={shown < historyConversations.length ? loadMore : undefined}
+        onLoadMoreError={(error) =>
+          setFailed(error instanceof Error ? error.message : String(error))
+        }
+      />
+      <output data-lab-output="load error">{failed}</output>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -241,6 +268,12 @@ mountLab(
       description="The host searches itself: here it keeps titles that start with the search text."
     >
       <HostSearchDemo />
+    </LabSection>
+    <LabSection
+      title="A next page that fails"
+      description="The next page of history fails the first time: onLoadMoreError hears the error and the list offers the page again, which then loads."
+    >
+      <FailingHistory />
     </LabSection>
   </>,
 );

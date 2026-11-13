@@ -5,8 +5,8 @@ import {
   type SnippetFieldValue,
   type SnippetLoader,
 } from '../../src/components/snippet-field/index.js';
-import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabOutput } from './lab-output.js';
 import { SnippetFieldCorners, SnippetFieldSizes } from './snippet-field-cases.js';
 

@@ -345,7 +345,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Inline Markdown"
-      description="CommentText with format markdown-inline reads emphasis, code spans and safe links around the mention chips, and keeps raw HTML as text; plain shows the same text as written."
+      description="CommentText with format markdown-inline reads emphasis, code spans and safe links around the mention chips, and keeps raw HTML as text; plain shows the same text as written. Below, parse reads the host's own mention format, <@id|Name>, into chips."
     >
       <MarkdownComments />
     </LabSection>

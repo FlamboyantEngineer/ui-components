@@ -4,10 +4,10 @@ import {
   ExpressionField,
   type ExpressionFieldResult,
 } from '../../src/components/expression-field/index.js';
-import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ExpressionFieldCorners, ExpressionFieldSizes } from './expression-field-cases.js';
 import { constants, evaluateExpression, tokenizeExpression } from './expression-field-evaluator.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 360 };

@@ -5,6 +5,7 @@ import {
   type AssetPlacement,
 } from '../../src/components/asset-picker/index.js';
 import { LabSection, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 /** A flat swatch as an SVG data address, standing in for a thumbnail. */
 function swatch(color: string, width: number, height: number) {
@@ -92,6 +93,22 @@ function InsertDemo() {
   );
 }
 
+function AlignedDemo() {
+  const [inserted, setInserted] = useState('nothing');
+  return (
+    <div data-lab-demo="aligned" style={{ maxWidth: 520 }}>
+      <AssetPicker
+        aria-label="Insert a centred image"
+        search={searchLibrary}
+        defaultAlign="center"
+        searchDelay={1000}
+        onSelect={(item, placement) => setInserted(describePlacement(item, placement))}
+      />
+      <LabOutput name="aligned">{inserted}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -111,6 +128,12 @@ mountLab(
           onSelect={() => {}}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Alignment and search delay"
+      description="A chosen image starts centred instead of at the start, and the search waits a full second after the last keystroke."
+    >
+      <AlignedDemo />
     </LabSection>
   </>,
 );

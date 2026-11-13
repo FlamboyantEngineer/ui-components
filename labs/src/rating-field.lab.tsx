@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Rating, RatingField } from '../../src/components/rating-field/index.js';
 import { ThumbsDownGlyph, ThumbsUpGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
-import { FieldBehaviours } from './field-behaviours.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 
