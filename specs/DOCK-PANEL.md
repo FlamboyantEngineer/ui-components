@@ -73,10 +73,10 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-2.5 - Scrolling strips
 
-The tab strip shall scroll freely, without snapping, paging or stepper buttons: the wheel scrolls it as a [Tabs](TABS.md) scroll list does (UIC-TABS-2.4), and a short collapsed rail scrolls natively along its axis, a bottom rail taking the vertical wheel as a [scroll strip](SCROLL-STRIP.md). While a strip hides content past an edge, a decorative `ui-dock-panel__fade` element (`data-edge` `start` or `end`, `data-orientation`, hidden otherwise and from assistive technology) covers that edge; the reference sheet draws it 26 pixels deep along the strip's axis. Each newly selected tab scrolls toward the middle of the strip (UIC-TABS-2.4); when the strip appears (the panel expands or docks) and whenever it resizes, the strip scrolls the least that shows the selected tab clear of both fades, aligning a tab wider than the room by its inline start. Otherwise the reader's own scroll position stays.
+The tab strip shall scroll freely, without snapping, paging or stepper buttons: the wheel scrolls it as a [Tabs](TABS.md) scroll list does (UIC-TABS-2.4), and a short collapsed rail scrolls natively along its axis, a bottom rail taking the vertical wheel as a [scroll strip](SCROLL-STRIP.md). Edge fades are opt-in: with `showEdgeFades`, while a strip (tabs or launchers) hides content past an edge, a decorative `ui-dock-panel__fade` element (`data-edge` `start` or `end`, `data-orientation`, hidden otherwise and from assistive technology) covers that edge; the reference sheet draws it 26 pixels deep along the strip's axis. By default no fade renders. Each newly selected tab scrolls toward the middle of the strip (UIC-TABS-2.4); when the strip appears (the panel expands or docks) and whenever it resizes, the strip scrolls the least that shows the selected tab clear of both fades (or inside the strip, without them), aligning a tab wider than the room by its inline start. Otherwise the reader's own scroll position stays.
 
 Implementation: `src/components/dock-panel/dock-panel-tabs.tsx`, `src/components/dock-panel/dock-panel-fades.tsx`, `src/utils/use-scroll-strip-overflow.ts`, `labs/reference/dock-panel.css`
-Verification: `e2e/dock-panel.spec.ts`
+Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ## UIC-DOCK-PANEL-3 - Size
 

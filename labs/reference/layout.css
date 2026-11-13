@@ -559,7 +559,8 @@
 
 /*
  * The scroll buttons are ghost chevrons over the edge fades: muted at rest, a soft fill under the
- * pointer, and the button's focus ring for the keyboard.
+ * pointer, and the button's focus ring for the keyboard. Edge fades are opt-in; without one, a
+ * chevron at rest takes the canvas, so the tools it covers do not show through.
  */
 .ui-toolbar-row > .ui-toolbar-row__scroll-button[data-edge] {
   position: absolute;
@@ -572,6 +573,15 @@
 .ui-toolbar-row > .ui-toolbar-row__scroll-button[data-edge]:is([data-hovered], [data-pressed]) {
   background: color-mix(in srgb, var(--ref-canvas), var(--ref-text) var(--ref-tint-subtle));
   color: var(--ref-text);
+}
+
+.ui-toolbar-row
+  > .ui-toolbar-row__scroll-button[data-edge]:not(
+    .ui-toolbar-row__fade + *,
+    [data-hovered],
+    [data-pressed]
+  ) {
+  background: var(--ref-canvas);
 }
 
 .ui-toolbar-row__scroll-button[data-edge='start'] {

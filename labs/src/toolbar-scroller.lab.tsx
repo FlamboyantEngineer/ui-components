@@ -120,7 +120,7 @@ mountLab(
   <>
     <LabSection
       title="Overflow by position"
-      description="Each toolbar sits in a 260px column. Fades and scroll buttons appear only at an edge that hides tools."
+      description="Each toolbar sits in a 260px column and passes showEdgeFades. Fades and scroll buttons appear only at an edge that hides tools."
     >
       <StateMatrix
         axes={{ direction: ['ltr', 'rtl'], buttons: ['on', 'off'], position: positions }}
@@ -131,6 +131,7 @@ mountLab(
                 <ToolbarScroller
                   aria-label={`Formatting ${direction} ${buttons} ${position}`}
                   scrollButtons={buttons === 'on'}
+                  showEdgeFades
                 >
                   <Tools names={position === 'fits' ? fewTools : manyTools} />
                 </ToolbarScroller>
@@ -142,7 +143,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Keyboard and wheel"
-      description="Tab into the toolbar, then use the arrow keys: the focused tool scrolls clear of the buttons and fades. A vertical wheel over the strip scrolls it sideways."
+      description="Edge fades are opt-in, so this toolbar draws only its scroll buttons. Tab into it, then use the arrow keys: the focused tool scrolls clear of the buttons. A vertical wheel over the strip scrolls it sideways."
     >
       <div style={{ width: 320 }} data-lab-case="keyboard">
         <ToolbarScroller aria-label="Document tools">

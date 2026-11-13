@@ -66,6 +66,8 @@ export interface DockPanelProps extends RefProps<HTMLElement>, BaseProps {
   persistKey?: string | undefined;
   /** Below this parent width, in pixels, the selected pane shows in a drawer over the page. */
   overlayBelow?: number | undefined;
+  /** Draws a decorative fade over each edge of the tabs or launchers that hides some. Defaults to `false`. */
+  showEdgeFades?: boolean | undefined;
 }
 
 /**
@@ -103,6 +105,7 @@ interface DockPanelLayoutProps {
   resetKey: object;
   minSize: number;
   maxSize: number;
+  showEdgeFades: boolean;
   onResizingChange: (isResizing: boolean) => void;
 }
 
@@ -112,6 +115,7 @@ interface DockPanelLayoutProps {
  */
 function DockPanelLayout(props: DockPanelLayoutProps) {
   const { label, position, panes, state, focus, open, isShown, isOverlay, bodyId } = props;
+  const { showEdgeFades } = props;
   const launchers = panes.map((pane) => pane.launcher);
   // The tabs render from the props this render collects, refs included.
   if (useIsHidden()) return <DockPanelTabList {...{ label, focus }} panes={launchers} />;
@@ -130,11 +134,11 @@ function DockPanelLayout(props: DockPanelLayoutProps) {
           orientation: isShown || position === 'bottom' ? 'horizontal' : 'vertical',
         })}
       >
-        <DockPanelTabs {...{ label, focus, isShown }} panes={launchers} />
+        <DockPanelTabs {...{ label, focus, isShown, showEdgeFades }} panes={launchers} />
         <DockPanelToggle {...{ label, position, isOverlay, bodyId }} state={open} />
         {isShown ? null : (
           <DockPanelLaunchers
-            {...{ label, position, isOverlay, bodyId, focus }}
+            {...{ label, position, isOverlay, bodyId, focus, showEdgeFades }}
             panes={launchers}
             state={open}
             onLaunch={createLaunch(state, open, focus)}
@@ -165,6 +169,7 @@ export function DockPanel({
   maxSize = 640,
   minMainSize,
   overlayBelow,
+  showEdgeFades = false,
   className,
   id,
   ...rest
@@ -208,7 +213,7 @@ export function DockPanel({
       >
         <DockPanelLayout
           {...{ label, position, panes, state, focus, open, isShown, isOverlay, bodyId, resetKey }}
-          {...{ minSize, maxSize: largest, onResizingChange: setResizing }}
+          {...{ minSize, maxSize: largest, showEdgeFades, onResizingChange: setResizing }}
         />
       </Tabs>
     </section>

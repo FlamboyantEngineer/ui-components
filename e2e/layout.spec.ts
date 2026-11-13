@@ -297,12 +297,26 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws no fades unless asked, and the chevrons on the canvas without them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const plain = page.locator(cell('Toolbar edge fades', 'fades=off')).locator('.ui-toolbar-row');
+    await expect(plain).toHaveAttribute('data-overflow-end', 'true');
+    await expect(plain.locator('.ui-toolbar-row__fade')).toHaveCount(0);
+    const chevron = plain.locator('.ui-toolbar-row__scroll-button[data-edge="end"]');
+    await expect(chevron).toBeVisible();
+    await expect(chevron).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await lab.expectAccessible('[data-lab-section="Toolbar edge fades"]');
+  });
+
   test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws the scroll buttons as ghost chevrons over the fades', async ({
     page,
     lab,
   }) => {
     await lab.open('layout');
-    const scroll = page.locator(cell('Toolbar overflow', 'overflow=scroll'));
+    const scroll = page.locator(cell('Toolbar edge fades', 'fades=on'));
     const row = scroll.locator('.ui-toolbar-row');
     const end = row.locator('.ui-toolbar-row__scroll-button[data-edge="end"]');
     await expect(end).toHaveAttribute('data-variant', 'ghost');
