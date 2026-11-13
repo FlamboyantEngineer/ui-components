@@ -228,6 +228,7 @@ describe('reduceChatStream', () => {
     expect(message.parts).toEqual([
       {
         type: 'sources',
+        id: 'sources',
         sources: [
           { id: 'a', title: 'Bean guide, 2nd edition' },
           { id: 'b', title: 'Pressure cooking' },
@@ -249,7 +250,7 @@ describe('reduceChatStream', () => {
     ]);
     expect(message.parts).toEqual([
       { type: 'text', text: 'Soak them [1] overnight.', status: 'streaming' },
-      { type: 'sources', sources: [{ id: 'a', title: 'Bean guide' }] },
+      { type: 'sources', id: 'sources', sources: [{ id: 'a', title: 'Bean guide' }] },
     ]);
   });
 

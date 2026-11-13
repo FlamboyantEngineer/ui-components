@@ -167,7 +167,7 @@ describe('Chat', () => {
     });
     expect(article('r1')).toHaveAttribute('data-status', 'complete');
     expect(article('r1')).not.toHaveAttribute('aria-busy');
-    expect(within(article('e1')).getByRole('alert')).toHaveTextContent('The service is busy.');
+    expect(within(article('e1')).getByText('The service is busy.')).toBeVisible();
     await user.click(within(article('e1')).getByRole('button', { name: 'Retry' }));
     await user.click(within(article('f1')).getByRole('button', { name: 'Retry' }));
     expect(onRetry.mock.calls).toEqual([['e1'], ['f1']]);

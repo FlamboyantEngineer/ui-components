@@ -38,7 +38,7 @@ import {
   toMessageText,
 } from './chat-model.js';
 import { ChatProgressLine, useChatProgress } from './chat-progress.js';
-import { ChatQueue } from './chat-queue.js';
+import { ChatQueue, useChatQueueRemovals } from './chat-queue.js';
 import { type ChatSendOptionsProps, useChatSendOptions } from './chat-send-options.js';
 import { sendFromComposer, sendMessageNow } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
@@ -282,6 +282,7 @@ export function ChatComposer(given: ChatComposerProps) {
   const mentions = useMentions(props);
   const composerRef = useRef<MessageComposerHandle>(null);
   const progress = useChatProgress(options.conversationId);
+  const removals = useChatQueueRemovals();
   const sendOptions = useChatSendOptions(options);
   const reportDraft = useChatComposerHandle({
     handleRef: options.composerHandleRef,
@@ -301,7 +302,7 @@ export function ChatComposer(given: ChatComposerProps) {
   };
   return (
     <>
-      <ChatQueue options={options} state={state} track={progress.track} />
+      <ChatQueue options={options} state={state} track={progress.track} removals={removals} />
       <ChatProgressLine action={progress.action} icon={options.progressIcon} />
       <RichMessageComposer
         ref={setComposer}
@@ -338,6 +339,7 @@ export function ChatComposer(given: ChatComposerProps) {
           sendFromComposer(props, message, {
             steers: sendOptions.steers,
             track: progress.track,
+            readQueue: () => removals.without(options.queue ?? []),
             readShown: () => composerRef.current?.getValue(),
           })
         }

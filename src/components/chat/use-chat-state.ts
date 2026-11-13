@@ -1,6 +1,14 @@
 'use client';
 
-import { type RefCallback, type RefObject, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  type RefCallback,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 
 /** What the composer edits instead of a new message: one of the reader's messages, or a queued one. */
@@ -19,14 +27,16 @@ interface ChatOwnState {
   session: number;
   editing: ChatEditing | null;
   replyingId: string | null;
-  /** The message a quote jumped to. */
-  jumpedId: string | undefined;
+  /** The message a quote jumped to, a new object for each press, until its mark ends. */
+  jump: { id: string } | undefined;
   /** The reader's open and closed choices of each message's parts, by message id. */
   expanded: Readonly<Record<string, Readonly<Record<string, boolean>>>>;
 }
 
 /** The chat's state and the stable commands that change it. */
-export interface ChatState extends Omit<ChatOwnState, 'conversationId'> {
+export interface ChatState extends Omit<ChatOwnState, 'conversationId' | 'jump'> {
+  /** The message a quote jumped to, while it is marked. */
+  jumpedId: string | undefined;
   /** The composer's text box, kept while the composer is mounted. */
   composerRef: RefObject<HTMLDivElement | null>;
   /** The composer's ref, which records its text box. */
@@ -50,9 +60,25 @@ function createState(conversationId: string | undefined, session: number): ChatO
     session,
     editing: null,
     replyingId: null,
-    jumpedId: undefined,
+    jump: undefined,
     expanded: {},
   };
+}
+
+/** How long the message a quote jumped to stays marked, in milliseconds. */
+const jumpMarkDuration = 2000;
+
+/**
+ * Ends a quote jump's mark once it has shown for `jumpMarkDuration`, so the transcript's highlight
+ * is free again: the same quote jumps again, and a search that loses its match does not fall back
+ * to a message the reader left long ago.
+ */
+function useJumpExpiry(jump: ChatOwnState['jump'], endJump: (jump: { id: string }) => void) {
+  useEffect(() => {
+    if (!jump) return undefined;
+    const timer = setTimeout(() => endJump(jump), jumpMarkDuration);
+    return () => clearTimeout(timer);
+  }, [jump, endJump]);
 }
 
 /**
@@ -74,12 +100,20 @@ export function useChatState(conversationId: string | undefined): ChatState {
     setOwn(current);
   }
   // Focus moves at once, and again once an overlay that ran the command, such as a context menu,
-  // has handed focus back to where it opened.
+  // has handed focus back to where it opened. A key or a pointer pressed meanwhile is the reader
+  // moving on, so the focus they chose stays.
   const focusComposer = useCallback(() => {
     composerRef.current?.focus();
     const view = getOwnerWindow(composerRef.current);
+    const wait = new AbortController();
+    const listening = { capture: true, signal: wait.signal };
+    view.addEventListener('pointerdown', () => wait.abort(), listening);
+    view.addEventListener('keydown', () => wait.abort(), listening);
     view.requestAnimationFrame(() =>
-      view.requestAnimationFrame(() => composerRef.current?.focus()),
+      view.requestAnimationFrame(() => {
+        if (!wait.signal.aborted) composerRef.current?.focus();
+        wait.abort();
+      }),
     );
   }, []);
   const commands = useMemo(() => {
@@ -110,11 +144,15 @@ export function useChatState(conversationId: string | undefined): ChatState {
             ? { ...state, editing: null, session: session + 1 }
             : state,
         ),
-      jumpTo: (jumpedId: string) => update({ jumpedId }),
+      jumpTo: (id: string) => update({ jump: { id } }),
+      endJump: (jump: { id: string }) =>
+        setOwn((state) => (state.jump === jump ? { ...state, jump: undefined } : state)),
       setExpandedParts: (messageId: string, parts: Record<string, boolean>) =>
         setOwn((state) => ({ ...state, expanded: { ...state.expanded, [messageId]: parts } })),
     };
   }, [focusComposer]);
-  const { conversationId: _scope, ...state } = current;
-  return { ...state, ...commands, composerRef, setComposer, focusComposer };
+  const { endJump, ...shared } = commands;
+  useJumpExpiry(current.jump, endJump);
+  const { conversationId: _scope, jump, ...state } = current;
+  return { ...state, jumpedId: jump?.id, ...shared, composerRef, setComposer, focusComposer };
 }

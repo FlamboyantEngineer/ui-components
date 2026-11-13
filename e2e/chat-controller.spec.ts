@@ -59,7 +59,11 @@ test.describe('Chat Controller lab', () => {
     await choose(page, 'Fails once');
     await sendMessage(page, 'What is in the pantry?');
     const reply = lastMessage(page);
-    await expect(reply.getByRole('alert')).toHaveText('The pantry service is busy. Try again.');
+    const failure = 'The pantry service is busy. Try again.';
+    await expect(reply.locator('.ui-chat-message__error')).toContainText(failure);
+    // The transcript announces the failure; the message itself is no alert.
+    await expect(page.locator('.ui-chat-transcript__announcer')).toHaveText(failure);
+    await expect(reply.getByRole('alert')).toHaveCount(0);
     await expect(reply).toHaveAttribute('data-status', 'error');
     await lab.expectAccessible();
     await reply.getByRole('button', { name: 'Retry' }).click();
@@ -83,7 +87,7 @@ test.describe('Chat Controller lab', () => {
     await expect(reply).not.toHaveAttribute('aria-busy', 'true');
     await page.clock.runFor(4000);
     await expect(reply).toHaveAttribute('data-status', 'complete');
-    await expect(reply.getByRole('alert')).toHaveCount(0);
+    await expect(reply.locator('.ui-chat-message__error')).toHaveCount(0);
   });
 
   test('UIC-CHAT-CONTROLLER-3.1 UIC-CHAT-CONTROLLER-3.5 hands an awaited approval to the running reply', async ({
