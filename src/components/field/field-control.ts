@@ -20,7 +20,8 @@ export type FieldLayoutProps = Omit<FieldProps<unknown>, 'state' | 'children' | 
  * The props every field control shares: the field's label, layout and parts, and its value,
  * committed value, validation and locks. A control's props extend it with the control's own options.
  */
-export interface FieldInputProps<T> extends FieldStateOptions<T>, FieldLayoutProps {}
+export interface FieldInputProps<T>
+  extends Omit<FieldStateOptions<T>, 'errorSources'>, FieldLayoutProps {}
 
 /** The virtual keyboard a text control asks for. */
 export type FieldInputMode =

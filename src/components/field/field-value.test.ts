@@ -13,6 +13,21 @@ describe('field values', () => {
     expect(isFieldValueEqual(null, undefined)).toBe(false);
   });
 
+  it('UIC-FIELD-2.3 keys invalid dates and big integers, and compares other objects by identity', () => {
+    expect(isFieldValueEqual(new Date(Number.NaN), new Date(Number.NaN))).toBe(true);
+    expect(isFieldValueEqual(new Date(Number.NaN), new Date(0))).toBe(false);
+    expect(isFieldValueEqual(10n, 10n)).toBe(true);
+    expect(isFieldValueEqual(10n, 11n)).toBe(false);
+    expect(isFieldValueEqual(10n, 10)).toBe(false);
+    const map = new Map([['a', 1]]);
+    expect(isFieldValueEqual(map, map)).toBe(true);
+    expect(isFieldValueEqual(map, new Map([['b', 2]]))).toBe(false);
+    expect(isFieldValueEqual(new Set([1]), new Set([2]))).toBe(false);
+    const file = new File(['a'], 'a.txt');
+    expect(isFieldValueEqual([file], [file])).toBe(true);
+    expect(isFieldValueEqual([file], [new File(['b'], 'b.txt')])).toBe(false);
+  });
+
   it('UIC-FIELD-2.3 walks an object value once however often it is compared', () => {
     const entries = vi.spyOn(Object, 'entries');
     const nested = { text: 'one' };

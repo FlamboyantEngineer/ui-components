@@ -1,5 +1,6 @@
 // Reading and writing decimal texts in a locale, digit by digit, so no value passes through a number.
 
+import { bidiMarks } from '../../utils/bidi-marks.js';
 import { getNumberFormat, normalizeIntlSpaces } from '../../utils/intl-format.js';
 import { toCanonicalDecimal } from './decimal.js';
 
@@ -36,12 +37,13 @@ function getSymbols(locale: string): DecimalSymbols {
   return symbols;
 }
 
-const space = /^[\s\u00a0\u202f]$/;
+// Spaces, and the bidi marks right-to-left locales write before a minus sign.
+const space = new RegExp(`^[\\s\u00a0\u202f${bidiMarks}]$`);
 const minusSigns = /[\u2212\u2012\u2013\ufe63\uff0d]/g;
 
 /**
  * The canonical decimal a locale text spells: `{ value: null }` for empty text, `{ value }` for a
- * decimal, `null` for text that spells none. Group separators and spaces are skipped, the locale's
+ * decimal, `null` for text that spells none. Group separators, spaces and bidi marks are skipped, the locale's
  * digits and minus signs read as their ASCII forms, and the decimal separator is the locale's (a
  * `.` reads as one too where the locale groups with something else).
  */

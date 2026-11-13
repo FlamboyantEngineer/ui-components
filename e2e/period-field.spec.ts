@@ -20,6 +20,12 @@ test('UIC-PERIOD-FIELD-1.2 UIC-PERIOD-FIELD-1.3 moves through the month grid by 
   await expect(page.getByRole('listbox')).toHaveCount(0);
   await expect(trigger).toBeFocused();
   await expect(demo.locator('[data-lab-output="month"]')).toHaveText('2026-07');
+  // Enter on the chosen period picks it again: the grid closes and focus returns.
+  await page.keyboard.press('Enter');
+  await expect(grid.getByRole('option', { name: 'July 2026' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+  await expect(trigger).toBeFocused();
   await trigger.click();
   const next = page.getByRole('button', { name: 'Next' });
   await next.click();

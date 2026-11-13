@@ -160,8 +160,11 @@ describe('FormLayoutDesigner', () => {
     expect(status).toHaveTextContent('Name moved to Place, position 1');
     expect(node('Name')).toHaveFocus();
     expect(within(node('Place')).getByRole('group', { name: 'Name' })).toBeInTheDocument();
+    expect(status?.textContent).toBe('Name moved to Place, position 1');
     await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
     expect(status).toHaveTextContent('Name moved to Contact, position 1');
+    // Every other announcement ends in an invisible mark, so the same words in a row are read again.
+    expect(status?.textContent).toBe('Name moved to Contact, position 1\u200b');
     // A locked node does not move.
     node('Note').focus();
     onChange.mockClear();

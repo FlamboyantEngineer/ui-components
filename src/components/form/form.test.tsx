@@ -10,6 +10,7 @@ import { Fieldset } from '../field/field.js';
 import { useFieldScope } from '../field/field-scope.js';
 import { Modal, ModalTrigger } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
+import { PeriodField } from '../period-field/period-field.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { ProblemList } from '../problem-list/problem-list.js';
 import { Table } from '../table/table.js';
@@ -184,6 +185,19 @@ describe('Form', () => {
     expect(field('Quantity')).toHaveAttribute('data-validation', 'invalid');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FORM-1.5 focuses the first blocking field of a native submit, whatever its control', () => {
+    render(
+      <Form aria-label="Trip">
+        <PeriodField label="Month" isRequired />
+        <TextField label="Note" isRequired />
+      </Form>,
+    );
+    act(() => {
+      screen.getByRole<HTMLFormElement>('form', { name: 'Trip' }).checkValidity();
+    });
+    expect(screen.getByRole('button', { name: /^Month/ })).toHaveFocus();
   });
 
   it('UIC-FORM-1.5 UIC-FORM-1.7 reveals each field once for one native validation pass', async () => {
