@@ -3,7 +3,7 @@
 // Roles × permissions: a configured Table whose role columns hold checkboxes and whose permission
 // groups get a header row with a checkbox per role.
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
@@ -143,25 +143,30 @@ function roleColumn(
   };
 }
 
+/** The grants and how a change reaches them. */
+interface GrantState {
+  grants: readonly PermissionMatrixGrant[];
+  setGrants: (grants: readonly PermissionMatrixGrant[]) => void;
+  onChange: PermissionMatrixProps['onChange'];
+}
+
 /**
  * Applies a change to the latest grants and reports it. Its identity never changes, so cells that
  * read it through the context draw again only when their own grant does.
  */
-function useGrantChange(latestState: {
-  grants: readonly PermissionMatrixGrant[];
-  setGrants: (grants: readonly PermissionMatrixGrant[]) => void;
-  onChange: PermissionMatrixProps['onChange'];
-}): (change: PermissionMatrixChange) => void {
-  const latest = useLatest(latestState);
-  return useCallback(
-    (next: PermissionMatrixChange) => {
-      const current = latest.current;
-      const granted = applyPermissionChange(current.grants, next);
-      current.setGrants(granted);
-      current.onChange?.(granted, next);
-    },
-    [latest],
-  );
+function useGrantChange({
+  grants,
+  setGrants,
+  onChange,
+}: GrantState): (change: PermissionMatrixChange) => void {
+  const latest = useLatest({ grants, setGrants, onChange });
+  // Made once, so its identity never changes; it reads the latest grants when called.
+  const [change] = useState(() => (next: PermissionMatrixChange) => {
+    const granted = applyPermissionChange(latest.current.grants, next);
+    latest.current.setGrants(granted);
+    latest.current.onChange?.(granted, next);
+  });
+  return change;
 }
 
 /**

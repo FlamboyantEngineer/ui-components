@@ -97,6 +97,43 @@ function DescribedRow() {
   );
 }
 
+const unset: FourSideValues<BoxSide, string> = {};
+
+/** A strip that inherits its sides until the reader sets one, with the row's reset button. */
+function InheritedRow() {
+  const [value, setValue] = useState(unset);
+  const isOverridden = sides.some((side) => value[side] !== undefined && value[side] !== '');
+  return (
+    <div data-lab-inherited-strip="">
+      <PropertyPanel aria-label="Inherited frame">
+        <FourSidePropertyStrip
+          label="Padding"
+          unit="px"
+          isOverridden={isOverridden}
+          inherited={{ value: '8 px on every side', source: 'Base style' }}
+          onReset={() => setValue(unset)}
+          value={value}
+          onChange={setValue}
+          renderSide={(side, field) => (
+            <input
+              aria-label={`Padding ${side}`}
+              value={field.value ?? ''}
+              placeholder="8"
+              size={2}
+              onChange={(event) => field.onChange(event.target.value)}
+            />
+          )}
+        />
+      </PropertyPanel>
+      <LabOutput name="padding">
+        {isOverridden
+          ? sides.map((side) => `${side} ${value[side] ?? '–'}`).join(', ')
+          : 'inherited'}
+      </LabOutput>
+    </div>
+  );
+}
+
 export function FourSidePropertyStripHostCases() {
   return (
     <div data-lab-family="four-side-host-cases">
@@ -112,6 +149,12 @@ export function FourSidePropertyStripHostCases() {
         description="The row's description and actions, inherited from Property Row, in a 280 pixel panel: Reset inset sets every side to 0 and turns itself off."
       >
         <DescribedRow />
+      </LabSection>
+      <LabSection
+        title="Inherited sides"
+        description="With no side set, the strip shows the value it inherits and where from. Typing a side overrides it; the row's reset button drops every side back to the inherited value."
+      >
+        <InheritedRow />
       </LabSection>
     </div>
   );

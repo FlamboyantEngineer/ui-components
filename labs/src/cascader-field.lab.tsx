@@ -248,5 +248,10 @@ mountLab(
         </div>
       </UiProvider>
     </LabSection>
+    <LabSection title="Placeholder" description="The host's own text while nothing is chosen.">
+      <div data-lab-demo="placeholder">
+        <CascaderField label="Venue" options={places} placeholder="Pick a city, then a venue" />
+      </div>
+    </LabSection>
   </>,
 );

@@ -7,6 +7,7 @@ import {
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ExpressionFieldCorners, ExpressionFieldSizes } from './expression-field-cases.js';
 import { constants, evaluateExpression, tokenizeExpression } from './expression-field-evaluator.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 360 };
@@ -146,5 +147,14 @@ mountLab(
     >
       <ExactDemo />
     </LabSection>
+    <FieldBehaviours<string>
+      committed="width * height"
+      changed="width * height * rate"
+      empty=""
+      refused="width / 0"
+      isRefused={(value) => value.includes('/ 0')}
+      refusedText="Dividing by zero"
+      render={(props) => <ExpressionField tokenize={tokenizeExpression} {...props} />}
+    />
   </>,
 );

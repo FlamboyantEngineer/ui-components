@@ -28,6 +28,7 @@ import type { PartsExpansion } from './use-parts-expansion.js';
 export interface PartContext extends Pick<
   ChatPartsProps,
   | 'toolRenderers'
+  | 'toolGlyphs'
   | 'onApprove'
   | 'onDeny'
   | 'onAlwaysAllow'
@@ -103,7 +104,9 @@ function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
       name={part.name}
       label={part.label}
       target={part.target}
+      source={part.source}
       kind={part.kind}
+      glyph={context.toolGlyphs && readOwn(context.toolGlyphs, part.name)}
       status={part.status}
       args={part.args}
       result={part.result}

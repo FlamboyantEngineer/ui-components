@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { GlyphComponent } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { readOwn } from '../../utils/read-own.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
@@ -77,6 +78,8 @@ export interface ChatPartsProps extends RefProps<HTMLDivElement>, BaseProps {
   expandsActivity?: boolean | undefined;
   /** Renderers by tool name, which replace the body or the whole card of that tool's calls. */
   toolRenderers?: Readonly<Record<string, ChatToolRenderer>> | undefined;
+  /** Glyphs by tool name, shown once a call of that tool succeeded in place of its kind's glyph or letter. */
+  toolGlyphs?: Readonly<Record<string, GlyphComponent>> | undefined;
   /** Approves a tool call; shows Approve while an approval waits. */
   onApprove?: ((callId: string) => void) | undefined;
   /** Denies a tool call, with the reader's reason when they gave one; shows Deny. */

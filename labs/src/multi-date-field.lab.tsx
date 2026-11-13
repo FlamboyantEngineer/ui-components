@@ -133,5 +133,19 @@ mountLab(
     <LabSection title="Forms" description="The form submits the name once per date.">
       <FormEntries />
     </LabSection>
+    <LabSection
+      title="Calendar paging and week start"
+      description="Two months side by side whose buttons move one month at a time, with weeks starting on Sunday."
+    >
+      <div data-lab-demo="calendar-options">
+        <MultiDateField
+          label="Visit days"
+          defaultValue={['2026-04-20']}
+          visibleMonths={2}
+          calendarPaging="month"
+          firstDayOfWeek="sun"
+        />
+      </div>
+    </LabSection>
   </>,
 );

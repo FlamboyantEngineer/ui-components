@@ -44,6 +44,7 @@ export interface ChatMessageOptions
 
 const noReasons: readonly string[] = [];
 const noIcons: ChatMessageMenuIcons = {};
+const noGlyphs: NonNullable<ChatPartOptions['toolGlyphs']> = {};
 
 /** The command handlers: each present while its callback is, calling the latest callback. */
 function useCommandHandlers(options: ChatMessageOptions, state: ChatState): ChatCommandHandlers {
@@ -128,9 +129,12 @@ function usePartOptions(options: ChatMessageOptions): ChatPartOptions {
     [approve, deny, alwaysAllow, answer, dismiss, applyCode, current],
   );
   const { textFormat, expandsActivity, questionAnsweredMark } = options;
+  // Compared by what it holds, so a map written inline keeps the messages.
+  const glyphs = useShallowStable(options.toolGlyphs ?? noGlyphs);
+  const toolGlyphs = options.toolGlyphs && glyphs;
   return useShallowStable({
     ...callbacks,
-    ...{ textFormat, expandsActivity, questionAnsweredMark },
+    ...{ textFormat, expandsActivity, questionAnsweredMark, toolGlyphs },
   });
 }
 

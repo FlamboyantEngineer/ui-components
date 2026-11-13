@@ -163,5 +163,10 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection title="Placeholder" description="The host's own hint while the field is empty.">
+      <div data-lab-demo="placeholder">
+        <DecimalField label="Tare" placeholder="0.00" />
+      </div>
+    </LabSection>
   </>,
 );

@@ -5,6 +5,7 @@ import {
   type ChatToolCallStatus,
   type ChatToolCallVariant,
 } from '../../src/components/chat-tool-call/chat-tool-call.js';
+import { SparklesGlyph } from '../../src/core/glyphs.js';
 import {
   ApprovalDemo,
   ControlledDemo,
@@ -62,6 +63,18 @@ const kindCalls = {
 } as const satisfies Record<ChatToolCallKind, { name: string; label: string; target?: string }>;
 
 const kinds = Object.keys(kindCalls) as ChatToolCallKind[];
+
+/** Calls of tools without a glyph of their own, each named by its source or its tool name. */
+const letterCalls = {
+  source: { name: 'read_files', label: 'Read', source: 'OneDrive', target: 'menu.docx' },
+  'tool name': { name: 'plan_menu', label: 'Planned the menu' },
+  'non-Latin': { name: 'notes_search', label: 'Searched notes', source: '日記' },
+  'emoji first': { name: 'list_files', label: 'Listed files', source: '📁 Files' },
+  'no letter': { name: '++', label: 'Ran a macro' },
+  'host glyph': { name: 'suggest_names', label: 'Suggested names', glyph: SparklesGlyph },
+} as const;
+
+const letterCases = Object.keys(letterCalls) as Array<keyof typeof letterCalls>;
 
 /** A recipe search in one status, with or without its JSON, open or closed at first. */
 function StatusCall({
@@ -175,7 +188,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Kinds"
-      description="Each kind running and once it succeeded: a finished call trades the status glyph for its kind's (a file for read, a pencil for edit, a terminal for command, a magnifier for search, a globe for fetch and a wrench for any other), and shows its target after the label."
+      description="Each kind running and once it succeeded: a finished call trades the status glyph for its kind's (a file for read, a pencil for edit, a terminal for command, a magnifier for search, a globe for fetch and, for any other, the letter of its tool or a wrench), and shows its target after the label."
     >
       <StateMatrix
         axes={{ kind: kinds, status: ['running', 'succeeded'] }}
@@ -184,6 +197,23 @@ mountLab(
             id={`kind-${kind}-${status}`}
             {...kindCalls[kind]}
             kind={kind}
+            variant="row"
+            status={status}
+            durationMs={status === 'succeeded' ? 500 : undefined}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Letter glyphs"
+      description="A finished call of kind other without a glyph of its own shows a letter in a rounded box: the first letter or digit of its source, else of its tool name, in any script. A name with no letter keeps the wrench, and a glyph the host gives for the tool wins over both."
+    >
+      <StateMatrix
+        axes={{ letter: letterCases, status: ['running', 'succeeded'] }}
+        render={({ letter, status }) => (
+          <ChatToolCall
+            id={`letter-${letter.replace(/\W+/g, '-')}-${status}`}
+            {...letterCalls[letter]}
             variant="row"
             status={status}
             durationMs={status === 'succeeded' ? 500 : undefined}
