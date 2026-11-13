@@ -154,7 +154,7 @@ test.describe('lab harness', () => {
     ).toHaveAttribute('href', 'index.html?stylesheet=none&theme=dark');
   });
 
-  test('UIC-LABS-3.1 loads the reference theme with one stylesheet request', async ({
+  test('UIC-LABS-3.1 UIC-LABS-1.9 loads the reference theme and optional font stylesheet separately', async ({
     page,
     lab,
   }) => {
@@ -164,7 +164,7 @@ test.describe('lab harness', () => {
         stylesheets.push(new URL(request.url()).pathname);
     });
     await lab.open('provider');
-    expect(stylesheets).toEqual(['/build/reference.css']);
+    expect(stylesheets.sort()).toEqual(['/build/fonts.css', '/build/reference.css']);
   });
 
   test('UIC-LABS-3.1 keeps the lab page layout out of the reference sheet, and its document base opt-in', async ({

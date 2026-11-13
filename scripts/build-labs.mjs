@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 // Bundles every labs/src/<name>.lab.tsx into labs/build/<name>.js (ESM with shared chunks).
-// --reference bundles only labs/build/reference.css, the stylesheet the package ships, and leaves
-// the rest of labs/build as it is; `build:package` runs it.
+// --reference builds the package's reference stylesheet and optional fonts, leaving the lab
+// JavaScript bundles in place; `build:package` runs it.
 //   node scripts/build-labs.mjs [--dev] [--watch] [--reference]
 
-import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import * as esbuild from 'esbuild';
+import { createFontBundle, FONT_DIRECTORY } from './lib/fonts.mjs';
 import { labsDir, labSourceDir, listLabSources } from './lib/labs.mjs';
 import { BROWSER_TARGETS } from './lib/reference-stylesheet.mjs';
-import { flag } from './lib/script.mjs';
+import { flag, root } from './lib/script.mjs';
 
 const outdir = join(labsDir, 'build');
 const dev = flag('dev');
@@ -35,7 +36,6 @@ if (!referenceOnly) {
     'vendor/pdf.min.mjs': resolvePackage('pdfjs-dist/build/pdf.min.mjs'),
     'vendor/pdf.worker.min.mjs': resolvePackage('pdfjs-dist/build/pdf.worker.min.mjs'),
     'vendor/LICENSE': resolvePackage('pdfjs-dist/LICENSE'),
-    ...labFontFiles(resolvePackage),
     'samples/seasonal-report.pdf': join(labsDir, 'samples', 'seasonal-report.pdf'),
     'samples/seasonal-report-locked.pdf': join(labsDir, 'samples', 'seasonal-report-locked.pdf'),
     'samples/landscape.svg': join(labsDir, 'samples', 'landscape.svg'),
@@ -46,24 +46,16 @@ if (!referenceOnly) {
   }
 }
 
-/**
- * The Geist and Geist Mono files the lab pages declare (`labs/src/chrome/page-style.ts`), Latin and
- * Latin Extended in both styles, at `vendor/fonts/`, with the fonts' license.
- */
-function labFontFiles(resolvePackage) {
-  const files = { 'vendor/fonts/LICENSE': resolvePackage('@fontsource-variable/geist/LICENSE') };
-  for (const family of ['geist', 'geist-mono']) {
-    for (const subset of ['latin', 'latin-ext']) {
-      for (const style of ['normal', 'italic']) {
-        const file = `${family}-${subset}-wght-${style}.woff2`;
-        files[`vendor/fonts/${file}`] = resolvePackage(
-          `@fontsource-variable/${family}/files/${file}`,
-        );
-      }
-    }
-  }
-  return files;
+// Package preparation also ships the fonts, while loading them remains a separate CSS import.
+const fonts = createFontBundle();
+rmSync(join(root, FONT_DIRECTORY), { recursive: true, force: true });
+for (const [target, source] of Object.entries(fonts.files)) {
+  const destination = join(root, target);
+  mkdirSync(dirname(destination), { recursive: true });
+  copyFileSync(source, destination);
 }
+mkdirSync(outdir, { recursive: true });
+writeFileSync(join(outdir, 'fonts.css'), fonts.css);
 
 /** @type {import('esbuild').BuildOptions} */
 const options = {
@@ -106,7 +98,7 @@ if (watch) {
   await Promise.all(builds.map((build) => esbuild.build(build)));
   console.log(
     referenceOnly
-      ? 'Built labs/build/reference.css.'
+      ? 'Built labs/build/reference.css and fonts.css.'
       : `Built ${labNames.length} labs into labs/build/.`,
   );
 }
