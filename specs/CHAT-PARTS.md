@@ -96,6 +96,13 @@ A question part shall render as a `ChatQuestion` card with its data. Submitting 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`
 
+### UIC-CHAT-PARTS-3.5 - Tool glyphs
+
+`toolGlyphs` shall map a tool's `name` to a `GlyphComponent` that becomes the `glyph` of that tool's calls, shown once a call succeeded in place of its kind's glyph or letter glyph ([UIC-CHAT-TOOL-CALL-1.9](CHAT-TOOL-CALL.md#uic-chat-tool-call-19---tool-glyph-and-letter)), whether the call stands alone or in a group of steps. A call part's `source` passes on to its card. Tool names are looked up as own keys, as for `toolRenderers`. A group of steps still sums its calls up by kind.
+
+Implementation: `src/components/chat-parts/chat-part-view.tsx`, `src/components/chat-parts/chat-parts.tsx`
+Verification: `src/components/chat-parts/chat-part-view.test.tsx`
+
 ## UIC-CHAT-PARTS-4 - Other parts
 
 ### UIC-CHAT-PARTS-4.1 - Plan

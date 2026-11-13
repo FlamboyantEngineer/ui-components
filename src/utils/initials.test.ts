@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getInitials } from './initials.js';
+import { getInitials, getLeadingLetter } from './initials.js';
 
 describe('getInitials', () => {
   it('UIC-INITIALS-1.1 takes the first and last word initials of a name with several words', () => {
@@ -25,5 +25,26 @@ describe('getInitials', () => {
     expect(getInitials(`${family} Berg`)).toBe(`${family}B`);
     expect(getInitials(`${wave}team`)).toBe(`${wave}T`);
     expect(getInitials('Émilie Durand')).toBe('ÉD');
+  });
+});
+
+describe('getLeadingLetter', () => {
+  it('UIC-INITIALS-2.1 takes the first letter or digit in any script, upper-cased', () => {
+    expect(getLeadingLetter('OneDrive')).toBe('O');
+    expect(getLeadingLetter('search_recipes')).toBe('S');
+    expect(getLeadingLetter('__private.tool')).toBe('P');
+    expect(getLeadingLetter('7zip')).toBe('7');
+    expect(getLeadingLetter('日本語')).toBe('日');
+    expect(getLeadingLetter('жизнь')).toBe('Ж');
+    expect(getLeadingLetter('\u{1F4C1} files')).toBe('F');
+    expect(getLeadingLetter('éclair')).toBe('É');
+    expect(getLeadingLetter('e\u0301clair')).toBe('E\u0301');
+    expect(getLeadingLetter('ßtraße')).toBe('ß');
+  });
+
+  it('UIC-INITIALS-2.1 returns undefined for a name without a letter or a digit', () => {
+    expect(getLeadingLetter('')).toBeUndefined();
+    expect(getLeadingLetter('\u{1F680}\u{2728}')).toBeUndefined();
+    expect(getLeadingLetter('--')).toBeUndefined();
   });
 });
