@@ -138,7 +138,7 @@ export function ChatNativeCases() {
   return (
     <LabSection
       title="Native embedded conversation"
-      description="A flex-filling LoadingRegion around 1,002 mixed messages: text-only status, no header identity, standalone result rows, retained question drafts, trailing controls, quoted immediate sends, a reorderable queue attached to the composer, and faded sending messages. The host supplies the bounded panel height and transports immutable JSON snapshots; the reference stylesheet handles the content wrapper."
+      description="A flex-filling LoadingRegion around 1,002 mixed messages: text-only status, no header identity, standalone result rows, retained question drafts, trailing controls, quoted immediate sends, a reorderable queue attached to the composer, and faded sending messages. Long and short queued messages keep their handles and text aligned with a compact leading inset. The host supplies the bounded panel height and transports immutable JSON snapshots; the reference stylesheet handles the content wrapper."
     >
       <NativeDemo />
     </LabSection>
