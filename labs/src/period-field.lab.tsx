@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PeriodField } from '../../src/components/period-field/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 
@@ -86,5 +87,14 @@ mountLab(
         </div>
       </UiProvider>
     </LabSection>
+    <FieldBehaviours<string | null>
+      committed="2026-03"
+      changed="2026-05"
+      empty={null}
+      refused="2026-01"
+      isRefused={(value) => value === '2026-01'}
+      refusedText="January 2026"
+      render={(props) => <PeriodField placeholder="Pick a month" {...props} />}
+    />
   </>,
 );

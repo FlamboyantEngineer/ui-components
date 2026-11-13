@@ -12,6 +12,7 @@ import { fr } from '../../src/core/locales/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { NotificationCenterHostCases } from './notification-center-host-cases.js';
+import { NotificationCenterOptionsCases } from './notification-center-options-cases.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so the matrices read the same days and times on every day. */
@@ -253,5 +254,6 @@ mountLab(
       <LiveDemo />
     </LabSection>
     <NotificationCenterHostCases />
+    <NotificationCenterOptionsCases />
   </>,
 );

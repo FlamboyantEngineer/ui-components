@@ -96,6 +96,36 @@ function OutcomeCell({ outcome }: { outcome: keyof typeof outcomeSources }) {
   );
 }
 
+/** Prints the origins the mini-app's policy lets it fetch from. */
+const policySource: MiniAppSource = {
+  html: '<main aria-labelledby="title"><h1 id="title">Reach</h1><p id="reach">Reading…</p></main>',
+  script: `const policy = document.querySelector('meta[http-equiv="Content-Security-Policy"]').content;
+const connect = policy.split(';').map((part) => part.trim()).find((part) => part.startsWith('connect-src'));
+document.getElementById('reach').textContent = connect || 'connect-src none';`,
+};
+
+/** A mini-app given an origin to reach or none, which restarts it, and whose loads the host counts. */
+function NetworkDemo() {
+  const [allowsCdn, setAllowsCdn] = useState(false);
+  const [readyCount, setReadyCount] = useState(0);
+  return (
+    <div data-lab-demo="network" style={{ display: 'grid', gap: 8, justifyItems: 'start' }}>
+      <Button onPress={() => setAllowsCdn(!allowsCdn)}>
+        {allowsCdn ? 'Reach no network' : 'Allow https://cdn.example.org'}
+      </Button>
+      <MiniApp
+        title="Network reach"
+        source={policySource}
+        allowedOrigins={allowsCdn ? ['https://cdn.example.org'] : undefined}
+        onReady={() => setReadyCount((count) => count + 1)}
+      />
+      <p>
+        Ready: <output data-lab-output="ready">{String(readyCount)}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -130,6 +160,12 @@ mountLab(
         axes={{ outcome: ['ready', 'script error', 'timeout', 'navigation'] }}
         render={({ outcome }) => <OutcomeCell outcome={outcome} />}
       />
+    </LabSection>
+    <LabSection
+      title="Network and readiness"
+      description="Without allowed origins the mini-app reaches no network; allowing one origin restarts it with that origin in its policy, which it prints. onReady counts each start."
+    >
+      <NetworkDemo />
     </LabSection>
   </>,
 );

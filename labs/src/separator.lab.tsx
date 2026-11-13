@@ -251,5 +251,12 @@ mountLab(
         </Menu>
       </div>
     </LabSection>
+    <LabSection title="Element" description="An unlabelled rule drawn as a div instead of an hr.">
+      <div data-lab-demo="element" style={{ display: 'grid', gap: 8, maxInlineSize: 320 }}>
+        <span>Above the div</span>
+        <Separator as="div" />
+        <span>Below the div</span>
+      </div>
+    </LabSection>
   </>,
 );

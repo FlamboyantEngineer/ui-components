@@ -43,3 +43,33 @@ export function startNpm(args, options) {
   expect(result.stdout).not.toContain('Every check passed.');
   expect(existsSync(join(fixture, 'second-stage-started'))).toBe(false);
 });
+
+it('UIC-PRIMITIVES-2.1 leaves out the checks named by --skip and refuses a name that is not a check', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'ui-check-test-'));
+  fixtures.push(fixture);
+  mkdirSync(join(fixture, 'scripts/lib'), { recursive: true });
+  copyFileSync(join(process.cwd(), 'scripts/check.mjs'), join(fixture, 'scripts/check.mjs'));
+  writeFileSync(
+    join(fixture, 'scripts/lib/npm.mjs'),
+    `import { spawn } from 'node:child_process';
+export function startNpm(args, options) {
+  return spawn(process.execPath, ['-e', ''], options);
+}
+`,
+  );
+  const check = (...args: string[]) =>
+    spawnSync(process.execPath, [join(fixture, 'scripts/check.mjs'), ...args], {
+      cwd: fixture,
+      encoding: 'utf8',
+    });
+
+  const skipped = check('--skip', 'test');
+  expect(skipped.status).toBe(0);
+  expect(skipped.stdout).toContain('passed  lint');
+  expect(skipped.stdout).not.toContain('passed  test ');
+  expect(skipped.stdout).toContain('Every check passed.');
+
+  const unknown = check('--skip', 'tests');
+  expect(unknown.status).not.toBe(0);
+  expect(unknown.stderr).toContain('--skip names no check: tests');
+});

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TimeZoneField } from '../../src/components/time-zone-field/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabForm } from './lab-form.js';
 import { LabOutput } from './lab-output.js';
 
@@ -90,5 +91,14 @@ mountLab(
     >
       <TimeZoneField label="Meeting zone" defaultValue="America/Sao_Paulo" />
     </LabSection>
+    <FieldBehaviours<string | null>
+      committed="Europe/Paris"
+      changed="America/Sao_Paulo"
+      empty={null}
+      refused="UTC"
+      isRefused={(value) => value === 'UTC'}
+      refusedText="UTC"
+      render={(props) => <TimeZoneField isClearable {...props} />}
+    />
   </>,
 );
