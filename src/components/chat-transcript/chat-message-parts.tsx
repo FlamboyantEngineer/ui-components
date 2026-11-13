@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, RefCallback } from 'react';
+import type { ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import {
   CheckGlyph,
@@ -21,6 +21,7 @@ import { RelativeTime } from '../relative-time/relative-time.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatMessageAuthor, ChatMessageDelivery, ChatMessageProps } from './chat-message.js';
 import { ChatQuote } from './chat-quote.js';
+import { useIsInTranscript, useTranscriptContentRef } from './transcript-context.js';
 
 type ChatMessageBodyProps = Pick<
   ChatMessageProps,
@@ -39,8 +40,6 @@ type ChatMessageBodyProps = Pick<
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
   onRetry: (() => void) | undefined;
-  /** Records the content element with the transcript. */
-  contentRef: RefCallback<HTMLElement>;
 };
 
 export const chatMessageHooks = createHooks('chat-message', [
@@ -204,12 +203,16 @@ export function ChatMessageBody({
   reactions,
   actions,
   children,
-  contentRef,
   isDeleted,
   time,
   getNow,
 }: ChatMessageBodyProps) {
   const strings = useUiStrings();
+  // The transcript announces the text of this element, whatever else the message draws.
+  const contentRef = useTranscriptContentRef();
+  // A transcript announces the failure through its own live region, once: an alert here would be
+  // read again each time a virtualized transcript mounts the message.
+  const isInTranscript = useIsInTranscript();
   if (isDeleted)
     return (
       <>
@@ -244,7 +247,7 @@ export function ChatMessageBody({
       />
       {error ? (
         <div {...hooks.slot('error')}>
-          <span role="alert">{error}</span>
+          <span role={isInTranscript ? undefined : 'alert'}>{error}</span>
           {onRetry ? <RetryButton onRetry={onRetry} /> : null}
         </div>
       ) : null}

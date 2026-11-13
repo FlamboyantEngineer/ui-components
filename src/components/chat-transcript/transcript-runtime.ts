@@ -60,11 +60,13 @@ export interface TranscriptRuntime {
   /** The children's keys at the last commit; `null` before the first. */
   keys: string[] | null;
   indexOf: ReadonlyMap<string, number>;
+  /** The keys of the children known to be parts between messages, at the last commit. */
+  parts: ReadonlySet<string>;
   /** The keys of the children mounted at the last commit, in order. */
   mountedItems: readonly string[];
   /** The mounted messages, oldest first. */
   mounted: { keys: string[]; elements: HTMLElement[] };
-  /** Children mounted at least once, so a child that never registered is known not to be a message. */
+  /** Children mounted at least once, so one of them that never registered is known not to be a message. */
   seen: Set<string>;
   activeKey: string | null;
   pendingFocus: RevealTarget | null;
@@ -101,6 +103,7 @@ export function createTranscriptRuntime(): TranscriptRuntime {
     spacer,
     keys: null,
     indexOf: new Map(),
+    parts: new Set(),
     mountedItems: [],
     mounted: { keys: [], elements: [] },
     seen: new Set(),
@@ -119,8 +122,17 @@ export function createTranscriptRuntime(): TranscriptRuntime {
   return runtime;
 }
 
-/** Whether a child is a message: it registered as one, or it never mounted to say otherwise. */
-export function isTranscriptMessage(runtime: TranscriptRuntime, key: string): boolean {
+/**
+ * Whether a child is a message: not one of the family's parts (among `parts`, the last commit's
+ * unless a render passes its own), and either registered as a message or, a child of another
+ * kind, never mounted to say otherwise.
+ */
+export function isTranscriptMessage(
+  runtime: TranscriptRuntime,
+  key: string,
+  parts: ReadonlySet<string> = runtime.parts,
+): boolean {
+  if (parts.has(key)) return false;
   return runtime.registry.hasRegistered(key) || !runtime.seen.has(key);
 }
 

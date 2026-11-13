@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from 'react';
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -47,6 +47,8 @@ export interface ChatListProps
    * leave it out once there are no more. A returned promise keeps the row pending until it settles.
    */
   onLoadMore?: LoadMoreProps['onLoadMore'];
+  /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
+  onLoadMoreError?: LoadMoreProps['onError'];
   /** The conversations are loading: placeholder rows stand in for them. */
   isLoading?: boolean | undefined;
   /** Shown while there are no conversations. Defaults to the provider's `noConversations` string. */
@@ -58,6 +60,12 @@ export interface ChatListProps
   renderContextMenu?: ((conversation: ChatConversation) => ReactNode) | undefined;
 }
 
+/** The search text and its setter. The text searches only while its field shows: a hidden field could not clear it. */
+function useSearchText(showSearch: boolean) {
+  const [typed, setTyped] = useState('');
+  return [showSearch ? typed : '', setTyped] as const;
+}
+
 /** The conversations the search keeps: all of them while the host searches or the text is blank. */
 function useShownConversations(
   { conversations, onSearchChange }: Pick<ChatListProps, 'conversations' | 'onSearchChange'>,
@@ -65,11 +73,15 @@ function useShownConversations(
 ) {
   const { contains } = useFilter({ sensitivity: 'base' });
   const text = query.trim();
-  if (onSearchChange || !text) return conversations;
-  return conversations.filter(
-    (conversation) =>
-      contains(conversation.title, text) || contains(conversation.lastMessage ?? '', text),
-  );
+  const isHostSearch = onSearchChange !== undefined;
+  // Kept between renders: the list renders again as menus open and times move on.
+  return useMemo(() => {
+    if (isHostSearch || !text) return conversations;
+    return conversations.filter(
+      (conversation) =>
+        contains(conversation.title, text) || contains(conversation.lastMessage ?? '', text),
+    );
+  }, [conversations, text, isHostSearch, contains]);
 }
 
 /**
@@ -206,6 +218,7 @@ export function ChatList({
   onNew,
   heading,
   onLoadMore,
+  onLoadMoreError,
   isLoading = false,
   emptyState,
   renderContextMenu,
@@ -220,7 +233,7 @@ export function ChatList({
   const strings = useUiStrings();
   const headingId = useId();
   const hasHeading = !isEmptyNode(heading);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useSearchText(showSearch);
   const shown = useShownConversations({ conversations, onSearchChange }, query);
   const selection = useConversationSelection(selectedKey, onSelectionChange);
   const menu = useConversationMenu(renderContextMenu, shown);
@@ -267,6 +280,7 @@ export function ChatList({
             variant="ghost"
             size="md"
             onLoadMore={onLoadMore}
+            onError={onLoadMoreError}
             className={listHooks.slotClass('load-more')}
           />
         ) : null}

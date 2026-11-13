@@ -77,10 +77,13 @@ function upsertById<T extends { id: string }>(items: readonly T[], item: T): rea
     : [...items, item];
 }
 
+/** The id of a reply's one sources part, by which the reader's choice to open it is kept. */
+const sourcesPartId = 'sources';
+
 /** Adds a source to the reply's sources part, which starts where the first source arrives. */
 export function appendSource(parts: readonly ChatPart[], source: ChatSource): readonly ChatPart[] {
   if (!parts.some((part) => part.type === 'sources')) {
-    return [...parts, { type: 'sources', sources: [source] }];
+    return [...parts, { type: 'sources', id: sourcesPartId, sources: [source] }];
   }
   return parts.map((part) =>
     part.type === 'sources' ? { ...part, sources: upsertById(part.sources, source) } : part,

@@ -55,6 +55,8 @@ export interface ActivityFeedProps
   filter?: ReactNode;
   /** Requests older events when the end of the feed comes into view. Omit when there are no more. */
   onLoadMore?: LoadMoreProps['onLoadMore'];
+  /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
+  onLoadMoreError?: LoadMoreProps['onError'];
   /** Events are loading: the feed is busy and its load-more control pending. */
   isLoading?: boolean | undefined;
   /** Draws the feed while it has no entries and is not loading. */
@@ -208,6 +210,7 @@ export function ActivityFeed({
   headingLevel,
   filter,
   onLoadMore,
+  onLoadMoreError,
   isLoading = false,
   renderEmptyState,
   fallbackAfterDays,
@@ -252,6 +255,7 @@ export function ActivityFeed({
         <LoadMore
           autoLoad
           onLoadMore={onLoadMore}
+          onError={onLoadMoreError}
           isPending={isLoading || undefined}
           className={hooks.slotClass('load-more')}
         />

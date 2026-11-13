@@ -21,7 +21,7 @@ import type { FieldValidation } from './field-state.js';
 export type FieldMessageDisplay = 'inline' | 'tooltip';
 
 /** How long the tooltip stays after the pointer leaves the field, so it can be reached. */
-const HOVER_CLOSE_DELAY = 300;
+const hoverCloseDelay = 300;
 
 interface FieldMessageTooltip {
   isOpen: boolean;
@@ -63,7 +63,7 @@ export function useFieldMessageTooltip(
       onPointerLeave(event) {
         if (event.pointerType === 'touch') return;
         clearTimeout(closing.current);
-        closing.current = setTimeout(() => setIsHovered(false), HOVER_CLOSE_DELAY);
+        closing.current = setTimeout(() => setIsHovered(false), hoverCloseDelay);
       },
     },
     onKeyDown(event) {

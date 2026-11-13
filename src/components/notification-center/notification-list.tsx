@@ -56,6 +56,8 @@ export interface NotificationListProps
   hasMore?: boolean | undefined;
   /** Loads the next page. A returned promise keeps Load more pending until it settles. */
   onLoadMore?: (() => void | Promise<unknown>) | undefined;
+  /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
+  onLoadMoreError?: ((error: unknown) => void) | undefined;
   /** Notifications are loading: the empty state reads as loading, and Load more is pending. */
   isLoading?: boolean | undefined;
 }
@@ -179,6 +181,7 @@ export function NotificationList({
   actions,
   hasMore = false,
   onLoadMore,
+  onLoadMoreError,
   isLoading = false,
   onAction,
   onReadChange,
@@ -233,6 +236,7 @@ export function NotificationList({
           autoLoad
           isPending={isLoading}
           onLoadMore={onLoadMore}
+          onError={onLoadMoreError}
           className={hooks.slotClass('load-more')}
         />
       ) : null}

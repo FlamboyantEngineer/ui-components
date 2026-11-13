@@ -1,4 +1,5 @@
 import { isThenable } from '../../utils/is-thenable.js';
+import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { isSameMessage } from '../message-composer/composer-message.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';
@@ -7,6 +8,14 @@ import type { ChatProgress, ChatProgressAction } from './chat-progress.js';
 
 /** A message as the composer sends it: Markdown text and its tokens. */
 type ComposerMessage = Parameters<NonNullable<RichMessageComposerProps['onSubmit']>>[0];
+
+/** What a submission reads when it is sent and when the host accepts it. */
+interface SubmitReaders {
+  /** What the composer shows now. */
+  readShown: () => ComposerMessage | undefined;
+  /** The queue a saved edit replaces: without the messages the host is still removing. */
+  readQueue: () => readonly ChatQueuedMessage[];
+}
 
 /** Runs `onAccepted` once the host accepts: at once, or when its promise resolves. */
 function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
@@ -25,7 +34,7 @@ function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
 export function submitMessage(
   { options, state }: ChatComposerProps,
   message: ComposerMessage,
-  readShown: () => ComposerMessage | undefined,
+  { readShown, readQueue }: SubmitReaders,
 ): void | Promise<unknown> {
   const { editing, replyingId, session } = state;
   const { text, tokens: composerTokens } = message;
@@ -42,9 +51,8 @@ export function submitMessage(
     });
   }
   if (editing) {
-    const queue = options.queue ?? [];
     const result = options.onQueueChange?.(
-      queue.map((entry) => (entry.id === editing.id ? { ...entry, text, tokens } : entry)),
+      readQueue().map((entry) => (entry.id === editing.id ? { ...entry, text, tokens } : entry)),
     );
     return whenAccepted(result, () => {
       if (isShown()) state.endEdit(scope, session);
@@ -86,17 +94,20 @@ function steersNow({ options, state }: ChatComposerProps, steers: boolean) {
   return steers && Boolean(options.isPending) && !state.editing;
 }
 
-/** What sending the composer's message does: save an edit, queue it while a reply runs, or send it. */
+/**
+ * What sending the composer's message does: save an edit, send a reply (which goes to `onReply`
+ * at once, during a running response too), queue it while a reply runs, or send it.
+ */
 function toSubmitAction({ options, state }: ChatComposerProps): ChatProgressAction {
   if (state.editing) return 'save';
+  if (state.replyingId !== null && options.onReply) return 'send';
   return options.isPending && options.onQueueChange ? 'queue' : 'send';
 }
 
-interface SendContext {
+interface SendContext extends SubmitReaders {
   /** The reader steers during a reply instead of queuing. */
   steers: boolean;
   track: ChatProgress['track'];
-  readShown: () => ComposerMessage | undefined;
 }
 
 /**
@@ -106,8 +117,9 @@ interface SendContext {
 export function sendFromComposer(
   props: ChatComposerProps,
   message: ComposerMessage,
-  { steers, track, readShown }: SendContext,
+  { steers, track, ...readers }: SendContext,
 ): void | Promise<unknown> {
-  if (steersNow(props, steers)) return track('steer', sendMessageNow(props, message, readShown));
-  return track(toSubmitAction(props), submitMessage(props, message, readShown));
+  if (steersNow(props, steers))
+    return track('steer', sendMessageNow(props, message, readers.readShown));
+  return track(toSubmitAction(props), submitMessage(props, message, readers));
 }

@@ -1,7 +1,7 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderChat } from '../../../test/chat-fixtures.js';
+import { article, renderChat } from '../../../test/chat-fixtures.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import type { ChatProps } from './chat.js';
 
@@ -103,6 +103,97 @@ describe('Chat progress', () => {
     expect(action()).toHaveAttribute('data-pending', 'true');
     await settle(queuing.resolve);
     expect(action()).toHaveAccessibleName('Stop');
+  });
+
+  it('UIC-CHAT-3.13 reads Sending for a reply sent while a response runs', async () => {
+    const replying = deferred();
+    const { user } = setup({
+      isPending: true,
+      onStop: vi.fn(),
+      onQueueChange: vi.fn(),
+      onReply: () => replying.promise,
+    });
+    await user.hover(article('m1'));
+    await user.click(within(article('m1')).getByRole('button', { name: 'Reply' }));
+    await user.keyboard('Still on!{Enter}');
+    wait(400);
+    expect(line()).toHaveAttribute('data-action', 'send');
+    expect(line()).toHaveTextContent('Sending…');
+    await settle(replying.resolve);
+  });
+
+  it('UIC-CHAT-3.4 leaves out the messages still being removed from the next queue', async () => {
+    const removals = [deferred(), deferred()];
+    const onQueueChange = vi
+      .fn<NonNullable<ChatProps['onQueueChange']>>()
+      .mockReturnValueOnce(removals[0]?.promise)
+      .mockReturnValueOnce(removals[1]?.promise);
+    const queue = [
+      { id: 'q1', text: 'First' },
+      { id: 'q2', text: 'Second' },
+      { id: 'q3', text: 'Third' },
+    ];
+    const { user } = setup({ queue, onQueueChange });
+    await user.click(screen.getByRole('button', { name: 'Remove queued message 1' }));
+    await user.click(screen.getByRole('button', { name: 'Remove queued message 2' }));
+    expect(onQueueChange).toHaveBeenLastCalledWith([queue[2]]);
+    // A saved edit builds on the same queue.
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 3' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 3' }));
+    await user.keyboard(' draft{Enter}');
+    expect(onQueueChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ id: 'q3', text: 'Third draft' }),
+    ]);
+    // A removal the host answered no longer counts: the host's queue says what is left.
+    await settle(() => removals[0]?.resolve());
+    await user.click(screen.getByRole('button', { name: 'Remove queued message 3' }));
+    expect(onQueueChange).toHaveBeenLastCalledWith([queue[0]]);
+    await settle(() => removals[1]?.resolve());
+  });
+
+  it('UIC-CHAT-2.5 UIC-CHAT-3.4 leaves focus on what the reader presses right after Edit', async () => {
+    const queue = [
+      { id: 'q1', text: 'First' },
+      { id: 'q2', text: 'Second' },
+    ];
+    const host = { onQueueChange: () => undefined, onSteer: () => undefined };
+    const { user, rerenderWith } = setup({ queue, ...host });
+    await user.click(screen.getByRole('button', { name: 'Actions for queued message 2' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 2' }));
+    expect(box()).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Steer with queued message 1' }));
+    rerenderWith({ queue: queue.slice(1), ...host });
+    const remove = screen.getByRole('button', { name: 'Remove queued message 1' });
+    expect(remove).toHaveFocus();
+    // The composer's second focus, two frames after Edit, is for a menu that hands focus back.
+    wait(100);
+    expect(remove).toHaveFocus();
+  });
+
+  it('UIC-CHAT-3.4 keeps a steer that waits to its conversation', async () => {
+    const steering = deferred();
+    const queue = [
+      { id: 'q1', text: 'First' },
+      { id: 'q2', text: 'Second' },
+    ];
+    const props = { queue, onQueueChange: vi.fn(), onSteer: () => steering.promise };
+    const { user, rerenderWith } = setup({ ...props, conversationId: 'a' });
+    const steers = () => screen.getAllByRole('button', { name: /^Steer with queued message/ });
+    const marked = () =>
+      [...document.querySelectorAll('.ui-chat__queue-item')].map((item) =>
+        item.hasAttribute('data-steering'),
+      );
+    await user.click(steers()[0] as HTMLElement);
+    expect(marked()).toEqual([true, false]);
+    expect(steers()[1]).toBeDisabled();
+    rerenderWith({ ...props, conversationId: 'b' });
+    expect(marked()).toEqual([false, false]);
+    expect(steers()[0]).toBeEnabled();
+    expect(steers()[1]).toBeEnabled();
+    rerenderWith({ ...props, conversationId: 'a' });
+    expect(marked()).toEqual([true, false]);
+    await settle(steering.resolve);
+    expect(marked()).toEqual([false, false]);
   });
 
   it('UIC-CHAT-3.4 UIC-CHAT-3.13 marks a slow steer, holds the other steers and reads Steering', async () => {

@@ -13,10 +13,10 @@ export interface RichTextHeadlessDomError extends Error {
 /** A direction `endOfTextblock` checks. */
 export type HeadlessDirection = 'up' | 'down' | 'left' | 'right' | 'forward' | 'backward';
 
-const HEADLESS_DOM_ERROR = 'RichTextHeadlessDomError';
+const headlessDomErrorName = 'RichTextHeadlessDomError';
 
 /** The view members that read or change a rendered document. */
-const DOM_MEMBERS = [
+const domMembers = [
   'posAtDOM',
   'coordsAtPos',
   'domAtPos',
@@ -35,12 +35,12 @@ function headlessDomError(member: string): RichTextHeadlessDomError {
     `The headless rich-text engine renders no DOM, so view.${member} is unavailable. Read ` +
       'positions and geometry from a rendered view instead.',
   );
-  return Object.assign(error, { name: HEADLESS_DOM_ERROR, member });
+  return Object.assign(error, { name: headlessDomErrorName, member });
 }
 
 /** Whether an error came from a headless view member that needs a rendered document. */
 export function isRichTextHeadlessDomError(error: unknown): error is RichTextHeadlessDomError {
-  return error instanceof Error && error.name === HEADLESS_DOM_ERROR;
+  return error instanceof Error && error.name === headlessDomErrorName;
 }
 
 /**
@@ -62,14 +62,14 @@ export function createHeadlessDom() {
 }
 
 /** The members that need a rendered document, each throwing an error that names it. */
-export function createDomMembers(): Record<(typeof DOM_MEMBERS)[number], () => never> {
-  const members = DOM_MEMBERS.map((member) => [
+export function createDomMembers(): Record<(typeof domMembers)[number], () => never> {
+  const members = domMembers.map((member) => [
     member,
     () => {
       throw headlessDomError(member);
     },
   ]);
-  return Object.fromEntries(members) as Record<(typeof DOM_MEMBERS)[number], () => never>;
+  return Object.fromEntries(members) as Record<(typeof domMembers)[number], () => never>;
 }
 
 /**

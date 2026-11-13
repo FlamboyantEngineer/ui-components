@@ -19,7 +19,7 @@ import {
   useAbsoluteTime,
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
-import { useTranscriptContentRef, useTranscriptMessage } from './transcript-context.js';
+import { useTranscriptMessage } from './transcript-context.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -83,7 +83,7 @@ export interface ChatMessageProps
   delivery?: ChatMessageDelivery | undefined;
   /** `fade` dims a sending message and keeps its delivery label visually hidden. Defaults to `label`. */
   deliveryPresentation?: 'label' | 'fade' | undefined;
-  /** Why the message or its reply failed, shown as an alert. */
+  /** Why the message or its reply failed: an alert, or announced by the transcript it is in. */
   error?: string | undefined;
   /** Retries a failed send or a failed reply; shows a Retry button with `error` or `failed`. */
   onRetry?: (() => void) | undefined;
@@ -268,8 +268,8 @@ export function ChatMessage({
   const labelId = useId();
   const bodyRef = useRef<HTMLDivElement>(null);
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
-  const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
-  const contentRef = useTranscriptContentRef();
+  const error = isDeleted ? undefined : rest.error;
+  const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status, error });
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time));
   const display = resolveDisplay({
     ...{ author, groupPosition, variant, time },
@@ -304,7 +304,6 @@ export function ChatMessage({
         />
         <ChatMessageBody
           {...body}
-          contentRef={contentRef}
           isDeleted={isDeleted}
           isCancelled={status === 'cancelled'}
           delivery={delivery}

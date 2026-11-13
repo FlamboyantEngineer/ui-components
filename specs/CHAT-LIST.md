@@ -41,7 +41,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec
 
 ### UIC-CHAT-LIST-1.6 - Search
 
-Given `showSearch`, the list shall show a search field named and hinted by the provider string `searchConversations`; without it, the list has no search. Without `onSearchChange`, the list keeps the conversations whose title or last message contains the search text, ignoring case and accents, and marks the matching text ([Text Match](TEXT-MATCH.md)). With `onSearchChange`, it reports each change, shows `conversations` as given and still marks the matching text.
+Given `showSearch`, the list shall show a search field named and hinted by the provider string `searchConversations`; without it, the list has no search and filters nothing, whatever the field held when it went. Without `onSearchChange`, the list keeps the conversations whose title or last message contains the search text, ignoring case and accents, and marks the matching text ([Text Match](TEXT-MATCH.md)). With `onSearchChange`, it reports each change, shows `conversations` as given and still marks the matching text.
 
 Implementation: `src/components/chat-list/chat-list.tsx`, `src/components/chat-list/chat-list-row.tsx`, `src/components/chat-list/chat-list-parts.tsx`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`
@@ -76,7 +76,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 
 ### UIC-CHAT-LIST-1.11 - Load more
 
-Given `onLoadMore`, and while not loading, a [Load More](LOAD-MORE.md) row (`ui-chat-list__load-more`, a `ghost` button reading the provider string `loadMore`) shall follow the rows and call `onLoadMore` when pressed, pending while a promise it returns settles; the root carries `data-has-more` meanwhile, by which the reference stylesheet fades the last two rows to hint that the list goes on. The host leaves `onLoadMore` out once nothing is left to load.
+Given `onLoadMore`, and while not loading, a [Load More](LOAD-MORE.md) row (`ui-chat-list__load-more`, a `ghost` button reading the provider string `loadMore`) shall follow the rows and call `onLoadMore` when pressed, pending while a promise it returns settles (a rejection, or a throw, goes to `onLoadMoreError`; without it the error is rethrown); the root carries `data-has-more` meanwhile, by which the reference stylesheet fades the last two rows to hint that the list goes on. The host leaves `onLoadMore` out once nothing is left to load.
 
 Implementation: `src/components/chat-list/chat-list.tsx`, `labs/reference/chat-list.css`
 Verification: `src/components/chat-list/chat-list.test.tsx`, `e2e/chat-list.spec.ts`

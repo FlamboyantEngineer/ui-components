@@ -23,6 +23,7 @@ const entry = {
   summary: undefined,
   origin: 'received',
   status: 'complete',
+  error: undefined,
 } as const;
 
 /** A message whose child key differs from its own id, as a host's wrapper gives it. */

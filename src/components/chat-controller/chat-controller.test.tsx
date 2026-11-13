@@ -334,6 +334,24 @@ describe('useChatController runs', () => {
     expect(result.current.queue).toEqual([]);
   });
 
+  it('UIC-CHAT-CONTROLLER-2.5 keeps the queue held by a stopped reply when an edit from before it ends', async () => {
+    const { result, at, send } = renderController();
+    act(() => result.current.send('First'));
+    act(() => result.current.send('Second'));
+    act(() => result.current.send('Third'));
+    const second = requireDefined(result.current.queue[0]);
+    const third = requireDefined(result.current.queue[1]);
+    act(() => result.current.props.onQueuedEditChange(second.id));
+    // The queue waits for the edit, then another reply starts and the reader stops it.
+    await push(at(), { type: 'finish' });
+    act(() => result.current.steer(third.id));
+    act(() => result.current.stop());
+    expect(send).toHaveBeenCalledTimes(2);
+    act(() => result.current.props.onQueuedEditChange(undefined));
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(result.current.queue.map((entry) => entry.text)).toEqual(['Second']);
+  });
+
   it('UIC-CHAT-CONTROLLER-2.5 sends the first queued message while a later one is edited', async () => {
     const { result, at, send } = renderController();
     act(() => result.current.send('First'));

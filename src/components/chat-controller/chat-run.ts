@@ -197,6 +197,9 @@ export function startRun(
     cancelFlush: undefined,
   };
   engine.run = run;
+  // The queue now waits on this reply: how it ends decides whether the queue goes on, so a wait
+  // for an edit from before it no longer sends anything when that edit ends.
+  engine.isHeldForEdit = false;
   patchState(engine, { isPending: true });
   void streamRun(engine, run, plan.messages);
 }

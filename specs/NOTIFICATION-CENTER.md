@@ -59,7 +59,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 ### UIC-NOTIFICATION-CENTER-1.8 - Loading more
 
-While `hasMore`, the list shall end with a `LoadMore` (`ui-notification-list__load-more`), even when no loaded notification matches the filter (rows the filter hides say nothing of later pages), that calls `onLoadMore` when pressed and each time it comes into view (`autoLoad`; staying in view never loads again, so a page that adds no match does not repeat), pending while `isLoading` or while the promise `onLoadMore` returns is unsettled.
+While `hasMore`, the list shall end with a `LoadMore` (`ui-notification-list__load-more`), even when no loaded notification matches the filter (rows the filter hides say nothing of later pages), that calls `onLoadMore` when pressed and each time it comes into view (`autoLoad`; staying in view never loads again, so a page that adds no match does not repeat), pending while `isLoading` or while the promise `onLoadMore` returns is unsettled. A rejection of that promise, or a throw, goes to `onLoadMoreError`; without it the error is rethrown.
 
 Implementation: `src/components/notification-center/notification-list.tsx`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`

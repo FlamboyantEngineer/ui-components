@@ -8,6 +8,13 @@ import {
   type RevealAlignment,
 } from './transcript-geometry.js';
 
+/**
+ * How far the scroll position may sit from where the keeper left it and still count as the
+ * keeper's own, in pixels: under half a pixel is rounding, while a whole pixel is already a reader
+ * scrolling slowly, one pixel an event, as a precision touchpad or a dragged scrollbar does.
+ */
+const ownScrollTolerance = 0.5;
+
 /** Where the view is held: at the bottom, on the anchored message, or where the reader left it. */
 type TranscriptHold = 'bottom' | 'anchor' | 'free';
 
@@ -162,9 +169,8 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
     if (!viewport) return;
     // The reader scrolled before the scroll event arrived: their position wins over the hold. A
     // position the browser clamped as the scroll range shrank is layout, not the reader.
-    if (known !== null && Math.abs(viewport.scrollTop - known) > 1 && !isClamped(viewport, known)) {
-      classify();
-    }
+    const moved = known === null ? 0 : Math.abs(viewport.scrollTop - known);
+    if (moved >= ownScrollTolerance && known !== null && !isClamped(viewport, known)) classify();
     const anchorTop = fitSpacer(sources, viewport, anchorKey);
     if (hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
     else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;
@@ -188,7 +194,7 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
       const top = viewport.scrollTop;
       const isResized = viewport.clientHeight !== knownHeight;
       if (top < known && hold !== 'free' && isResized) known = top;
-      if (Math.abs(top - known) <= 1) settle();
+      if (Math.abs(top - known) < ownScrollTolerance) settle();
       else classify();
     },
     holdBottom() {

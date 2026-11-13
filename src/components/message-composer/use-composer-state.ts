@@ -73,7 +73,7 @@ interface EditState<T> {
 }
 
 /** How long typing pauses before the persisted draft is written to storage. */
-const DRAFT_WRITE_DELAY = 300;
+const draftWriteDelay = 300;
 
 /**
  * The draft: controlled by `value`, or the composer's own, kept under `persistKey`. Typing updates
@@ -84,7 +84,7 @@ function useDraft<T>(options: ComposerStateOptions<T>) {
   const [own, setOwn, flush] = usePersistentState(
     options.persistKey,
     () => options.defaultValue ?? format.empty,
-    { codec: format.codec, writeDelay: DRAFT_WRITE_DELAY },
+    { codec: format.codec, writeDelay: draftWriteDelay },
   );
   const isControlled = value !== undefined;
   const draft = isControlled ? value : own;

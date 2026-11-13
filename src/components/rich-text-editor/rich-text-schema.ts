@@ -127,7 +127,7 @@ function mergeSpecs<S, T>(
 }
 
 /** The spacing between built-in type orders, leaving room for extensions to place types between. */
-const ORDER_STEP = 10;
+const orderStep = 10;
 
 /** The plugin priorities of the built-in editing extension. */
 export const EDITING_PLUGIN_PRIORITY = 500;
@@ -141,12 +141,12 @@ function createBaseExtension(options: RichTextSchemaOptions): RichTextExtension 
     nodes: Object.entries(nodes).map(([name, spec], index) => ({
       name,
       spec,
-      order: index * ORDER_STEP,
+      order: index * orderStep,
     })),
     marks: Object.entries(marks).map(([name, spec], index) => ({
       name,
       spec,
-      order: index * ORDER_STEP,
+      order: index * orderStep,
     })),
   };
 }

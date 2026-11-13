@@ -463,9 +463,10 @@ test.describe('Chat lab', () => {
   }) => {
     await openChat(page, 8);
     const assistant = await ask(page, 'Fails once', 'Ferry times?');
-    await expect(assistant.getByRole('alert')).toHaveText(
-      'The timetable service is busy. Try again.',
-    );
+    // The transcript announces the failure once; the message's own text is no alert.
+    const failure = 'The timetable service is busy. Try again.';
+    await expect(assistant.locator('.ui-chat-message__error')).toContainText(failure);
+    await expect(assistant.locator('.ui-chat-transcript__announcer')).toHaveText(failure);
     await assistant.getByRole('button', { name: 'Retry' }).click();
     await expect(lastReply(assistant)).toContainText('ferries cross every 20 minutes');
     await ask(page, 'Plan, diff and terminal', 'Save the plan');

@@ -232,6 +232,31 @@ describe('ChatList', () => {
     expect(within(grid()).getAllByRole('row')).toHaveLength(3);
   });
 
+  it('UIC-CHAT-LIST-1.6 searches only while its field shows', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ChatList conversations={conversations} showSearch />);
+    await user.type(screen.getByRole('searchbox'), 'zz');
+    expect(within(grid()).getByRole('row')).toHaveTextContent('No matching conversations');
+    // The field goes with its text still in it: nothing is left to clear it with.
+    rerender(<ChatList conversations={conversations} />);
+    expect(within(grid()).getAllByRole('row')).toHaveLength(3);
+  });
+
+  it('UIC-CHAT-LIST-1.11 hands a failed load to onLoadMoreError', async () => {
+    const user = userEvent.setup();
+    const refusal = new Error('offline');
+    const onLoadMoreError = vi.fn();
+    render(
+      <ChatList
+        conversations={conversations}
+        onLoadMore={() => Promise.reject(refusal)}
+        onLoadMoreError={onLoadMoreError}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Load more' }));
+    await waitFor(() => expect(onLoadMoreError).toHaveBeenCalledWith(refusal));
+  });
+
   it('UIC-CHAT-LIST-1.7 starts a new conversation', async () => {
     const user = userEvent.setup();
     const onNew = vi.fn();

@@ -292,6 +292,21 @@ describe('ActivityFeed', () => {
     expect(container.querySelector('.ui-activity-feed__load-more')).toBeNull();
   });
 
+  it('UIC-ACTIVITY-FEED-2.1 hands a failed load to onLoadMoreError', async () => {
+    const refusal = new Error('offline');
+    const onLoadMoreError = vi.fn();
+    render(
+      <ActivityFeed
+        items={items}
+        getNow={getNow}
+        onLoadMore={() => Promise.reject(refusal)}
+        onLoadMoreError={onLoadMoreError}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }));
+    await waitFor(() => expect(onLoadMoreError).toHaveBeenCalledWith(refusal));
+  });
+
   it('UIC-ACTIVITY-FEED-2.2 is busy while it loads', () => {
     const { container, rerender } = render(
       <ActivityFeed items={items} getNow={getNow} isLoading />,
