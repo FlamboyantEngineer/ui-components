@@ -42,6 +42,7 @@ export type ChatPartOptions = Pick<
   | 'textFormat'
   | 'expandsActivity'
   | 'toolRenderers'
+  | 'toolGlyphs'
   | 'onApprove'
   | 'onDeny'
   | 'onAlwaysAllow'

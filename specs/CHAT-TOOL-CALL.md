@@ -48,7 +48,7 @@ Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`
 
 ### UIC-CHAT-TOOL-CALL-1.7 - Kind
 
-The root shall publish `kind`, what the call does, as `data-kind`: `read`, `edit`, `command`, `search`, `fetch` or `other` (the default). Once the call `succeeded`, its status glyph is its kind's: `file-text`, `edit`, `terminal`, `search`, `globe` and `wrench` in that order, so a finished call shows what it did. A group of steps sums its calls up by kind ([Chat Parts](CHAT-PARTS.md#uic-chat-parts-52---running-and-summary)).
+The root shall publish `kind`, what the call does, as `data-kind`: `read`, `edit`, `command`, `search`, `fetch` or `other` (the default). Once the call `succeeded`, its status glyph is the tool's ([UIC-CHAT-TOOL-CALL-1.9](#uic-chat-tool-call-19---tool-glyph-and-letter)), else its kind's: `file-text`, `edit`, `terminal`, `search`, `globe` and, for `other`, the letter glyph or `wrench`, so a finished call shows what it did. A group of steps sums its calls up by kind ([Chat Parts](CHAT-PARTS.md#uic-chat-parts-52---running-and-summary)).
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`, `src/components/chat-tool-call/tool-call-parts.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`
@@ -59,6 +59,13 @@ The root shall publish `variant` as `data-variant`: `card` (the default), a call
 
 Implementation: `src/components/chat-tool-call/chat-tool-call.tsx`
 Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-parts.spec.ts`
+
+### UIC-CHAT-TOOL-CALL-1.9 - Tool glyph and letter
+
+Once a call `succeeded`, its status glyph shall be, in order of precedence: the `glyph` given for the tool (a `GlyphComponent`, also given by tool name through `toolGlyphs` on [Chat Parts](CHAT-PARTS.md#uic-chat-parts-35---tool-glyphs)); else the kind's glyph for `read`, `edit`, `command`, `search` and `fetch`; else, for `other`, a letter glyph; else `wrench`. The letter glyph is a decorative SVG on the glyphs' 24 by 24 view box, a rounded outline box with the letter inside, drawn in the current colour with the glyphs' 1.5 stroke and the surrounding font, carrying `ui-glyph`, `ui-chat-tool-call__status-glyph`, `data-glyph="letter"` and the letter as `data-letter`. The letter is the leading letter ([UIC-INITIALS-2.1](INITIALS.md#uic-initials-21---first-letter-or-digit)) of `source`, what provides the tool, such as an integration named `OneDrive`, else of `name`; a source or name without a letter or a digit shows `wrench`. Before the call succeeds, the status glyph shows ([UIC-CHAT-TOOL-CALL-1.3](#uic-chat-tool-call-13---status)) whatever the tool's glyph.
+
+Implementation: `src/components/chat-tool-call/tool-call-parts.tsx`, `src/components/chat-tool-call/tool-call-letter-glyph.tsx`, `src/utils/initials.ts`
+Verification: `src/components/chat-tool-call/chat-tool-call.test.tsx`, `e2e/chat-tool-call.spec.ts`
 
 ## UIC-CHAT-TOOL-CALL-2 - Body
 
@@ -178,6 +185,7 @@ Verification: `src/components/chat-tool-call/tool-call-approval.test.tsx`, `e2e/
 | `data-status`                     | state     | `pending`, `running`, `approval-requested`, `succeeded`, `failed`, `denied`, `cancelled` | On the card: where the call stands.                                     |
 | `data-kind`                       | state     | `read`, `edit`, `command`, `search`, `fetch`, `other`                                    | On the card: what the call does.                                        |
 | `data-auto-approved`              | state     | `true`                                                                                   | On the card: the call ran without asking because it was always allowed. |
+| `data-letter`                     | attribute | one letter or digit                                                                      | On a letter status glyph: the letter it shows.                          |
 | `data-part`                       | state     | `arguments`, `result`                                                                    | On a part: which value it shows.                                        |
 | `data-action`                     | state     | `approve`, `deny`, `always`                                                              | On an approval button: what it does.                                    |
 | `data-decision`                   | state     | `approved`, `denied`, `always`                                                           | On the approval: the reader's decision, once made.                      |

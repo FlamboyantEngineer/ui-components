@@ -1,16 +1,16 @@
 'use client';
 
 import { type ReactNode, useRef, useState } from 'react';
+import type { GlyphComponent } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { Disclosure, DisclosurePanel } from '../disclosure/disclosure.js';
+import { Disclosure } from '../disclosure/disclosure.js';
 import { formatToolName } from './format-tool-call.js';
 import { type ChatToolCallApproval, ToolCallApproval } from './tool-call-approval.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
 import {
   type ChatToolCallKind,
   type ChatToolCallStatus,
-  ToolCallBody,
-  ToolCallError,
+  ToolCallPanel,
   ToolCallTitle,
 } from './tool-call-parts.js';
 import { useToolCallApproval } from './use-tool-call-approval.js';
@@ -29,6 +29,11 @@ export interface ChatToolCallData {
   label?: string | undefined;
   /** What the call acted on, such as a file path or a command; shown after the label. */
   target?: string | undefined;
+  /**
+   * What provides the tool, such as an integration named `OneDrive`. A succeeded call of kind
+   * `other` without a glyph shows its first letter in a box, else the first letter of `name`.
+   */
+  source?: string | undefined;
   /** What the call does: its glyph once it succeeded, and how a group of steps sums it up. Defaults to `other`. */
   kind?: ChatToolCallKind | undefined;
   /** Where the call stands. */
@@ -52,6 +57,8 @@ export interface ChatToolCallProps
   extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, ChatToolCallData {
   /** How the call shows, published as `data-variant`: `card` (the default) or `row`. */
   variant?: ChatToolCallVariant | undefined;
+  /** The tool's own glyph, shown once the call succeeded in place of its kind's glyph or letter. */
+  glyph?: GlyphComponent | undefined;
   /** Lets the call run once. Shows Approve while the approval is pending. */
   onApprove?: (() => void) | undefined;
   /** Refuses the call, with the reader's reason when they gave one. Shows Deny while pending. */
@@ -111,7 +118,9 @@ export function ChatToolCall({
   name,
   label,
   target,
+  source,
   kind = 'other',
+  glyph,
   status,
   args,
   result,
@@ -157,18 +166,15 @@ export function ChatToolCall({
         <ToolCallTitle
           label={title}
           target={target}
-          kind={kind}
+          identity={{ name, source, kind, glyph }}
           status={status}
           durationMs={durationMs}
           isAutoApproved={approval?.isAutoApproved ?? false}
           triggerRef={triggerRef}
         />
-        <DisclosurePanel className={hooks.slotClass('body')}>
-          {status === 'failed' && error ? <ToolCallError message={error} /> : null}
-          <ToolCallBody args={args} result={result}>
-            {children}
-          </ToolCallBody>
-        </DisclosurePanel>
+        <ToolCallPanel args={args} result={result} error={status === 'failed' ? error : undefined}>
+          {children}
+        </ToolCallPanel>
       </Disclosure>
       {isPending || approval?.decision !== undefined ? (
         <ToolCallApproval
