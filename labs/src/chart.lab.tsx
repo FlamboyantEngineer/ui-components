@@ -17,6 +17,7 @@ import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { ChartDenseCases } from './chart-dense-cases.js';
 import { ChartFormatCases } from './chart-format-cases.js';
+import { ChartOptionsCases } from './chart-options-cases.js';
 import { ChartHeatmapCases } from './chart-heatmap-cases.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
@@ -477,5 +478,6 @@ mountLab(
     <ChartReferencesCases />
     <ChartScatterCases />
     <ChartHeatmapCases />
+    <ChartOptionsCases />
   </>,
 );
