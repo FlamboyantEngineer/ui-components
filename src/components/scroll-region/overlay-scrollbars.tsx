@@ -15,6 +15,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { measureScale } from '../../utils/element-scale.js';
 import { isFocused } from '../../utils/focus-target.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './scroll-region-defaults.js';
@@ -86,10 +87,15 @@ const arrowKeys: Readonly<Record<string, { orientation: Orientation; step: numbe
   ArrowRight: { orientation: 'horizontal', step: THUMB_ARROW_STEP },
 };
 
-/** The scroll position a key moves to from `current`, or null for a key the thumb leaves alone. */
+/**
+ * The scroll position, counted from the left, a key moves to from `current`, or null for a key the
+ * thumb leaves alone. Home and End go to the inline start and end, so in a right-to-left region the
+ * horizontal thumb's Home goes right; the arrows keep their physical direction.
+ */
 function resolveThumbKey(key: string, current: number, thumb: ThumbProps): number | null {
-  if (key === 'Home') return 0;
-  if (key === 'End') return thumb.max;
+  const isMirrored = thumb.orientation === 'horizontal' && thumb.rtl;
+  if (key === 'Home') return isMirrored ? thumb.max : 0;
+  if (key === 'End') return isMirrored ? 0 : thumb.max;
   if (key === 'PageUp') return current - thumb.page;
   if (key === 'PageDown') return current + thumb.page;
   const arrow = arrowKeys[key];
@@ -182,7 +188,8 @@ function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
       aria-orientation={orientation}
       aria-valuemin={0}
       aria-valuemax={Math.round(max)}
-      aria-valuenow={Math.round(position)}
+      // Counted from the inline start, which is the right in a right-to-left region.
+      aria-valuenow={Math.round(!vertical && props.rtl ? max - position : position)}
       tabIndex={max > 0 ? (props.tabIndex ?? 0) : -1}
       hidden={track <= 0}
       style={{
@@ -192,6 +199,7 @@ function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
       }}
       {...dragHandlers}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+        if (!isFreeEditKey(event.nativeEvent)) return;
         const current = clamp(readScrollPosition(props), 0, max);
         const next = resolveThumbKey(event.key, current, props);
         if (next === null) return;

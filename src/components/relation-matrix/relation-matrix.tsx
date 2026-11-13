@@ -4,12 +4,13 @@
 // library's own grid that windows both axes, since React Aria's table renders every column of a
 // row. Its keyboard contract is in specs/RELATION-MATRIX.md (UIC-RELATION-MATRIX-4.2).
 
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { MatrixPosition } from './matrix-navigation.js';
 import { RelationMatrixHeader } from './relation-matrix-header.js';
 import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
@@ -94,10 +95,14 @@ function RelationMatrixBody({
   rows,
   rowIndices,
   context,
+  focus,
+  isFocusWithin,
 }: {
   rows: readonly RelationMatrixItem[];
   rowIndices: readonly number[];
   context: RelationMatrixRowContext;
+  focus: MatrixPosition;
+  isFocusWithin: boolean;
 }) {
   if (rows.length === 0) return null;
   const { virtualized, rowHeight } = context;
@@ -109,9 +114,37 @@ function RelationMatrixBody({
     >
       {rowIndices.map((rowIndex) => {
         const row = rows[rowIndex] as RelationMatrixItem;
-        return <RelationMatrixRow key={toKeyIdentity(row.id)} {...{ row, rowIndex, context }} />;
+        const isFocusedRow = focus.row === rowIndex;
+        return (
+          <RelationMatrixRow
+            key={toKeyIdentity(row.id)}
+            {...{ row, rowIndex, context }}
+            focusedColumn={isFocusedRow ? focus.column : null}
+            isCurrent={isFocusWithin && isFocusedRow}
+          />
+        );
       })}
     </div>
+  );
+}
+
+/**
+ * The context every row shares. It keeps its identity while focus moves and while a scroll keeps
+ * the same columns; a press goes to the latest `onCellPress`.
+ */
+function useRowContext(options: RelationMatrixRowContext): RelationMatrixRowContext {
+  const { columns, indices, tracks, index, kinds, isActionable, virtualized, rowHeight } = options;
+  const latestPress = useLatest(options.onCellPress);
+  const onCellPress = useCallback(
+    (position: MatrixPosition) => latestPress.current(position),
+    [latestPress],
+  );
+  return useMemo(
+    () => ({
+      ...{ columns, indices, tracks, index, kinds, isActionable, onCellPress },
+      ...{ virtualized, rowHeight },
+    }),
+    [columns, indices, tracks, index, kinds, isActionable, onCellPress, virtualized, rowHeight],
   );
 }
 
@@ -169,11 +202,10 @@ export function RelationMatrix({
     { root, rows, columns, index, kinds, onRelationChange, onAxisAction, axisActions, menuIcons },
     { ownRef: setRoot, onKeyDown: navigation.gridProps.onKeyDown },
   );
-  const context: RelationMatrixRowContext = {
+  const context = useRowContext({
     ...{ columns, indices: view.columns, tracks: view.tracks, index, kinds: kindMap },
-    ...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin },
     ...{ isActionable: Boolean(onCellAction), onCellPress, virtualized, rowHeight },
-  };
+  });
   return (
     <div
       role="grid"
@@ -194,7 +226,10 @@ export function RelationMatrix({
         {...{ tracks: view.tracks, index, rowsLabel: rowsLabel ?? strings.relationItems }}
         {...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin }}
       />
-      <RelationMatrixBody {...{ rows, rowIndices: view.rows, context }} />
+      <RelationMatrixBody
+        {...{ rows, rowIndices: view.rows, context }}
+        {...{ focus: navigation.focus, isFocusWithin: navigation.isFocusWithin }}
+      />
       {menus.menu}
     </div>
   );

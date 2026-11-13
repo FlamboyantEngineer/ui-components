@@ -1,6 +1,7 @@
 'use client';
 
-import { useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
+import { useLatest } from '../../utils/use-latest.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
 
 interface PinnedRowProbeOptions {
@@ -50,24 +51,31 @@ function measureRowOffsets(grid: HTMLElement, hasStickyEdges: boolean): TablePin
 
 /**
  * Measures where a static table's pinned rows stick, from a pinned row: after each of its renders
- * and whenever the header, the summary or a pinned row changes size.
+ * and whenever the header, the summary or a pinned row changes size. Its observer is rebuilt only
+ * when the row, whether it is pinned or the sticky edges change, not on every render.
  */
 export function usePinnedRowProbe(
   row: HTMLElement | null,
   { isActive, hasStickyEdges, report }: PinnedRowProbeOptions,
 ): void {
+  const latestReport = useLatest(report);
+  const measure = useCallback(() => {
+    const grid = row?.closest<HTMLElement>('.ui-table__grid');
+    if (!isActive || !grid) return;
+    latestReport.current(measureRowOffsets(grid, hasStickyEdges));
+  }, [row, isActive, hasStickyEdges, latestReport]);
+  useLayoutEffect(() => {
+    measure();
+  });
   useLayoutEffect(() => {
     const grid = row?.closest<HTMLElement>('.ui-table__grid');
-    if (!isActive || !grid) return undefined;
-    const measure = () => report(measureRowOffsets(grid, hasStickyEdges));
-    measure();
-    const view = grid.ownerDocument.defaultView;
-    if (!view?.ResizeObserver) return undefined;
+    const view = grid?.ownerDocument.defaultView;
+    if (!isActive || !grid || !view?.ResizeObserver) return undefined;
     const observer = new view.ResizeObserver(measure);
     const sections = [readSection(grid, 'header'), readSection(grid, 'footer')];
     for (const element of [...sections, ...listPinnedRows(grid)]) {
       if (element) observer.observe(element);
     }
     return () => observer.disconnect();
-  });
+  }, [row, isActive, measure]);
 }

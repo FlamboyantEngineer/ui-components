@@ -208,11 +208,7 @@ function useEditingParts<T extends TableRow>(
   parts: { rows: readonly T[]; structure: TableStructure<T>; isRowDisabled: (row: T) => boolean },
 ) {
   const recorded = useRecordedEdits({ ...options, isRowDisabled: parts.isRowDisabled });
-  const edited = {
-    ...options,
-    onCellEdit: recorded.onCellEdit,
-    onCellsChange: recorded.onCellsChange,
-  };
+  const edited = { ...options, onCellsChange: recorded.onCellsChange };
   const cells = useCellsView(edited, parts);
   const editing = useCellEditing({
     ...edited,
@@ -279,6 +275,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
       ...pickAriaProps(options),
       ...createTableAriaKeys({
         selection,
+        drawnRows: visibleRows,
         expansion: grouped.expansion,
         disabledKeys: selection.disabledKeys,
       }),

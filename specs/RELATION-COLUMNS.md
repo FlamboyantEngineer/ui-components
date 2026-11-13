@@ -27,7 +27,7 @@ Verification: `src/components/relation-columns/relation-columns-model.test.ts`, 
 
 ### UIC-RELATION-COLUMNS-1.4 - Trail
 
-A `Breadcrumb` (`ui-relation-columns__path`) named by the provider's `relationPath` string followed by the root's name (so several walks on a page keep distinct landmarks) shall list the chosen chain in reading order: the chosen upstream items from the furthest, the item, then the chosen downstream items. Activating a crumb keeps the choices up to that item on its side and drops those beyond it; activating the item's crumb clears both sides.
+A `Breadcrumb` (`ui-relation-columns__path`) named by the provider's `relationPath` string followed by the root's name (so several walks on a page keep distinct landmarks): the caller's `aria-labelledby` elements, or else the root's `aria-label`, or the string alone when the root has neither shall list the chosen chain in reading order: the chosen upstream items from the furthest, the item, then the chosen downstream items. Activating a crumb keeps the choices up to that item on its side and drops those beyond it; activating the item's crumb clears both sides.
 
 Implementation: `src/components/relation-columns/relation-columns.tsx`, `src/components/relation-columns/relation-columns-model.ts`
 Verification: `src/components/relation-columns/relation-columns.test.tsx`, `e2e/relation-columns.spec.ts`

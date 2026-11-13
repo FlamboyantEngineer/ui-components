@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
@@ -71,6 +71,20 @@ describe('Table column widths', { timeout: 15_000 }, () => {
     expect(tracks()).toBe('44px 150px minmax(75px, 1fr)');
   });
 
+  it('UIC-TABLE-4.2 resizes to a value assistive technology sets on the slider and reports it once', () => {
+    const onColumnWidthsChange = vi.fn();
+    renderColours(createMemoryStorage(), { onColumnWidthsChange });
+    const slider = screen.getByRole('slider', { name: /^Resize Name/ });
+    // eslint-disable-next-line testing-library/prefer-user-event -- a touch screen reader sets the value without key events, which user-event cannot do
+    fireEvent.change(slider, { target: { value: '140' } });
+    expect(tracks()).toBe('44px 140px minmax(75px, 1fr)');
+    expect(onColumnWidthsChange).toHaveBeenCalledTimes(1);
+    expect(onColumnWidthsChange).toHaveBeenCalledWith({ name: 140, hex: '1fr' });
+    // eslint-disable-next-line testing-library/prefer-user-event -- as above
+    fireEvent.change(slider, { target: { value: '400' } });
+    expect(tracks()).toBe('44px 150px minmax(75px, 1fr)');
+  });
+
   it('UIC-TABLE-4.3 persists resized widths under the key and restores them on mount', async () => {
     const storage = createMemoryStorage();
     const view = renderColours(storage, { persistKey: 'colours.widths' });
@@ -79,6 +93,24 @@ describe('Table column widths', { timeout: 15_000 }, () => {
     view.unmount();
     renderColours(storage, { persistKey: 'colours.widths' });
     expect(tracks()).toBe('44px 110px minmax(75px, 1fr)');
+  });
+
+  it('UIC-TABLE-4.3 stores only the widths the reader set, so a later declared width shows', async () => {
+    const storage = createMemoryStorage();
+    const onColumnWidthsChange = vi.fn();
+    const view = renderColours(storage, { persistKey: 'colours.widths', onColumnWidthsChange });
+    await resizeName('{ArrowLeft}');
+    expect(JSON.parse(storage.getItem('colours.widths') ?? '{}')).toEqual({ name: 110 });
+    expect(onColumnWidthsChange).toHaveBeenCalledWith({ name: 110, hex: '1fr' });
+    view.unmount();
+    renderColours(storage, {
+      persistKey: 'colours.widths',
+      columns: [
+        { id: 'name', header: 'Name', width: 120, allowsResizing: true },
+        { id: 'hex', header: 'Hex', width: 90 },
+      ],
+    });
+    expect(tracks()).toBe('44px 110px 90px');
   });
 
   it('UIC-TABLE-4.3 ignores unusable stored widths', () => {

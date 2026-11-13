@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, memo, useContext } from 'react';
 import { LockGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -15,6 +15,7 @@ export interface PermissionCellContext {
   grants: PermissionGrantIndex;
   inherited: PermissionGrantIndex;
   committed: PermissionGrantIndex;
+  /** Stable across grant changes, so a cell whose own state stays the same is not drawn again. */
   onChange: (change: PermissionMatrixChange) => void;
 }
 
@@ -59,16 +60,23 @@ export function PermissionRoleHeader({ role }: { role: PermissionMatrixRole }) {
   );
 }
 
-/**
- * The checkbox of one role and permission: ticked while granted, drawn mixed while only
- * inherited, read only in a read-only role, and dirty while it differs from the committed grants.
- */
-export function PermissionGrantCheckbox({ role, permission }: GrantCheckboxProps) {
+interface GrantCheckboxViewProps extends GrantCheckboxProps {
+  isGranted: boolean;
+  isInherited: boolean;
+  isDirty: boolean;
+  onChange: (change: PermissionMatrixChange) => void;
+}
+
+/** A cell's checkbox, drawn again only when its own state changes, not on every grant change. */
+const GrantCheckboxView = memo(function GrantCheckboxView({
+  role,
+  permission,
+  isGranted,
+  isInherited,
+  isDirty,
+  onChange,
+}: GrantCheckboxViewProps) {
   const strings = useUiStrings();
-  const context = usePermissionCells();
-  const isGranted = context.grants.has(role.id, permission.id);
-  const isInherited = context.inherited.has(role.id, permission.id);
-  const isDirty = isGranted !== context.committed.has(role.id, permission.id);
   return (
     <Checkbox
       size="sm"
@@ -80,8 +88,27 @@ export function PermissionGrantCheckbox({ role, permission }: GrantCheckboxProps
       data-inherited={isInherited || undefined}
       data-dirty={isDirty || undefined}
       onChange={(isSelected) =>
-        context.onChange({ role: role.id, permissions: [permission.id], isGranted: isSelected })
+        onChange({ role: role.id, permissions: [permission.id], isGranted: isSelected })
       }
+    />
+  );
+});
+
+/**
+ * The checkbox of one role and permission: ticked while granted, drawn mixed while only
+ * inherited, read only in a read-only role, and dirty while it differs from the committed grants.
+ */
+export function PermissionGrantCheckbox({ role, permission }: GrantCheckboxProps) {
+  const context = usePermissionCells();
+  const isGranted = context.grants.has(role.id, permission.id);
+  return (
+    <GrantCheckboxView
+      role={role}
+      permission={permission}
+      isGranted={isGranted}
+      isInherited={context.inherited.has(role.id, permission.id)}
+      isDirty={isGranted !== context.committed.has(role.id, permission.id)}
+      onChange={context.onChange}
     />
   );
 }

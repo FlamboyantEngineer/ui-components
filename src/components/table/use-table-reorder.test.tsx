@@ -141,6 +141,44 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     expect(document.querySelector('.ui-table__drop-indicator')).toBeNull();
   });
 
+  it('UIC-TABLE-5.1 starts a keyboard drag over many rows reading each row a bounded number of times', async () => {
+    const user = userEvent.setup();
+    const reads = { count: 0 };
+    const counted = (count: number) =>
+      Array.from({ length: count }, (_, index) => {
+        const id = `task-${index}`;
+        return {
+          get id() {
+            reads.count += 1;
+            return id;
+          },
+          title: `Task ${index}`,
+        };
+      });
+    const measure = async (count: number) => {
+      const view = render(
+        <Table
+          aria-label="Tasks"
+          rows={counted(count)}
+          columns={[{ id: 'title', header: 'Title' }]}
+          reorder={{ onMove: vi.fn() }}
+        />,
+      );
+      row('Task 0').focus();
+      await user.keyboard('{ArrowRight}');
+      reads.count = 0;
+      await user.keyboard('{Enter}');
+      const result = reads.count;
+      await user.keyboard('{Escape}');
+      view.unmount();
+      return result;
+    };
+    const small = await measure(20);
+    const large = await measure(80);
+    // Four times the rows reads about four times as often, not sixteen.
+    expect(large).toBeLessThan(small * 8);
+  });
+
   it('UIC-TABLE-5.2 refuses drags that start on a fixed row', () => {
     render(<Tasks onMove={() => {}} />);
     const refused = createEvent.dragStart(row('Pinned'));
@@ -217,7 +255,7 @@ describe('Table reordering', { timeout: 15_000 }, () => {
           { id: 'id', header: 'Code', allowsEditing: true },
         ]}
         reorder={{ onMove }}
-        onCellEdit={vi.fn()}
+        onCellsChange={vi.fn()}
       />,
     );
     act(() => screen.getByRole('gridcell', { name: 'dry' }).focus());

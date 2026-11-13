@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { createRef } from 'react';
+import { createRef, useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { stubTextLayout } from '../../../test/overflow-fixtures.js';
@@ -157,6 +157,37 @@ describe('OverflowList', () => {
     expect(screen.getByRole('button')).toBe(indicator);
     expect(indicator).toHaveFocus();
     expect(indicator).toHaveTextContent('+4');
+  });
+
+  it('UIC-OVERFLOW-LIST-1.3 keeps hidden items unmounted while a host rebuilds the same items', () => {
+    const mounts = new Map<string, number>();
+    function Counted({ name }: { name: string }) {
+      useEffect(() => {
+        mounts.set(name, (mounts.get(name) ?? 0) + 1);
+      }, [name]);
+      return <span>{name}</span>;
+    }
+    function Rebuilt({ tick }: { tick: number }) {
+      // A new object for each item on every render, as when the host builds them inline.
+      const items = fruit.map((name) => ({ name, tick }));
+      return (
+        <OverflowList
+          data-room={120}
+          aria-label="Fruit"
+          role="group"
+          items={items}
+          getKey={(item) => item.name}
+          renderItem={(item) => <Counted name={item.name} />}
+          renderOverflow={(hidden) => <button type="button">+{hidden.length}</button>}
+        />
+      );
+    }
+    const { rerender } = render(<Rebuilt tick={0} />);
+    expect(shownItems()).toEqual(['Apple']);
+    const first = new Map(mounts);
+    for (let tick = 1; tick <= 5; tick += 1) rerender(<Rebuilt tick={tick} />);
+    expect(shownItems()).toEqual(['Apple']);
+    expect(mounts).toEqual(first);
   });
 
   it('UIC-OVERFLOW-LIST-1.4 counts the gap between items and before the indicator', () => {

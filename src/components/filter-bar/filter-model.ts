@@ -1,6 +1,7 @@
 // The filter model shared by the filter bar and the condition builder: fields, operators, values.
 
 import type { FilterOperator } from '../../core/strings/query.js';
+import { parseIsoDate } from '../../primitives/date-values.js';
 import type { DateRangeValue } from '../date-time-field/date-time-field.js';
 
 /** The kind of value a field holds, which sets its operators and its value control. */
@@ -142,13 +143,21 @@ export function isDateRange(value: FilterValue): value is DateRangeValue {
   return typeof value === 'object' && value !== null && 'start' in value && 'end' in value;
 }
 
+/** Whether a value is a real `YYYY-MM-DD` day, not any other text. */
+function isDay(value: unknown): value is string {
+  return typeof value === 'string' && parseIsoDate(value) !== null;
+}
+
 const completeValueTests: Readonly<Record<FilterValueKind, (value: FilterValue) => boolean>> = {
   none: () => true,
   text: (value) => typeof value === 'string' && value.trim() !== '',
   number: isNumber,
-  'number-range': (value) => isNumberRange(value) && isNumber(value.min) && isNumber(value.max),
-  date: (value) => typeof value === 'string' && value !== '',
-  'date-range': (value) => isDateRange(value) && Boolean(value.start) && Boolean(value.end),
+  // A range needs both ends, in order: an inverted range would match nothing.
+  'number-range': (value) =>
+    isNumberRange(value) && isNumber(value.min) && isNumber(value.max) && value.min <= value.max,
+  date: isDay,
+  'date-range': (value) =>
+    isDateRange(value) && isDay(value.start) && isDay(value.end) && value.start <= value.end,
   list: (value) => Array.isArray(value) && value.length > 0,
   boolean: (value) => typeof value === 'boolean',
 };

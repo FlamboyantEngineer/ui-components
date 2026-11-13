@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, type UIEvent, useLayoutEffect, useState } from 'react';
+import { type RefObject, type UIEvent, useLayoutEffect, useMemo, useState } from 'react';
 import { useElementSize } from '../../utils/use-element-size.js';
 import type { MatrixPosition } from './matrix-navigation.js';
 import {
@@ -44,14 +44,21 @@ function readScroll(element: HTMLElement) {
   return { top: element.scrollTop, left: Math.abs(element.scrollLeft) };
 }
 
-function listAll(count: number): number[] {
-  return Array.from({ length: count }, (_, index) => index);
+/** The indices of a span with the focused index, the same array while neither changes. */
+function useSpanIndices(span: { start: number; end: number }, focused: number): readonly number[] {
+  // The focused index changes the list only while it lies outside the span.
+  const extra = focused < span.start || focused >= span.end ? focused : -1;
+  return useMemo(
+    () => listMatrixIndices({ start: span.start, end: span.end }, extra),
+    [span.start, span.end, extra],
+  );
 }
 
 /**
  * Which rows and columns of a matrix to render: all of them, or with `virtualized` only those in
  * view of the scroll container (plus a small overscan and the focused cell), from its scroll
- * position, its size and the fixed row height and column width.
+ * position, its size and the fixed row height and column width. A scroll that keeps the same rows
+ * and columns in view renders nothing again, and the lists keep their identity until they change.
  */
 export function useMatrixWindow(options: MatrixWindowOptions): MatrixWindow {
   const { root, header, corner, virtualized, rowCount, columnCount, rowHeight, columnWidth } =
@@ -70,29 +77,42 @@ export function useMatrixWindow(options: MatrixWindowOptions): MatrixWindow {
   const headerHeight = useElementSize(header, { box: 'border-box' })?.height ?? 0;
   const cornerWidth = useElementSize(corner, { box: 'border-box' })?.width ?? 0;
   const bodyHeight = Math.max(view.height - headerHeight, rowHeight);
-  const rowSpan = virtualized
-    ? resolveMatrixSpan({
-        ...{ offset: scroll.top, extent: bodyHeight },
-        ...{ size: rowHeight, count: rowCount, overscan },
-      })
-    : { start: 0, end: rowCount };
-  const columnSpan = virtualized
-    ? resolveMatrixSpan({
-        ...{ offset: scroll.left, extent: view.width - cornerWidth },
-        ...{ size: columnWidth, count: columnCount, overscan },
-      })
-    : { start: 0, end: columnCount };
-  const rows = virtualized ? listMatrixIndices(rowSpan, options.focus.row) : listAll(rowCount);
-  const columns = virtualized
-    ? listMatrixIndices(columnSpan, options.focus.column)
-    : listAll(columnCount);
+  const resolveSpans = (offsets: { top: number; left: number }) => ({
+    rows: virtualized
+      ? resolveMatrixSpan({
+          ...{ offset: offsets.top, extent: bodyHeight },
+          ...{ size: rowHeight, count: rowCount, overscan },
+        })
+      : { start: 0, end: rowCount },
+    columns: virtualized
+      ? resolveMatrixSpan({
+          ...{ offset: offsets.left, extent: view.width - cornerWidth },
+          ...{ size: columnWidth, count: columnCount, overscan },
+        })
+      : { start: 0, end: columnCount },
+  });
+  const spans = resolveSpans(scroll);
+  const rows = useSpanIndices(spans.rows, virtualized ? options.focus.row : -1);
+  const columns = useSpanIndices(spans.columns, virtualized ? options.focus.column : -1);
+  const tracks = useMemo(
+    () => resolveMatrixColumnTracks({ indices: columns, count: columnCount, width: columnWidth }),
+    [columns, columnCount, columnWidth],
+  );
   return {
     rows,
     columns,
-    tracks: resolveMatrixColumnTracks({ indices: columns, count: columnCount, width: columnWidth }),
+    tracks,
     onScroll: (event) => {
+      if (!virtualized) return;
       const next = readScroll(event.currentTarget);
-      if (virtualized && (next.top !== scroll.top || next.left !== scroll.left)) setScroll(next);
+      const nextSpans = resolveSpans(next);
+      // Offsets that keep the same span render nothing; the overscan covers the stale offset.
+      if (!isSameSpan(nextSpans.rows, spans.rows) || !isSameSpan(nextSpans.columns, spans.columns))
+        setScroll(next);
     },
   };
+}
+
+function isSameSpan(left: { start: number; end: number }, right: { start: number; end: number }) {
+  return left.start === right.start && left.end === right.end;
 }

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
+import { createRef, Profiler } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
@@ -185,6 +185,42 @@ describe('ActionRow', () => {
     await user.keyboard('{Enter}');
     expect(onSecond).toHaveBeenCalledTimes(1);
     expect(onFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-ACTION-ROW-2.5 commits once per host render with inline actions under overflow="menu"', () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? 70 : 0;
+    });
+    const onRender = vi.fn();
+    // New action objects on every render, as a host that writes them inline passes.
+    const row = () => (
+      <Profiler id="row" onRender={onRender}>
+        <ActionRow
+          overflow="menu"
+          actions={[
+            { verb: 'add', onPress: noop },
+            { verb: 'delete', onPress: noop },
+            { verb: 'edit', onPress: noop },
+          ]}
+        />
+      </Profiler>
+    );
+    try {
+      const { rerender } = render(row());
+      onRender.mockClear();
+      for (let index = 0; index < 5; index += 1) rerender(row());
+      expect(onRender).toHaveBeenCalledTimes(5);
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('UIC-ACTION-ROW-1.7 moves focus to the overflow menu button when the focused action collapses into it', () => {

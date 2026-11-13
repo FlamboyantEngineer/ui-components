@@ -170,6 +170,18 @@ describe('DescriptionList', () => {
     ).toBe('Spring – 2026-05-21');
   });
 
+  it('UIC-DESCRIPTION-LIST-1.5 joins the ends of a number range with an end that is not finite', () => {
+    expect(
+      formatDescriptionValue({ start: 3, end: Number.NaN }, { locale: 'en-US', timeZone: 'UTC' }),
+    ).toBe('3 – NaN');
+    expect(
+      formatDescriptionValue(
+        { start: 1, end: Number.POSITIVE_INFINITY },
+        { locale: 'en-US', timeZone: 'UTC' },
+      ),
+    ).toBe('1 – ∞');
+  });
+
   it('UIC-DESCRIPTION-LIST-1.5 formats numbers, dates, lists and ranges for the provider locale', () => {
     const day = '2024-03-05';
     const later = '2024-03-09';

@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState, useUiStorage } from '../../core/provider.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   pickColumnWidths,
   type TableColumnSizing,
@@ -47,6 +48,25 @@ function restoreColumnKeys(widths: Map<Key, unknown>): Map<Key, unknown> {
 }
 
 /**
+ * The widths the reader set: those kept before and those a resize moved off their declared width.
+ * A declared width stays unstored, so a later change to it shows.
+ */
+function keepReaderWidths(
+  next: TableColumnWidths,
+  { columns, kept }: { columns: readonly TableColumnSizing[]; kept: TableColumnWidths },
+): TableColumnWidths {
+  const readerSet = columns.filter(
+    (column) =>
+      Object.hasOwn(kept, column.id) ||
+      (Object.hasOwn(next, column.id) && next[column.id] !== (column.width ?? '1fr')),
+  );
+  return pickColumnWidths(
+    new Map(readerSet.map((column) => [column.id, next[column.id]] as const)),
+    columns,
+  );
+}
+
+/**
  * Column widths for a resizable table: previewed live while a column is being resized, then kept
  * (and persisted under `persistKey`) and reported once when the gesture ends.
  */
@@ -62,13 +82,21 @@ export function useColumnWidths(options: ColumnWidthsOptions): ColumnWidths {
   const storage = useUiStorage();
   // A fresh identity whenever the widths change hands.
   const owner = useMemo(() => ({ storage, persistKey }), [storage, persistKey]);
-  const [live, setLive] = useState<LiveWidths | null>(null);
+  const [live, setLiveState] = useState<LiveWidths | null>(null);
+  // The resize under way as last set, which a resize begun and ended in one event has not drawn.
+  const begun = useRef<LiveWidths | null>(null);
+  const latestOwner = useLatest(owner);
+  const setLive = (next: LiveWidths | null) => {
+    begun.current = next;
+    setLiveState(next);
+  };
   const current = live?.owner === owner ? live.widths : null;
   /** Keeps and reports widths from a resize begun for this owner; any other is dropped. */
   const keep = (next: TableColumnWidths) => {
+    const resize = begun.current;
     setLive(null);
-    if (current === null) return;
-    setStored(next);
+    if (resize?.owner !== latestOwner.current) return;
+    setStored(keepReaderWidths(next, { columns, kept }));
     onColumnWidthsChange?.(next);
   };
 

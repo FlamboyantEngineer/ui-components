@@ -115,12 +115,14 @@ function Spreadsheet() {
         cellSelection="cell"
         selectedRange={range}
         onSelectedRangeChange={setRange}
-        onCellEdit={(edit) =>
-          write(
-            { row: rows.indexOf(edit.row), column: letters.indexOf(edit.columnId as Letter) },
-            String(edit.value ?? ''),
-          )
-        }
+        onCellsChange={(edits) => {
+          for (const edit of edits) {
+            write(
+              { row: rows.indexOf(edit.row), column: letters.indexOf(edit.columnId as Letter) },
+              String(edit.value ?? ''),
+            );
+          }
+        }}
         size="sm"
       />
       <label>

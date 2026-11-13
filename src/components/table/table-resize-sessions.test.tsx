@@ -160,6 +160,7 @@ describe('Table resize sessions', { timeout: 15_000 }, () => {
     expect(tracks()).toBe('190px minmax(75px, 1fr)');
     expect(onColumnWidthsChange).toHaveBeenCalledTimes(1);
     expect(onColumnWidthsChange).toHaveBeenCalledWith({ a: 190, b: '1fr' });
-    expect(JSON.parse(storage.getItem('first') ?? '{}')).toEqual({ a: 190, b: '1fr' });
+    // Only the width the reader set is stored; the other column keeps following its declared width.
+    expect(JSON.parse(storage.getItem('first') ?? '{}')).toEqual({ a: 190 });
   });
 });

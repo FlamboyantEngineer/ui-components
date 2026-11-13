@@ -535,11 +535,13 @@ export function Editing() {
         rows={isRemoved ? rows.filter((row) => row.id !== 'apple') : rows}
         columns={columns}
         disabledKeys={isLocked ? ['apple'] : undefined}
-        onCellEdit={({ row, columnId, value }) => {
-          setRows((current) =>
-            current.map((item) => (item.id === row.id ? { ...item, [columnId]: value } : item)),
-          );
-          setLast(`${row.name} ${columnId}: ${String(value)}`);
+        onCellsChange={(edits) => {
+          for (const { row, columnId, value } of edits) {
+            setRows((current) =>
+              current.map((item) => (item.id === row.id ? { ...item, [columnId]: value } : item)),
+            );
+            setLast(`${row.name} ${columnId}: ${String(value)}`);
+          }
         }}
         size="sm"
       />

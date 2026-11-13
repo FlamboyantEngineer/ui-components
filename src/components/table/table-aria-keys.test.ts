@@ -12,6 +12,7 @@ describe('table collection keys', () => {
         isRowDisabled: () => false,
         disabledKeys: new Set(),
       },
+      drawnRows: [],
       expansion: { expandedKeys: new Set(), onExpandedChange() {} },
       disabledKeys: 'all',
     });
@@ -30,6 +31,7 @@ describe('table collection keys', () => {
         isRowDisabled: () => false,
         disabledKeys: new Set([1]),
       },
+      drawnRows: [],
       expansion: { expandedKeys: new Set([1, '1', group]), onExpandedChange },
       disabledKeys: [1],
     });

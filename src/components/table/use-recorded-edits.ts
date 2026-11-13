@@ -15,6 +15,7 @@ import {
   type TableEditHistory,
 } from './table-edit-history.js';
 import {
+  acceptsCellWrites,
   getCellValue,
   type TableCellValue,
   type TableColumn,
@@ -28,14 +29,12 @@ interface RecordedEditsOptions<T> {
   columns: readonly TableColumn<T>[];
   getChildRows?: TableChildRows<T>;
   isRowDisabled: (row: T) => boolean;
-  onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
   onCellsChange?: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   editHistory?: TableEditHistory | undefined;
 }
 
 /** The table's edit callbacks, recording what they report, and the root's undo and redo keys. */
 export interface RecordedEdits<T> {
-  onCellEdit: ((edit: TableCellEdit<T>) => void) | undefined;
   onCellsChange: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   rootProps: object;
 }
@@ -88,21 +87,21 @@ function useHistoryApplier<T extends TableRow>(options: RecordedEditsOptions<T>)
   );
   const latest = useLatest({ ...options, rowsById });
   return (changes, direction) => {
-    const { columns, isRowDisabled, onCellEdit, onCellsChange } = latest.current;
+    const { columns, isRowDisabled, onCellsChange } = latest.current;
     const isUndo = direction === 'undo';
     const applied: TableCellChange[] = [];
     const edits = changes.flatMap((change) => {
       const row = latest.current.rowsById.get(change.rowId);
       const column = columns.find((candidate) => candidate.id === change.columnId);
-      if (!row || !column?.allowsEditing || isRowDisabled(row)) return [];
+      // A bulk edit writes columns that only offer `bulkEdit`, so undoing it must write them too.
+      if (!row || !column || !acceptsCellWrites(column) || isRowDisabled(row)) return [];
       const expected = isUndo ? change.after : change.before;
       if (!isSameCellValue(getCellValue(row, column), expected)) return [];
       applied.push(change);
       return [{ row, columnId: change.columnId, value: isUndo ? change.before : change.after }];
     });
     if (edits.length === 0) return applied;
-    if (onCellsChange) onCellsChange(edits);
-    else for (const edit of edits) onCellEdit?.(edit);
+    onCellsChange?.(edits);
     return applied;
   };
 }
@@ -116,7 +115,7 @@ function useHistoryApplier<T extends TableRow>(options: RecordedEditsOptions<T>)
 export function useRecordedEdits<T extends TableRow>(
   options: RecordedEditsOptions<T>,
 ): RecordedEdits<T> {
-  const { editHistory, columns, onCellEdit, onCellsChange } = options;
+  const { editHistory, columns, onCellsChange } = options;
   const channel = editHistory ? readHistoryChannel(editHistory) : null;
   const apply = useHistoryApplier(options);
   const applyRef = useLatest(apply);
@@ -125,15 +124,9 @@ export function useRecordedEdits<T extends TableRow>(
     () => connect?.((changes, direction) => applyRef.current(changes, direction)),
     [connect, applyRef],
   );
-  if (!channel || !editHistory) return { onCellEdit, onCellsChange, rootProps: {} };
+  if (!channel || !editHistory) return { onCellsChange, rootProps: {} };
   const record = (edits: readonly TableCellEdit<T>[]) => channel.record(toChanges(edits, columns));
   return {
-    onCellEdit:
-      onCellEdit &&
-      ((edit) => {
-        record([edit]);
-        onCellEdit(edit);
-      }),
     onCellsChange:
       onCellsChange &&
       ((edits) => {

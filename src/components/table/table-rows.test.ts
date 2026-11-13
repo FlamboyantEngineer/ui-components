@@ -8,6 +8,7 @@ import {
   getCellValue,
   getRowText,
   getTextCollator,
+  indexRowPositions,
   isEffectiveTableMove,
   type TableCellValue,
   type TableColumn,
@@ -215,15 +216,32 @@ describe('table row helpers', () => {
   });
 
   it('UIC-TABLE-5.1 tells moves that change the order from those that do not', () => {
+    const positions = indexRowPositions(fruit);
     expect(
-      isEffectiveTableMove(fruit, { keys: ['banana'], targetKey: 'apple', position: 'after' }),
+      isEffectiveTableMove(positions, { keys: ['banana'], targetKey: 'apple', position: 'after' }),
     ).toBe(true);
     expect(
-      isEffectiveTableMove(fruit, { keys: ['banana'], targetKey: 'apple', position: 'before' }),
+      isEffectiveTableMove(positions, { keys: ['banana'], targetKey: 'apple', position: 'before' }),
     ).toBe(false);
     expect(
-      isEffectiveTableMove(fruit, { keys: ['apple'], targetKey: 'apple', position: 'after' }),
+      isEffectiveTableMove(positions, { keys: ['apple'], targetKey: 'apple', position: 'after' }),
     ).toBe(false);
+  });
+
+  it('UIC-TABLE-5.1 agrees with the order a move builds for every move of a few rows', () => {
+    const rows = ['a', 'b', 'c', 'd', 'e'].map((id) => ({ id }));
+    const positions = indexRowPositions(rows);
+    const subsets = [['a'], ['b', 'c'], ['a', 'c'], ['c', 'b'], ['d', 'e'], ['a', 'b', 'e'], ['x']];
+    for (const keys of subsets) {
+      for (const { id: targetKey } of rows) {
+        for (const position of ['before', 'after'] as const) {
+          const move = { keys, targetKey, position };
+          const next = applyTableMove(rows, move);
+          const changes = next.some((row, index) => row !== rows[index]);
+          expect(isEffectiveTableMove(positions, move), JSON.stringify(move)).toBe(changes);
+        }
+      }
+    }
   });
 });
 

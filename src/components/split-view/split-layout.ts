@@ -182,7 +182,8 @@ export function normalizeSplitSizes(
   if (given !== undefined && isShut(own, given))
     return fillCollapsed(next, { bounds, flexible, givers });
   const share = 100 - sumOtherShares(bounds, next, flexible);
-  const wanted = isShut(own, share) ? share : clamp(share, own.min, own.max);
+  // A share below zero is no collapse: the pane takes its smallest size and the others give it.
+  const wanted = share >= 0 && isShut(own, share) ? share : clamp(share, own.min, own.max);
   const left = redistribute(next, { bounds, givers, excess: wanted - share });
   const nearest = givers[0];
   if (left > 0 && nearest !== undefined) next[nearest] = Math.max(0, (next[nearest] ?? 0) - left);

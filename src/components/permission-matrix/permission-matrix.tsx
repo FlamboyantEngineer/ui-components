@@ -8,6 +8,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { Table, type TableProps } from '../table/table.js';
 import {
   applyPermissionChange,
@@ -142,6 +143,32 @@ function roleColumn(
   };
 }
 
+/** The grants and how a change reaches them. */
+interface GrantState {
+  grants: readonly PermissionMatrixGrant[];
+  setGrants: (grants: readonly PermissionMatrixGrant[]) => void;
+  onChange: PermissionMatrixProps['onChange'];
+}
+
+/**
+ * Applies a change to the latest grants and reports it. Its identity never changes, so cells that
+ * read it through the context draw again only when their own grant does.
+ */
+function useGrantChange({
+  grants,
+  setGrants,
+  onChange,
+}: GrantState): (change: PermissionMatrixChange) => void {
+  const latest = useLatest({ grants, setGrants, onChange });
+  // Made once, so its identity never changes; it reads the latest grants when called.
+  const [change] = useState(() => (next: PermissionMatrixChange) => {
+    const granted = applyPermissionChange(latest.current.grants, next);
+    latest.current.setGrants(granted);
+    latest.current.onChange?.(granted, next);
+  });
+  return change;
+}
+
 /**
  * A matrix of roles (columns) × permissions (rows) on a `Table`: a checkbox per cell, ticked while
  * the role holds the permission and drawn mixed while it only inherits it, permission groups under
@@ -178,14 +205,16 @@ export function PermissionMatrix({
   const committed = committedValue ?? initial;
   const committedIndex = useMemo(() => indexGrants(committed), [committed]);
   const grouping = useGrouping(groups, strings.emptyValue);
-  const context: PermissionCellContext = {
-    ...{ grants: grantIndex, inherited: inheritedIndex, committed: committedIndex },
-    onChange: (change) => {
-      const next = applyPermissionChange(grants, change);
-      setGrants(next);
-      onChange?.(next, change);
-    },
-  };
+  const change = useGrantChange({ grants, setGrants, onChange });
+  const context = useMemo<PermissionCellContext>(
+    () => ({
+      grants: grantIndex,
+      inherited: inheritedIndex,
+      committed: committedIndex,
+      onChange: change,
+    }),
+    [grantIndex, inheritedIndex, committedIndex, change],
+  );
   const columns = useMemo<TableColumn[]>(
     () => [
       {

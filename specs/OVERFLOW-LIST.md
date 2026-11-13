@@ -20,7 +20,7 @@ Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overfl
 
 ### UIC-OVERFLOW-LIST-1.3 - Measuring again
 
-The row shall solve again when its content box or a rendered item or indicator changes size, from the sizes it last measured for hidden items. A new item list (another length, or another entry at some position) renders every item once and measures it before the browser paints. The indicator stays mounted while the row measures, so focus on it and a menu it opened survive.
+The row shall solve again when its content box or a rendered item or indicator changes size, from the sizes it last measured for hidden items. A new item list (another length, or another entry at some position) renders every item once and measures it before the browser paints. Entries compare by `getKey` (OverflowList's own, or the hook's optional `getKey`), so a host that builds its items afresh on each render does not remount the hidden ones; an item that keeps its key keeps its measured size. The indicator stays mounted while the row measures, so focus on it and a menu it opened survive.
 
 Implementation: `src/utils/use-overflow-items.ts`
 Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`

@@ -74,7 +74,6 @@ function Sheet({ history: historyOptions, onBatch, ...props }: SheetProps) {
         columns={columns}
         cellSelection="range"
         editHistory={history}
-        onCellEdit={(edit) => apply([edit])}
         onCellsChange={apply}
         {...props}
       />
@@ -146,6 +145,33 @@ describe('Table edit history', { timeout: 15_000 }, () => {
     expect(cell('Apple', 'count')).toHaveTextContent('1');
     expect(cell('Pear', 'count')).toHaveTextContent('2');
     expect(button('Undo')).toBeDisabled();
+  });
+
+  it('UIC-TABLE-17.3 undoes a bulk edit of a column that offers only bulk editing', async () => {
+    const user = userEvent.setup();
+    render(
+      <Sheet
+        selectionMode="multiple"
+        columns={[
+          { id: 'name', header: 'Name', allowsEditing: true },
+          { id: 'count', header: 'Count', bulkEdit: { type: 'number' } },
+        ]}
+      />,
+    );
+    await editCell(user, cell('Apple', 'name'), 'Kiwi');
+    await user.click(
+      screen.getByRole('row', { name: 'Pear' }).querySelector('.ui-table__checkbox') as HTMLElement,
+    );
+    await user.click(button('Edit selected'));
+    const dialog = screen.getByRole('dialog', { name: 'Edit 1 row' });
+    await user.type(within(dialog).getByRole('textbox', { name: 'Count' }), '40');
+    await user.click(within(dialog).getByRole('button', { name: 'Apply' }));
+    expect(cell('Pear', 'count')).toHaveTextContent('40');
+    await user.click(button('Undo'));
+    expect(cell('Pear', 'count')).toHaveTextContent('2');
+    expect(cell('Kiwi', 'name')).toBeInTheDocument();
+    await user.click(button('Undo'));
+    expect(cell('Apple', 'name')).toBeInTheDocument();
   });
 
   it('UIC-TABLE-17.1 records no entry for a refused or unchanged edit', async () => {

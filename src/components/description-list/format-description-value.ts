@@ -72,12 +72,16 @@ function formatDate(
 
 function formatNumber(
   value: number | DescriptionRange<number>,
-  { locale, formatOptions }: DescriptionFormatInput,
+  { locale, formatOptions, joinRange }: DescriptionFormatInput,
 ) {
   const format = getNumberFormat(locale, formatOptions as Intl.NumberFormatOptions | undefined);
-  return typeof value === 'number'
-    ? format.format(value)
-    : format.formatRange(value.start, value.end);
+  if (typeof value === 'number') return format.format(value);
+  const { start, end } = value;
+  // `formatRange` throws for an end that is not finite; the ends are then joined as written.
+  if (!Number.isFinite(start) || !Number.isFinite(end)) {
+    return (joinRange ?? getDefaultStrings().valueRange)(format.format(start), format.format(end));
+  }
+  return format.formatRange(start, end);
 }
 
 /**

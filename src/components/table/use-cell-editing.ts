@@ -12,7 +12,9 @@ import {
 } from 'react';
 import type { Key } from '../../core/props.js';
 import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
+import { isAltGraphText } from '../../utils/is-alt-graph-text.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
+import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
@@ -61,7 +63,8 @@ interface CellEditingOptions<T> {
   columns: readonly TableColumn<T>[];
   /** The presented rows; an editor whose row leaves them closes. */
   rows: readonly T[];
-  onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /** Reports a committed edit, as a batch of one. */
+  onCellsChange?: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   /** The ids of disabled rows, whose cells never open an editor or report an edit. */
   disabledKeys?: Iterable<Key> | undefined;
   /** Spreadsheet mode: typing a character on an editable cell opens its editor with it. */
@@ -75,10 +78,13 @@ interface Refocus {
 
 const editKeys = new Set(['F2', 'Enter']);
 
-/** Whether a key press types a character, other than Space, which keeps selecting rows. */
+/**
+ * Whether a key press types a character, other than Space, which keeps selecting rows: a plain or
+ * Shift press, or AltGr typing, which Windows reports with Control and Alt held.
+ */
 function isTypedCharacter(event: KeyboardEvent<HTMLElement>): boolean {
-  const isPlain = !event.ctrlKey && !event.metaKey && !event.altKey;
-  return isPlain && event.key.length === 1 && event.key !== ' ';
+  if (event.key.length !== 1 || event.key === ' ') return false;
+  return isAltGraphText(event.nativeEvent) || (!event.ctrlKey && !event.metaKey && !event.altKey);
 }
 
 /** The editable body cell of the table whose root is `root` that holds `target`. */
@@ -193,16 +199,22 @@ function useIsStillEditable<T extends TableRow>(
   );
 }
 
+/** Whether a target is a control inside a cell, such as an expand button or a link. */
+function isInCellControl(target: EventTarget): boolean {
+  const cell = isElement(target) ? target.closest('.ui-table__cell') : null;
+  return cell !== null && isInteractiveTarget(target, cell);
+}
+
 /**
  * Cell editing: one cell at a time of an enabled row opens an editor from F2, Enter or a double
- * click, and a commit reports the new value through `onCellEdit`. An editor whose row becomes
- * disabled or leaves the presented rows, or whose column stops allowing edits, closes without
- * reporting. The table never changes its rows itself.
+ * click, and a commit reports the new value through `onCellsChange`, as a batch of one. An editor
+ * whose row becomes disabled or leaves the presented rows, or whose column stops allowing edits,
+ * closes without reporting. The table never changes its rows itself.
  */
 export function useCellEditing<T extends TableRow>({
   columns,
   rows,
-  onCellEdit,
+  onCellsChange,
   disabledKeys,
   typeToEdit,
 }: CellEditingOptions<T>): CellEditing<T> {
@@ -216,7 +228,7 @@ export function useCellEditing<T extends TableRow>({
   const open = useRef<TableEditingCell | null>(null);
   const root = useRef<HTMLElement | null>(null);
   const refocus = useRef<Refocus | null>(null);
-  const latest = useLatest(onCellEdit);
+  const latest = useLatest(onCellsChange);
 
   // A row disabled or gone, or a column no longer editable, closes the editor in the same render,
   // discarding the draft; the commit then forgets the open cell and returns focus to it.
@@ -236,24 +248,22 @@ export function useCellEditing<T extends TableRow>({
     setEditing(null);
     return cell !== null;
   }, []);
+  // A commit restores focus and may move it; a release, such as a blur, leaves focus where it went.
+  const finish = useCallback(
+    (edit: TableCellEdit<T>, restoreFocus: boolean, move?: CellMove) => {
+      if (end(restoreFocus, move) && !disabled.current.has(toCollectionKey(edit.row.id)))
+        latest.current?.([edit]);
+    },
+    [end, latest, disabled],
+  );
   const commit = useCallback(
-    (edit: TableCellEdit<T>, move?: CellMove) => {
-      if (end(true, move) && !disabled.current.has(toCollectionKey(edit.row.id))) {
-        latest.current?.(edit);
-      }
-    },
-    [end, latest, disabled],
+    (edit: TableCellEdit<T>, move?: CellMove) => finish(edit, true, move),
+    [finish],
   );
-  const release = useCallback(
-    (edit: TableCellEdit<T>) => {
-      if (end(false) && !disabled.current.has(toCollectionKey(edit.row.id))) latest.current?.(edit);
-    },
-    [end, latest, disabled],
-  );
+  const release = useCallback((edit: TableCellEdit<T>) => finish(edit, false), [finish]);
   const cancel = useCallback(() => {
     end(true);
   }, [end]);
-
   const dismiss = useCallback(() => {
     end(false);
   }, [end]);
@@ -284,7 +294,10 @@ export function useCellEditing<T extends TableRow>({
         if (editKeys.has(event.key)) start(event);
         else if (typeToEdit && isTypedCharacter(event)) start(event, event.key);
       },
-      onDoubleClickCapture: (event) => start(event),
+      // A double click on a control inside the cell, such as an expand button or a link, is the control's.
+      onDoubleClickCapture: (event) => {
+        if (!isInCellControl(event.target)) start(event);
+      },
     },
   };
 }

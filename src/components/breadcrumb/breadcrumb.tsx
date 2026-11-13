@@ -18,6 +18,7 @@ import {
   Link as AriaLink,
   useLocale,
 } from '../../primitives/index.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -123,6 +124,8 @@ function resolveFocusTarget(key: string, { index, count, rtl }: FocusPosition) {
 
 /** Arrow keys, Home and End move focus between the crumbs other than the current one. */
 function moveFocus(event: KeyboardEvent<HTMLElement>, rtl: boolean) {
+  // Alt+ArrowLeft and the like are the browser's, such as going back.
+  if (!isFreeEditKey(event.nativeEvent)) return;
   const crumbs = Array.from(
     event.currentTarget.querySelectorAll<HTMLElement>(`.${hooks.slotClass('link')}`),
   ).filter((crumb) => !crumb.hasAttribute('data-current') && !crumb.hasAttribute('data-disabled'));

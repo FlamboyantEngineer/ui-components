@@ -13,6 +13,7 @@ import type { BaseProps, ContainerProps, ControlSize, Orientation } from '../../
 import { useLocale } from '../../primitives/index.js';
 import { clamp } from '../../utils/clamp.js';
 import { measureScale } from '../../utils/element-scale.js';
+import { isFreeEditKey } from '../../utils/is-free-edit-key.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { Portal } from '../portal/portal.js';
 import { resolveResizeKeyboardValue } from './resize-keyboard.js';
@@ -61,14 +62,14 @@ export interface ResizeHandleProps
   sizedPane?: ResizeHandleSizedPane | undefined;
   /** Each new value from a drag or a key. */
   onChange?: ((value: number) => void) | undefined;
-  /** The value after a drag ends or a key step. */
+  /** The value after a drag ends or a key step, when it differs from the value before. */
   onChangeEnd?: ((value: number) => void) | undefined;
   /** Called when a pointer drag starts and ends. */
   onResizingChange?: ((isResizing: boolean) => void) | undefined;
   /**
    * A drag abandoned without an end: the handle unmounted, became disabled, or its `resetKey`,
-   * orientation, sized pane or writing direction changed. A preview of the drag's values held
-   * outside the handle should be dropped.
+   * orientation, sized pane or writing direction changed, or the drag ended at the value it began
+   * with. A preview of the drag's values held outside the handle should be dropped.
    */
   onChangeCancel?: (() => void) | undefined;
   /** Ignore pointer and keyboard input and leave the tab order. */
@@ -181,15 +182,21 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
         return;
       }
       move(event, active);
-      onChangeEnd?.(latest.current);
+      // A press that never moved, or a drag back to where it began, changed nothing to report;
+      // its preview of the values it passed through is dropped as for an abandoned drag.
+      if (latest.current === active.startValue) onChangeCancel?.();
+      else onChangeEnd?.(latest.current);
     },
   });
   const step = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.defaultPrevented) return;
+    // Shift is the fine step; Alt, Control and Meta chords are the browser's and the system's.
+    if (!isFreeEditKey(event.nativeEvent)) return;
     const next = resolveResizeKeyboardValue(event, options);
     if (next === null) return;
     event.preventDefault();
-    if (next !== value) onChange?.(next);
+    // A key at the limit changes nothing, so it reports nothing.
+    if (next === value) return;
+    onChange?.(next);
     onChangeEnd?.(next);
   };
   return { isResizing, pointer, step };

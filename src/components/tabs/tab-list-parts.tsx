@@ -31,6 +31,7 @@ import {
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import type { TabListProps } from './tab-list.js';
+import { useRemovedTabSuccessor } from './tab-selection.js';
 
 type Part = { id: string; key: Key; kind: 'tab' | 'action'; content?: ReactNode };
 
@@ -190,9 +191,13 @@ export function TabListCollection({ actions, ...props }: TabListProps & { action
   );
 }
 
-/** Publish committed collection state before the overlays read it in their layout effects. */
+/**
+ * Publish committed collection state before the overlays read it in their layout effects, and
+ * select the tab that follows a removed selected one.
+ */
 export function TabListStateSync({ state }: { state: TabListModel }) {
   const { stateRef } = useContext(TabsSharedContext);
+  useRemovedTabSuccessor(state);
   useLayoutEffect(() => {
     stateRef.current = state;
   });

@@ -173,6 +173,12 @@ describe('filter model', () => {
     expect(complete(number, 'between', { min: 1, max: 4 })).toBe(true);
     expect(complete(date, 'after', '')).toBe(false);
     expect(complete(date, 'after', '2024-01-02')).toBe(true);
+    expect(complete(date, 'equals', 'next week')).toBe(false);
+    expect(complete(date, 'equals', '2024-02-30')).toBe(false);
+    expect(complete(number, 'between', { min: 4, max: 1 })).toBe(false);
+    expect(complete(number, 'between', { min: 4, max: 4 })).toBe(true);
+    expect(complete(date, 'between', { start: '2024-02-02', end: 'later' })).toBe(false);
+    expect(complete(date, 'between', { start: '2024-02-02', end: '2024-01-02' })).toBe(false);
     expect(complete(date, 'between', null)).toBe(false);
     expect(complete(date, 'between', { start: '2024-01-02', end: '2024-02-02' })).toBe(true);
     expect(complete(choice, 'any-of', [])).toBe(false);

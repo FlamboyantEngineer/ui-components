@@ -26,8 +26,17 @@ import { useResizeObserver } from './use-resize-observer.js';
 export type { OverflowCollapseFrom, OverflowCountInput } from './overflow-measure.js';
 
 export interface OverflowItemsOptions<T> {
-  /** Every item, in order. A new list (other length or other entries) is measured afresh. */
+  /**
+   * Every item, in order. A new list (other length or other entries) is measured afresh; with
+   * `getKey`, entries compare by key, so a list rebuilt on each render with the same items keeps its
+   * measurement.
+   */
   items: readonly T[];
+  /**
+   * An item's identity, for a caller that builds its items afresh on each render. An item that keeps
+   * its key keeps its place in the measurement; give a new key to an item whose size changes.
+   */
+  getKey?: ((item: T) => unknown) | undefined;
   /** Which end hidden items leave from. Defaults to `end`. */
   collapseFrom?: OverflowCollapseFrom | undefined;
   /**
@@ -81,10 +90,34 @@ interface RenderOptions {
 const maxCorrections = 4;
 const noItems: readonly never[] = Object.freeze([]);
 
-function isSameList<T>(left: readonly T[] | null, right: readonly T[]): boolean {
+function isSameList<T>(
+  left: readonly T[] | null,
+  right: readonly T[],
+  getKey: ((item: T) => unknown) | undefined,
+): boolean {
   if (left === right) return true;
   if (!left || left.length !== right.length) return false;
-  return left.every((item, index) => Object.is(item, right[index]));
+  return left.every((item, index) => {
+    const other = right[index] as T;
+    return getKey ? Object.is(getKey(item), getKey(other)) : Object.is(item, other);
+  });
+}
+
+/** Whether the solved state answers other items, another end, other priorities or a remeasure. */
+function isStaleState<T>(
+  state: OverflowState<T>,
+  current: Omit<OverflowState<T>, 'order' | 'visibleCount'> & {
+    items: readonly T[];
+    getKey: ((item: T) => unknown) | undefined;
+    orderKey: string;
+  },
+): boolean {
+  return (
+    !isSameList(state.items, current.items, current.getKey) ||
+    state.collapseFrom !== current.collapseFrom ||
+    state.order !== current.orderKey ||
+    state.generation !== current.generation
+  );
 }
 
 function isSameRoom(container: HTMLElement, known: MeasureCache['room']): boolean {
@@ -238,6 +271,7 @@ export function useOverflowItems<T>({
   items,
   collapseFrom = 'end',
   getPriority,
+  getKey,
   minVisible = 0,
 }: OverflowItemsOptions<T>): OverflowItems<T> {
   const { elements, refs } = useOverflowElements();
@@ -254,11 +288,7 @@ export function useOverflowItems<T>({
   useOverflowObserver(elements, cache, remeasure);
   useLateChildren(elements, cache, remeasure);
 
-  const isStale =
-    !isSameList(state.items, items) ||
-    state.collapseFrom !== collapseFrom ||
-    state.order !== orderKey ||
-    state.generation !== generation;
+  const isStale = isStaleState(state, { items, getKey, collapseFrom, orderKey, generation });
   const rendered = useMemo(() => {
     if (!isStale) return splitItems(items, state.visibleCount, order);
     // A measuring commit renders every item, keeping the indicator it had so it stays mounted.

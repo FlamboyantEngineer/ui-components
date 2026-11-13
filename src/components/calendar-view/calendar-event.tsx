@@ -233,9 +233,9 @@ function EventButton({
         eventMenu.targetProps.onKeyDown(key);
         drag.onKey(key);
       }}
-      onPress={() => {
+      onPress={(press) => {
         // The release of a drag is not a click.
-        if (drag.consumeClick()) return;
+        if (drag.consumeClick(press.pointerType)) return;
         context.onEventAction?.(event.id);
         if (context.menu.isEditable(event)) context.menu.edit(event);
       }}

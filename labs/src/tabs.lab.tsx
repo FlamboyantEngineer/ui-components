@@ -131,11 +131,7 @@ function EditableTabs() {
       <Tabs selectedKey={selected} onSelectionChange={setSelected}>
         <TabList
           aria-label="Notes"
-          onRemove={(keys) => {
-            const remaining = notes.filter((note) => !keys.has(note));
-            setNotes(remaining);
-            if (keys.has(selected) && remaining[0]) setSelected(remaining[0]);
-          }}
+          onRemove={(keys) => setNotes(notes.filter((note) => !keys.has(note)))}
           onAdd={() => {
             const name = `Note ${notes.length + 1}`;
             setNotes([...notes, name]);
@@ -267,7 +263,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Removable and added tabs"
-      description="Press a tab's close mark, or Delete on a focused tab, to remove it; the add button appends one."
+      description="Press a tab's close mark, or Delete on a focused tab, to remove it; the add button appends one. The host only removes the tab: removing the selected one selects the tab after it, else the one before. Alt, Control, Meta or Shift with Delete or Backspace removes nothing."
     >
       <EditableTabs />
     </LabSection>

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useContentWidths } from './use-content-widths.js';
 
@@ -41,6 +41,31 @@ function stubRects(scale: number) {
 
 afterEach(() => vi.restoreAllMocks());
 
+function WideMeasurement({ focused }: { focused: boolean }) {
+  const { ref, widths } = useContentWidths([
+    { id: 'name', width: 'content' },
+    { id: 'note', width: '1fr' },
+  ]);
+  return (
+    <div ref={ref}>
+      <table className="ui-table__grid">
+        <tbody>
+          <tr data-focused={focused || undefined}>
+            <td data-column="name">Pear</td>
+            <td data-column="note">Ripe in autumn</td>
+          </tr>
+        </tbody>
+      </table>
+      <output role="status" aria-label="Content measurements">
+        {JSON.stringify(widths)}
+      </output>
+    </div>
+  );
+}
+
+const nextFrame = () =>
+  act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+
 describe('content column measurements', () => {
   it('UIC-TABLE-4.5 measures committed headers and updates after cell text changes without retaining clones', async () => {
     stubRects(1);
@@ -52,6 +77,20 @@ describe('content column measurements', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('{"name":32}'));
     expect(document.querySelectorAll('.ui-table__grid')).toHaveLength(1);
     expect(document.querySelectorAll('#measured-table')).toHaveLength(1);
+  });
+
+  it('UIC-TABLE-4.5 copies only measured cells and measures nothing again for a re-render or a focus move', async () => {
+    stubRects(1);
+    const clone = vi.spyOn(Node.prototype, 'cloneNode');
+    const { rerender } = render(<WideMeasurement focused={false} />);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('{"name":32}'));
+    await nextFrame();
+    // The name cell's text alone is copied, not the note's.
+    expect(clone).toHaveBeenCalledTimes(1);
+    rerender(<WideMeasurement focused />);
+    rerender(<WideMeasurement focused={false} />);
+    await nextFrame();
+    expect(clone).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-TABLE-4.5 measures layout pixels once under an ancestor scale or zoom', async () => {

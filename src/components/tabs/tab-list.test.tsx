@@ -274,6 +274,17 @@ describe('TabList', () => {
     expect(onRemove).toHaveBeenLastCalledWith(new Set(['apple']));
     await userEvent.keyboard('{ArrowRight}{Backspace}');
     expect(onRemove).toHaveBeenLastCalledWith(new Set(['banana']));
+    // Chords belong to the browser and the system: none of them removes a tab.
+    onRemove.mockClear();
+    for (const chord of [
+      '{Alt>}{Backspace}{/Alt}',
+      '{Meta>}{Backspace}{/Meta}',
+      '{Control>}{Delete}{/Control}',
+      '{Shift>}{Delete}{/Shift}',
+    ]) {
+      await userEvent.keyboard(chord);
+    }
+    expect(onRemove).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Add tab' }));
     expect(onAdd).toHaveBeenCalledTimes(1);
@@ -339,6 +350,63 @@ describe('TabList', () => {
     await userEvent.keyboard('{Delete}');
     expect(shownTabs()).toEqual(['Banana', 'Cherry', 'Fruit 4']);
   });
+
+  it.each(['uncontrolled', 'controlled'] as const)(
+    'UIC-TABS-2.8 selects the tab after a removed selected one (%s)',
+    async (mode) => {
+      const user = userEvent.setup();
+      const onSelectionChange = vi.fn();
+      function Removable() {
+        const [names, setNames] = useState(['Alpha', 'Bravo', 'Charlie', 'Delta']);
+        const [selected, setSelected] = useState<Key>('Charlie');
+        const selection =
+          mode === 'controlled'
+            ? {
+                selectedKey: selected,
+                onSelectionChange: (key: Key) => {
+                  onSelectionChange(key);
+                  setSelected(key);
+                },
+              }
+            : { defaultSelectedKey: 'Charlie', onSelectionChange };
+        return (
+          <Tabs {...selection}>
+            <TabList
+              aria-label="Letters"
+              onRemove={(keys) => setNames((current) => current.filter((name) => !keys.has(name)))}
+            >
+              {names.map((name) => (
+                <Tab key={name} id={name}>
+                  {name}
+                </Tab>
+              ))}
+            </TabList>
+            {names.map((name) => (
+              <TabPanel key={name} id={name}>
+                About {name}
+              </TabPanel>
+            ))}
+          </Tabs>
+        );
+      }
+      render(<Removable />);
+      act(() => screen.getByRole('tab', { name: 'Charlie' }).focus());
+      await user.keyboard('{Delete}');
+      await waitFor(() =>
+        expect(screen.getByRole('tab', { name: 'Delta' })).toHaveAttribute('aria-selected', 'true'),
+      );
+      expect(screen.getByRole('tabpanel')).toHaveTextContent('About Delta');
+      expect(onSelectionChange).toHaveBeenLastCalledWith('Delta');
+      // The close mark of the last tab, now selected, selects the one before it.
+      await user.click(
+        screen.getByRole('tab', { name: 'Delta' }).querySelector('.ui-tabs__remove') as HTMLElement,
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('tab', { name: 'Bravo' })).toHaveAttribute('aria-selected', 'true'),
+      );
+      expect(screen.getByRole('tabpanel')).toHaveTextContent('About Bravo');
+    },
+  );
 
   it('UIC-TABS-1.6 renders the family through caller elements with their states', () => {
     render(

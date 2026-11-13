@@ -178,8 +178,8 @@ interface EventDragOptions {
  * One drag of an event, by pointer and by the arrow keys. A press becomes a drag once the pointer
  * travels `dragThreshold` pixels; it then previews where the event would land and hands the host
  * the change on release. Escape, a cancelled pointer, or a change of the event or of what the host
- * allows abandons it. `consumeClick` tells, once, whether the press that just ended was a drag, so
- * its release does not also count as a click.
+ * allows abandons it. `consumeClick` tells, once, whether the pointer press that just ended was a
+ * drag, so its release does not also count as a click; a key or virtual press is always a click.
  */
 export function useEventDrag(options: EventDragOptions) {
   const { placed, gesture, placement, context, isDisabled, ownerRef } = options;
@@ -188,7 +188,14 @@ export function useEventDrag(options: EventDragOptions) {
   const [cancelCount, setCancelCount] = useState(0);
   const [isDragging, setDragging] = useState(false);
   const dragged = useRef(false);
-  const resetKey = useMemo(() => ({ event, cancelCount }), [event, cancelCount]);
+  // What a drag depends on, so a host that re-renders with an equal copy of the event keeps it.
+  const resetKey = JSON.stringify([
+    event.id,
+    event.start,
+    event.end ?? null,
+    event.isReadOnly ?? false,
+    cancelCount,
+  ]);
   const change = (shift: EventShift) =>
     changeEvent(
       placed,
@@ -231,6 +238,8 @@ export function useEventDrag(options: EventDragOptions) {
       if (next) context.commit(next, event, null);
     },
     onCancel: () => {
+      // An abandoned drag has no release, so its flag would otherwise wait for the next press.
+      dragged.current = false;
       setDragging(false);
       context.preview(null);
     },
@@ -239,10 +248,11 @@ export function useEventDrag(options: EventDragOptions) {
   return {
     pointer,
     isDragging,
-    consumeClick() {
+    consumeClick(pointerType: string) {
       const wasDrag = dragged.current;
       dragged.current = false;
-      return wasDrag;
+      // Only a pointer's release ends a drag; a key or a screen reader's press is always a click.
+      return wasDrag && pointerType !== 'keyboard' && pointerType !== 'virtual';
     },
     /** Steps the event by an arrow key; whether the key was one. */
     onKey(key: KeyboardEvent<HTMLElement>) {

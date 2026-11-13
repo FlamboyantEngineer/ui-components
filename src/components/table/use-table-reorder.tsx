@@ -24,7 +24,12 @@ import {
 import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
 import { isWithinReorderGroup } from './table-reorder-groups.js';
-import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
+import {
+  indexRowPositions,
+  isEffectiveTableMove,
+  type TableMove,
+  type TableRow,
+} from './table-rows.js';
 
 /** Opt-in row reordering: which rows move and what to do with a move. */
 export interface TableReorderOptions<T> {
@@ -66,8 +71,26 @@ interface ReorderSnapshot<T> {
   groupKeys?: ReadonlyMap<Key, Key>;
 }
 
-interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
+/** The rows indexed once per render, so checking each drop position reads no row list. */
+interface RowIndex<T> {
+  /** Each row's `id` by its collection key. */
   keys: ReadonlyMap<string, Key>;
+  /** Each row by its collection key. */
+  rows: ReadonlyMap<string, T>;
+  /** Each row's position, by `id`. */
+  positions: ReadonlyMap<Key, number>;
+}
+
+interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
+  index: RowIndex<T>;
+}
+
+function indexRows<T extends TableRow>(rows: readonly T[]): RowIndex<T> {
+  return {
+    keys: createKeyIndex(rows.map((row) => row.id)),
+    rows: new Map(rows.map((row) => [toCollectionKey(row.id), row])),
+    positions: indexRowPositions(rows),
+  };
 }
 
 const moveKeys: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
@@ -87,8 +110,11 @@ function canMoveRow<T>(reorder: TableReorderOptions<T> | undefined, row: T): boo
   return reorder?.canMove?.(row) ?? true;
 }
 
-function findMovableRow<T extends TableRow>(snapshot: ReorderSnapshot<T>, key: Key): T | undefined {
-  const row = snapshot.rows.find((candidate) => toCollectionKey(candidate.id) === key);
+function findMovableRow<T extends TableRow>(
+  snapshot: IndexedReorderSnapshot<T>,
+  key: Key,
+): T | undefined {
+  const row = snapshot.index.rows.get(String(key));
   return row && canMoveRow(snapshot.reorder, row) && !snapshot.isRowDisabled(row) ? row : undefined;
 }
 
@@ -102,7 +128,7 @@ function resolveDrop<T extends TableRow>(
   keys: Iterable<Key>,
 ): TableMove | null {
   if (target.type !== 'item' || target.dropPosition === 'on') return null;
-  const index = snapshot.keys;
+  const index = snapshot.index.keys;
   const targetKey = index.get(String(target.key));
   if (targetKey === undefined) return null;
   const moved = [...keys].flatMap((key) => {
@@ -111,18 +137,20 @@ function resolveDrop<T extends TableRow>(
   });
   if (moved.length === 0) return null;
   const move = { keys: moved, targetKey, position: target.dropPosition };
-  return isWithinReorderGroup(snapshot.groupKeys, move) && isEffectiveTableMove(snapshot.rows, move)
+  return isWithinReorderGroup(snapshot.groupKeys, move) &&
+    isEffectiveTableMove(snapshot.index.positions, move)
     ? move
     : null;
 }
 
 /** The move of `row` one step up or down, or null at either end. */
 function resolveStep<T extends TableRow>(
-  snapshot: ReorderSnapshot<T>,
+  snapshot: IndexedReorderSnapshot<T>,
   row: T,
   step: -1 | 1,
 ): TableMove | null {
-  const target = snapshot.rows[snapshot.rows.indexOf(row) + step];
+  const position = snapshot.index.positions.get(row.id) ?? -2;
+  const target = snapshot.rows[position + step];
   if (!target) return null;
   const move: TableMove = {
     keys: [row.id],
@@ -157,11 +185,8 @@ function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
  */
 export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>): TableReorder<T> {
   const { reorder, isRowDisabled } = snapshot;
-  const keys = useMemo(
-    () => (reorder ? createKeyIndex(snapshot.rows.map((row) => row.id)) : new Map()),
-    [snapshot.rows, reorder],
-  );
-  const indexed = { ...snapshot, keys };
+  const index = useMemo(() => indexRows(snapshot.rows), [snapshot.rows]);
+  const indexed = { ...snapshot, index };
   const dragAndDrop = useReorderDragAndDrop<TableMove>({
     resolveMove: (target, keys) => resolveDrop(indexed, target, keys),
     onMove: (move) => reorder?.onMove(move),
@@ -179,9 +204,9 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
     const step = moveKeys[event.key];
     const key = step && isMoveChord(event) ? findRowKey(event.target, event.currentTarget) : null;
-    const row = key === null ? undefined : findMovableRow(snapshot, key);
+    const row = key === null ? undefined : findMovableRow(indexed, key);
     if (!reorder || !row || !step) return;
-    const move = resolveStep(snapshot, row, step);
+    const move = resolveStep(indexed, row, step);
     if (move) reorder.onMove(move);
     event.preventDefault();
     event.stopPropagation();
@@ -189,7 +214,7 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
 
   const onDragStartCapture = (event: DragEvent<HTMLElement>) => {
     const key = findRowKey(event.target, event.currentTarget);
-    if (key !== null && !findMovableRow(snapshot, key)) event.preventDefault();
+    if (key !== null && !findMovableRow(indexed, key)) event.preventDefault();
   };
 
   const isHandleTrigger = reorder?.dragTrigger === 'handle';

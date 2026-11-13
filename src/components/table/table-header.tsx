@@ -1,18 +1,19 @@
 'use client';
 
-import { type ReactNode, useContext, useLayoutEffect, useRef } from 'react';
+import { type ReactNode, useCallback, useContext, useLayoutEffect, useRef } from 'react';
 import { CheckGlyph, MinusGlyph } from '../../core/glyphs.js';
 import type { SortDescriptor } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Checkbox as AriaCheckbox,
   Column,
-  TableColumnResizeStateContext,
   TableHeader as AriaTableHeader,
   TableStateContext,
 } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { readOwn } from '../../utils/read-own.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { Icon } from '../icon/icon.js';
 import { useScrollRegionHeaderRef } from '../scroll-region/scroll-region.js';
 import { getColumnSizing, resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';
@@ -82,33 +83,10 @@ function collectPins<T>(structure: TableStructure<T>): Record<string, TableColum
 }
 
 /**
- * Reports a virtualized table's pinned offsets from React Aria's column widths. It renders inside the header, so it
- * follows every layout React Aria draws, live during a resize.
- */
-function PinnedOffsetsProbe({
-  pins,
-  onMeasure,
-}: {
-  pins: Readonly<Record<string, TableColumnPin | undefined>>;
-  onMeasure: (offsets: TablePinOffsets) => void;
-}) {
-  const state = useContext(TableStateContext);
-  const layout = useContext(TableColumnResizeStateContext);
-  const offsets = computePinOffsets(
-    (state?.collection.columns ?? []).map((column) => ({
-      key: String(fromCollectionKey(column.key)),
-      width: layout?.getColumnWidth(column.key) ?? 0,
-      pin: readOwn(pins, String(fromCollectionKey(column.key))),
-    })),
-  );
-  useLayoutEffect(() => onMeasure(offsets));
-  return null;
-}
-
-/**
  * Reports the pinned offsets of a static table, whose columns are CSS grid tracks: it measures the
- * drawn header cells, on every render and whenever the column row resizes, so offsets follow the
- * container's CSS sizing as it changes.
+ * drawn header cells after every render and whenever one of them resizes, so offsets follow the
+ * container's CSS sizing as it changes. Its observer is rebuilt only when the columns or their pins
+ * change, not on every render.
  */
 function GridPinnedOffsetsProbe({
   pins,
@@ -119,31 +97,37 @@ function GridPinnedOffsetsProbe({
 }) {
   const state = useContext(TableStateContext);
   const ref = useRef<HTMLSpanElement>(null);
-  const keys = (state?.collection.columns ?? []).map((column) =>
-    String(fromCollectionKey(column.key)),
+  const keys = useShallowStable(
+    (state?.collection.columns ?? []).map((column) => String(fromCollectionKey(column.key))),
   );
+  const stablePins = useShallowStable(pins);
+  const report = useLatest(onMeasure);
+  const measure = useCallback(() => {
+    const row = ref.current?.closest('tr');
+    if (!row) return null;
+    const cells = [...row.cells];
+    report.current(
+      computePinOffsets(
+        keys.map((key, index) => ({
+          key,
+          width: cells[index]?.offsetWidth ?? 0,
+          pin: readOwn(stablePins, key),
+        })),
+      ),
+    );
+    return row;
+  }, [keys, stablePins, report]);
+  useLayoutEffect(() => {
+    measure();
+  });
   useLayoutEffect(() => {
     const row = ref.current?.closest('tr');
-    if (!row) return undefined;
-    const measure = () => {
-      const cells = [...row.cells];
-      onMeasure(
-        computePinOffsets(
-          keys.map((key, index) => ({
-            key,
-            width: cells[index]?.offsetWidth ?? 0,
-            pin: readOwn(pins, key),
-          })),
-        ),
-      );
-    };
-    measure();
-    const view = row.ownerDocument.defaultView;
-    if (!view?.ResizeObserver) return undefined;
+    const view = row?.ownerDocument.defaultView;
+    if (!row || !view?.ResizeObserver) return undefined;
     const observer = new view.ResizeObserver(measure);
     for (const cell of row.cells) observer.observe(cell);
     return () => observer.disconnect();
-  });
+  }, [measure]);
   return <span ref={ref} hidden />;
 }
 
@@ -235,9 +219,9 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
   const selectionPin = getColumnPin(structure, 'selection');
   const actionsPin = getColumnPin(structure, 'actions');
   const pins = collectPins(structure);
-  const Probe = structure.isVirtualized ? PinnedOffsetsProbe : GridPinnedOffsetsProbe;
+  // A virtualized table pins nothing (`getColumnPin`), so only a static table has a probe.
   const probe = Object.values(pins).some(Boolean) ? (
-    <Probe pins={pins} onMeasure={model.onPinOffsets} />
+    <GridPinnedOffsetsProbe pins={pins} onMeasure={model.onPinOffsets} />
   ) : null;
   return (
     <AriaTableHeader

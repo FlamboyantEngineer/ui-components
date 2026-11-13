@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { type CSSProperties, memo } from 'react';
 import type { GlyphComponent } from '../../core/glyph-types.js';
 import { CheckGlyph } from '../../core/glyphs.js';
 import type { Tone } from '../../core/props.js';
@@ -14,7 +14,10 @@ import { RelationCount } from './relation-matrix-header.js';
 import { relationMatrixHooks as hooks } from './relation-matrix-hooks.js';
 import type { RelationMatrixIndex, RelationMatrixRelation } from './relation-matrix-model.js';
 
-/** What every row of a matrix shares. */
+/**
+ * What every row of a matrix shares. It keeps its identity while focus moves and while a scroll
+ * keeps the same columns, so only the rows whose own props change are drawn again.
+ */
 export interface RelationMatrixRowContext {
   columns: readonly RelationMatrixItem[];
   /** The rendered column indices. */
@@ -22,8 +25,6 @@ export interface RelationMatrixRowContext {
   tracks: MatrixColumnTracks;
   index: RelationMatrixIndex;
   kinds: ReadonlyMap<string, RelationMatrixKind>;
-  focus: MatrixPosition;
-  isFocusWithin: boolean;
   /** Whether a press on a body cell is an action. */
   isActionable: boolean;
   onCellPress: (position: MatrixPosition) => void;
@@ -34,6 +35,10 @@ export interface RelationMatrixRowContext {
 interface RelationMatrixRowProps {
   row: RelationMatrixItem;
   rowIndex: number;
+  /** The focused column of this row (`-1` for its header), or null when focus is in another row. */
+  focusedColumn: number | null;
+  /** Whether focus is within the grid on this row. */
+  isCurrent: boolean;
   context: RelationMatrixRowContext;
 }
 
@@ -41,7 +46,9 @@ interface CellProps {
   relation: RelationMatrixRelation | undefined;
   /** How a mark without a kind label reads: the provider's `related` text, looked up per row. */
   relatedLabel: string;
-  position: MatrixPosition;
+  row: number;
+  column: number;
+  isFocused: boolean;
   gridColumn: number | undefined;
   context: RelationMatrixRowContext;
 }
@@ -56,23 +63,30 @@ function RelationMark({ label, glyph }: { label: string; glyph: GlyphComponent |
   );
 }
 
-function RelationMatrixCell({ relation, relatedLabel, position, gridColumn, context }: CellProps) {
+const RelationMatrixCell = memo(function RelationMatrixCell({
+  relation,
+  relatedLabel,
+  row,
+  column,
+  isFocused,
+  gridColumn,
+  context,
+}: CellProps) {
   const kind = relation?.kind === undefined ? undefined : context.kinds.get(relation.kind);
-  const isFocused = context.focus.row === position.row && context.focus.column === position.column;
   const tone: Tone | undefined = relation ? (kind?.tone ?? 'neutral') : undefined;
   return (
     <div
       role="gridcell"
-      aria-colindex={position.column + 2}
+      aria-colindex={column + 2}
       tabIndex={isFocused ? 0 : -1}
       {...hooks.slot('cell', { related: Boolean(relation), kind: relation?.kind, tone })}
       style={{ gridColumn }}
-      onClick={context.isActionable ? () => context.onCellPress(position) : undefined}
+      onClick={context.isActionable ? () => context.onCellPress({ row, column }) : undefined}
     >
       {relation ? <RelationMark label={kind?.label ?? relatedLabel} glyph={kind?.glyph} /> : null}
     </div>
   );
-}
+});
 
 function rowStyle(context: RelationMatrixRowContext, rowIndex: number): CSSProperties {
   const style: CSSProperties = {
@@ -91,13 +105,19 @@ function rowStyle(context: RelationMatrixRowContext, rowIndex: number): CSSPrope
 
 /**
  * One row of the matrix: its row header (label and relation count), pinned to the start, then a
- * cell per rendered column, marked when its row and column items are related.
+ * cell per rendered column, marked when its row and column items are related. It draws again only
+ * when its own props change, such as focus entering or leaving it.
  */
-export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowProps) {
-  const { columns, indices, tracks, index, focus, isFocusWithin } = context;
+export const RelationMatrixRow = memo(function RelationMatrixRow({
+  row,
+  rowIndex,
+  focusedColumn,
+  isCurrent,
+  context,
+}: RelationMatrixRowProps) {
+  const { columns, indices, tracks, index } = context;
   const strings = useUiStrings();
   const count = index.countRow(row.id);
-  const isHeaderFocused = focus.row === rowIndex && focus.column === -1;
   return (
     <div
       role="row"
@@ -108,11 +128,8 @@ export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowP
       <div
         role="rowheader"
         aria-colindex={1}
-        tabIndex={isHeaderFocused ? 0 : -1}
-        {...hooks.slot('row-header', {
-          uncovered: count === 0,
-          current: isFocusWithin && focus.row === rowIndex,
-        })}
+        tabIndex={focusedColumn === -1 ? 0 : -1}
+        {...hooks.slot('row-header', { uncovered: count === 0, current: isCurrent })}
         style={{ position: 'sticky', insetInlineStart: 0, zIndex: 1, gridColumn: 1 }}
       >
         <span {...hooks.slot('row-label')}>{row.label}</span>{' '}
@@ -125,7 +142,9 @@ export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowP
             key={toKeyIdentity(column.id)}
             relation={index.get(row.id, column.id)}
             relatedLabel={strings.related}
-            position={{ row: rowIndex, column: columnIndex }}
+            row={rowIndex}
+            column={columnIndex}
+            isFocused={focusedColumn === columnIndex}
             gridColumn={tracks.lines.get(columnIndex)}
             context={context}
           />
@@ -133,4 +152,4 @@ export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowP
       })}
     </div>
   );
-}
+});

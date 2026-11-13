@@ -112,6 +112,14 @@ function isCellValue(value: unknown): value is TableCellValue {
   );
 }
 
+/**
+ * Whether the table writes to a column's cells: through its editor and cell writes
+ * (`allowsEditing`) or through the selection bar's bulk edit (`bulkEdit`).
+ */
+export function acceptsCellWrites<T>(column: TableColumn<T>): boolean {
+  return column.allowsEditing === true || column.bulkEdit !== undefined;
+}
+
 /** Whether a cell value reads as text: a string or a number. */
 export function isTextValue(value: TableCellValue): value is string | number {
   return typeof value === 'string' || typeof value === 'number';
@@ -181,11 +189,29 @@ export function applyTableMove<T extends TableRow>(rows: readonly T[], move: Tab
   return [...rest.slice(0, at), ...moved, ...rest.slice(at)];
 }
 
-/** Whether applying `move` would change the order of `rows`. */
-export function isEffectiveTableMove<T extends TableRow>(
-  rows: readonly T[],
+/** Each row's position in `rows`, by row id, for `isEffectiveTableMove`. */
+export function indexRowPositions<T extends TableRow>(rows: readonly T[]): Map<Key, number> {
+  return new Map(rows.map((row, index) => [row.id, index]));
+}
+
+/**
+ * Whether applying `move` would change the order of the rows whose positions are `positions`
+ * (`indexRowPositions`), read from where the moved rows and the target stand, without building the
+ * moved order: a move changes nothing when its rows already sit together right beside the target.
+ */
+export function isEffectiveTableMove(
+  positions: ReadonlyMap<Key, number>,
   move: TableMove,
 ): boolean {
-  const next = applyTableMove(rows, move);
-  return next.some((row, index) => row !== rows[index]);
+  const target = positions.get(move.targetKey);
+  const moved = [...new Set(move.keys)]
+    .map((key) => positions.get(key))
+    .filter((position) => position !== undefined)
+    .sort((left, right) => left - right);
+  const first = moved[0];
+  const last = moved.at(-1);
+  if (target === undefined || first === undefined || last === undefined) return false;
+  if (moved.includes(target)) return false;
+  if (last - first !== moved.length - 1) return true;
+  return move.position === 'before' ? last + 1 !== target : first - 1 !== target;
 }

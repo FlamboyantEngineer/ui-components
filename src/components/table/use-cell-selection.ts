@@ -53,8 +53,8 @@ export interface TableSpreadsheetProps<T> {
   /** Called with the selected cells after each change. */
   onSelectedRangeChange?: ((range: TableCellRange | null) => void) | undefined;
   /**
-   * Reports the cells a paste, a fill, clearing or a bulk edit changes, in one batch. The table
-   * never changes its rows itself.
+   * Reports every change of cell values in one batch: an editor's commit (a batch of one), a paste,
+   * a fill, clearing, a bulk edit, an undo or a redo. The table never changes its rows itself.
    */
   onCellsChange?: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
 }
