@@ -388,4 +388,16 @@ describe('ChatList', () => {
     expect(root).not.toHaveAttribute('data-has-more');
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
+
+  it('UIC-CHAT-LIST-1.11 asks for the last rows to fade only with showEdgeFades', () => {
+    const onLoadMore = vi.fn();
+    const { container, rerender } = render(
+      <ChatList conversations={conversations} onLoadMore={onLoadMore} />,
+    );
+    const root = container.firstElementChild;
+    expect(root).not.toHaveAttribute('data-edge-fades');
+    rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} showEdgeFades />);
+    expect(root).toHaveAttribute('data-edge-fades', 'true');
+    expectHooksMatchSpec(container, 'CHAT-LIST');
+  });
 });

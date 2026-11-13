@@ -55,6 +55,8 @@ export interface ScrollRegionProps
   scrollbarHideDelay?: number | undefined;
   /** Keep the viewport at the bottom as content grows while the reader is there, as in a log. */
   stickToBottom?: boolean | undefined;
+  /** Asks the stylesheet to fade each edge the content reaches past (`data-edge-fades`). Defaults to `false`. */
+  showEdgeFades?: boolean | undefined;
   /** Called when scrolling reaches the top, for example to load earlier content. */
   onTopReached?: (() => void) | undefined;
   /** Called when scrolling reaches the bottom, for example to load more content. */
@@ -265,6 +267,7 @@ export function ScrollRegion({
   minColumnWidth = 'sm',
   space = 'none',
   align = 'stretch',
+  showEdgeFades = false,
   tabIndex,
   onScroll,
   ref,
@@ -282,7 +285,8 @@ export function ScrollRegion({
   );
   const grid =
     columns === undefined ? {} : resolveGridLayout({ columns, minColumnWidth, space, align });
-  const data = { axis, overscroll, scrollbar, ...containment, ...grid, ...region.data };
+  const edgeFades = showEdgeFades && axis !== 'none';
+  const data = { axis, overscroll, scrollbar, edgeFades, ...containment, ...grid, ...region.data };
 
   return (
     <div

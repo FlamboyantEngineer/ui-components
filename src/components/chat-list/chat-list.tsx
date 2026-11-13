@@ -43,10 +43,12 @@ export interface ChatListProps
   /** A heading above the rows, such as "Recents", which names the list unless a label is given. */
   heading?: ReactNode;
   /**
-   * Requests the next conversations. Shows a Load more row below the rows and fades the last ones;
-   * leave it out once there are no more. A returned promise keeps the row pending until it settles.
+   * Requests the next conversations. Shows a Load more row below the rows; leave it out once there
+   * are no more. A returned promise keeps the row pending until it settles.
    */
   onLoadMore?: LoadMoreProps['onLoadMore'];
+  /** Asks the stylesheet to fade the last rows toward the Load more row (`data-edge-fades`). Defaults to `false`. */
+  showEdgeFades?: boolean | undefined;
   /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
   onLoadMoreError?: LoadMoreProps['onError'];
   /** The conversations are loading: placeholder rows stand in for them. */
@@ -203,6 +205,23 @@ function ConversationGrid({
   );
 }
 
+/** The Load more row after the rows, while the host has more to load. */
+function ListLoadMore({
+  onLoadMore,
+  onError,
+}: Partial<Pick<LoadMoreProps, 'onLoadMore' | 'onError'>>) {
+  if (!onLoadMore) return null;
+  return (
+    <LoadMore
+      variant="ghost"
+      size="md"
+      onLoadMore={onLoadMore}
+      onError={onError}
+      className={listHooks.slotClass('load-more')}
+    />
+  );
+}
+
 /**
  * A list of conversations to open: a New chat row, an optional search field and heading, a React Aria
  * grid list of rows with an icon or avatar, title, marks, activity, time, last message and unread
@@ -219,6 +238,7 @@ export function ChatList({
   heading,
   onLoadMore,
   onLoadMoreError,
+  showEdgeFades = false,
   isLoading = false,
   emptyState,
   renderContextMenu,
@@ -244,7 +264,7 @@ export function ChatList({
       {...listHooks.root({
         className,
         props: rest,
-        data: { loading: isLoading, hasMore: Boolean(onLoadMore) },
+        data: { loading: isLoading, hasMore: Boolean(onLoadMore), edgeFades: showEdgeFades },
       })}
       onKeyDown={menu.onKeyDown}
     >
@@ -275,15 +295,7 @@ export function ChatList({
           timeOptions={{ fallbackAfterDays, getNow, timeZone }}
           renderContextMenu={renderContextMenu}
         />
-        {onLoadMore && !isLoading ? (
-          <LoadMore
-            variant="ghost"
-            size="md"
-            onLoadMore={onLoadMore}
-            onError={onLoadMoreError}
-            className={listHooks.slotClass('load-more')}
-          />
-        ) : null}
+        {isLoading ? null : <ListLoadMore onLoadMore={onLoadMore} onError={onLoadMoreError} />}
       </div>
       {menu.element}
     </div>

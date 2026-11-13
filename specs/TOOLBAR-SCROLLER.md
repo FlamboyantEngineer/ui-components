@@ -1,6 +1,6 @@
 # Toolbar Scroller
 
-`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows a decorative fade and, by default, a scroll button. With tools described as data it can instead move the tools that do not fit into a "more" menu, by priority.
+`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows, by default, a scroll button and, when asked with `showEdgeFades`, a decorative fade. With tools described as data it can instead move the tools that do not fit into a "more" menu, by priority.
 
 ## UIC-TOOLBAR-SCROLLER-1 - Row and toolbar
 
@@ -36,14 +36,14 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-2.2 - Edge fades
 
-The scroller shall render one decorative fade per edge (`ui-toolbar-scroller__fade` with `data-edge` `start` or `end`), hidden from assistive technology, and hide each with the native `hidden` attribute while its edge hides nothing. The reference sheet draws each fade over the strip's edge without taking pointer input.
+Edge fades shall be opt-in. With `showEdgeFades`, the scroller shall render one decorative fade per edge (`ui-toolbar-scroller__fade` with `data-edge` `start` or `end`), hidden from assistive technology, and hide each with the native `hidden` attribute while its edge hides nothing. By default it renders none. The reference sheet draws each fade over the strip's edge without taking pointer input.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference/toolbar-scroller.css`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
 ### UIC-TOOLBAR-SCROLLER-2.3 - Scroll buttons
 
-Unless `scrollButtons` is `false`, the scroller shall render a scroll button per edge (`ui-toolbar-scroller__scroll-button`, an [Icon Button](BUTTON.md) with `data-edge` `start` or `end`), hidden with the native `hidden` attribute while its edge hides nothing. Pressing one scrolls the strip by 80% of its visible width toward that edge. The buttons are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right-to-left), sit outside the toolbar and stay out of the tab order, because keyboard users reach every tool with the arrow keys. With `scrollButtons={false}` only the fades mark hidden tools.
+Unless `scrollButtons` is `false`, the scroller shall render a scroll button per edge (`ui-toolbar-scroller__scroll-button`, an [Icon Button](BUTTON.md) with `data-edge` `start` or `end`), hidden with the native `hidden` attribute while its edge hides nothing. Pressing one scrolls the strip by 80% of its visible width toward that edge. The buttons are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right-to-left), sit outside the toolbar and stay out of the tab order, because keyboard users reach every tool with the arrow keys. With `scrollButtons={false}` only the fades, when asked for, mark hidden tools; the root's `data-overflow-start` and `data-overflow-end` always do.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`

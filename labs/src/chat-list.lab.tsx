@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { type ChatConversation, ChatList } from '../../src/components/chat-list/chat-list.js';
 import { Menu, MenuItem } from '../../src/components/menu/menu.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import {
   getNow,
   historyConversations,
@@ -55,6 +56,7 @@ function HistoryDemo() {
   const [removed, setRemoved] = useState<readonly string[]>([]);
   const [added, setAdded] = useState<readonly ChatConversation[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>('history-1');
+  const [showEdgeFades, setShowEdgeFades] = useState(false);
   const all = [...added, ...historyConversations].filter((item) => !removed.includes(item.id));
   const remove = (id: string) => setRemoved((list) => [...list, id]);
   const start = () => {
@@ -63,18 +65,26 @@ function HistoryDemo() {
     setSelectedKey(id);
   };
   return (
-    <div data-lab-demo="history" style={{ height: 520, width: 300 }}>
-      <ChatList
-        heading="Recents"
-        conversations={all.slice(0, shown)}
-        selectedKey={selectedKey}
-        onSelectionChange={setSelectedKey}
-        onNew={start}
-        onLoadMore={shown < all.length ? () => setShown((count) => count + historyPage) : undefined}
-        renderContextMenu={(conversation) => (
-          <HistoryMenu onDelete={() => remove(conversation.id)} />
-        )}
-      />
+    <div style={{ display: 'grid', gap: 8, width: 300 }}>
+      <Switch isSelected={showEdgeFades} onChange={setShowEdgeFades}>
+        Fade the last rows
+      </Switch>
+      <div data-lab-demo="history" style={{ height: 520 }}>
+        <ChatList
+          heading="Recents"
+          conversations={all.slice(0, shown)}
+          selectedKey={selectedKey}
+          onSelectionChange={setSelectedKey}
+          onNew={start}
+          onLoadMore={
+            shown < all.length ? () => setShown((count) => count + historyPage) : undefined
+          }
+          showEdgeFades={showEdgeFades}
+          renderContextMenu={(conversation) => (
+            <HistoryMenu onDelete={() => remove(conversation.id)} />
+          )}
+        />
+      </div>
     </div>
   );
 }
@@ -199,7 +209,7 @@ mountLab(
   <>
     <LabSection
       title="History"
-      description="An assistant's chat history: a New chat row, the Recents heading and titles only. The first conversation's assistant is working: its dots pulse and its name says Working. Every row but the second carries the history mark, read in its name as Earlier versions. A row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) renames or deletes it. While more conversations can load, the last two rows fade above the Load more row, which adds ten at a time."
+      description="An assistant's chat history: a New chat row, the Recents heading and titles only. The first conversation's assistant is working: its dots pulse and its name says Working. Every row but the second carries the history mark, read in its name as Earlier versions. A row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) renames or deletes it. The Load more row adds ten conversations at a time. Fading the last rows is opt-in: with Fade the last rows on (showEdgeFades), the last two rows fade above the Load more row while more can load."
     >
       <HistoryDemo />
     </LabSection>

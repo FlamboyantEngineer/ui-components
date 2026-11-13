@@ -181,8 +181,8 @@
 }
 
 /*
- * Edge shades: an edge the content reaches past takes a short shade, as deep as the published
- * distance up to 8px, so a reader sees there is more. One pseudo-element over the viewport carries
+ * Edge fades, opt-in with `showEdgeFades` (`data-edge-fades`): an edge the content reaches past
+ * takes a short fade, as deep as the published distance up to 8px, so a reader sees there is more. One pseudo-element over the viewport carries
  * all four, beneath the overlay tracks; it never masks the content or its focus rings. The inline
  * start is the left edge, or the right one right to left.
  *
@@ -239,7 +239,7 @@
   initial-value: 0px;
 }
 
-.ui-scroll-region {
+.ui-scroll-region[data-edge-fades] {
   --ref-scroll-region-shade: color-mix(in srgb, var(--ref-text) var(--ref-tint), transparent);
   --ref-scroll-region-shade-top: min(var(--ui-scroll-region-overflow-y-start), 8px);
   --ref-scroll-region-shade-bottom: min(var(--ui-scroll-region-overflow-y-end), 8px);
@@ -247,12 +247,12 @@
   --ref-scroll-region-shade-right: min(var(--ui-scroll-region-overflow-x-end), 8px);
 }
 
-[dir='rtl'] .ui-scroll-region {
+[dir='rtl'] .ui-scroll-region[data-edge-fades] {
   --ref-scroll-region-shade-left: min(var(--ui-scroll-region-overflow-x-end), 8px);
   --ref-scroll-region-shade-right: min(var(--ui-scroll-region-overflow-x-start), 8px);
 }
 
-.ui-scroll-region:is(
+.ui-scroll-region[data-edge-fades]:is(
     [data-overflow-y-start],
     [data-overflow-y-end],
     [data-overflow-x-start],

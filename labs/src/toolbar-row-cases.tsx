@@ -27,9 +27,23 @@ const frameStyle = (width: number): CSSProperties => ({
 });
 
 /** A row of grouped tools, one group attached, too long for a narrow host. */
-function KitchenTools({ name, overflow }: { name: string; overflow: ToolbarRowOverflow }) {
+function KitchenTools({
+  name,
+  overflow,
+  showEdgeFades = false,
+}: {
+  name: string;
+  overflow: ToolbarRowOverflow;
+  showEdgeFades?: boolean;
+}) {
   return (
-    <ToolbarRow aria-label={name} overflow={overflow} justify="start" space="xs">
+    <ToolbarRow
+      aria-label={name}
+      overflow={overflow}
+      showEdgeFades={showEdgeFades}
+      justify="start"
+      space="xs"
+    >
       <ToolbarRowGroup aria-label={`History, ${name}`} attached>
         <Button icon={UndoGlyph} label="Undo" size="sm" />
         <Button icon={RedoGlyph} label="Redo" size="sm" />
@@ -61,6 +75,24 @@ export function ToolbarOverflow() {
       render={({ overflow }) => (
         <div style={{ ...frameStyle(240), overflow: 'hidden' }}>
           <KitchenTools name={`Recipe tools, ${overflow}`} overflow={overflow} />
+        </div>
+      )}
+    />
+  );
+}
+
+/** A scrolling row without and with its opt-in edge fades. */
+export function ToolbarEdgeFades() {
+  return (
+    <StateMatrix
+      axes={{ fades: ['off', 'on'] }}
+      render={({ fades }) => (
+        <div style={{ ...frameStyle(240), overflow: 'hidden' }}>
+          <KitchenTools
+            name={`Recipe tools, fades ${fades}`}
+            overflow="scroll"
+            showEdgeFades={fades === 'on'}
+          />
         </div>
       )}
     />
