@@ -340,10 +340,6 @@ export function Spreadsheet() {
         cellSelection="range"
         selectedRange={range}
         onSelectedRangeChange={setRange}
-        onCellEdit={(edit) => {
-          setRows((current) => applyEdits(current, [edit]));
-          setLast(describeEdits([edit]));
-        }}
         onCellsChange={(edits) => {
           setRows((current) => applyEdits(current, edits));
           setLast(describeEdits(edits));
@@ -472,7 +468,6 @@ export function SmallSteps() {
         rows={rows}
         columns={readingColumns}
         cellSelection="range"
-        onCellEdit={(edit) => setRows((current) => applyEdits(current, [edit]))}
         onCellsChange={(edits) => setRows((current) => applyEdits(current, edits))}
         size="sm"
       />

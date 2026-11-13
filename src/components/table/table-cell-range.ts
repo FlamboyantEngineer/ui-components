@@ -65,6 +65,22 @@ export function createCellGrid<T extends TableRow>(
   };
 }
 
+/**
+ * Whether two grids hold the same rows and columns in the same order, by row id and column id: a
+ * host that passes fresh arrays of the same rows on a render keeps the grid's shape.
+ */
+export function isSameGridShape<T extends TableRow>(
+  left: CellGrid<T>,
+  right: CellGrid<T>,
+): boolean {
+  if (left === right) return true;
+  if (left.rows.length !== right.rows.length || left.columns.length !== right.columns.length) {
+    return false;
+  }
+  const sameRows = left.rows.every((row, index) => Object.is(row.id, right.rows[index]?.id));
+  return sameRows && left.columns.every((column, index) => column.id === right.columns[index]?.id);
+}
+
 /** The cell at row and column indices, if both are in the grid. */
 function getCellPosition<T extends TableRow>(
   grid: CellGrid<T>,

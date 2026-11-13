@@ -1,5 +1,6 @@
 // Matching key presses against a canonical chord, for components that act on a shortcut.
 
+import { isAltGraphText } from '../../utils/is-alt-graph-text.js';
 import { formatAriaKeyShortcuts, type ShortcutChord } from './shortcut-format.js';
 
 /** What matching reads from a native key event. */
@@ -42,18 +43,6 @@ export function readCommandKey(event: Pick<KeyboardEvent, 'key' | 'code'>): stri
   if (event.key.length !== 1 || latinLetterOrDigit.test(event.key)) return typed;
   const physical = letterOrDigitCode.exec(event.code ?? '');
   return (physical?.[1] ?? physical?.[2] ?? typed).toLowerCase();
-}
-
-/**
- * Whether a press is AltGr typing a character, which browsers on Windows also report as
- * Control+Alt: AltGraph is held and the key types something other than a Latin letter or digit.
- */
-function isAltGraphText(event: ChordKeyEvent): boolean {
-  return (
-    event.getModifierState?.('AltGraph') === true &&
-    event.key.length === 1 &&
-    !latinLetterOrDigit.test(event.key)
-  );
 }
 
 /** A key press in `aria-keyshortcuts` form for each key it names: held modifiers, then the key. */

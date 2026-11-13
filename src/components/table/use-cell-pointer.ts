@@ -12,6 +12,7 @@ import {
   createCellRange,
   findDataCell,
   isSameCellRange,
+  isSameGridShape,
   locateCell,
   readCellPosition,
   type TableCellPosition,
@@ -57,9 +58,15 @@ interface DragOrigin<T> {
   range: TableCellRange | null;
 }
 
-/** Whether the table still is as the gesture found it: same mode and grid, and for a fill, same source. */
-function isOriginKept<T>(origin: DragOrigin<T>, options: CellPointerOptions<T>): boolean {
-  if (origin.mode !== options.mode || origin.grid !== options.grid) return false;
+/**
+ * Whether the table still is as the gesture found it: same mode, the same rows and columns in the
+ * same order (fresh arrays of them count as the same), and for a fill, the same source.
+ */
+function isOriginKept<T extends TableRow>(
+  origin: DragOrigin<T>,
+  options: CellPointerOptions<T>,
+): boolean {
+  if (origin.mode !== options.mode || !isSameGridShape(origin.grid, options.grid)) return false;
   return origin.kind !== 'fill' || isSameCellRange(origin.range, options.range);
 }
 

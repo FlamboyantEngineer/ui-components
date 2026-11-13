@@ -154,6 +154,24 @@ describe('Table', { timeout: 15_000 }, () => {
     });
   });
 
+  it('UIC-TABLE-1.1 draws no cell content again when focus or selection moves', async () => {
+    const user = userEvent.setup();
+    const renderCell = vi.fn((row: Fruit) => <strong>{row.name}</strong>);
+    render(
+      <Table
+        aria-label="Fruit"
+        rows={fruit}
+        columns={[{ id: 'name', header: 'Name', renderCell }, ...columns.slice(1)]}
+        selectionMode="multiple"
+        cellSelection="range"
+      />,
+    );
+    await user.click(screen.getByRole('rowheader', { name: 'Apple' }));
+    renderCell.mockClear();
+    await user.keyboard('{ArrowDown}{Shift>}{ArrowDown}{/Shift}');
+    expect(renderCell).not.toHaveBeenCalled();
+  });
+
   it('UIC-TABLE-1.1 names rows by the columns marked as row headers', () => {
     render(
       <Table

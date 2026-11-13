@@ -42,10 +42,19 @@ function toDay(value: Scalar): string | null {
   return typeof value === 'string' && isoDay.test(value) ? value.slice(0, 10) : null;
 }
 
+/**
+ * A text folded for comparison without case, the same in every locale: composed (NFC), so an accent
+ * typed apart matches one typed whole, and upper- then lower-cased, so `ß` matches `SS` and a final
+ * `ς` matches `σ`.
+ */
+function foldText(text: string): string {
+  return text.normalize('NFC').toUpperCase().toLowerCase();
+}
+
 function testText(operator: FilterCondition['operator'], wanted: string, value: Scalar): boolean {
-  const text = String(value).toLowerCase();
+  const text = foldText(String(value));
   // The operand compares as written, spaces included; only a blank one is incomplete.
-  const needle = wanted.toLowerCase();
+  const needle = foldText(wanted);
   if (operator === 'equals' || operator === 'not-equals') return text === needle;
   if (operator === 'starts-with') return text.startsWith(needle);
   return text.includes(needle);

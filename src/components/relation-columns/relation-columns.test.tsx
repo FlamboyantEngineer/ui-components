@@ -62,6 +62,19 @@ const crumbs = () =>
   [...document.querySelectorAll('.ui-relation-columns__path li')].map((crumb) => crumb.textContent);
 
 describe('RelationColumns', () => {
+  it('UIC-RELATION-COLUMNS-1.4 names the trail by the caller labelling elements, or by its own name alone', () => {
+    const { unmount } = render(
+      <>
+        <h2 id="walk-title">Checkout trace</h2>
+        <Walk aria-label={undefined} aria-labelledby="walk-title" />
+      </>,
+    );
+    expect(screen.getByRole('navigation', { name: 'Relation path Checkout trace' })).toBeVisible();
+    unmount();
+    render(<Walk aria-label={undefined} />);
+    expect(screen.getByRole('navigation', { name: 'Relation path' })).toBeVisible();
+  });
+
   it('UIC-RELATION-COLUMNS-1.5 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(<Walk ref={ref} />);

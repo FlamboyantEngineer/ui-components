@@ -79,7 +79,7 @@ export function resolveSelectionBar<T extends TableRow>(
   options: TableGridOptions<T>,
   parts: { selection: TableSelection<T>; columns: readonly TableColumn<T>[] },
 ): TableSelectionBarProps<T> | null {
-  const { selectionActions, onCellsChange, selectionMode } = options;
+  const { selectionActions, onCellsChange, selectionMode, disallowEmptySelection } = options;
   const { selection, columns } = parts;
   const canEdit = columns.some((column) => column.bulkEdit !== undefined);
   if (selectionMode !== 'multiple' || (!selectionActions && !canEdit)) return null;
@@ -87,7 +87,7 @@ export function resolveSelectionBar<T extends TableRow>(
     actions: selectionActions ?? [],
     columns,
     rows: selection.selectedRows,
-    onClearSelection: () => selection.setSelection(new Set()),
+    onClearSelection: disallowEmptySelection ? undefined : () => selection.setSelection(new Set()),
     onEdit: (edits) => {
       if (edits.length > 0) onCellsChange?.(edits);
     },

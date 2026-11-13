@@ -62,7 +62,6 @@ function Sheet({ onBatch, ...props }: SheetProps) {
         onBatch?.(edits);
         apply(edits);
       }}
-      onCellEdit={(edit) => apply([edit])}
       {...props}
     />
   );
@@ -383,6 +382,53 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     },
   );
 
+  it('UIC-TABLE-14.5 keeps a fill and a range drag while the host passes fresh arrays of the same rows and columns', async () => {
+    const user = userEvent.setup();
+    const onCellsChange = vi.fn();
+    const onSelectedRangeChange = vi.fn();
+    const sheet = () => (
+      <Table
+        aria-label="Sheet"
+        rows={[...items]}
+        columns={uncheckedColumns.map((column) => ({ ...column }))}
+        cellSelection="range"
+        onSelectedRangeChange={onSelectedRangeChange}
+        onCellsChange={onCellsChange}
+      />
+    );
+    const { rerender } = render(sheet());
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: cell('Apple', 'name') },
+      { target: cell('Pear', 'name') },
+    ]);
+    rerender(sheet());
+    await user.pointer([{ target: cell('Plum', 'name') }, { keys: '[/MouseLeft]' }]);
+    expect(onSelectedRangeChange).toHaveBeenLastCalledWith({
+      anchor: { rowKey: 'a', columnId: 'name' },
+      focus: { rowKey: 'c', columnId: 'name' },
+    });
+    await user.click(cell('Apple', 'count'));
+    const handle = requireDefined(document.querySelector('.ui-table__fill-handle'));
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle },
+      { target: cell('Pear', 'count') },
+    ]);
+    rerender(sheet());
+    await user.pointer([{ target: cell('Plum', 'count') }, { keys: '[/MouseLeft]' }]);
+    expect(onCellsChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({
+        columnId: 'count',
+        value: 1,
+        row: expect.objectContaining({ id: 'b' }),
+      }),
+      expect.objectContaining({
+        columnId: 'count',
+        value: 1,
+        row: expect.objectContaining({ id: 'c' }),
+      }),
+    ]);
+  });
+
   it('UIC-TABLE-14.5 fills down on the D key of a non-Latin layout', async () => {
     const user = userEvent.setup();
     const onBatch = vi.fn();
@@ -477,10 +523,23 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
+  it('UIC-TABLE-14.6 opens the editor for a character typed with AltGr, not for a Control+Alt shortcut', async () => {
+    const user = userEvent.setup();
+    render(<Sheet />);
+    await user.click(cell('Apple', 'name'));
+    const altGraph = { ctrlKey: true, altKey: true, modifierAltGraph: true };
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot hold AltGr as Windows reports it, with Control and Alt
+    fireEvent.keyDown(cell('Apple', 'name'), { key: 'k', code: 'KeyK', ...altGraph });
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    // eslint-disable-next-line testing-library/prefer-user-event -- as above
+    fireEvent.keyDown(cell('Apple', 'name'), { key: '@', code: 'Digit2', ...altGraph });
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('@');
+  });
+
   it('UIC-TABLE-14.7 keeps the editor open with the column message for a refused value', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    render(<Sheet onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    render(<Sheet onCellsChange={onCellsChange} />);
     await user.dblClick(cell('Apple', 'count'));
     const editor = screen.getByRole('textbox', { name: 'Count' });
     await user.clear(editor);
@@ -489,10 +548,10 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(editor).toHaveAttribute('data-invalid', 'true');
     expect(screen.getByRole('alert')).toHaveTextContent('Enter a count of 0 or more.');
     expect(screen.getByRole('alert')).toHaveClass('ui-table__editor-message');
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     await user.click(cell('Plum', 'note'));
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     expect(cell('Apple', 'count')).toHaveTextContent('1');
   });
 });

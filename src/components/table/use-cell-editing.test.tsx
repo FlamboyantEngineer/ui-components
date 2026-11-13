@@ -51,12 +51,12 @@ const columns: TableColumn<Fruit>[] = [
 ];
 
 interface FruitsProps {
-  onCellEdit: (edit: TableCellEdit<Fruit>) => void;
+  onCellsChange: (edits: readonly TableCellEdit<Fruit>[]) => void;
   disabledKeys?: readonly string[];
   cellSelection?: 'cell';
 }
 
-function Fruits({ onCellEdit, disabledKeys, cellSelection }: FruitsProps) {
+function Fruits({ onCellsChange, disabledKeys, cellSelection }: FruitsProps) {
   const [rows, setRows] = useState(fruit);
   return (
     <Table
@@ -65,10 +65,13 @@ function Fruits({ onCellEdit, disabledKeys, cellSelection }: FruitsProps) {
       columns={columns}
       disabledKeys={disabledKeys}
       cellSelection={cellSelection}
-      onCellEdit={(edit) => {
-        onCellEdit(edit);
+      onCellsChange={(edits) => {
+        onCellsChange(edits);
         setRows((current) =>
-          current.map((row) => (row === edit.row ? { ...row, [edit.columnId]: edit.value } : row)),
+          current.map((row) => {
+            const edit = edits.find((candidate) => candidate.row === row);
+            return edit ? { ...row, [edit.columnId]: edit.value } : row;
+          }),
         );
       }}
     />
@@ -82,7 +85,7 @@ const rowHeader = (text: string) => screen.getByRole('rowheader', { name: text }
 describe('Table cell editing', { timeout: 15_000 }, () => {
   it('UIC-TABLE-11.1 UIC-TABLE-11.2 edits and refocuses the row with the correct key type', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
+    const onCellsChange = vi.fn();
     render(
       <Table
         aria-label="Typed rows"
@@ -94,7 +97,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
           { id: 'name', header: 'Name' },
           { id: 'weight', header: 'Weight', allowsEditing: true },
         ]}
-        onCellEdit={onCellEdit}
+        onCellsChange={onCellsChange}
       />,
     );
     const numeric = screen.getByRole('row', { name: 'Numeric row' });
@@ -105,7 +108,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(within(text).getByRole('textbox', { name: 'Weight' })).toHaveValue('20');
     expect(within(numeric).queryByRole('textbox')).not.toBeInTheDocument();
     await user.keyboard('{Control>}a{/Control}25{Enter}');
-    expect(requireDefined(onCellEdit.mock.lastCall)[0]).toMatchObject({
+    expect(requireDefined(onCellsChange.mock.lastCall)[0][0]).toMatchObject({
       row: { id: '1' },
       columnId: 'weight',
       value: 25,
@@ -115,8 +118,8 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-11.1 UIC-TABLE-11.2 opens with F2 and commits a number with Enter', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    const { container } = render(<Fruits onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    const { container } = render(<Fruits onCellsChange={onCellsChange} />);
     cell('30').focus();
     await user.keyboard('{F2}');
     const input = screen.getByRole('textbox', { name: 'Weight' });
@@ -126,31 +129,59 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(input.closest('[role="gridcell"]')).toHaveAttribute('data-editing', 'true');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['editor'] });
     await user.keyboard('{Control>}a{/Control}45{Enter}');
-    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'weight', value: 45 });
+    expect(onCellsChange).toHaveBeenCalledWith([{ row: fruit[0], columnId: 'weight', value: 45 }]);
     expect(cell('45')).toHaveFocus();
     expect(cell('45')).not.toHaveAttribute('data-editing');
   });
 
   it('UIC-TABLE-11.1 UIC-TABLE-11.2 opens on Enter and a double click, cancels on Escape', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    render(<Fruits onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    render(<Fruits onCellsChange={onCellsChange} />);
     cell('60').focus();
     await user.keyboard('{Enter}');
     await user.keyboard('x{Escape}');
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     expect(cell('60')).toHaveFocus();
     await user.dblClick(cell('30'));
     expect(screen.getByRole('textbox', { name: 'Weight' })).toHaveValue('30');
     await user.keyboard('{Control>}a{/Control}heavy');
     await user.click(rowHeader('Apple'));
-    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'weight', value: 'heavy' });
+    expect(onCellsChange).toHaveBeenCalledWith([
+      { row: fruit[0], columnId: 'weight', value: 'heavy' },
+    ]);
     expect(rowHeader('Apple')).toHaveFocus();
+  });
+
+  it('UIC-TABLE-11.1 leaves a double click on a control inside an editable cell to the control', async () => {
+    const user = userEvent.setup();
+    const onOpen = vi.fn();
+    render(
+      <Table
+        aria-label="Fruit"
+        rows={fruit}
+        columns={[
+          { id: 'name', header: 'Name' },
+          {
+            id: 'colour',
+            header: 'Colour',
+            allowsEditing: true,
+            renderCell: (row) => (
+              <button type="button" onClick={onOpen}>{`Open ${row.colour}`}</button>
+            ),
+          },
+        ]}
+        onCellsChange={vi.fn()}
+      />,
+    );
+    await user.dblClick(screen.getByRole('button', { name: 'Open Red' }));
+    expect(onOpen).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TABLE-11.1 ignores cells of columns that do not allow editing', async () => {
     const user = userEvent.setup();
-    render(<Fruits onCellEdit={() => {}} />);
+    render(<Fruits onCellsChange={() => {}} />);
     rowHeader('Pear').focus();
     await user.keyboard('{F2}');
     await user.dblClick(rowHeader('Pear'));
@@ -159,8 +190,8 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-11.3 draws a custom editor that commits, cancels and keys Escape', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    render(<Fruits onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    render(<Fruits onCellsChange={onCellsChange} />);
     cell('Red').focus();
     await user.keyboard('{F2}');
     const row = screen.getByRole('row', { name: 'Apple' });
@@ -173,17 +204,19 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(cell('Red')).toHaveFocus();
     await user.keyboard('{F2}');
     await user.click(screen.getByRole('button', { name: 'Keep Red' }));
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     await user.dblClick(cell('Red'));
     await user.click(screen.getByRole('button', { name: 'Blue for Colour' }));
-    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'colour', value: 'Blue' });
+    expect(onCellsChange).toHaveBeenCalledWith([
+      { row: fruit[0], columnId: 'colour', value: 'Blue' },
+    ]);
     expect(cell('Blue')).toBeInTheDocument();
   });
 
   it('UIC-TABLE-11.4 opens no editor on a disabled row by pointer, keyboard or typing', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    render(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} cellSelection="cell" />);
+    const onCellsChange = vi.fn();
+    render(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} cellSelection="cell" />);
     await user.dblClick(cell('30'));
     await user.dblClick(cell('Red'));
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
@@ -192,28 +225,28 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
       await user.keyboard(key);
       expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     }
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     cell('60').focus();
     await user.keyboard('7{Enter}');
-    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[1], columnId: 'weight', value: 7 });
+    expect(onCellsChange).toHaveBeenCalledWith([{ row: fruit[1], columnId: 'weight', value: 7 }]);
   });
 
   it('UIC-TABLE-11.4 closes an open editor without an edit when its row becomes disabled', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    const { rerender } = render(<Fruits onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    const { rerender } = render(<Fruits onCellsChange={onCellsChange} />);
     await user.dblClick(cell('30'));
     await user.keyboard('{Control>}a{/Control}45');
-    rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
+    rerender(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} />);
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(cell('30')).toHaveFocus();
     await user.dblClick(cell('Red'));
     expect(screen.queryByRole('textbox', { name: 'Apple colour' })).not.toBeInTheDocument();
-    rerender(<Fruits onCellEdit={onCellEdit} />);
+    rerender(<Fruits onCellsChange={onCellsChange} />);
     await user.dblClick(cell('Red'));
-    rerender(<Fruits onCellEdit={onCellEdit} disabledKeys={['apple']} />);
+    rerender(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} />);
     expect(screen.queryByRole('button', { name: 'Blue for Colour' })).not.toBeInTheDocument();
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
   });
 
   it('UIC-TABLE-11.2 reports the untouched value of a boolean, date or empty cell as it is', async () => {
@@ -230,7 +263,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
       { id: 'none', name: 'None', value: null },
     ];
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
+    const onCellsChange = vi.fn();
     render(
       <Table
         aria-label="Kept"
@@ -244,7 +277,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
             renderCell: (row) => String(row.value),
           },
         ]}
-        onCellEdit={onCellEdit}
+        onCellsChange={onCellsChange}
       />,
     );
     const valueCell = (name: string) =>
@@ -254,78 +287,86 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     await user.dblClick(valueCell('Yes'));
     expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue('true');
     await user.keyboard('{Enter}');
-    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: true }));
+    expect(onCellsChange).toHaveBeenLastCalledWith([expect.objectContaining({ value: true })]);
     await user.dblClick(valueCell('No'));
     await user.click(document.body);
-    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: false }));
+    expect(onCellsChange).toHaveBeenLastCalledWith([expect.objectContaining({ value: false })]);
     await user.dblClick(valueCell('Day'));
     expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue(picked.toISOString());
     await user.keyboard('{Enter}');
-    expect(onCellEdit.mock.lastCall?.[0].value).toBe(picked);
+    expect(onCellsChange.mock.lastCall?.[0][0].value).toBe(picked);
     await user.dblClick(valueCell('None'));
     await user.keyboard('{Enter}');
-    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: null }));
+    expect(onCellsChange).toHaveBeenLastCalledWith([expect.objectContaining({ value: null })]);
     await user.dblClick(valueCell('Yes'));
     await user.keyboard('{Control>}a{/Control}maybe{Enter}');
-    expect(onCellEdit).toHaveBeenLastCalledWith(expect.objectContaining({ value: 'maybe' }));
+    expect(onCellsChange).toHaveBeenLastCalledWith([expect.objectContaining({ value: 'maybe' })]);
     await user.dblClick(valueCell('No'));
     await user.keyboard('x{Escape}');
-    expect(onCellEdit).toHaveBeenCalledTimes(5);
+    expect(onCellsChange).toHaveBeenCalledTimes(5);
   });
 
   it('UIC-TABLE-11.5 closes an editor whose row leaves the table, focusing the grid', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
+    const onCellsChange = vi.fn();
     const { rerender } = render(
-      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />,
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellsChange={onCellsChange} />,
     );
     await user.dblClick(cell('30'));
     await user.keyboard('{Control>}a{/Control}45');
     const pears = fruit.filter((row) => row.id !== 'apple');
-    rerender(<Table aria-label="Fruit" rows={pears} columns={columns} onCellEdit={onCellEdit} />);
+    rerender(
+      <Table aria-label="Fruit" rows={pears} columns={columns} onCellsChange={onCellsChange} />,
+    );
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.getByRole('grid', { name: 'Fruit' }).contains(document.activeElement)).toBe(true);
     await user.dblClick(cell('60'));
     expect(screen.getByRole('textbox')).toHaveValue('60');
     await user.keyboard('{Escape}');
-    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />);
+    rerender(
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellsChange={onCellsChange} />,
+    );
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
   });
 
   it('UIC-TABLE-11.5 closes an editor whose column stops allowing edits, focusing the cell', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
+    const onCellsChange = vi.fn();
     const locked = columns.map((column) =>
       column.id === 'weight' ? { ...column, allowsEditing: false } : column,
     );
     const { rerender } = render(
-      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />,
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellsChange={onCellsChange} />,
     );
     await user.dblClick(cell('30'));
     await user.keyboard('{Control>}a{/Control}45');
-    rerender(<Table aria-label="Fruit" rows={fruit} columns={locked} onCellEdit={onCellEdit} />);
+    rerender(
+      <Table aria-label="Fruit" rows={fruit} columns={locked} onCellsChange={onCellsChange} />,
+    );
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(cell('30')).toHaveFocus();
-    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} onCellEdit={onCellEdit} />);
+    rerender(
+      <Table aria-label="Fruit" rows={fruit} columns={columns} onCellsChange={onCellsChange} />,
+    );
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     await user.keyboard('{Enter}');
     expect(screen.getByRole('textbox')).toHaveValue('30');
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
   });
 
   it('UIC-TABLE-11.2 UIC-TABLE-11.3 leaves Enter and Escape to an input method while it composes', async () => {
     const user = userEvent.setup();
-    const onCellEdit = vi.fn();
-    render(<Fruits onCellEdit={onCellEdit} />);
+    const onCellsChange = vi.fn();
+    render(<Fruits onCellsChange={onCellsChange} />);
     await user.dblClick(cell('30'));
     const input = screen.getByRole('textbox', { name: 'Weight' });
     await user.keyboard('{Control>}a{/Control}45');
     pressComposingKeys(input);
-    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(onCellsChange).not.toHaveBeenCalled();
     expect(input).toHaveFocus();
     await user.keyboard('{Enter}');
-    expect(onCellEdit).toHaveBeenCalledWith({ row: fruit[0], columnId: 'weight', value: 45 });
+    expect(onCellsChange).toHaveBeenCalledWith([{ row: fruit[0], columnId: 'weight', value: 45 }]);
     await user.dblClick(cell('Red'));
     pressComposingKeys(screen.getByRole('textbox', { name: 'Apple colour' }));
     expect(screen.getByRole('textbox', { name: 'Apple colour' })).toBeInTheDocument();

@@ -100,12 +100,12 @@ describe('Table pinned rows', { timeout: 15_000 }, () => {
   it('UIC-TABLE-18.3 selects, edits and acts on pinned rows; reordering never moves them', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
-    const onCellEdit = vi.fn();
+    const onCellsChange = vi.fn();
     const onRowAction = vi.fn();
     renderPinned({
       selectionMode: 'multiple',
       onSelectionChange,
-      onCellEdit,
+      onCellsChange: onCellsChange,
       onRowAction,
       reorder: { onMove: vi.fn(), dragTrigger: 'handle' },
     });
@@ -114,7 +114,9 @@ describe('Table pinned rows', { timeout: 15_000 }, () => {
     const cell = within(row('Apple')).getByRole('rowheader');
     await user.dblClick(cell);
     await user.keyboard('{Control>}a{/Control}Avocado{Enter}');
-    expect(onCellEdit).toHaveBeenCalledWith({ row: items[0], columnId: 'name', value: 'Avocado' });
+    expect(onCellsChange).toHaveBeenCalledWith([
+      { row: items[0], columnId: 'name', value: 'Avocado' },
+    ]);
     const handle = (name: string) => within(row(name)).getByRole('button', { name: /Drag/ });
     expect(handle('Cherry')).toBeDisabled();
     expect(handle('Basil')).toBeEnabled();
@@ -157,6 +159,32 @@ describe('Table pinned rows', { timeout: 15_000 }, () => {
       expect(offset('Basil')).toBe('0px');
     } finally {
       heights.mockRestore();
+    }
+  });
+
+  it('UIC-TABLE-18.4 keeps watching the pinned rows across renders without watching them again', () => {
+    const watched: Element[] = [];
+    class CountingObserver {
+      observe(element: Element) {
+        watched.push(element);
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', CountingObserver);
+    try {
+      const pinned = { top: ['c'], bottom: ['a'] };
+      const { rerender } = renderPinned({ pinnedRows: pinned });
+      const pinnedRows = () =>
+        watched.filter((element) => element.matches('.ui-table__row[data-pinned]')).length;
+      const before = pinnedRows();
+      expect(before).toBeGreaterThan(0);
+      rerender(
+        <Table aria-label="Items" rows={[...items]} columns={columns} pinnedRows={pinned} />,
+      );
+      expect(pinnedRows()).toBe(before);
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 

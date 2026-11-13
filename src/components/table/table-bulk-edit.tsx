@@ -35,7 +35,8 @@ export interface TableSelectionBarProps<T> {
   columns: readonly TableColumn<T>[];
   /** The selected rows the table presents. */
   rows: readonly T[];
-  onClearSelection: () => void;
+  /** Clears the selection; absent when the table refuses an empty selection, so no Clear shows. */
+  onClearSelection?: (() => void) | undefined;
   /** Reports the edits a bulk edit makes, in one batch. */
   onEdit: (edits: readonly TableCellEdit<T>[]) => void;
 }

@@ -33,7 +33,6 @@ import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
 import { TableControls } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
-import type { TableCellEdit } from './use-cell-editing.js';
 import type { TableSpreadsheetProps } from './use-cell-selection.js';
 import { useContentWidths } from './use-content-widths.js';
 import { useOrderedDropKeys } from './use-ordered-drop-keys.js';
@@ -107,8 +106,6 @@ export interface TableProps<T extends TableRow>
    * `onCellsChange`; Control or Command with Z undoes on the table.
    */
   editHistory?: TableEditHistory | undefined;
-  /** Reports a finished cell edit. The table never changes its rows itself. */
-  onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
   /**
    * Top-level rows, by id, that stay at the top or the bottom of the body while it scrolls, on
    * every page, outside filtering, sorting, paging, grouping and reordering.

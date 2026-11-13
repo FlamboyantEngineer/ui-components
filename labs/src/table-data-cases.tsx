@@ -153,7 +153,6 @@ export function EditHistory() {
         cellSelection="range"
         selectionMode="multiple"
         editHistory={history}
-        onCellEdit={(edit) => apply([edit])}
         onCellsChange={apply}
       />
       <LabOutput name="history-last">{last}</LabOutput>
@@ -216,7 +215,7 @@ export function PinnedRows() {
           stickyHeader
           filterable
           selectionMode="multiple"
-          onCellEdit={(edit) => setRows((current) => applyEdits(current, [edit]))}
+          onCellsChange={(edits) => setRows((current) => applyEdits(current, edits))}
           actionsColumnWidth={52}
           renderRowActions={(row) => (
             <DropdownMenu

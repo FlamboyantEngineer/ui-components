@@ -41,10 +41,10 @@ Verification: `src/components/permission-matrix/permission-matrix-roles.test.tsx
 
 ### UIC-PERMISSION-MATRIX-1.6 - Stable table columns
 
-The matrix shall hand its `Table` the same `columns` and `rows` while only the grants change, so a toggle does not rebuild the table's column layout or cell grid: the columns are derived from the roles, groups and provider strings alone, and the cells read the grants, inherited and committed grants and the change handler from a context.
+The matrix shall hand its `Table` the same `columns` and `rows` while only the grants change, so a toggle does not rebuild the table's column layout or cell grid: the columns are derived from the roles, groups and provider strings alone, and the cells read the grants, inherited and committed grants and the change handler from a context. The context keeps its identity until a grant changes and the change handler never changes, and a cell's checkbox draws again only when its own grant, inherited or dirty state changes, not on every change elsewhere in the matrix.
 
 Implementation: `src/components/permission-matrix/permission-matrix.tsx`, `src/components/permission-matrix/permission-matrix-cells.tsx`
-Verification: `src/components/permission-matrix/permission-matrix-identity.test.tsx`
+Verification: `src/components/permission-matrix/permission-matrix-identity.test.tsx`, `src/components/permission-matrix/permission-matrix-renders.test.tsx`
 
 ### UIC-PERMISSION-MATRIX-1.7 - Virtualized rows
 

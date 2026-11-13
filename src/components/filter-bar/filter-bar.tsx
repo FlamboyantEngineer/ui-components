@@ -6,6 +6,8 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { PlusGlyph } from '../../core/glyphs.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isFilterableLength } from '../../utils/filterable-list.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { assignOccurrenceKeys, toOccurrenceKey } from '../../utils/stable-keys.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -27,8 +29,6 @@ export interface FilterBarProps extends RefProps<HTMLDivElement>, BaseProps, Ari
 }
 
 const emptyValue: readonly FilterCondition[] = [];
-
-/** The add menu lists its fields behind a search field from this many on. */
 
 /** The chips to draw: each condition whose field is known, keyed by its field and occurrence. */
 function listChips(value: readonly FilterCondition[], fields: readonly FilterField[]) {
@@ -125,6 +125,7 @@ export function FilterBar({
   );
 }
 
+export type { FilterOperator } from '../../core/strings/query.js';
 export { FilterConditionFields } from './filter-editor.js';
 export type { FilterRecordValue, FilterValueGetter } from './filter-matching.js';
 export { createFilterMatcher, matchesFilterCondition } from './filter-matching.js';
@@ -137,6 +138,3 @@ export type {
   FilterValue,
 } from './filter-model.js';
 export { createFilterCondition, isFilterConditionComplete } from './filter-model.js';
-import { isFilterableLength } from '../../utils/filterable-list.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
-export type { FilterOperator } from '../../core/strings/query.js';

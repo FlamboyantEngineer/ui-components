@@ -4,6 +4,7 @@
 // resize sets the column's track in pixels, by pointer or by keyboard (specs/TABLE.md, UIC-TABLE-4.2).
 
 import {
+  type ChangeEvent,
   type KeyboardEvent,
   type RefObject,
   useContext,
@@ -131,7 +132,18 @@ function useResizeKeys(resize: Resize, owner: object) {
     setMode(false);
     resize.finish(resize.readWidth());
   };
+  // A key held on the slider changes its value natively; only the key handling below resizes then.
+  const isKeyHeld = useRef(false);
+  /** Resizes to a value set without keys, as assistive technology does, and ends the resize. */
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (isKeyHeld.current) return;
+    const width = resize.fit(Number(event.target.value));
+    if (isResizing) setMode(false);
+    resize.resize(width);
+    resize.finish(width);
+  };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    isKeyHeld.current = true;
     if (!isResizing) {
       if (event.key !== 'Enter') return;
       event.preventDefault();
@@ -148,7 +160,19 @@ function useResizeKeys(resize: Resize, owner: object) {
     if (step === undefined) end();
     else resize.resize(resize.fit(resize.readWidth() + step * keyStep));
   };
-  return { isRtl, onKeyDown, onBlur: () => (isResizing ? end() : undefined) };
+  const release = () => {
+    isKeyHeld.current = false;
+  };
+  return {
+    isRtl,
+    onChange,
+    onKeyDown,
+    onKeyUp: release,
+    onBlur: () => {
+      release();
+      if (isResizing) end();
+    },
+  };
 }
 
 /**
@@ -211,8 +235,9 @@ export function TableColumnResizer(props: TableColumnResizerProps) {
           min={resize.minWidth}
           max={resize.maxWidth}
           value={resize.resized ?? props.width ?? resize.minWidth}
-          onChange={() => undefined}
+          onChange={keys.onChange}
           onKeyDown={keys.onKeyDown}
+          onKeyUp={keys.onKeyUp}
           onBlur={(event) => {
             focusProps.onBlur?.(event);
             keys.onBlur();

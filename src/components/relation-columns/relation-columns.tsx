@@ -134,6 +134,10 @@ export function RelationColumns<T extends { id: Key }>({
   const baseId = useId();
   const rootId = rest.id ?? `${baseId}-root`;
   const pathLabelId = `${baseId}-path`;
+  // A name reference is not followed through the referenced element's own `aria-labelledby`, so the
+  // caller's ids are named directly, and the root only when it carries its name in `aria-label`.
+  const rootName = rest['aria-labelledby'] ?? (rest['aria-label'] ? rootId : undefined);
+  const trailLabelledBy = rootName ? `${pathLabelId} ${rootName}` : pathLabelId;
   const [current, setPath] = useRelationPath({ itemKey: item.id, path, defaultPath, onPathChange });
   const columns = resolveRelationColumns({ item, path: current, getRelated });
   const columnsRef = useRef<HTMLDivElement>(null);
@@ -163,7 +167,7 @@ export function RelationColumns<T extends { id: Key }>({
         {strings.relationPath}
       </span>
       <Breadcrumb
-        aria-labelledby={`${pathLabelId} ${rootId}`}
+        aria-labelledby={trailLabelledBy}
         className={hooks.slotClass('path')}
         items={trail.map((step, index) => ({ id: index, label: getTextValue(step.item) }))}
         onAction={onTrailAction}

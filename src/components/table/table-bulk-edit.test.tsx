@@ -114,6 +114,25 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
     expect(container.querySelector('.ui-table__selection-bar')).toBeNull();
   });
 
+  it('UIC-TABLE-15.1 draws no clear button and keeps the selection on Escape when it must not be empty', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const { container } = renderItems({
+      selectionActions: [{ verb: 'delete', label: 'Delete selected', onPress: vi.fn() }],
+      disallowEmptySelection: true,
+      onSelectionChange,
+    });
+    await user.click(check('Apple'));
+    const bar = container.querySelector('.ui-table__selection-bar') as HTMLElement;
+    expect(within(bar).getByRole('status')).toHaveTextContent('1 selected');
+    expect(within(bar).queryByRole('button', { name: 'Clear selection' })).not.toBeInTheDocument();
+    await user.click(within(bar).getByRole('button', { name: 'Delete selected' }));
+    onSelectionChange.mockClear();
+    await user.keyboard('{Escape}');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(within(bar).getByRole('status')).toHaveTextContent('1 selected');
+  });
+
   it('UIC-TABLE-15.1 counts every enabled row for a selection of all and draws no bar without bulk actions', async () => {
     const user = userEvent.setup();
     const { container, unmount } = renderItems({ disabledKeys: ['b'] });
@@ -127,6 +146,21 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
     const { container: plain } = renderItems({ columns: [{ id: 'name', header: 'Name' }] });
     await user.click(check('Apple'));
     expect(plain.querySelector('.ui-table__selection-bar')).toBeNull();
+  });
+
+  it('UIC-TABLE-3.1 UIC-TABLE-15.1 keeps the rows on other pages selected when one row of a selection of all is unticked', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const { container } = renderItems({ pagination: { pageSize: 2 }, onSelectionChange });
+    await user.click(container.querySelector('th .ui-table__checkbox') as HTMLElement);
+    expect(onSelectionChange).toHaveBeenLastCalledWith('all');
+    await user.click(check('Apple'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['b', 'c']));
+    expect(
+      within(container.querySelector('.ui-table__selection-bar') as HTMLElement).getByRole(
+        'status',
+      ),
+    ).toHaveTextContent('2 selected');
   });
 
   it('UIC-TABLE-15.2 sets a choice across the selected rows in one batch', async () => {

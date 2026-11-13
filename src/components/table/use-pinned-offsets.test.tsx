@@ -86,6 +86,38 @@ describe('Table pinned columns', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'TABLE');
   });
 
+  it('UIC-TABLE-8.6 keeps watching the header cells across renders without watching them again', () => {
+    const watched: Element[] = [];
+    class CountingObserver {
+      observe(element: Element) {
+        watched.push(element);
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', CountingObserver);
+    try {
+      const { rerender } = renderCities();
+      const headerCells = () => watched.filter((element) => element.matches('th')).length;
+      const before = headerCells();
+      expect(before).toBeGreaterThan(0);
+      rerender(
+        <Table
+          aria-label="Cities"
+          rows={[...cities]}
+          columns={columns}
+          selectionMode="multiple"
+          renderRowActions={() => null}
+          actionsColumnWidth={50}
+        />,
+      );
+      expect(headerCells()).toBe(before);
+      expect(offset(header('Code'))).toBe('164px');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('UIC-TABLE-8.6 pins, sizes and filters columns with prototype-named ids', () => {
     interface Odd {
       id: string;

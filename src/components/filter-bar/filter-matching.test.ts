@@ -29,6 +29,20 @@ describe('filter matching', () => {
     expect(test('title', 'starts-with', 'salt')('The Salt Road')).toBe(false);
   });
 
+  it('UIC-FILTER-BAR-3.1 folds case and composition the same in every locale', () => {
+    expect(test('title', 'contains', 'STRASSE')('Die Straße')).toBe(true);
+    expect(test('title', 'equals', 'ΟΔΟΣ')('οδος')).toBe(true);
+    expect(test('title', 'equals', 'Cafe\u0301')('CAF\u00c9')).toBe(true);
+  });
+
+  it('UIC-FILTER-BAR-3.1 passes every record for a date that is not a day or an inverted range', () => {
+    expect(test('published', 'equals', 'next week')('2024-03-05')).toBe(true);
+    expect(test('pages', 'between', { min: 9, max: 2 })(5)).toBe(true);
+    expect(
+      test('published', 'between', { start: '2024-05-01', end: '2024-01-01' })('2024-03-05'),
+    ).toBe(true);
+  });
+
   it('UIC-FILTER-BAR-3.1 compares text as written, spaces included', () => {
     expect(test('title', 'equals', ' Alpha ')(' alpha ')).toBe(true);
     expect(test('title', 'equals', ' Alpha ')('Alpha')).toBe(false);

@@ -17,15 +17,24 @@ function copyCell(source: HTMLElement, tag: 'th' | 'td'): HTMLTableCellElement {
   return cell;
 }
 
+interface RowOptions {
+  grid: HTMLElement;
+  /** The measured columns: only their cells are copied. */
+  wanted: ReadonlySet<string>;
+  tag: 'th' | 'td';
+  className?: string;
+}
+
 function appendRow(
   section: HTMLTableSectionElement,
   cells: Iterable<HTMLElement>,
-  options: { grid: HTMLElement; tag: 'th' | 'td'; className?: string },
+  options: RowOptions,
 ): void {
   const row = section.insertRow();
   row.className = options.className ?? '';
   for (const cell of cells) {
     if (
+      !options.wanted.has(cell.dataset['column'] ?? '') ||
       cell.closest('.ui-table__grid') !== options.grid ||
       cell.parentElement?.closest('td, th, .ui-table__column, .ui-table__cell') ||
       cell.classList.contains('ui-table__column-group')
@@ -35,8 +44,11 @@ function appendRow(
   }
 }
 
-/** Native table layout also measures the cells rendered as positioned elements by virtualization. */
-function prepareMeasurement(grid: HTMLElement): HTMLTableElement {
+/**
+ * Native table layout also measures the cells rendered as positioned elements by virtualization.
+ * An auto-layout table sizes each column by its own cells, so only the measured columns are copied.
+ */
+function prepareMeasurement(grid: HTMLElement, wanted: ReadonlySet<string>): HTMLTableElement {
   const table = grid.ownerDocument.createElement('table');
   table.className = grid.className;
   table.setAttribute('aria-hidden', 'true');
@@ -56,6 +68,7 @@ function prepareMeasurement(grid: HTMLElement): HTMLTableElement {
   if (sourceHeader)
     appendRow(header, sourceHeader.querySelectorAll<HTMLElement>('.ui-table__column, th'), {
       grid,
+      wanted,
       tag: 'th',
     });
   const body = table.createTBody();
@@ -71,6 +84,7 @@ function prepareMeasurement(grid: HTMLElement): HTMLTableElement {
       continue;
     appendRow(body, sourceRow.querySelectorAll<HTMLElement>('.ui-table__cell, td, th'), {
       grid,
+      wanted,
       tag: 'td',
       className: sourceRow.className,
     });
@@ -115,10 +129,10 @@ export function measureContentWidths(
   const parent = grid.parentElement;
   if (!parent) return null;
   const scale = measureScale(parent);
-  const table = prepareMeasurement(grid);
+  const wanted = new Set(columns);
+  const table = prepareMeasurement(grid, wanted);
   parent.append(table);
   try {
-    const wanted = new Set(columns);
     const widths = Object.create(null) as Record<string, number>;
     for (const cell of table.querySelectorAll<HTMLElement>(
       ':scope > thead > tr > [data-column], :scope > tbody > tr > [data-column]',

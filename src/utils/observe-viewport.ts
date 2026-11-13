@@ -37,6 +37,12 @@ interface ViewportObserverOptions {
   immediate?: boolean | undefined;
   /** Also measure when the document's fonts finish loading, which re-wraps text in place. */
   fonts?: boolean | undefined;
+  /**
+   * With `subtree`, whether attribute changes inside count as content changes. Defaults to true;
+   * false for a measurement that follows only nodes and text, so focus and selection attributes
+   * moving between rows measure nothing.
+   */
+  attributes?: boolean | undefined;
 }
 
 export interface ViewportObserver {
@@ -54,7 +60,14 @@ export interface ViewportObserver {
 export function observeViewport(
   element: HTMLElement,
   view: Window & typeof globalThis,
-  { measure, getExtraTargets, subtree = false, immediate = false, fonts }: ViewportObserverOptions,
+  {
+    measure,
+    getExtraTargets,
+    subtree = false,
+    immediate = false,
+    fonts,
+    attributes = true,
+  }: ViewportObserverOptions,
 ): ViewportObserver {
   let active = true;
   let frame: number | null = null;
@@ -103,7 +116,7 @@ export function observeViewport(
     );
     return immediate && isChildChange ? measureNow() : schedule();
   });
-  mutations.observe(element, subtree ? contentChanges : { childList: true });
+  mutations.observe(element, subtree ? { ...contentChanges, attributes } : { childList: true });
   if (subtree) element.addEventListener('load', schedule, true);
   const stopFonts = fonts ? listenFontsLoaded(element, schedule) : null;
   // An immediate observer's owner measures as it starts, so only a deferred one schedules here.

@@ -76,9 +76,12 @@ export function TypedTable() {
         cellSelection="range"
         onSelectedRangeChange={setRange}
         renderRowDetail={(row) => `Details for ${row.name}`}
-        onCellEdit={(edit) =>
+        onCellsChange={(edits) =>
           setRows((current) =>
-            current.map((row) => (row === edit.row ? { ...row, value: edit.value } : row)),
+            current.map((row) => {
+              const edit = edits.find((candidate) => candidate.row === row);
+              return edit ? { ...row, value: edit.value } : row;
+            }),
           )
         }
       />

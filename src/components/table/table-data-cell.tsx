@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import { type CSSProperties, memo, type ReactNode } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import { Button as AriaButton, Cell, type CellRenderProps } from '../../primitives/index.js';
 import { readOwn } from '../../utils/read-own.js';
@@ -17,11 +17,22 @@ import { renderCellElement } from './table-spanning-row.js';
 import { getCellWrap, getColumnPin, getPinStyle } from './table-structure.js';
 import { isEditingCell } from './use-cell-editing.js';
 
-function renderCellContent<T extends TableRow>(row: T, column: TableColumn<T>): ReactNode {
+/**
+ * A cell's content: the column's `renderCell`, or its value as text. React Aria calls a cell's
+ * children again on every change of the table's state, such as focus or selection moving, so the
+ * content draws again only when the row or the column object changes.
+ */
+const TableCellContent = memo(function TableCellContent({
+  row,
+  column,
+}: {
+  row: TableRow;
+  column: TableColumn<TableRow>;
+}): ReactNode {
   if (column.renderCell) return column.renderCell(row);
   const value = getCellValue(row, column);
   return typeof value === 'string' || typeof value === 'number' ? value : null;
-}
+});
 
 /**
  * The expand button of a row with child or detail rows, named by React Aria after the row
@@ -114,7 +125,7 @@ export function TableDataCell<T extends TableRow>(props: {
               movesOnCommit={model.cells !== null}
             />
           ) : (
-            renderCellContent(row, column)
+            <TableCellContent row={row} column={column as TableColumn<TableRow>} />
           )}
           {range.hasFillHandle ? (
             <span className={hooks.slotClass('fill-handle')} aria-hidden="true" />
