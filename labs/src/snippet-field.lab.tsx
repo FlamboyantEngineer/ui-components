@@ -6,6 +6,7 @@ import {
   type SnippetLoader,
 } from '../../src/components/snippet-field/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { FieldBehaviours } from './field-behaviours.js';
 import { LabOutput } from './lab-output.js';
 import { SnippetFieldCorners, SnippetFieldSizes } from './snippet-field-cases.js';
 
@@ -113,5 +114,29 @@ mountLab(
     >
       <LinkedDemo />
     </LabSection>
+    <FieldBehaviours<SnippetFieldValue | null>
+      committed={{
+        source: 'samples/greet.ts',
+        lines: { start: 1, end: 2 },
+        code: 'const greeting = "Hello";\nconsole.log(greeting);',
+        language: 'ts',
+      }}
+      changed={{
+        source: 'samples/total.py',
+        lines: null,
+        code: 'total = sum(values)',
+        language: 'py',
+      }}
+      empty={null}
+      refused={{ source: 'private/keys.ts', lines: null, code: 'secret', language: 'ts' }}
+      isRefused={(value) => value?.source.startsWith('private/') ?? false}
+      refusedText="A private source"
+      render={(props) => (
+        <SnippetField
+          loadSnippet={() => Promise.resolve({ ok: false, message: 'Not in this demo.' })}
+          {...props}
+        />
+      )}
+    />
   </>,
 );

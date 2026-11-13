@@ -130,5 +130,19 @@ mountLab(
     <LabSection title="Custom tokens" description="The host's own token for hexadecimal digits.">
       <CustomTokens />
     </LabSection>
+    <LabSection
+      title="Placeholder and adornments"
+      description="A hint while empty, a country code before the text and a unit after it, inside the input's frame."
+    >
+      <div data-lab-demo="adornments">
+        <MaskedTextField
+          label="Local number"
+          mask="999 9999"
+          placeholder="555 0123"
+          startAdornment="+1"
+          endAdornment="ext."
+        />
+      </div>
+    </LabSection>
   </>,
 );

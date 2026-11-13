@@ -545,6 +545,7 @@ function Modules() {
         routing="orthogonal"
         selectionMode="single"
         onSelectionChange={setSelection}
+        showZoomReset
       />
       <Output name="module" value={formatKeys(selection)} />
     </>
@@ -618,7 +619,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Read only graph"
-      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views preserve each node and connection when reordered, including numeric and text keys with the same spelling, and list connections in edge order with parallel connections and loops."
+      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views preserve each node and connection when reordered, including numeric and text keys with the same spelling, and list connections in edge order with parallel connections and loops. Its zoom control has a reset button back to 100%."
     >
       <Modules />
     </LabSection>

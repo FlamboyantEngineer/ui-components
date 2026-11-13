@@ -182,6 +182,23 @@ function IconsReview() {
   );
 }
 
+/** The icons presentation left to itself, with one card open at first. */
+function IconsOpenAtFirst() {
+  return (
+    <div data-lab-demo="icons-open">
+      <AnnotationLayer annotations={createAnnotations('icons-open')}>
+        <Method prefix="icons-open" />
+        <AnnotationMargin
+          aria-label="Markers open at first"
+          presentation="icons"
+          defaultOpenKeys={['butter']}
+          renderCard={renderCard}
+        />
+      </AnnotationLayer>
+    </div>
+  );
+}
+
 /** Steps in a scrolling region, with a button of their own that adds a step above the note. */
 function ScrollingSteps() {
   const [extra, setExtra] = useState(0);
@@ -269,6 +286,7 @@ mountLab(
       description="The icons presentation draws a marker per note instead of its card; the two notes on one line stack. Activating a marker opens its card below it, several at once, and Escape inside a card closes it. Tab reaches the markers as one stop, moved with the arrow keys, Home and End."
     >
       <IconsReview />
+      <IconsOpenAtFirst />
     </LabSection>
     <LabSection
       title="Entries placed per annotation"
