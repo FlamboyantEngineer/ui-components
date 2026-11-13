@@ -28,6 +28,7 @@ import {
   AttachedGroups,
   PendingToolbar,
   PresentationChanges,
+  ToolbarEdgeFades,
   ToolbarOverflow,
 } from './toolbar-row-cases.js';
 
@@ -400,6 +401,12 @@ mountLab(
       description="In a 240px host: wrap flows the tools and their groups onto more rows, scroll keeps one row that scrolls between edge buttons, none keeps one row and leaves overflow to the caller."
     >
       <ToolbarOverflow />
+    </LabSection>
+    <LabSection
+      title="Toolbar edge fades"
+      description="Edge fades are opt-in: without showEdgeFades a scrolling row draws only its chevrons, on the canvas; with it, a fade covers each edge that hides tools, under the chevron."
+    >
+      <ToolbarEdgeFades />
     </LabSection>
     <LabSection
       title="Presentation changes keep drafts"

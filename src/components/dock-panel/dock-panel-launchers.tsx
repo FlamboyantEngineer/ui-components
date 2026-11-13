@@ -50,6 +50,8 @@ interface DockPanelLaunchersProps {
   bodyId: string;
   /** Called with the pane whose launcher was activated. */
   onLaunch: (key: Key) => void;
+  /** Draws a fade over each edge that hides launchers. */
+  showEdgeFades: boolean;
 }
 
 interface DockPanelLauncherProps {
@@ -154,7 +156,7 @@ function DockPanelLauncher({
 /**
  * The collapsed panel's launchers as one toolbar: the arrow keys, Home and End move focus between
  * them, and a press, Enter or Space activates one. The list scrolls natively when it is longer
- * than the rail, with a fade at each edge that hides launchers.
+ * than the rail, with a fade at each edge that hides launchers when asked.
  */
 export function DockPanelLaunchers({
   label,
@@ -165,6 +167,7 @@ export function DockPanelLaunchers({
   isOverlay,
   bodyId,
   onLaunch,
+  showEdgeFades,
 }: DockPanelLaunchersProps) {
   const strings = useUiStrings();
   const orientation = position === 'bottom' ? 'horizontal' : 'vertical';
@@ -193,7 +196,7 @@ export function DockPanelLaunchers({
           />
         ))}
       </Toolbar>
-      <DockPanelFades edges={edges.overflow} orientation={orientation} />
+      {showEdgeFades ? <DockPanelFades edges={edges.overflow} orientation={orientation} /> : null}
     </div>
   );
 }

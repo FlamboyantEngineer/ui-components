@@ -128,6 +128,16 @@ describe('ToolbarRow', () => {
     expect(rule).toHaveAttribute('data-orientation', 'horizontal');
   });
 
+  it('UIC-LAYOUT-3.8 draws the scrolling row fades only with showEdgeFades', () => {
+    const { container } = render(
+      <ToolbarRow aria-label="Kitchen" overflow="scroll">
+        <button type="button">Peel</button>
+      </ToolbarRow>,
+    );
+    expect(container.querySelector('.ui-toolbar-row__fade')).toBeNull();
+    expect(container.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(2);
+  });
+
   it('UIC-LAYOUT-3.8 wraps the row and its groups, scrolls it, or keeps one row', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
@@ -145,7 +155,7 @@ describe('ToolbarRow', () => {
     expectHooksMatchSpec(container, 'LAYOUT', { slots: ['strip', 'group'] });
 
     rerender(
-      <ToolbarRow aria-label="Kitchen" overflow="scroll" data-owner="kitchen">
+      <ToolbarRow aria-label="Kitchen" overflow="scroll" data-owner="kitchen" showEdgeFades>
         <ToolbarRowGroup aria-label="Knives">
           <button type="button">Peel</button>
           <button type="button">Slice</button>

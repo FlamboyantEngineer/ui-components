@@ -97,12 +97,12 @@
   box-shadow: var(--ref-focus-inset);
 }
 
-/* While more can load, the last rows fade toward the Load more row. */
-.ui-chat-list[data-has-more] .ui-chat-list__conversation:nth-last-child(2) {
+/* With the opt-in edge fades, while more can load, the last rows fade toward the Load more row. */
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(2) {
   opacity: 0.8;
 }
 
-.ui-chat-list[data-has-more] .ui-chat-list__conversation:nth-last-child(1) {
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(1) {
   opacity: 0.62;
 }
 

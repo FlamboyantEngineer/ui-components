@@ -154,8 +154,9 @@ test.describe('Toolbar Scroller lab', () => {
           let right = strip.x + strip.width;
           for (const edge of ['start', 'end']) {
             const button = root.locator(`.ui-toolbar-scroller__scroll-button[data-edge="${edge}"]`);
-            if (!(await button.isVisible())) continue;
-            const covered = await box(button);
+            // A button that hides while the strip settles covers nothing; the poll reads it again.
+            const covered = await button.boundingBox();
+            if (!covered) continue;
             if (edge === 'start') left = covered.x + covered.width;
             else right = covered.x;
           }

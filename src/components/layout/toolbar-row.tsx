@@ -49,6 +49,8 @@ export interface ToolbarRowProps
   justify?: LayoutJustify | undefined;
   /** What happens to controls that do not fit on one horizontal row. Defaults to `wrap`. */
   overflow?: ToolbarRowOverflow | undefined;
+  /** With `overflow="scroll"`, draws a decorative fade over each edge that hides controls. Defaults to `false`. */
+  showEdgeFades?: boolean | undefined;
   /** The row keeps its place but its controls are inert, as while the surface they serve starts. */
   isPending?: boolean | undefined;
 }
@@ -131,6 +133,7 @@ export function ToolbarRow({
   space = 'md',
   justify = 'end',
   overflow: requestedOverflow = 'wrap',
+  showEdgeFades = false,
   isPending = false,
   grow,
   fill,
@@ -173,7 +176,7 @@ export function ToolbarRow({
         edges={edges}
         onPage={scroll.pageToward}
         hasButtons={isScroll}
-        fadeHooks={isScroll ? hooks : undefined}
+        fadeHooks={isScroll && showEdgeFades ? hooks : undefined}
       >
         <ToolbarRowStrip
           role={role}

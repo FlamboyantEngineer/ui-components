@@ -19,16 +19,18 @@ interface DockPanelTabsProps {
   focus: Pick<DockPanelFocus, 'tabRef'>;
   /** The panel shows its tabs: it is expanded and docked. */
   isShown: boolean;
+  /** Draws a fade over each edge that hides tabs. */
+  showEdgeFades: boolean;
 }
 
 /** The width of the fade over each scrolling edge, which a revealed tab stays clear of. */
-const fadeSize = 26;
+const edgeFadeSize = 26;
 
 /**
  * Scrolls the list the least that shows the selected tab clear of the fades, if any part of it is
  * under one or outside the list. A tab wider than the room left aligns its start.
  */
-function revealSelectedTab(list: HTMLElement) {
+function revealSelectedTab(list: HTMLElement, fadeSize: number) {
   const tab = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
   const range = list.scrollWidth - list.clientWidth;
   if (!tab || range <= 0) return;
@@ -54,31 +56,35 @@ function revealSelectedTab(list: HTMLElement) {
  * whenever it resizes. Otherwise the reader's own scroll position stays, and the tab list itself
  * centres each newly selected tab.
  */
-function useRevealSelectedTab(listRef: RefObject<HTMLElement | null>, isShown: boolean) {
+function useRevealSelectedTab(
+  listRef: RefObject<HTMLElement | null>,
+  isShown: boolean,
+  fadeSize: number,
+) {
   useLayoutEffect(() => {
-    if (isShown && listRef.current) revealSelectedTab(listRef.current);
-  }, [isShown, listRef]);
+    if (isShown && listRef.current) revealSelectedTab(listRef.current, fadeSize);
+  }, [isShown, listRef, fadeSize]);
   useResizeObserver(
     () => (isShown && listRef.current ? [listRef.current] : []),
     () => {
-      if (listRef.current) revealSelectedTab(listRef.current);
+      if (listRef.current) revealSelectedTab(listRef.current, fadeSize);
     },
   );
 }
 
 /**
  * The expanded panel's tabs: one horizontal strip of the panes' icons, labels and counts, which
- * scrolls freely (the wheel too) with a fade at each edge that hides tabs. It stays mounted while
- * the panel is collapsed, hidden, so the tabs keep pairing with their panes.
+ * scrolls freely (the wheel too), with a fade at each edge that hides tabs when asked. It stays
+ * mounted while the panel is collapsed, hidden, so the tabs keep pairing with their panes.
  */
-export function DockPanelTabs({ label, panes, focus, isShown }: DockPanelTabsProps) {
+export function DockPanelTabs({ label, panes, focus, isShown, showEdgeFades }: DockPanelTabsProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const edges = useDockPanelFades(listRef, 'horizontal', { wheel: false });
-  useRevealSelectedTab(listRef, isShown);
+  useRevealSelectedTab(listRef, isShown, showEdgeFades ? edgeFadeSize : 0);
   return (
     <div {...hooks.slot('strip', { orientation: 'horizontal' })} hidden={!isShown}>
       <DockPanelTabList {...{ label, panes, focus }} listRef={listRef} />
-      <DockPanelFades edges={edges.overflow} orientation="horizontal" />
+      {showEdgeFades ? <DockPanelFades edges={edges.overflow} orientation="horizontal" /> : null}
     </div>
   );
 }
@@ -92,7 +98,9 @@ export function DockPanelTabList({
   panes,
   focus,
   listRef,
-}: Omit<DockPanelTabsProps, 'isShown'> & { listRef?: Ref<HTMLDivElement> | undefined }) {
+}: Omit<DockPanelTabsProps, 'isShown' | 'showEdgeFades'> & {
+  listRef?: Ref<HTMLDivElement> | undefined;
+}) {
   return (
     <TabList ref={listRef} aria-label={label} overflow="scroll" {...hooks.slot('tab-list')}>
       {panes.map((pane) => (

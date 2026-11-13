@@ -999,6 +999,21 @@ describe('ScrollRegion', () => {
     expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-start')).toBe('');
   });
 
+  it('UIC-SCROLL-REGION-4.6 asks for edge fades only with showEdgeFades on a scrolling region', () => {
+    const { container, rerender } = render(<ScrollRegion>Rows</ScrollRegion>);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).not.toHaveAttribute('data-edge-fades');
+    rerender(<ScrollRegion showEdgeFades>Rows</ScrollRegion>);
+    expect(root).toHaveAttribute('data-edge-fades', 'true');
+    expectHooksMatchSpec(container, 'SCROLL-REGION');
+    rerender(
+      <ScrollRegion showEdgeFades axis="none">
+        Rows
+      </ScrollRegion>,
+    );
+    expect(root).not.toHaveAttribute('data-edge-fades');
+  });
+
   it('UIC-SCROLL-REGION-4.1 measures a region only once the browser draws it', () => {
     viewports.set('folded', {
       clientHeight: 100,
