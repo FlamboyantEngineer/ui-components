@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { Fragment } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -10,7 +11,12 @@ import {
   scrollViewport,
   uninstallTranscriptLayout,
 } from '../../../test/transcript-layout-fixtures.js';
-import { ChatMessage, ChatTranscript, type ChatTranscriptProps } from './chat-transcript.js';
+import {
+  ChatDateSeparator,
+  ChatMessage,
+  ChatTranscript,
+  type ChatTranscriptProps,
+} from './chat-transcript.js';
 
 beforeEach(() => {
   installTranscriptLayout({ viewportHeight: 200, messageHeight: 50 });
@@ -40,6 +46,29 @@ function LongHistory({
           >
             Message {number}
           </ChatMessage>
+        );
+      })}
+    </ChatTranscript>
+  );
+}
+
+/** Three hundred messages over six days, each day under its date separator. */
+function Days(props: ChatTranscriptProps) {
+  return (
+    <ChatTranscript virtualized {...props}>
+      {Array.from({ length: 300 }, (_, index) => {
+        const day = Math.floor(index / 50) + 1;
+        return (
+          <Fragment key={index}>
+            {index % 50 === 0 ? (
+              <ChatDateSeparator
+                key={`day-${day}`}
+                date={`2026-04-0${day}`}
+                getNow={() => new Date('2026-04-20T10:00:00')}
+              />
+            ) : null}
+            <ChatMessage id={`m${index + 1}`}>Message {index + 1}</ChatMessage>
+          </Fragment>
         );
       })}
     </ChatTranscript>
@@ -164,6 +193,19 @@ describe('ChatTranscript virtualized', () => {
     await user.keyboard('{End}');
     expect(article('m3000')).toHaveFocus();
     expect(distanceToBottom(viewport)).toBe(0);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-1.6 UIC-CHAT-TRANSCRIPT-3.7 tells separators it never mounted from messages', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Days firstUnreadId="m101" />);
+    expect(container.querySelector('.ui-chat-transcript__unread')).toHaveTextContent('200 unread');
+    const newest = article('m300') as HTMLElement;
+    expect(newest).toHaveAttribute('aria-posinset', '300');
+    expect(newest).toHaveAttribute('aria-setsize', '300');
+    act(() => newest.focus());
+    await user.keyboard('{Home}');
+    expect(article('m1')).toHaveFocus();
+    expect(getViewport().scrollTop).toBe(0);
   });
 
   it('UIC-CHAT-TRANSCRIPT-1.6 follows, keeps the place as history loads and reaches a highlight', () => {

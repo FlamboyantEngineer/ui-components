@@ -3,6 +3,7 @@ import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { readOffset } from './transcript-geometry.js';
+import type { TranscriptMessageEntry } from './transcript-registry.js';
 import {
   isTranscriptMessage,
   readMessageText,
@@ -14,11 +15,7 @@ import {
 import { syncWithScroll } from './transcript-sync.js';
 
 /** Announces a message that arrived, or that finished streaming. */
-export function announceMessage(
-  runtime: TranscriptRuntime,
-  settings: TranscriptSettings,
-  key: string,
-) {
+function announceMessage(runtime: TranscriptRuntime, settings: TranscriptSettings, key: string) {
   const entry = runtime.registry.entry(key);
   if (!entry) return;
   settings.announcer.message({
@@ -30,7 +27,7 @@ export function announceMessage(
 /**
  * Handles what arrived: the reader's own message brings the view to it (anchored at the top in
  * anchor mode, else following the bottom); messages from others are announced, a streaming one
- * once it completes. Returns whether it settled the scroll position.
+ * once it completes, and a failed one by its error. Returns whether it settled the scroll position.
  */
 export function applyArrivals(
   runtime: TranscriptRuntime,
@@ -41,6 +38,7 @@ export function applyArrivals(
   for (const key of arrivals) {
     const entry = runtime.registry.entry(key);
     if (!entry) continue;
+    if (entry.error !== undefined) settings.announcer.notice(entry.error);
     if (entry.origin === 'sent') sent = key;
     else if (entry.status === 'streaming') runtime.streaming.add(key);
     else if (entry.status === 'complete') announceMessage(runtime, settings, key);
@@ -49,6 +47,27 @@ export function applyArrivals(
   runtime.unseen.clear();
   if (settings.scrollMode === 'anchor') runtime.keeper.anchor(sent);
   else runtime.keeper.holdBottom();
+  return true;
+}
+
+/**
+ * Handles what a message registers: a failure while it is mounted is announced by its error, and
+ * a streaming arrival that ended is announced if it completed. Returns whether a streaming
+ * arrival ended. A message that mounts already failed (nothing registered before), as history
+ * and a virtualized transcript's mounts do, announces nothing here.
+ */
+export function noteMessageChange(
+  runtime: TranscriptRuntime,
+  settings: TranscriptSettings,
+  { key, previous }: { key: string; previous: TranscriptMessageEntry | undefined },
+): boolean {
+  const entry = runtime.registry.entry(key);
+  if (!entry) return false;
+  const hasNewError = previous !== undefined && previous.error !== entry.error;
+  if (entry.error !== undefined && hasNewError) settings.announcer.notice(entry.error);
+  if (!runtime.streaming.has(key) || entry.status === 'streaming') return false;
+  runtime.streaming.delete(key);
+  if (entry.status === 'complete') announceMessage(runtime, settings, key);
   return true;
 }
 

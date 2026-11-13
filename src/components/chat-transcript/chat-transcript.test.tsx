@@ -109,6 +109,17 @@ describe('ChatTranscript', () => {
     expect(viewport.scrollTop).toBe(180);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-1.2 keeps a scroll the reader makes one pixel at a time', () => {
+    render(<Conversation count={4} />);
+    const viewport = getViewport();
+    expect(viewport.scrollTop).toBe(300);
+    // From the bottom, then from a place further up: each pixel is the reader's, not the keeper's.
+    for (const top of [299, 298, 297, 296, 120, 119, 118]) {
+      scrollViewport(viewport, top);
+      expect(viewport.scrollTop).toBe(top);
+    }
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.2 stops following when the reader scrolls up while a reply grows', () => {
     const { rerender } = render(<Conversation count={3} />);
     const viewport = getViewport();

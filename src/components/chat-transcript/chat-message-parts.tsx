@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, RefCallback } from 'react';
+import type { ReactNode } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import {
   CheckGlyph,
@@ -20,6 +20,7 @@ import { Button } from '../button/button.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import type { ChatMessageAuthor, ChatMessageDelivery, ChatMessageProps } from './chat-message.js';
 import { ChatQuote } from './chat-quote.js';
+import { useIsInTranscript, useTranscriptContentRef } from './transcript-context.js';
 
 type ChatMessageBodyProps = Pick<
   ChatMessageProps,
@@ -36,8 +37,6 @@ type ChatMessageBodyProps = Pick<
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
   onRetry: (() => void) | undefined;
-  /** Records the content element with the transcript. */
-  contentRef: RefCallback<HTMLElement>;
 };
 
 export const chatMessageHooks = createHooks('chat-message', [
@@ -180,6 +179,20 @@ function ChatMessageSlot({
   return children ? <div {...hooks.slot(name)}>{children}</div> : null;
 }
 
+/** What a deleted message shows under its header: the placeholder for its content, and its time. */
+export function ChatMessageDeleted({ time, getNow }: Pick<ChatMessageProps, 'time' | 'getNow'>) {
+  const strings = useUiStrings();
+  const contentRef = useTranscriptContentRef();
+  return (
+    <>
+      <div ref={contentRef} {...hooks.slot('content')}>
+        {strings.chatMessageDeleted}
+      </div>
+      <ChatMessageFooter time={time} getNow={getNow} />
+    </>
+  );
+}
+
 /**
  * Everything a message that is not deleted shows under its header: the quote, the content, the
  * footer, the error with Retry, the reactions and the actions.
@@ -195,11 +208,15 @@ export function ChatMessageBody({
   reactions,
   actions,
   children,
-  contentRef,
   time,
   getNow,
 }: ChatMessageBodyProps) {
   const quotedId = quote?.messageId;
+  // The transcript announces the text of this element, whatever else the message draws.
+  const contentRef = useTranscriptContentRef();
+  // A transcript announces the failure through its own live region, once: an alert here would be
+  // read again each time a virtualized transcript mounts the message.
+  const isInTranscript = useIsInTranscript();
   return (
     <>
       {quote ? (
@@ -223,7 +240,7 @@ export function ChatMessageBody({
       />
       {error ? (
         <div {...hooks.slot('error')}>
-          <span role="alert">{error}</span>
+          <span role={isInTranscript ? undefined : 'alert'}>{error}</span>
           {onRetry ? <RetryButton onRetry={onRetry} /> : null}
         </div>
       ) : null}

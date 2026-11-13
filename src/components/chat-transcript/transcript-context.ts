@@ -22,6 +22,8 @@ interface TranscriptMessageRegistration {
   summary?: string | undefined;
   origin: ChatMessageOrigin;
   status: ChatMessageStatus;
+  /** Why the message failed; the transcript announces it. */
+  error?: string | undefined;
 }
 
 /** Props a message spreads on its `<article>` so the transcript can find, focus and mark it. */
@@ -71,6 +73,13 @@ export function useTranscriptContentRef(): RefCallback<HTMLElement> {
   );
 }
 
+/** Whether the component renders as a child of a transcript, which then announces for it. */
+export function useIsInTranscript(): boolean {
+  const registry = useContext(TranscriptContext);
+  const key = useContext(TranscriptItemContext);
+  return registry !== null && key !== null;
+}
+
 /**
  * Registers a message with the transcript it renders in and returns the props for its
  * `<article>`: its place in the transcript's single tab stop, its position in the feed and the
@@ -82,6 +91,7 @@ export function useTranscriptMessage({
   summary,
   origin,
   status,
+  error,
 }: TranscriptMessageRegistration): TranscriptMessageProps {
   const registry = useContext(TranscriptContext);
   const key = useContext(TranscriptItemContext);
@@ -94,9 +104,9 @@ export function useTranscriptMessage({
   );
   useLayoutEffect(() => {
     if (registry && key !== null) {
-      registry.register(key, { id, authorName, summary, origin, status });
+      registry.register(key, { id, authorName, summary, origin, status, error });
     }
-  }, [registry, key, id, authorName, summary, origin, status]);
+  }, [registry, key, id, authorName, summary, origin, status, error]);
   useLayoutEffect(() => {
     if (!registry || key === null) return undefined;
     return () => {

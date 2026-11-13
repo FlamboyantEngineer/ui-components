@@ -16,11 +16,11 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
 import { useTranscriptAnnouncer } from './transcript-announcer.js';
 import {
-  announceMessage,
   applyArrivals,
   applyHighlight,
   countUnseen,
   focusMessage,
+  noteMessageChange,
   noteOlder,
 } from './transcript-commit.js';
 import {
@@ -30,6 +30,7 @@ import {
   type TranscriptItem,
 } from './transcript-items.js';
 import type { TranscriptNavigation } from './transcript-keyboard.js';
+import { collectForced, countUnread, type TranscriptKeys } from './transcript-keys.js';
 import {
   createTranscriptRuntime,
   findLastMessageKey,
@@ -75,45 +76,8 @@ function measureWindow(runtime: TranscriptRuntime, settings: TranscriptSettings)
   if (settings.virtualized && feed) runtime.windowModel.measure(feed, runtime.mountedItems);
 }
 
-/** The children a virtualized transcript keeps mounted wherever its window is. */
-function collectForced(
-  runtime: TranscriptRuntime,
-  keys: readonly string[],
-  { arrivals, highlight }: { arrivals: readonly string[]; highlight: string | undefined },
-) {
-  return [
-    runtime.activeKey,
-    runtime.pendingFocus?.key,
-    runtime.keeper.anchorKey(),
-    runtime.keeper.snapshot()?.key,
-    runtime.registry.view.get().tabStopKey,
-    highlight,
-    ...keys.slice(-2),
-    ...runtime.streaming,
-    ...arrivals,
-  ];
-}
-
-/** How many messages there are from the first unread one to the end, read from there on. */
-function countUnread(
-  runtime: TranscriptRuntime,
-  { keys, indexOf }: { keys: readonly string[]; indexOf: ReadonlyMap<string, number> },
-  firstUnreadId?: string,
-) {
-  const key = resolveMessageKey(runtime, firstUnreadId);
-  const start = key === undefined ? undefined : indexOf.get(key);
-  if (start === undefined) return 0;
-  let count = 0;
-  for (let index = start; index < keys.length; index += 1) {
-    if (isTranscriptMessage(runtime, keys[index] as string)) count += 1;
-  }
-  return count;
-}
-
 /** A commit's keys and window, with how the keys changed since the last commit that read them. */
-interface CommitInput {
-  keys: string[];
-  indexOf: ReadonlyMap<string, number>;
+interface CommitInput extends TranscriptKeys {
   mountedItems: string[];
   change: TranscriptChange;
 }
@@ -138,6 +102,7 @@ function flushPendingFocus(runtime: TranscriptRuntime, settings: TranscriptSetti
 function recordCommit(runtime: TranscriptRuntime, commit: CommitInput) {
   runtime.keys = commit.keys;
   runtime.indexOf = commit.indexOf;
+  runtime.parts = commit.parts;
   runtime.mountedItems = commit.mountedItems;
 }
 
@@ -215,12 +180,10 @@ function useObservers(
   }, [runtime, latest, isEmpty]);
   useEffect(
     () =>
-      runtime.registry.listen((key, entry) => {
-        if (!runtime.streaming.has(key) || entry.status === 'streaming') return;
+      runtime.registry.listen((key, _entry, previous) => {
+        if (!noteMessageChange(runtime, latest.current, { key, previous })) return;
         // A terminal presentation can grow before ResizeObserver gets a chance to measure it.
         measureWindow(runtime, latest.current);
-        runtime.streaming.delete(key);
-        if (entry.status === 'complete') announceMessage(runtime, latest.current, key);
         // The terminal status must commit before an offscreen streaming message can unmount.
         if (latest.current.virtualized) latest.current.requestRender();
       }),
@@ -267,8 +230,21 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
   const itemKeys = useMemo(() => items.map((item) => item.key), [items]);
   const keys = useShallowStable(itemKeys);
   const indexOf = useMemo(() => new Map(keys.map((key, index) => [key, index])), [keys]);
+  const partKeys = useShallowStable(
+    useMemo(() => items.filter((item) => item.isPart).map((item) => item.key), [items]),
+  );
+  const parts = useMemo(() => new Set(partKeys), [partKeys]);
   // Diffed once per new keys array, against the keys the last commit read.
-  const change = useMemo(() => diffTranscriptKeys(runtime.keys, keys), [runtime, keys]);
+  const change = useMemo(
+    // A part is known by this render's children, or by what the last commit and its mounts told.
+    () =>
+      diffTranscriptKeys(
+        runtime.keys,
+        keys,
+        (key) => parts.has(key) || !isTranscriptMessage(runtime, key),
+      ),
+    [runtime, keys, parts],
+  );
   const announcer = useTranscriptAnnouncer(strings);
   const [ui, setUi] = useState(initialUi);
   const [range, setRange] = useState<WindowRange | null>(null);
@@ -286,10 +262,14 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     setWindowed,
     requestRender,
   });
-  const forced = collectForced(runtime, keys, {
-    arrivals: runtime.keys !== keys ? change.arrivals : [],
-    highlight: resolveMessageKey(runtime, options.highlightedMessageId),
-  });
+  const forced = collectForced(
+    runtime,
+    { keys, indexOf, parts },
+    {
+      arrivals: runtime.keys !== keys ? change.arrivals : [],
+      highlight: resolveMessageKey(runtime, options.highlightedMessageId),
+    },
+  );
   const mounted =
     options.virtualized && isWindowed
       ? selectMounted(indexOf, range ?? resolveTailRange(keys), forced)
@@ -297,14 +277,14 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
   const mountedItems = useShallowStable(
     mounted ? mounted.map((index) => keys[index] as string) : keys,
   );
-  useCommit(runtime, latest, { keys, indexOf, mountedItems, change });
+  useCommit(runtime, latest, { keys, indexOf, parts, mountedItems, change });
   useObservers(runtime, latest, items.length === 0);
   return {
     runtime,
     items,
     mounted,
     ui,
-    unreadCount: countUnread(runtime, { keys, indexOf }, options.firstUnreadId),
+    unreadCount: countUnread(runtime, { keys, indexOf, parts }, options.firstUnreadId),
     announcement: announcer.text,
     navigation: createNavigation(runtime, latest, options.onEscape),
     onScroll() {

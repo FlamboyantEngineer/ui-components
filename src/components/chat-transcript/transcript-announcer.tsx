@@ -65,9 +65,12 @@ export function useTranscriptAnnouncer(strings: UiStrings): TranscriptAnnouncer 
     announce();
   }, [stringsRef]);
 
+  // The effects of a kept tree stop and start again when an `Activity` hides and shows it: a
+  // stopped timer is forgotten too, or it would hold every later announcement back for good.
   useEffect(
     () => () => {
       if (timer.current !== null) clearTimeout(timer.current);
+      timer.current = null;
     },
     [],
   );

@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
+import { Activity } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -134,7 +135,12 @@ describe('ChatTranscript announcements', () => {
       resizeContent();
       expect(viewport.scrollHeight).toBe(6950);
       expect(viewport.scrollTop).toBe(500);
-      const expected = terminal === 'complete' ? 'New message: Finished' : '98 new messages';
+      const outcomes = {
+        complete: 'New message: Finished',
+        error: 'Reply unavailable.',
+        cancelled: '98 new messages',
+      };
+      const expected = outcomes[terminal];
       expect(announcer()).toHaveTextContent(new RegExp(`^${expected}$`));
       rerender(<Conversation virtualized lines={[...finished]} />);
       scrollViewport(viewport, 1500);
@@ -142,9 +148,12 @@ describe('ChatTranscript announcements', () => {
         'data-status',
         terminal,
       );
-      if (terminal === 'error') {
-        expect(screen.getByRole('alert')).toHaveTextContent('Reply unavailable.');
-      }
+      // The transcript announced the failure; mounting the message again is no alert.
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      const finishedArticle = screen.getByText('Finished').closest('article') as HTMLElement;
+      expect(within(finishedArticle).queryAllByText('Reply unavailable.')).toHaveLength(
+        terminal === 'error' ? 1 : 0,
+      );
       expect(offsetInViewport(screen.getByText('Finished').closest('article') as HTMLElement)).toBe(
         0,
       );
@@ -162,6 +171,59 @@ describe('ChatTranscript announcements', () => {
       expect(announcer()).toHaveTextContent(new RegExp(`^${expected}$`));
     },
   );
+
+  it('UIC-CHAT-TRANSCRIPT-2.9 UIC-CHAT-TRANSCRIPT-3.6 announces a failure once, not the failures already there', () => {
+    const failedHistory: Line[] = [
+      ...history,
+      { id: 'h3', text: 'Is it booked?', status: 'error', error: 'The line is busy.' },
+    ];
+    const { rerender } = render(<Conversation lines={failedHistory} />);
+    expect(screen.getByText('The line is busy.')).not.toHaveAttribute('role');
+    expect(announcer()).toHaveTextContent(/^$/);
+    const sending: Line = { id: 's1', text: 'Book it.', origin: 'sent' };
+    rerender(<Conversation lines={[...failedHistory, sending]} />);
+    expect(announcer()).toHaveTextContent(/^$/);
+    // It fails while it is shown.
+    const unsent = { ...sending, error: 'The network dropped.' };
+    rerender(<Conversation lines={[...failedHistory, unsent]} />);
+    expect(announcer()).toHaveTextContent(/^The network dropped\.$/);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // It arrives already failed.
+    const refused: Line = { id: 'n1', text: 'Booking', status: 'error', error: 'No seats left.' };
+    rerender(<Conversation lines={[...failedHistory, unsent, refused]} />);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(announcer()).toHaveTextContent(/^No seats left\.$/);
+    // The same failure again, after a retry, is read again.
+    rerender(<Conversation lines={[...failedHistory, sending, refused]} />);
+    rerender(<Conversation lines={[...failedHistory, unsent, refused]} />);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(announcer()).toHaveTextContent(/^The network dropped\.$/);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-3.6 keeps announcing after it was hidden with an announcement pending', () => {
+    const arrival = (index: number): Line => ({ id: `n${index}`, text: `Reply ${index}` });
+    const shown = (lines: Line[], mode: 'visible' | 'hidden' = 'visible') => (
+      <Activity mode={mode}>
+        <Conversation lines={lines} />
+      </Activity>
+    );
+    const { rerender } = render(shown(history));
+    const arrived = [...history, arrival(1)];
+    rerender(shown(arrived));
+    expect(announcer()).toHaveTextContent(/^New message: Reply 1$/);
+    // Hiding stops the effects within the second the announcer waits between announcements.
+    rerender(shown(arrived, 'hidden'));
+    rerender(shown(arrived));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    rerender(shown([...arrived, arrival(2)]));
+    expect(announcer()).toHaveTextContent(/^New message: Reply 2$/);
+  });
 
   it('UIC-CHAT-TRANSCRIPT-3.6 announces an arriving message once, without the history', () => {
     const { container, rerender } = render(<Conversation lines={history} />);
