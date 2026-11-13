@@ -13,6 +13,7 @@ import {
   MessageComposerAttachButton,
   MessageComposerEmojiButton,
   MessageComposerMenuButton,
+  type MessageComposerMenuSection,
   MessageComposerSelect,
   MessageComposerToggle,
 } from '../../src/components/message-composer/index.js';
@@ -260,6 +261,41 @@ function DisabledWhilePicking() {
   );
 }
 
+/** The chat's own sending options, which the composer puts behind a "+" button it adds. */
+const sendingOptions: MessageComposerMenuSection[] = [
+  {
+    id: 'sending',
+    title: 'Sending',
+    items: [
+      {
+        id: 'sign',
+        label: 'Add a signature',
+        onAction: (composer) => composer.insertText(' — Sent from the lab'),
+      },
+    ],
+  },
+];
+
+/** The composer's own menu sections, and a send the host fails, which it hears. */
+function OwnMenuAndFailedSend() {
+  const [error, setError] = useState('none');
+  return (
+    <div data-lab-demo="own-menu">
+      <MessageComposer
+        aria-label="Message with sending options"
+        menuSections={sendingOptions}
+        onSubmit={() => Promise.reject(new Error('The host refused the message.'))}
+        onSubmitError={(reason) =>
+          setError(reason instanceof Error ? reason.message : String(reason))
+        }
+      />
+      <p>
+        Send error: <output data-lab-output="send error">{error}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -315,6 +351,12 @@ mountLab(
         onSubmit={() => undefined}
         data-lab-composer="touch"
       />
+    </LabSection>
+    <LabSection
+      title="Own menu and a failed send"
+      description="With menuSections and no menu button among the controls, the composer adds a + button at the row's start offering them; Add a signature writes into the draft. Sending fails at the host: onSubmitError hears it and the draft stays."
+    >
+      <OwnMenuAndFailedSend />
     </LabSection>
   </>,
 );

@@ -220,6 +220,40 @@ function DesignerDemo() {
   );
 }
 
+/** Selection the host holds, and a top level that takes sections only. */
+function HostSelection() {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  return (
+    <div style={wide} data-lab-demo="host-selection">
+      <p>
+        <Button size="sm" variant="secondary" onPress={() => setSelectedId('name')}>
+          Host selects Full name
+        </Button>{' '}
+        <Button size="sm" variant="secondary" onPress={() => setSelectedId(null)}>
+          Host clears the selection
+        </Button>
+      </p>
+      <FormLayoutDesigner
+        aria-label="Layout, sections at the top"
+        defaultValue={sample}
+        types={types}
+        palette={createPalette()}
+        rootAccepts={(type) => type === 'section'}
+        selectedId={selectedId}
+        onSelectionChange={setSelectedId}
+        renderInspector={(node, update) => <Inspector node={node} update={update} />}
+      />
+      <LabOutput name="Selected">{selectedId ?? 'none'}</LabOutput>
+      <FormLayoutDesigner
+        aria-label="Layout, Newsletter selected at first"
+        defaultValue={sample}
+        types={types}
+        defaultSelectedId="news"
+      />
+    </div>
+  );
+}
+
 /** The contact section alone, in a right-to-left locale. */
 function RightToLeftDemo() {
   const [layout, setLayout] = useState<FormLayoutValue<SampleField>>(sample.slice(0, 1));
@@ -269,6 +303,12 @@ mountLab(
       description="In a right-to-left locale a row reads from the right: dropping on a node's right half places before it."
     >
       <RightToLeftDemo />
+    </LabSection>
+    <LabSection
+      title="Selection and top level"
+      description="The host selects a node or clears the selection from its own buttons and hears the reader's choice; this designer's top level takes sections only, so the palette's fields go inside one. Below, a designer opening with Newsletter selected."
+    >
+      <HostSelection />
     </LabSection>
     <FormLayoutSizes />
     <FormLayoutCorners />

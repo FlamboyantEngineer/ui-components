@@ -71,16 +71,18 @@ describe('PdfViewer page failures', () => {
     await waitFor(() => expect(observer.observed).toHaveLength(3));
     act(() => observer.report([0], true));
     await waitFor(() => expect(engine.render).toHaveBeenCalledTimes(1));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // Role queries scoped to the page: a whole-viewer query is slow enough under load to time out.
+    const page = within(pageElement(2));
+    expect(page.queryByRole('alert')).not.toBeInTheDocument();
     act(() => observer.report([2], true));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Page 3 could not be drawn.');
+    expect(await page.findByRole('alert')).toHaveTextContent('Page 3 could not be drawn.');
     expect(onPageError).toHaveBeenCalledWith(2, expect.any(Error));
     // Scrolled away, the page releases its drawing and its failure; back, it draws again.
     act(() => observer.report([2], false));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(page.queryByRole('alert')).not.toBeInTheDocument();
     act(() => observer.report([2], true));
     await waitFor(() => expect(engine.render).toHaveBeenCalledTimes(3));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(page.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('UIC-PDF-VIEWER-2.6 does not treat a cancelled drawing as a failure', async () => {

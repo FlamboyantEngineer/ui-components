@@ -98,6 +98,25 @@ mountLab(
         />
       </LabSection>
       <LabSection
+        title="Value format"
+        description="formatOptions writes the value text: megabytes of a 120 megabyte download, and a percentage with one decimal."
+      >
+        <div data-lab-demo="format-options" style={{ width: 200, display: 'grid', gap: 12 }}>
+          <ProgressBar
+            label="Downloaded"
+            value={45}
+            maxValue={120}
+            formatOptions={{ style: 'unit', unit: 'megabyte' }}
+          />
+          <ProgressBar
+            label="Checked"
+            value={2}
+            maxValue={3}
+            formatOptions={{ style: 'percent', maximumFractionDigits: 1 }}
+          />
+        </div>
+      </LabSection>
+      <LabSection
         title="Status"
         description="Each tone, measured and indeterminate; a full bar also publishes completion."
       >

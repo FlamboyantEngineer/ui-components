@@ -97,7 +97,7 @@ test.describe('Chat Tool Call lab', () => {
       command: 'terminal',
       search: 'search',
       fetch: 'globe',
-      other: 'wrench',
+      other: 'letter',
     } as const;
     for (const [kind, glyph] of Object.entries(glyphs)) {
       const done = card(page, `kind=${kind} status=succeeded`);
@@ -109,6 +109,33 @@ test.describe('Chat Tool Call lab', () => {
     }
     await expect(card(page, 'kind=command status=succeeded')).toContainText('npm test');
     await lab.expectAccessible('[data-lab-section="Kinds"]');
+  });
+
+  test('UIC-CHAT-TOOL-CALL-1.9 draws a letter for a tool without a glyph once it succeeded', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-tool-call');
+    const letters = { source: 'O', 'tool name': 'P', 'non-Latin': '日', 'emoji first': 'F' };
+    for (const [letterCase, letter] of Object.entries(letters)) {
+      const done = card(page, `letter=${letterCase} status=succeeded`);
+      const glyph = done.locator('.ui-chat-tool-call__status-glyph');
+      await expect(glyph).toHaveAttribute('data-glyph', 'letter');
+      await expect(glyph).toHaveAttribute('data-letter', letter);
+      const box = await glyph.boundingBox();
+      expect(box?.width).toBe(16);
+      expect(box?.height).toBe(16);
+      await expect(
+        card(page, `letter=${letterCase} status=running`).locator('[data-glyph="letter"]'),
+      ).toHaveCount(0);
+    }
+    await expect(
+      card(page, 'letter=no letter status=succeeded').locator('[data-glyph="wrench"]'),
+    ).toHaveCount(1);
+    await expect(
+      card(page, 'letter=host glyph status=succeeded').locator('[data-glyph="sparkles"]'),
+    ).toHaveCount(1);
+    await lab.expectAccessible('[data-lab-section="Letter glyphs"]');
   });
 
   test('UIC-CHAT-TOOL-CALL-3.1 follows the host while controlled, through status changes', async ({

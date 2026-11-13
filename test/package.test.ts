@@ -235,7 +235,9 @@ describe('hosted CI', () => {
   const checks = readFileSync(join(process.cwd(), 'scripts/check.mjs'), 'utf8');
 
   it('UIC-PRIMITIVES-2.1 runs the shared gate list, which checks public types after the build', () => {
-    expect(workflow).toMatch(/^\s+run: npm run check$/m);
+    expect(workflow).toMatch(/^\s+run: npm run check -- --skip test$/m);
+    expect(workflow).toContain('npx vitest run --shard=${{ matrix.shard }}/2');
+    expect(workflow).toMatch(/^ {4}needs: \[gates, unit\]$/m);
     const build = checks.indexOf("'build',");
     const publicTypes = checks.indexOf("'check:public-types'");
     expect(build).toBeGreaterThan(-1);

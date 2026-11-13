@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { ChatParts } from '../../src/components/chat-parts/index.js';
+import type { CommentTextSegment } from '../../src/components/comment-composer/index.js';
 import {
   CommentText,
   CommentThread,
@@ -198,20 +199,43 @@ export function BuiltInMentionThread() {
   );
 }
 
+/** The host's own mention format, `<@id|Name>`, split into text and mentions. */
+function parseAngleMentions(text: string): CommentTextSegment[] {
+  const segments: CommentTextSegment[] = [];
+  let rest = 0;
+  for (const match of text.matchAll(/<@([^|>]+)\|([^>]+)>/g)) {
+    if (match.index > rest) segments.push({ kind: 'text', text: text.slice(rest, match.index) });
+    const [whole, id = '', name = ''] = match;
+    segments.push({ kind: 'mention', text: whole, id, name });
+    rest = match.index + whole.length;
+  }
+  if (rest < text.length) segments.push({ kind: 'text', text: text.slice(rest) });
+  return segments;
+}
+
 /** Stored comments read as inline Markdown, beside the same text read plainly. */
 export function MarkdownComments() {
   const text =
     '**Ask @[Jon Berg](jon)** about the _pear sauce_: see [the recipe](https://example.com/recipe) or `@[Lena Ortiz](lena)` for the token. <b>raw</b> stays text.';
   return (
-    <dl data-lab-demo="markdown-comment">
-      <dt>markdown-inline</dt>
-      <dd>
-        <CommentText format="markdown-inline" text={text} renderCard={renderSampleCard} />
-      </dd>
-      <dt>plain</dt>
-      <dd>
-        <CommentText text={text} renderCard={renderSampleCard} />
-      </dd>
-    </dl>
+    <>
+      <dl data-lab-demo="markdown-comment">
+        <dt>markdown-inline</dt>
+        <dd>
+          <CommentText format="markdown-inline" text={text} renderCard={renderSampleCard} />
+        </dd>
+        <dt>plain</dt>
+        <dd>
+          <CommentText text={text} renderCard={renderSampleCard} />
+        </dd>
+      </dl>
+      <p data-lab-demo="host-mention-format">
+        <CommentText
+          text="Thanks <@jon|Jon Berg>, and <@lena|Lena Ortiz> for the pears."
+          parse={parseAngleMentions}
+          renderCard={renderSampleCard}
+        />
+      </p>
+    </>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from '../scroll-region/scroll-region.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import type { CodeDiagnostic } from './code-layers.js';
+import { findLineStarts } from './find-line-starts.js';
 
 interface CodeScrollbarsProps {
   input: RefObject<HTMLTextAreaElement | null>;
@@ -60,6 +61,7 @@ function measureMarks({
 /** The editor's custom scrollbars share the native viewport, with diagnostics painted inside the vertical track. */
 export function CodeScrollbars(props: CodeScrollbarsProps) {
   const { input, inputId, gutter, diagnostics, value, wrap } = props;
+  const lineCount = findLineStarts(value).length;
   const observer = useSharedViewportObserver(input);
   const measurement = useOverlayMetrics({
     viewport: input,
@@ -92,13 +94,16 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
       );
     };
     update();
-    // A line that grows or shrinks moves the lines after it and resizes the gutter, so watching the
-    // gutter and the input covers every move of a mark; typing within a line needs no new measure.
+    // A line that wraps anew moves the marks after it without resizing the gutter, so each row is
+    // watched; the rows are watched again only when lines are added or removed, not per keystroke.
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
     if (input.current) observer?.observe(input.current);
-    if (gutter.current) observer?.observe(gutter.current);
+    if (gutter.current) {
+      observer?.observe(gutter.current);
+      for (const line of gutter.current.children) observer?.observe(line);
+    }
     return () => observer?.disconnect();
-  }, [input, gutter, diagnostics, wrap]);
+  }, [input, gutter, diagnostics, wrap, lineCount]);
   const { metrics } = measurement;
   return (
     <div {...hooks.slot('scrollbars')}>

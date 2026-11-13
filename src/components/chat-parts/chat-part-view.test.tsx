@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { SparklesGlyph } from '../../core/glyphs.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatQuestionPart, ChatToolCallPart } from './chat-part.js';
 import { ChatParts, type ChatToolRenderer } from './chat-parts.js';
@@ -162,6 +163,26 @@ describe('ChatParts part views', () => {
     expect(screen.getByText('Custom card for call-1')).toBeInTheDocument();
     expect(container.querySelectorAll('.ui-chat-tool-call')).toHaveLength(1);
     expect(toolCard(container)).toHaveAttribute('id', 'call-2');
+  });
+
+  it('UIC-CHAT-PARTS-3.5 gives a tool its glyph by name and passes on the source', () => {
+    const done = { ...approvalCall, status: 'succeeded', approval: undefined } as const;
+    const { container } = render(
+      <ChatParts
+        parts={[
+          done,
+          { ...done, id: 'call-2', name: 'read_files', source: 'OneDrive' },
+          { ...done, id: 'call-3', name: 'toString' },
+        ]}
+        toolGlyphs={{ delete_draft: SparklesGlyph }}
+        expandedParts={{ 'steps:call-1': true }}
+      />,
+    );
+    const glyphs = Array.from(
+      container.querySelectorAll('.ui-chat-tool-call__status-glyph'),
+      (glyph) => glyph.getAttribute('data-letter') ?? glyph.getAttribute('data-glyph'),
+    );
+    expect(glyphs).toEqual(['sparkles', 'O', 'T']);
   });
 
   it('UIC-CHAT-PARTS-3.4 reports answers and dismissal with the question id', async () => {

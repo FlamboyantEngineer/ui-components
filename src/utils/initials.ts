@@ -30,3 +30,16 @@ export function getInitials(name: string): string {
   }
   return graphemes(trimmed).slice(0, 2).join('').toUpperCase() || '?';
 }
+
+/**
+ * The first letter or digit of `name` in any script, upper-cased, skipping leading symbols, emoji
+ * and punctuation; `undefined` when the name has none. The letter is a whole user-perceived
+ * character, so a letter with combining marks stays whole, and one whose capital is two letters,
+ * such as `ß`, keeps its own form.
+ */
+export function getLeadingLetter(name: string): string | undefined {
+  const letter = graphemes(name).find((character) => /^[\p{L}\p{N}]/u.test(character));
+  if (letter === undefined) return undefined;
+  const capital = letter.toUpperCase();
+  return graphemes(capital).length === 1 ? capital : letter;
+}

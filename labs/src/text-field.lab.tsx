@@ -160,6 +160,14 @@ function HostRevealed() {
         autoComplete="new-password"
       />
       <LabOutput name="Revealed">{isRevealed ? 'yes' : 'no'}</LabOutput>
+      <TextField
+        label="Shared code"
+        type="password"
+        allowsReveal
+        defaultRevealed
+        defaultValue="pear 42"
+        autoComplete="off"
+      />
     </div>
   );
 }
@@ -383,7 +391,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Password shown by the host"
-      description="The host's button shows or hides both fields together; the first field's own button changes the same state, and the second field has no button of its own."
+      description="The host's button shows or hides both fields together; the first field's own button changes the same state, and the second field has no button of its own. A third field, left to itself, shows its text at first (defaultRevealed)."
     >
       <HostRevealed />
     </LabSection>
