@@ -319,6 +319,22 @@ describe('NotificationList', () => {
     expect(screen.getByText('You are all caught up.')).toBeInTheDocument();
   });
 
+  it('UIC-NOTIFICATION-CENTER-1.8 hands a failed load to onLoadMoreError', async () => {
+    const refusal = new Error('offline');
+    const onLoadMoreError = vi.fn();
+    render(
+      <NotificationList
+        items={items}
+        getNow={getNow}
+        hasMore
+        onLoadMore={() => Promise.reject(refusal)}
+        onLoadMoreError={onLoadMoreError}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }));
+    await waitFor(() => expect(onLoadMoreError).toHaveBeenCalledWith(refusal));
+  });
+
   it('UIC-NOTIFICATION-CENTER-1.8 loads more while more exist', async () => {
     const onLoadMore = vi.fn();
     const { container, rerender } = render(

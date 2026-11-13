@@ -49,7 +49,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`
 
 ### UIC-ACTIVITY-FEED-2.1 - Loading older events
 
-With `onLoadMore` and at least one entry, a [Load More](LOAD-MORE.md) control with `autoLoad` (`ui-activity-feed__load-more`) shall follow the list and call `onLoadMore` as it comes into view or is pressed ([UIC-COLLECTIONS-1.3](COLLECTIONS.md#uic-collections-13---loading-more-outside-a-collection)); it is pending while `isLoading`. Without `onLoadMore`, which the caller leaves out once there is nothing more, no control renders.
+With `onLoadMore` and at least one entry, a [Load More](LOAD-MORE.md) control with `autoLoad` (`ui-activity-feed__load-more`) shall follow the list and call `onLoadMore` as it comes into view or is pressed ([UIC-COLLECTIONS-1.3](COLLECTIONS.md#uic-collections-13---loading-more-outside-a-collection)); it is pending while `isLoading`. A rejected promise from `onLoadMore`, or a throw, goes to `onLoadMoreError`; without it the error is rethrown. Without `onLoadMore`, which the caller leaves out once there is nothing more, no control renders.
 
 Implementation: `src/components/activity-feed/activity-feed.tsx`
 Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activity-feed.spec.ts`
