@@ -49,6 +49,12 @@ export type UiHref = (href: string) => string;
 /** Formats an ICU MessageFormat message with the provider's locale. */
 export type UiFormatMessage = (message: string, values?: MessageValues) => string;
 
+/**
+ * The provider's settings. `icons` and `messages` are compared by their entries; the services
+ * (`renderLink`, `navigate`, `useHref`, `storage`, `getNow`) are compared by identity, so define
+ * them once, outside the component that renders the provider, or memoize them: a new function or
+ * adapter on each render makes the components that use it render, and read storage, again.
+ */
 export interface UiProviderProps {
   /**
    * Replaces built-in glyphs by name. Unlisted glyphs keep their default (or the outer provider's).

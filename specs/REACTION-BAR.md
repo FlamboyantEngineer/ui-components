@@ -8,7 +8,7 @@
 
 `ReactionBar` shall render a `ui-reaction-bar` element holding one chip per entry of `reactions`, in order: a chip-variant `Button` in the `ui-reaction-bar__reaction` slot showing the emoji in `ui-reaction-bar__emoji` and the count in `ui-reaction-bar__count`, in the provider locale's digits and grouping (`1,234`; `١٬٢٣٤` in `ar-EG`). An entry's count is `count`, else the number of its `people`; an entry counting nobody draws no chip. The emoji is a standard glyph, drawn as text, or `:shortcode:`: a shortcode found in `customEmoji` draws that emoji's image in `ui-reaction-bar__image` with empty alternative text, and any other is drawn as its text. An image that fails to load, including one that failed before hydration, gives way to the `:shortcode:` text; a new image URL loads again, and a failure reported for a URL the chip no longer shows changes nothing.
 
-Implementation: `src/components/reaction-bar/reaction-bar.tsx`
+Implementation: `src/components/reaction-bar/reaction-bar.tsx`, `src/utils/use-removal-focus.ts`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`
 
 ### UIC-REACTION-BAR-1.2 - Who reacted
@@ -20,7 +20,7 @@ Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction
 
 ### UIC-REACTION-BAR-1.3 - Toggling
 
-A chip shall be a toggle button, pressed (`aria-pressed="true"`, `data-selected`) while its entry's `isReacted` is true. Pressing it, by pointer or keyboard, shall call `onToggle` with the emoji and the opposite state. The bar holds no state of its own: the chip changes when the host's `reactions` do.
+A chip shall be a toggle button, pressed (`aria-pressed="true"`, `data-selected`) while its entry's `isReacted` is true. Pressing it, by pointer or keyboard, shall call `onToggle` with the emoji and the opposite state. The bar holds no state of its own: the chip changes when the host's `reactions` do. When a press removes the reader's reaction from a chip counting only them and the chip leaves the bar, focus moves to the next chip, else the previous one, else the add-reaction button (`useRemovalFocus`), so it never falls to the page.
 
 Implementation: `src/components/reaction-bar/reaction-bar.tsx`
 Verification: `src/components/reaction-bar/reaction-bar.test.tsx`, `e2e/reaction-bar.spec.ts`

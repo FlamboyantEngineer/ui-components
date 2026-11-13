@@ -458,6 +458,7 @@
   "stepLabel": "Paso {number}",
   "stepActions": "Acciones del paso {number}",
   "moveStep": "Mover el paso {number}",
+  "stepMoved": "Paso movido a la posición {position} de {count}",
   "addStep": "Añadir paso",
   "insertStepAbove": "Insertar paso encima",
   "insertStepBelow": "Insertar paso debajo",

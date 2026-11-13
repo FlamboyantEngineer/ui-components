@@ -39,9 +39,12 @@ test.describe('Inline Error lab', () => {
     const alert = demo.getByRole('alert');
     await expect(alert).toHaveText(/Could not load the weather for Oslo/);
     await expect(alert).toHaveAttribute('aria-live', 'assertive');
-    const glyph = await alert.locator('.ui-inline-error__icon').boundingBox();
+    const error = demo.locator('.ui-inline-error');
+    const glyph = await error.locator('.ui-inline-error__icon').boundingBox();
     expect(glyph?.width).toBe(16);
-    const retry = alert.getByRole('button', { name: 'Retry' });
+    // The retry button sits beside the live message, so its label is not announced with it.
+    const retry = error.getByRole('button', { name: 'Retry' });
+    await expect(alert.getByRole('button')).toHaveCount(0);
     await retry.focus();
     await page.keyboard.press('Enter');
     await expect(demo.locator('[data-lab-output="loaded"]')).toBeVisible();
@@ -57,7 +60,7 @@ test.describe('Inline Error lab', () => {
     await lab.open('inline-error');
     const demo = page.locator('[data-lab-demo="recovery"]');
     const outcome = demo.getByRole('radiogroup', { name: 'Next retry' });
-    const retry = demo.getByRole('alert').getByRole('button', { name: 'Retry' });
+    const retry = demo.locator('.ui-inline-error').getByRole('button', { name: 'Retry' });
     const output = (name: string) => demo.locator(`[data-lab-output="${name}"]`);
 
     await outcome.getByRole('radio', { name: 'Rejects' }).click();
@@ -89,15 +92,19 @@ test.describe('Inline Error lab', () => {
     await lab.open('inline-error');
     const cell = (tone: string, state: string) =>
       matrixCell(page, `tone=${tone} state=${state}`).locator(`.ui-inline-error`);
-    await expect(cell('danger', 'settled')).toHaveAttribute('role', 'alert');
+    const live = (tone: string, state: string) =>
+      cell(tone, state).locator('.ui-inline-error__message');
+    await expect(live('danger', 'settled')).toHaveAttribute('role', 'alert');
     for (const [tone, glyph] of [
       ['warning', 'warning'],
       ['success', 'success'],
     ] as const) {
-      const message = cell(tone, 'settled');
-      await expect(message).toHaveAttribute('role', 'status');
-      await expect(message).toHaveAttribute('aria-live', 'polite');
-      await expect(message.locator('.ui-inline-error__icon')).toHaveAttribute('data-glyph', glyph);
+      await expect(live(tone, 'settled')).toHaveAttribute('role', 'status');
+      await expect(live(tone, 'settled')).toHaveAttribute('aria-live', 'polite');
+      await expect(cell(tone, 'settled').locator('.ui-inline-error__icon')).toHaveAttribute(
+        'data-glyph',
+        glyph,
+      );
     }
     const colour = (tone: string) =>
       cell(tone, 'settled').evaluate((node) => getComputedStyle(node).color);
@@ -105,7 +112,7 @@ test.describe('Inline Error lab', () => {
       new Set([await colour('danger'), await colour('warning'), await colour('success')]).size,
     ).toBe(3);
     const pending = cell('danger', 'pending');
-    await expect(pending).toHaveAttribute('role', 'status');
+    await expect(live('danger', 'pending')).toHaveAttribute('role', 'status');
     await expect(pending).toHaveAttribute('data-pending', 'true');
     const spinner = pending.locator('.ui-inline-error__spinner');
     await expect(spinner).toBeVisible();

@@ -94,7 +94,7 @@ function useStateNodes(
 export function StateMachineGraph({
   states,
   transitions,
-  initialState,
+  initialKey,
   currentKey,
   orientation = 'horizontal',
   isEditing = false,
@@ -107,7 +107,7 @@ export function StateMachineGraph({
   ...rest
 }: StateMachineGraphProps) {
   const strings = useUiStrings();
-  const initial = initialState ?? states[0]?.id;
+  const initial = initialKey ?? states[0]?.id;
   const nodes = useStateNodes({
     states,
     transitions,

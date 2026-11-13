@@ -144,19 +144,35 @@ function useItemSelection(
   return { selectionMode, selected, toggle, replace };
 }
 
-/** The expanded groups, controlled or not (every group at first), and a change to one group. */
+/**
+ * The expanded groups, controlled or not, and a change to one group. Without `expandedKeys` or
+ * `defaultExpandedKeys`, every group is expanded but those the reader collapsed, so groups that
+ * arrive after mounting start expanded too.
+ */
 function useRowExpansion(props: ExpansionProps, rows: readonly TimelineRow[]) {
   const { expandedKeys, defaultExpandedKeys, onExpandedChange } = props;
-  const [expanded, setExpanded] = useControllableState<ReadonlySet<Key>>(
+  const followsGroups = expandedKeys === undefined && defaultExpandedKeys === undefined;
+  const [collapsed, setCollapsed] = useState<ReadonlySet<Key>>(() => new Set());
+  const [stored, setStored] = useControllableState<ReadonlySet<Key>>(
     expandedKeys === undefined ? undefined : new Set(expandedKeys),
-    new Set(defaultExpandedKeys ?? collectGroupKeys(rows)),
+    new Set(defaultExpandedKeys),
     onExpandedChange ? (keys) => onExpandedChange(new Set(keys)) : undefined,
   );
+  const groups = collectGroupKeys(rows);
+  const expanded = followsGroups ? new Set(groups.filter((key) => !collapsed.has(key))) : stored;
   const change = (id: Key, isExpanded: boolean) => {
     const next = new Set(expanded);
     if (isExpanded) next.add(id);
     else next.delete(id);
-    setExpanded(next);
+    if (!followsGroups) {
+      setStored(next);
+      return;
+    }
+    const nextCollapsed = new Set(collapsed);
+    if (isExpanded) nextCollapsed.delete(id);
+    else nextCollapsed.add(id);
+    setCollapsed(nextCollapsed);
+    onExpandedChange?.(next);
   };
   return { expanded, change };
 }

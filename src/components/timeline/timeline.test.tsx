@@ -277,6 +277,41 @@ describe('Timeline', () => {
     expect(container.querySelector('.ui-timeline__body')).toHaveStyle({ height: '72px' });
   });
 
+  it('UIC-TIMELINE-1.4 expands groups that arrive after mounting', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderTimeline({ rows: [] });
+    const later = (shown: TimelineRow[]) => (
+      <UiProvider locale="en-US">
+        <Timeline
+          aria-label="Kitchen plan"
+          rows={shown}
+          items={items}
+          range={march}
+          scale="day"
+          today="2026-03-11"
+        />
+      </UiProvider>
+    );
+    rerender(later(rows));
+    expect(screen.getByRole('button', { name: 'Planning' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Measure rooms' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Planning' }));
+    rerender(
+      later([
+        ...rows,
+        { id: 'finish', label: 'Finish', children: [{ id: 'paint', label: 'Paint' }] },
+      ]),
+    );
+    expect(screen.getByRole('button', { name: 'Planning' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: 'Finish' })).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('UIC-TIMELINE-1.4 follows controlled expanded keys', () => {
     renderTimeline({ expandedKeys: [] });
     expect(screen.queryByRole('group', { name: 'Survey' })).not.toBeInTheDocument();

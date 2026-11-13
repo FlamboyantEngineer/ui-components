@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { EmojiGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
@@ -8,6 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { FallbackImage } from '../../utils/fallback-image.js';
+import { type RemovalFocus, useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { Button } from '../button/button.js';
 import { type EmojiPickerProps, EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
 import { Tooltip } from '../tooltip/tooltip.js';
@@ -62,6 +64,7 @@ interface ReactionChipProps {
   customEmoji: EmojiPickerProps['customEmoji'];
   maxNames: number;
   onToggle: ReactionBarProps['onToggle'];
+  removalFocus: RemovalFocus;
 }
 
 const hooks = createHooks('reaction-bar', [
@@ -121,7 +124,13 @@ function ReactionEmoji({
 }
 
 /** One emoji's chip: a toggle button named by the emoji, the count and who reacted. */
-function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChipProps) {
+function ReactionChip({
+  reaction,
+  customEmoji,
+  maxNames,
+  onToggle,
+  removalFocus,
+}: ReactionChipProps) {
   const { locale } = useLocale();
   const label = useReactionLabel(customEmoji, maxNames)(reaction);
   return (
@@ -132,7 +141,12 @@ function ReactionChip({ reaction, customEmoji, maxNames, onToggle }: ReactionChi
         content="parts"
         className={hooks.slotClass('reaction')}
         isSelected={reaction.isReacted ?? false}
-        onChange={(isReacted) => onToggle?.(reaction.emoji, isReacted)}
+        ref={(button) => removalFocus.register(reaction.emoji, button)}
+        onChange={(isReacted) => {
+          // The reader's own reaction is the last one: the chip leaves with it.
+          if (!isReacted && reaction.count <= 1) removalFocus.willRemove(reaction.emoji);
+          onToggle?.(reaction.emoji, isReacted);
+        }}
         isDisabled={!onToggle}
         focusableWhenDisabled
       >
@@ -227,6 +241,11 @@ export function ReactionBar({
     return count > 0 ? [{ ...reaction, count }] : [];
   });
   const isSummary = presentation === 'summary';
+  const addRef = useRef<HTMLButtonElement>(null);
+  const removalFocus = useRemovalFocus(
+    chips.map((chip) => ({ id: chip.emoji })),
+    addRef,
+  );
   // A summary without reactions draws nothing: the reader reacts from the message's own commands.
   if (chips.length === 0 && (isSummary || !onToggle)) return null;
   const add = (emoji: string) => {
@@ -259,6 +278,7 @@ export function ReactionBar({
               customEmoji={customEmoji}
               maxNames={maxNames}
               onToggle={onToggle}
+              removalFocus={removalFocus}
             />
           ))}
       {onToggle && !isSummary ? (
@@ -273,6 +293,7 @@ export function ReactionBar({
         >
           <Button
             icon={EmojiGlyph}
+            ref={addRef}
             label={strings.addReaction}
             size="sm"
             className={hooks.slotClass('add')}

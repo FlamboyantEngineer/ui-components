@@ -14,9 +14,10 @@ test.describe('Banner lab', () => {
       ['danger', 'alert', 'assertive', 'error'],
     ] as const) {
       const banner = matrixCell(page, `tone=${tone} content=description`).locator(`.ui-banner`);
-      await expect(banner).toHaveAttribute('role', role);
-      await expect(banner).toHaveAttribute('aria-live', live);
-      await expect(banner).toHaveAttribute('aria-atomic', 'true');
+      const region = banner.locator('.ui-banner__content');
+      await expect(region).toHaveAttribute('role', role);
+      await expect(region).toHaveAttribute('aria-live', live);
+      await expect(region).toHaveAttribute('aria-atomic', 'true');
       const icon = banner.locator('.ui-banner__icon');
       if (glyph) {
         await expect(icon).toHaveAttribute('data-glyph', glyph);

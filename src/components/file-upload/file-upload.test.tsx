@@ -349,7 +349,7 @@ describe('FileUpload', () => {
       { file: notes, reason: 'type' },
     ]);
     const message = screen.getByRole('alert');
-    expect(message).toHaveClass('ui-file-upload__rejections', 'ui-inline-error');
+    expect(message.parentElement).toHaveClass('ui-file-upload__rejections', 'ui-inline-error');
     expect(message).toHaveTextContent('1 file is not an accepted type. 2 files are too large.');
     expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['rejections'] });
     await user.upload(chooser(container), [notes, notes]);
@@ -425,7 +425,7 @@ describe('FileUpload', () => {
     );
     const error = screen.getByRole('alert');
     expect(error).toHaveTextContent('The server refused the file.');
-    expect(error).toHaveClass('ui-file-upload__file-error');
+    expect(error.parentElement).toHaveClass('ui-file-upload__file-error');
     expect(error.closest('.ui-file-upload__file')).toHaveAttribute('data-status', 'error');
     expect(container.querySelector('.ui-file-upload__file-remove')).toBeNull();
   });

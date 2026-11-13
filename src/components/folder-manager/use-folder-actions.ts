@@ -29,7 +29,11 @@ export interface FolderCallbacks<T extends FolderItem> {
   /** Creates a folder. It may resolve to the new folder's key, which is then selected. */
   onCreate?: ((folder: { name: string; parentKey: Key | null }) => unknown) | undefined;
   onRename?: ((folder: { key: Key; name: string }) => unknown) | undefined;
-  /** Deletes a folder; deleting several selected folders calls it for each, one after another. */
+  /**
+   * Deletes a folder; deleting several selected folders calls it for each, one after another. It
+   * may resolve to `false` when the folder was not deleted, as when the reader declines the host's
+   * confirmation: the deletes stop, the selection stays and the folder's row keeps focus.
+   */
   onDelete?: ((key: Key) => unknown) | undefined;
   /** Why a folder cannot be deleted, or nothing when it can. */
   getDeleteBlockedReason?: ((folder: T) => string | null | undefined) | undefined;
@@ -168,6 +172,22 @@ function useEditSession() {
  * An edit that is not pending ends without a callback once its folder (rename) or parent (create)
  * leaves `folders`, or its callback goes; the folder coming back does not reopen it.
  */
+/**
+ * Deletes the folders one after another, stopping at one whose delete resolves to `false` (the
+ * reader declined), which it returns, or when the action is superseded.
+ */
+async function deleteInTurn<T extends FolderItem>(
+  targets: readonly T[],
+  onDelete: FolderCallbacks<T>['onDelete'],
+  signal: AbortSignal,
+): Promise<T | undefined> {
+  for (const folder of targets) {
+    const result: unknown = await onDelete?.(folder.id);
+    if (signal.aborted || result === false) return folder;
+  }
+  return undefined;
+}
+
 export function useFolderActions<T extends FolderItem>({
   folders,
   isPending: isLoading = false,
@@ -225,10 +245,10 @@ export function useFolderActions<T extends FolderItem>({
     setMessage(null);
     const signal = beginAction();
     try {
-      for (const folder of targets) await onDelete?.(folder.id);
+      const declined = await deleteInTurn(targets, onDelete, signal);
       if (signal.aborted) return;
-      select(parentKey);
-      onSettle(parentKey);
+      if (!declined) select(parentKey);
+      onSettle(declined ? declined.id : parentKey);
     } catch (error) {
       if (!signal.aborted) setMessage(toErrorMessage(error, strings.actionFailed));
     } finally {

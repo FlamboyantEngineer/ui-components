@@ -185,6 +185,41 @@ describe('useSyncedScroll', () => {
     expect(observed).toHaveLength(0);
   });
 
+  it("UIC-SYNCED-SCROLL-1.4 watches a frame's containers with the frame's own observers", () => {
+    const pageObservers: unknown[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor() {
+          pageObservers.push(this);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const view = requireDefined(frame.contentWindow) as Window & typeof globalThis;
+    const observed: Element[] = [];
+    view.ResizeObserver = class {
+      observe(element: Element) {
+        observed.push(element);
+      }
+      unobserve() {}
+      disconnect() {}
+    };
+    const containers = [300, 400].map((height) => {
+      const element = view.document.createElement('div');
+      Object.defineProperty(element, 'scrollHeight', { configurable: true, value: height });
+      Object.defineProperty(element, 'clientHeight', { configurable: true, value: 100 });
+      view.document.body.append(element);
+      return element;
+    });
+    renderHook(() => useSyncedScroll(containers, { getAnchors: () => anchors([0, 100]) }));
+    expect(observed).toEqual(containers);
+    expect(pageObservers).toHaveLength(0);
+  });
+
   it('UIC-SYNCED-SCROLL-1.3 retains pending echoes across a re-render', () => {
     const first = createContainer(300);
     const second = createContainer(500);

@@ -222,7 +222,7 @@ export function useFolderManager<T extends FolderItem, M extends FolderSelection
         expansion.reveal([folderRootKey, ...path.map((entry) => toFolderRowKey(entry.id))]);
         actions.startCreate(folder?.id ?? null);
       }),
-    startRename: () => startEdit(() => (folder ? actions.startRename(folder) : undefined)),
+    startRename: () => (folder ? startEdit(() => actions.startRename(folder)) : undefined),
     remove: () =>
       selection.length > 0 ? void actions.remove(selection, selectedFolders) : undefined,
     moveTo: (destination) => {

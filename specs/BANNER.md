@@ -43,14 +43,14 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-2.1 - Roles and urgency
 
-A `danger` banner shall carry `role="alert"` and `aria-live="assertive"`. A `neutral`, `info`, `success` or `warning` banner shall carry `role="status"` and `aria-live="polite"`. Every banner is `aria-atomic="true"`, so an update is read as one message. The caller cannot override the role or urgency.
+The banner's `ui-banner__content` (its title and description) shall be its live region: `role="alert"` and `aria-live="assertive"` for a `danger` banner, `role="status"` and `aria-live="polite"` for a `neutral`, `info`, `success` or `warning` one, always `aria-atomic="true"`, so an update is read as one message. The actions and the dismiss button sit beside it, so their labels are never read with the message. The caller's `aria-label` names the live region. The caller cannot override the role or urgency. The root keeps `aria-busy` and is the element `autoFocus` focuses.
 
 Implementation: `src/components/banner/banner.tsx`
 Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-2.2 - Live updates
 
-Changing a mounted banner's tone or content shall update the same element in place, so its live region persists and the change is announced with the urgency of the new tone. The glyph and spinner are hidden from assistive technology so only the message is read.
+Changing a mounted banner's tone or content shall update the same elements in place, so its live region persists and the change is announced with the urgency of the new tone. The glyph and spinner are hidden from assistive technology so only the message is read.
 
 Implementation: `src/components/banner/banner.tsx`
 Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`

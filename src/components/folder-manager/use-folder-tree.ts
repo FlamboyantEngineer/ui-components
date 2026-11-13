@@ -119,8 +119,11 @@ export function useFolderExpansion<T extends FolderItem>(
         const folderKey = fromFolderRowKey(key);
         if (!opened.has(key) && folderKey !== null) onOpen(folderKey);
       }
-      setOpened(new Set(lazy));
-      setCollapsed(new Set(branchKeys.filter((key) => !keys.has(key))));
+      // Updated by difference: branches a filter hides keep their state.
+      const shown = new Set([...branchKeys, ...lazyKeys]);
+      const kept = (set: ReadonlySet<Key>) => [...set].filter((key) => !shown.has(key));
+      setOpened(new Set([...kept(opened), ...lazy]));
+      setCollapsed(new Set([...kept(collapsed), ...branchKeys.filter((key) => !keys.has(key))]));
     },
     reveal: (keys) => {
       const revealed = new Set(keys);

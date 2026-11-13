@@ -449,7 +449,7 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(root).not.toHaveAttribute('data-pending');
     expect(root).toHaveAttribute('data-invalid', 'true');
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('ui-inline-edit__error', 'ui-inline-error');
+    expect(alert.parentElement).toHaveClass('ui-inline-edit__error', 'ui-inline-error');
     expect(alert).toHaveTextContent('The title is taken.');
     expect(textbox()).toHaveValue('Seeded rye');
     expectHooksMatchSpec(container, 'INLINE-EDIT', { slots: ['error'] });

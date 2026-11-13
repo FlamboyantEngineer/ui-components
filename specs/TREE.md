@@ -167,7 +167,7 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 
 ### UIC-TREE-5.2 - Selection propagation
 
-With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys. In single selection `selectionPropagation` has no effect: a press selects that row alone.
+With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. Descendants that load under a selected branch arrive selected, so a later change keeps the branch. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys. In single selection `selectionPropagation` has no effect: a press selects that row alone.
 
 Selection propagation and indeterminate-state calculations shall walk loaded hierarchies without recursive JavaScript calls, including deeply nested branches.
 

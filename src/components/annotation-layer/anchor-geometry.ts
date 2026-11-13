@@ -1,9 +1,9 @@
 // Anchor rectangles in the layer's own coordinates, measured from elements, and hit testing.
 
 import type { Key } from '../../core/props.js';
+import { measureScale } from '../../utils/element-scale.js';
 import { getElementByIdWithin } from '../../utils/owner-window.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { toScale } from '../../utils/scroll-geometry.js';
 import { clipToAncestors } from './anchor-clip.js';
 
 /** A rectangle in pixels from the top left corner of the layer's content. */
@@ -65,8 +65,7 @@ interface LayerFrame {
 /** The layer's frame as laid out now. */
 export function getLayerFrame(layer: HTMLElement): LayerFrame {
   const box = layer.getBoundingClientRect();
-  const scaleX = toScale(box.width, layer.offsetWidth);
-  const scaleY = toScale(box.height, layer.offsetHeight);
+  const { x: scaleX, y: scaleY } = measureScale(layer);
   const toLocalPoint = (x: number, y: number) => ({
     x: (x - box.left) / scaleX - layer.clientLeft + layer.scrollLeft,
     y: (y - box.top) / scaleY - layer.clientTop + layer.scrollTop,

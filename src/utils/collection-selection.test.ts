@@ -55,4 +55,15 @@ describe('Collection selection identity', () => {
     expect(toCollectionSelection(decoded)).not.toBe(primitive);
     expect(primitive).toEqual(new Set([toCollectionKey(1)]));
   });
+
+  it('UIC-COMPOSITION-4.1 encodes an unchanged selection once and returns the same set', () => {
+    const selected = new Set([1, 'a b']);
+    const first = toCollectionSelection(selected);
+    expect(toCollectionSelection(selected)).toBe(first);
+    selected.delete(1);
+    selected.add(2);
+    const changed = toCollectionSelection(selected);
+    expect(changed).not.toBe(first);
+    expect(changed).toEqual(new Set([toCollectionKey('a b'), toCollectionKey(2)]));
+  });
 });

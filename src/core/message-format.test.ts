@@ -44,6 +44,19 @@ describe('formatMessage', () => {
       expect(formatMessage('Hello {name}', { name: empty })).toBe('Hello ');
       expect(formatMessage(choice, { state: empty })).toBe('Open');
       expect(formatMessage(count, { count: empty })).toBe('0 files');
+      expect(formatMessage('{count, plural, =0 {None} other {# files}}', { count: empty })).toBe(
+        'None',
+      );
+      expect(
+        formatMessage(
+          '{n, number} / {state, select, a {A} other {{total, plural, =0 {none} other {#}}}}',
+          {
+            n: empty,
+            state: 'b',
+            total: empty,
+          },
+        ),
+      ).toBe('0 / none');
     }
     for (const message of ['Hello {name}', choice, count]) {
       expect(() => formatMessage(message, {})).toThrow(/was not provided/);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { createMemoryStorage, createSafeStorage } from '../../core/storage.js';
+import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
@@ -126,9 +126,14 @@ describe('MessageComposer conversations', () => {
     const user = userEvent.setup();
     const backing = createMemoryStorage();
     function Conversation({ pass }: { pass: number }) {
-      // A host that wraps its storage inline hands the provider a new adapter on every render.
+      // A host that builds its adapter inline hands the provider a new one on every render.
+      const adapter: UiStorage = {
+        getItem: (key) => backing.getItem(key),
+        setItem: (key, value) => backing.setItem(key, value),
+        removeItem: (key) => backing.removeItem(key),
+      };
       return (
-        <UiProvider storage={createSafeStorage(backing)}>
+        <UiProvider storage={adapter}>
           <MessageComposer persistKey="draft" onSubmit={() => undefined} data-pass={pass} />
         </UiProvider>
       );

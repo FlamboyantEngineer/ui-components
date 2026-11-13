@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -145,6 +145,52 @@ describe('ReactionBar', () => {
     party.focus();
     await userEvent.keyboard('{Enter}');
     expect(onToggle).toHaveBeenLastCalledWith('🎉', true);
+  });
+
+  it('UIC-REACTION-BAR-1.3 keeps focus in the bar when the reader removes the last reaction of a chip', async () => {
+    const user = userEvent.setup();
+    function Host() {
+      const [entries, setEntries] = useState([
+        { emoji: '👍', count: 2 },
+        { emoji: '🎉', count: 1, isReacted: true },
+        { emoji: '🍐', count: 1, isReacted: true },
+      ]);
+      return (
+        <ReactionBar
+          reactions={entries}
+          onToggle={(emoji, isReacted) =>
+            setEntries((current) =>
+              current.map((entry) =>
+                entry.emoji === emoji
+                  ? { ...entry, isReacted, count: entry.count + (isReacted ? 1 : -1) }
+                  : entry,
+              ),
+            )
+          }
+        />
+      );
+    }
+    render(<Host />);
+    screen.getByRole('button', { name: /^🎉/ }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('button', { name: /^🎉/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^🍐/ })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: /^👍/ })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: /^👍/ }));
+    expect(screen.getByRole('button', { name: /^👍/ })).toBeInTheDocument();
+  });
+
+  it('UIC-REACTION-BAR-1.3 moves focus to the add button when the last chip leaves', async () => {
+    const user = userEvent.setup();
+    function Host() {
+      const [entries, setEntries] = useState([{ emoji: '🎉', count: 1, isReacted: true }]);
+      return <ReactionBar reactions={entries} onToggle={() => setEntries([])} />;
+    }
+    render(<Host />);
+    screen.getByRole('button', { name: /^🎉/ }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Add reaction' })).toHaveFocus();
   });
 
   // Three picker round trips; slow on a busy machine.

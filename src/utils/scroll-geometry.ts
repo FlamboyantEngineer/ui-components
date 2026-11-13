@@ -1,27 +1,8 @@
 // Where an element sits in a scrolling element, in the scroller's own CSS pixels: the pixels its
 // scrollTop, clientHeight and scrollHeight count, whatever scale an ancestor transform draws it at.
 
+import { measureScale } from './element-scale.js';
 import { isShadowRoot } from './is-element.js';
-
-/** The scale from an element's own CSS pixels to viewport pixels, 1 for an unlaid-out side. */
-export function toScale(viewportSize: number, ownSize: number): number {
-  return viewportSize > 0 && ownSize > 0 ? viewportSize / ownSize : 1;
-}
-
-/** How many viewport pixels one of an element's own CSS pixels spans, across and down. */
-interface ElementScale {
-  x: number;
-  y: number;
-}
-
-/** The scale an element is drawn at: its viewport box against its own layout size. */
-export function measureScale(element: HTMLElement): ElementScale {
-  const box = element.getBoundingClientRect();
-  return {
-    x: toScale(box.width, element.offsetWidth),
-    y: toScale(box.height, element.offsetHeight),
-  };
-}
 
 /** A box in a scroller's content, in the scroller's own CSS pixels. */
 interface ScrollerBox {

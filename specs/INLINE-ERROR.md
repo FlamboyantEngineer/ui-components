@@ -6,7 +6,7 @@
 
 ### UIC-INLINE-ERROR-1.1 - Alert
 
-`InlineError` shall render a `<div>` with `role="alert"`, `aria-live="assertive"` and `aria-atomic="true"` (a polite status instead for the tones and pending state of [UIC-INLINE-ERROR-2](#uic-inline-error-2---tones-and-pending-checks)), holding its children (text, a paragraph or a list) in the `ui-inline-error__message` slot. It renders exactly one live region; its parts add none of their own.
+`InlineError` shall render a `<div>` holding its children (text, a paragraph or a list) in the `ui-inline-error__message` slot, which carries `role="alert"`, `aria-live="assertive"` and `aria-atomic="true"` (a polite status instead for the tones and pending state of [UIC-INLINE-ERROR-2](#uic-inline-error-2---tones-and-pending-checks)). The message is the only live region: the glyph and the retry button sit beside it, so a retry's progress or a change to the button is never announced with the message. Its parts add no live region of their own.
 
 Implementation: `src/components/inline-error/inline-error.tsx`
 Verification: `src/components/inline-error/inline-error.test.tsx`, `e2e/inline-error.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/inline-error/inline-error.test.tsx`
 
 ### UIC-INLINE-ERROR-2.1 - Tones
 
-`tone` shall publish `data-tone`: `danger` (the default, a failure), `warning` (a problem that does not block) or `success` (a check that passed), and draw the tone's built-in glyph (`error`, `warning` or `success`). A `danger` message is an assertive alert; a `warning` or `success` message is a polite status (`role="status"`, `aria-live="polite"`), still atomic. Changing the tone of a mounted message updates the same element, so its next announcement follows the new urgency.
+`tone` shall publish `data-tone`: `danger` (the default, a failure), `warning` (a problem that does not block) or `success` (a check that passed), and draw the tone's built-in glyph (`error`, `warning` or `success`). A `danger` message is an assertive alert; a `warning` or `success` message is a polite status (`role="status"`, `aria-live="polite"`), still atomic. Changing the tone of a mounted message updates the same message element, so its next announcement follows the new urgency.
 
 Implementation: `src/components/inline-error/inline-error.tsx`, `labs/reference/inline-error.css`
 Verification: `src/components/inline-error/inline-error.test.tsx`, `e2e/inline-error.spec.ts`

@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, useMemo, useRef } from 'react';
+import { type RefObject, useMemo, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { PlusGlyph } from '../../core/glyphs.js';
@@ -15,6 +15,7 @@ import { useIdFactory } from '../../utils/use-id-factory.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   insertStep,
   isStepListDirty,
@@ -72,6 +73,7 @@ function useStepActions(options: {
   root: RefObject<HTMLDivElement | null>;
 }) {
   const { steps, setSteps, root } = options;
+  const strings = useUiStrings();
   const createId = useIdFactory();
   const requestFocus = useFocusRequest();
   const focusStep = (id: string, part: StepFocusPart) =>
@@ -82,9 +84,14 @@ function useStepActions(options: {
     setSteps(insertStep(steps, index, step));
     focusStep(step.id, 'field');
   };
+  const [announcement, setAnnouncement] = useState('');
+  // Every move, by keys, menu or drop, says where the step now sits.
   const move = (move: StepMove | null, focus: () => void) => {
     if (!move) return;
-    setSteps(moveStep(steps, move));
+    const next = moveStep(steps, move);
+    setSteps(next);
+    const position = next.findIndex((step) => step.id === move.key) + 1;
+    setAnnouncement(strings.stepMoved(position, next.length));
     focus();
   };
   const run = (action: StepAction, id: string) => {
@@ -110,7 +117,30 @@ function useStepActions(options: {
       requestFocus(() => (isHTMLElement(active) && active.isConnected ? active : null)),
     );
   };
-  return { run, step, insertAt, move: (stepMove: StepMove) => move(stepMove, () => {}) };
+  return {
+    run,
+    step,
+    insertAt,
+    move: (stepMove: StepMove) => move(stepMove, () => {}),
+    announcement,
+  };
+}
+
+/** The committed steps by id, and whether the steps differ from them. */
+function useStepsDirty(
+  steps: readonly StepListEditorStep[],
+  {
+    committedValue,
+    columns,
+  }: Pick<StepListEditorProps, 'committedValue'> & { columns: readonly StepListEditorColumn[] },
+) {
+  const committedById = useMemo(
+    () => (committedValue ? new Map(committedValue.map((step) => [step.id, step])) : null),
+    [committedValue],
+  );
+  const columnIds = columns.map(({ id }) => id);
+  const isDirty = committedValue !== undefined && isStepListDirty(steps, committedValue, columnIds);
+  return { committedById, isDirty };
 }
 
 /**
@@ -138,12 +168,7 @@ export function StepListEditor({
   const rootRefs = useMergedRefs(root, ref);
   const actions = useStepActions({ steps, setSteps, root });
   const drag = useStepDrag({ steps, onMove: actions.move });
-  const committedById = useMemo(
-    () => (committedValue ? new Map(committedValue.map((step) => [step.id, step])) : null),
-    [committedValue],
-  );
-  const columnIds = columns.map(({ id }) => id);
-  const isDirty = committedValue !== undefined && isStepListDirty(steps, committedValue, columnIds);
+  const { committedById, isDirty } = useStepsDirty(steps, { committedValue, columns });
   const label = ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.steps);
   return (
     <div
@@ -194,6 +219,11 @@ export function StepListEditor({
         >
           {strings.addStep}
         </Button>
+      )}
+      {isReadOnly ? null : (
+        <VisuallyHidden as="div" role="status">
+          {actions.announcement}
+        </VisuallyHidden>
       )}
     </div>
   );

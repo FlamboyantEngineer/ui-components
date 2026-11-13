@@ -61,7 +61,7 @@ const kettleTransitions: StateMachineTransition[] = [
 
 /**
  * The same machine twice: started in the outline with `defaultView`, and in the default canvas.
- * `initialState` names Cold although Done is listed first, and Heating is current.
+ * `initialKey` names Cold although Done is listed first, and Heating is current.
  */
 function Kettle() {
   return (
@@ -79,7 +79,7 @@ function Kettle() {
           data-lab-field={`kettle-${view}`}
           states={kettleStates}
           transitions={kettleTransitions}
-          initialState="cold"
+          initialKey="cold"
           currentKey="heating"
           defaultView={view}
         />
@@ -218,7 +218,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Initial state and starting view"
-      description="Done is listed first, yet initialState makes Cold the initial state: it carries the initial marker and reads Initial state, while Heating is current and Done final. The first copy starts in the outline (defaultView outline), the second in the canvas default; each switches with its own Diagram and Outline choice."
+      description="Done is listed first, yet initialKey makes Cold the initial state: it carries the initial marker and reads Initial state, while Heating is current and Done final. The first copy starts in the outline (defaultView outline), the second in the canvas default; each switches with its own Diagram and Outline choice."
     >
       <Kettle />
     </LabSection>

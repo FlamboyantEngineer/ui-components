@@ -43,6 +43,30 @@ function isMessageList(value: MessageValue): value is MessageList {
   return typeof value === 'object' && !Array.isArray(value);
 }
 
+type MessageElement = ReturnType<IntlMessageFormat['getAst']>[number];
+
+/** The parser's element types that read their argument as a number: `number` and `plural`. */
+const numericElementTypes = new Set<number>([2, 6]);
+
+const numericArguments = new WeakMap<IntlMessageFormat, ReadonlySet<string>>();
+
+/** The arguments a message reads as numbers, in a plural or a number format, at any depth. */
+function findNumericArguments(format: IntlMessageFormat): ReadonlySet<string> {
+  const known = numericArguments.get(format);
+  if (known) return known;
+  const names = new Set<string>();
+  const pending: MessageElement[] = [...format.getAst()];
+  for (let element = pending.pop(); element; element = pending.pop()) {
+    if (numericElementTypes.has(element.type as number) && 'value' in element)
+      names.add(String(element.value));
+    if ('options' in element)
+      for (const option of Object.values(element.options)) pending.push(...option.value);
+    if ('children' in element) pending.push(...element.children);
+  }
+  numericArguments.set(format, names);
+  return names;
+}
+
 function toArgument(value: MessageValue | null, locale: string): string | number {
   if (value === undefined || value === null) return '';
   if (typeof value === 'boolean') return String(value);
@@ -69,9 +93,15 @@ export function formatMessage(
 ): string {
   // Without a prototype, so only the caller's own entries are arguments: `{toString}` with no such
   // value fails, and an own `__proto__` value is stored rather than setting the prototype.
+  const format = getFormat(message, locale);
+  const numeric = findNumericArguments(format);
   const args = Object.create(null) as Record<string, string | number>;
-  for (const [name, value] of Object.entries(values)) args[name] = toArgument(value, locale);
-  return String(getFormat(message, locale).format(args));
+  for (const [name, value] of Object.entries(values)) {
+    // A missing count is zero, so a plural's `=0` branch reads it.
+    const isMissingNumber = (value === undefined || value === null) && numeric.has(name);
+    args[name] = isMissingNumber ? 0 : toArgument(value, locale);
+  }
+  return String(format.format(args));
 }
 
 /** For each text function of a strings interface, the message values its arguments become. */
