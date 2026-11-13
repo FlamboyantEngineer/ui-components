@@ -52,17 +52,18 @@ test.describe('Banner lab', () => {
   }) => {
     await lab.open('banner');
     const banner = page.locator('[data-lab-banner="live"]');
-    await expect(banner).toHaveAttribute('role', 'status');
-    await banner.evaluate((node) => node.setAttribute('data-lab-mark', 'same'));
+    const region = banner.locator('.ui-banner__content');
+    await expect(region).toHaveAttribute('role', 'status');
+    await region.evaluate((node) => node.setAttribute('data-lab-mark', 'same'));
     await page.locator('[data-lab-tone="danger"]').click();
-    await expect(banner).toHaveAttribute('role', 'alert');
-    await expect(banner).toHaveAttribute('aria-live', 'assertive');
-    await expect(banner).toContainText('Could not save');
-    await expect(banner).toHaveAttribute('data-lab-mark', 'same');
+    await expect(region).toHaveAttribute('role', 'alert');
+    await expect(region).toHaveAttribute('aria-live', 'assertive');
+    await expect(region).toContainText('Could not save');
+    await expect(region).toHaveAttribute('data-lab-mark', 'same');
     await banner.getByRole('button', { name: 'Try again' }).click();
-    await expect(banner).toHaveAttribute('role', 'status');
-    await expect(banner).toContainText('All changes saved');
-    await expect(banner).toHaveAttribute('data-lab-mark', 'same');
+    await expect(region).toHaveAttribute('role', 'status');
+    await expect(region).toContainText('All changes saved');
+    await expect(region).toHaveAttribute('data-lab-mark', 'same');
 
     const dismiss = banner.getByRole('button', { name: 'Dismiss the save message' });
     await dismiss.focus();
@@ -71,7 +72,7 @@ test.describe('Banner lab', () => {
     await expect(page.locator('[data-lab-output="dismissed"]')).toHaveText('1');
     await page.locator('[data-lab-action="restore"]').click();
     await expect(banner).toBeVisible();
-    await expect(banner).toHaveAttribute('data-lab-mark', 'same');
+    await expect(region).toHaveAttribute('data-lab-mark', 'same');
   });
 
   test('UIC-BANNER-3.2 UIC-ENTER-EXIT-1.2 UIC-ENTER-EXIT-1.3 enters and exits with useEnterExit', async ({
@@ -117,7 +118,7 @@ test.describe('Banner lab', () => {
     const demo = page.locator('[data-lab-demo="auto-focus"]');
     await demo.getByRole('button', { name: 'Save recipe' }).focus();
     await page.keyboard.press('Enter');
-    const banner = demo.getByRole('alert');
+    const banner = demo.locator('.ui-banner');
     await expect(banner).toBeFocused();
     await expect(banner).toHaveAttribute('tabindex', '-1');
     await page.keyboard.press('Tab');

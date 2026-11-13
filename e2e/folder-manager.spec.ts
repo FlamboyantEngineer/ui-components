@@ -362,7 +362,7 @@ test.describe('Folder Manager lab', () => {
     await page.clock.runFor(300);
     const error = row(manager, 'Cellar').getByRole('alert');
     await expect(error).toHaveText(/The cellar is locked\./);
-    await error.getByRole('button', { name: 'Retry' }).click();
+    await row(manager, 'Cellar').getByRole('button', { name: 'Retry' }).click();
     await page.clock.runFor(300);
     await expect(manager.getByRole('row', { name: /^Shelf/ })).toHaveCount(6);
     await expect(manager.getByRole('alert')).toHaveCount(0);
