@@ -83,6 +83,45 @@ describe('SelectionToolbar', () => {
     expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).not.toBeInTheDocument();
   });
 
+  it('UIC-RICH-TEXT-EDITOR-7.1 follows the layout only while the toolbar may show', () => {
+    const frame = vi.spyOn(window, 'requestAnimationFrame');
+    const cancel = vi.spyOn(window, 'cancelAnimationFrame');
+    const { unmount } = renderEditor({
+      defaultValue: note,
+      isReadOnly: true,
+      children: (
+        <>
+          <ViewProbe />
+          <SelectionToolbar aria-label="Quick marks" />
+        </>
+      ),
+    });
+    // A caret is never followed: a range the toolbar cannot show for costs no more frames.
+    selectRange(2);
+    const caretFrames = frame.mock.calls.length;
+    selectRange(1, 5);
+    const readOnlyFrames = frame.mock.calls.length - caretFrames;
+    frame.mockClear();
+    unmount();
+    renderEditor({
+      defaultValue: note,
+      children: (
+        <>
+          <ViewProbe />
+          <SelectionToolbar aria-label="Marks" />
+        </>
+      ),
+    });
+    selectRange(1, 5);
+    expect(screen.getByRole('toolbar', { name: 'Marks' })).toBeInTheDocument();
+    expect(frame).toHaveBeenCalled();
+    expect(readOnlyFrames).toBe(0);
+    act(() => getContent().blur());
+    expect(cancel).toHaveBeenCalled();
+    frame.mockRestore();
+    cancel.mockRestore();
+  });
+
   it('UIC-RICH-TEXT-EDITOR-7.2 takes focus on Alt+F10 and gives it back on Escape', async () => {
     const { user } = renderEditor({
       defaultValue: note,

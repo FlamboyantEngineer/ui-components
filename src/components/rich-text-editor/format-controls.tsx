@@ -98,6 +98,19 @@ export function BlockTypeSelect({
   );
 }
 
+const schemePrefix = /^[a-z][a-z\d+.-]*:/i;
+
+/**
+ * The address a typed link points at: `www.example.org` reads as `https://www.example.org`, since
+ * a reader typing a bare host means a web address, not a page beside this one. An address with a
+ * scheme, or a relative one (starting with `/`, `#`, `?` or `.`), is kept as typed.
+ */
+function toLinkAddress(typed: string): string {
+  const address = typed.trim();
+  if (address === '' || schemePrefix.test(address) || /^[/#?.]/.test(address)) return address;
+  return `https://${address}`;
+}
+
 /**
  * The link button, pressed on a link, and its popover: an address field that links the selection
  * (or inserts the address at a caret), and a button that removes the link.
@@ -107,7 +120,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
   const [isOpen, setOpen] = useState(false);
   const [address, setAddress] = useState('');
   if (isOpen && !controller.isEditable) setOpen(false);
-  const href = address.trim();
+  const href = toLinkAddress(address);
   const finish = (isDone: boolean) => {
     if (!isDone) return;
     setOpen(false);

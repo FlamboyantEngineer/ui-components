@@ -261,7 +261,11 @@ describe('RichTextEditor', () => {
           {
             type: 'taskList',
             content: [
-              { type: 'taskItem', attrs: { checked: false }, content: [{ type: 'paragraph' }] },
+              {
+                type: 'taskItem',
+                attrs: { checked: false },
+                content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Buy pears' }] }],
+              },
             ],
           },
         ],
@@ -269,6 +273,7 @@ describe('RichTextEditor', () => {
       const { user, value, container } = renderEditor({ defaultValue: tasks, schema });
       const item = container.querySelector('.ui-rich-text-editor__task-item');
       const box = screen.getByRole('checkbox', { name: 'Done' });
+      expect(box).toHaveAccessibleDescription('Buy pears');
       expect(box).not.toBeChecked();
       await user.click(box);
       expect(value()?.content?.[0]?.content?.[0]?.attrs).toEqual({ checked: true });

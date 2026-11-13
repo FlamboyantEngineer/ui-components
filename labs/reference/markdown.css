@@ -89,6 +89,10 @@
   vertical-align: middle;
 }
 
+.ui-markdown__image-link {
+  font-style: italic;
+}
+
 .ui-markdown .ui-separator {
   margin-block: 1em;
 }

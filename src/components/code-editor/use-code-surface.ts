@@ -6,18 +6,33 @@ import { joinIds } from '../../utils/join-ids.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import type { CodeTextAreaProps } from './code-area.js';
+import type { CodeDiagnostic } from './code-layers.js';
 import { toTextLines } from './code-ranges.js';
 import type { CodeSurfaceProps } from './code-surface.js';
 import { alignLayers, useCodeEditor } from './use-code-editor.js';
 type ProblemOptions = Pick<CodeSurfaceProps, 'diagnostics' | 'listDiagnostics' | 'isInvalid'>;
 
 /** The problems' state: the reported ones, whether one is an error, and what describes the input. */
+/** The diagnostics of a surface given none, one list so the layers drawn from it keep. */
+const noDiagnostics: readonly CodeDiagnostic[] = [];
+
+/** The diagnostics on the surface's own lines, one list while the given ones stay the same. */
+function useLocatedDiagnostics(
+  diagnostics: readonly CodeDiagnostic[] | undefined,
+  firstLineNumber: number,
+) {
+  return useMemo(
+    () => toTextLines(diagnostics ?? noDiagnostics, firstLineNumber),
+    [diagnostics, firstLineNumber],
+  );
+}
+
 function describeProblems(
   { diagnostics, listDiagnostics = true, isInvalid }: ProblemOptions,
   props: CodeTextAreaProps,
   id: string,
 ) {
-  const shown = diagnostics ?? [];
+  const shown = diagnostics ?? noDiagnostics;
   const isListed = diagnostics !== undefined && listDiagnostics;
   return {
     shown,
@@ -84,7 +99,7 @@ export function useCodeSurface(configuration: CodeSurfaceProps) {
     diagnosticsId,
   );
   const { shown, isInvalid } = problems;
-  const located = toTextLines(shown, firstLineNumber);
+  const located = useLocatedDiagnostics(diagnostics, firstLineNumber);
   const isLocked = isReadOnly || isDisabled;
   const wrap = multiline ? wrapOption : 'off';
   const model = useCodeEditor({

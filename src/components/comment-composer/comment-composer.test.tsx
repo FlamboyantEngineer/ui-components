@@ -76,6 +76,18 @@ describe('CommentComposer', () => {
     expect(box).toHaveValue('');
   });
 
+  it('UIC-COMMENT-COMPOSER-1.4 moves focus to the text box when the cancel button goes', async () => {
+    const user = userEvent.setup();
+    render(<CommentComposer onSubmit={() => {}} />);
+    const box = screen.getByRole('textbox');
+    await user.type(box, 'Kiwi');
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(box).toHaveFocus();
+  });
+
   it('UIC-COMMENT-COMPOSER-1.4 cancels by button or Escape, clearing the draft', async () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();

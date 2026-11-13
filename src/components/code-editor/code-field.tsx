@@ -100,10 +100,17 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
     [isJson, shownValue, indent],
   );
   const isFormattable = formatted !== null && formatted !== shownValue;
-  const diagnostics = [
-    ...(isJson ? check(state.value).diagnostics : []),
-    ...(suppliedDiagnostics ?? []),
-  ];
+  // The checker keeps its last result, so the list changes only when the value's problems or the
+  // supplied ones do, and the surface keeps its marks.
+  const ownDiagnostics = isJson ? check(state.value).diagnostics : undefined;
+  const diagnostics = useMemo(
+    () => [...(ownDiagnostics ?? []), ...(suppliedDiagnostics ?? [])],
+    [ownDiagnostics, suppliedDiagnostics],
+  );
+  const tokenizer = useMemo(
+    () => tokenize ?? resolveCodeTokenizer({ language, syntax }),
+    [tokenize, language, syntax],
+  );
   const completions = useMemo(() => (schema ? createJsonCompletion(schema) : undefined), [schema]);
   const format = () => {
     const next = formatJson(state.value, indent);
@@ -131,8 +138,7 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
     schema,
     isJson,
     options,
-    tokenize,
-    syntax,
+    tokenizer,
     diagnostics,
     suppliedCompletions,
     completions,
@@ -154,8 +160,7 @@ export function CodeField(props: CodeEditorFieldProps) {
     schema,
     isJson,
     options,
-    tokenize,
-    syntax,
+    tokenizer,
     diagnostics,
     suppliedCompletions,
     completions,
@@ -186,7 +191,7 @@ export function CodeField(props: CodeEditorFieldProps) {
           ref={control.ref}
           value={state.value}
           onChange={state.setValue}
-          tokenize={tokenize ?? resolveCodeTokenizer({ language, syntax })}
+          tokenize={tokenizer}
           diagnostics={diagnostics}
           listDiagnostics={props.listDiagnostics ?? false}
           completions={suppliedCompletions ?? (isJson ? completions : undefined)}

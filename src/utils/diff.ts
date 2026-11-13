@@ -1,4 +1,3 @@
-import { requireDefined } from './require-defined.js';
 // Line, word and sequence diffs (specs/DIFF.md): Myers' algorithm in linear space.
 
 /** What a hunk does to the old text: keeps, inserts or deletes its content. */
@@ -43,6 +42,13 @@ interface Bisection<T> {
   backward: Direction;
 }
 
+/** One diagonal at one step of a search, forwards or backwards. */
+interface DiagonalStep {
+  d: number;
+  k: number;
+  isBackward: boolean;
+}
+
 /** The furthest reach on each diagonal of one direction, and the diagonals trimmed off the grid. */
 interface Direction {
   reach: number[];
@@ -50,9 +56,11 @@ interface Direction {
   trimEnd: number;
 }
 
-// About half a second of searching on a typical machine; below 10,000 tokens in all, the search is
-// never cut short.
-const searchBudget = 50_000_000;
+// One search makes at most `maxSearchSteps` steps, whose diagonal bookkeeping grows with the
+// square of the steps, and at most about `searchBudget` token comparisons, which grow with the
+// steps times the texts' lengths: a tenth of a second or so on a typical machine either way.
+const searchBudget = 200_000_000;
+const maxSearchSteps = 1000;
 const minSearchSteps = 64;
 
 const wordToken = /[\p{L}\p{N}\p{M}_]+|\s+|[^\p{L}\p{N}\p{M}_\s]/gu;
@@ -76,34 +84,41 @@ function commonSuffixLength<T>(a: readonly T[], b: readonly T[], prefix: number)
 }
 
 /**
- * Extends diagonal `k` at step `d` in one direction and returns where its snake ends. Backwards,
- * positions count from the ends of both texts.
+ * Extends diagonal `k` at step `d` in one direction and returns how far along the old text its
+ * snake ends; the new text's position is that less `k`. Backwards, positions count from the ends of
+ * both texts. It returns a number, with no result object or closure, since it runs once per diagonal and step.
  */
-function extend<T>(search: Bisection<T>, step: { d: number; k: number; isBackward: boolean }) {
+function extend<T>(search: Bisection<T>, { d, k, isBackward }: DiagonalStep): number {
   const { a, b, offset } = search;
-  const { d, k, isBackward } = step;
   const { reach } = isBackward ? search.backward : search.forward;
   const index = offset + k;
-  let x =
-    k === -d || (k !== d && requireDefined(reach[index - 1]) < requireDefined(reach[index + 1]))
-      ? requireDefined(reach[index + 1])
-      : requireDefined(reach[index - 1]) + 1;
+  const below = reach[index - 1] ?? -1;
+  const above = reach[index + 1] ?? -1;
+  let x = k === -d || (k !== d && below < above) ? above : below + 1;
   let y = x - k;
-  const at = (tokens: readonly T[], position: number) =>
-    tokens[isBackward ? tokens.length - 1 - position : position];
-  while (x < a.length && y < b.length && at(a, x) === at(b, y)) {
-    x += 1;
-    y += 1;
+  if (isBackward) {
+    const aEnd = a.length - 1;
+    const bEnd = b.length - 1;
+    while (x < a.length && y < b.length && a[aEnd - x] === b[bEnd - y]) {
+      x += 1;
+      y += 1;
+    }
+  } else {
+    while (x < a.length && y < b.length && a[x] === b[y]) {
+      x += 1;
+      y += 1;
+    }
   }
   reach[index] = x;
-  return { x, y };
+  return x;
 }
 
 /** Runs step `d` forwards; returns the split point where a path meets the backward paths. */
 function scanForward<T>(search: Bisection<T>, d: number): [number, number] | null {
   const { a, b, forward, backward, offset, delta } = search;
   for (let k = -d + forward.trimStart; k <= d - forward.trimEnd; k += 2) {
-    const { x, y } = extend(search, { d, k, isBackward: false });
+    const x = extend(search, { d, k, isBackward: false });
+    const y = x - k;
     if (x > a.length) forward.trimEnd += 2;
     else if (y > b.length) forward.trimStart += 2;
     else if (delta % 2 !== 0) {
@@ -118,7 +133,8 @@ function scanForward<T>(search: Bisection<T>, d: number): [number, number] | nul
 function scanBackward<T>(search: Bisection<T>, d: number): [number, number] | null {
   const { a, b, forward, backward, offset, delta } = search;
   for (let k = -d + backward.trimStart; k <= d - backward.trimEnd; k += 2) {
-    const { x, y } = extend(search, { d, k, isBackward: true });
+    const x = extend(search, { d, k, isBackward: true });
+    const y = x - k;
     if (x > a.length) backward.trimEnd += 2;
     else if (y > b.length) backward.trimStart += 2;
     else if (delta % 2 === 0) {
@@ -132,24 +148,28 @@ function scanBackward<T>(search: Bisection<T>, d: number): [number, number] | nu
 
 /**
  * Finds a point on a shortest edit path by searching from both ends until the paths meet (Myers'
- * middle snake), so the diff needs memory linear in the texts' lengths. Each step costs time in
- * proportion to the texts' lengths, so the search gives up, returning `null`, once its steps would
- * pass `searchBudget` token comparisons: very large, very different inputs then diff coarsely
- * instead of blocking the page.
+ * middle snake), so the diff needs memory linear in the texts' lengths. The search gives up,
+ * returning `null`, after `maxSearchSteps` steps, or sooner once its steps would pass
+ * `searchBudget` token comparisons: inputs that differ in many places then diff coarsely instead
+ * of blocking the page. Only the diagonals the steps can reach are kept.
  */
 function findSplit<T>(a: readonly T[], b: readonly T[]): [number, number] | null {
   const length = a.length + b.length;
   const maxD = Math.ceil(length / 2);
-  const steps = Math.min(maxD, Math.max(minSearchSteps, Math.floor(searchBudget / length)));
+  const steps = Math.min(
+    maxD,
+    maxSearchSteps,
+    Math.max(minSearchSteps, Math.floor(searchBudget / length)),
+  );
   const direction = (): Direction => {
-    const reach = new Array<number>(2 * maxD + 2).fill(-1);
-    reach[maxD + 1] = 0;
+    const reach = new Array<number>(2 * steps + 2).fill(-1);
+    reach[steps + 1] = 0;
     return { reach, trimStart: 0, trimEnd: 0 };
   };
   const search: Bisection<T> = {
     a,
     b,
-    offset: maxD,
+    offset: steps,
     delta: a.length - b.length,
     forward: direction(),
     backward: direction(),

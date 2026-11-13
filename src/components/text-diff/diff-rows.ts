@@ -102,13 +102,24 @@ function toWordParts(hunks: readonly WordDiffHunk[], changed: 'delete' | 'insert
 }
 
 /**
- * Pairs the removed and added lines of a change in order and marks the words each pair changed,
- * unless the two lines share no word, where highlighting every word would say nothing.
+ * The most text, in characters, that one comparison diffs by words, counting both lines of each
+ * pair: many long changed lines would otherwise each take their own search.
  */
-function pairWords(removed: DiffLine[], added: DiffLine[]): void {
+const wordDiffBudget = 100_000;
+
+/**
+ * Pairs the removed and added lines of a change in order and marks the words each pair changed,
+ * unless the two lines share no word, where highlighting every word would say nothing. Each pair
+ * spends its text from `budget`, shared by the whole comparison; a pair that does not fit gets no
+ * word marks.
+ */
+function pairWords(removed: DiffLine[], added: DiffLine[], budget: { left: number }): void {
   removed.forEach((line, index) => {
     const other = added[index];
     if (!other) return;
+    const size = line.text.length + other.text.length;
+    if (size > budget.left) return;
+    budget.left -= size;
     const hunks = diffWords(line.text, other.text);
     if (!hunks.some((hunk) => hunk.kind === 'equal' && hunk.text.trim() !== '')) return;
     line.words = toWordParts(hunks, 'delete');
@@ -167,7 +178,10 @@ export function createDiffBlocks(oldText: string, newText: string): DiffBlock[] 
     if (hunk.kind === 'delete') last.removed = hunk.lines.map(toLine('removed', numbers));
     else last.added = hunk.lines.map(toLine('added', numbers));
   }
-  for (const block of blocks) if (block.kind === 'change') pairWords(block.removed, block.added);
+  const budget = { left: wordDiffBudget };
+  for (const block of blocks) {
+    if (block.kind === 'change') pairWords(block.removed, block.added, budget);
+  }
   return blocks;
 }
 

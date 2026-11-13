@@ -10,7 +10,6 @@ import {
   useState,
 } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { CheckGlyph, CloseGlyph } from '../../core/glyphs.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Input } from '../../primitives/index.js';
@@ -20,10 +19,10 @@ import {
   parseCellReference,
 } from '../../utils/cell-reference.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { Button } from '../button/button.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completion, Completions } from '../completion-list/completion-list.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { actionSizes, FormulaBarButtons } from './formula-bar-buttons.js';
 import { FormulaBarControls } from './formula-bar-controls.js';
 import { FormulaBarFunctions } from './formula-bar-functions.js';
 import { formulaBarHooks as hooks } from './formula-bar-hooks.js';
@@ -73,9 +72,6 @@ export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, Ar
   /** The bar's control size, which its reference box, content and buttons follow. Defaults to `md`. */
   size?: ControlSize | undefined;
 }
-
-/** The size of the bar's buttons, a step below the bar's own, as an icon button beside a field. */
-const actionSizes = { xs: 'xs', sm: 'xs', md: 'sm', lg: 'md' } as const;
 
 /** Space-separated ids for an ARIA id list, or undefined when there are none. */
 const joinIds = (...ids: (string | null)[]) => ids.filter(Boolean).join(' ') || undefined;
@@ -176,48 +172,6 @@ function FormulaBarReference({
       <VisuallyHidden as="span" className={hooks.slotClass('status')} role="status">
         {refused === null ? '' : strings.formulaInvalidReference(refused)}
       </VisuallyHidden>
-    </>
-  );
-}
-
-/**
- * The buttons that restore and commit the content, enabled while the bar may do so; without them
- * (`hintId` given), the hidden text naming the keys that do it, which describes the content.
- */
-function FormulaBarButtons(props: {
-  canCancel: boolean;
-  canCommit: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-  hintId: string | null;
-  size: ControlSize;
-}) {
-  const strings = useUiStrings();
-  if (props.hintId) {
-    return (
-      <VisuallyHidden as="span" id={props.hintId}>
-        {strings.formulaKeysHint}
-      </VisuallyHidden>
-    );
-  }
-  return (
-    <>
-      <Button
-        icon={CloseGlyph}
-        size={actionSizes[props.size]}
-        label={strings.cancel}
-        className={hooks.slotClass('cancel')}
-        isDisabled={!props.canCancel}
-        onPress={props.onCancel}
-      />
-      <Button
-        icon={CheckGlyph}
-        size={actionSizes[props.size]}
-        label={strings.confirm}
-        className={hooks.slotClass('confirm')}
-        isDisabled={!props.canCommit}
-        onPress={props.onConfirm}
-      />
     </>
   );
 }
@@ -332,6 +286,7 @@ function FormulaBarEditor({
         canCommit={canCommit}
         onCancel={cancel}
         onConfirm={commit}
+        editorRef={editorRef}
         hintId={showActions ? null : hintId}
         size={size}
       />

@@ -300,6 +300,41 @@ describe('CodeEditor', () => {
     vi.unstubAllGlobals();
   });
 
+  it('UIC-CODE-EDITOR-12.3 watches the gutter, not each line, and keeps its watch while typing', async () => {
+    const user = userEvent.setup();
+    const observed: Element[] = [];
+    class CountingObserver {
+      observe(element: Element) {
+        observed.push(element);
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', CountingObserver);
+    const diagnostics = [{ message: 'Unknown name.', line: 3 }];
+    function Editor() {
+      const [value, setValue] = useState(Array.from({ length: 200 }, (_, i) => `l${i}`).join('\n'));
+      return (
+        <CodeEditor
+          variant="surface"
+          aria-label="Source"
+          value={value}
+          onChange={setValue}
+          lineNumbers
+          diagnostics={diagnostics}
+        />
+      );
+    }
+    const { container } = render(<Editor />);
+    const gutter = container.querySelector('.ui-code-editor__gutter');
+    expect(observed).toContain(gutter);
+    expect(observed.some((element) => element.matches('.ui-code-editor__line'))).toBe(false);
+    const before = observed.length;
+    await user.type(screen.getByRole('textbox', { name: 'Source' }), 'x');
+    expect(observed.slice(before)).not.toContain(gutter);
+    vi.unstubAllGlobals();
+  });
+
   it('UIC-CODE-EDITOR-3.1 lists diagnostics with their place and describes the input with them', () => {
     const { container } = render(
       <CodeEditor
@@ -416,6 +451,14 @@ describe('CodeEditor', () => {
     expect(findCompletionQuery('let x = fruit.ap', 9)).toBe('f');
     expect(findCompletionQuery('call(', 5)).toBe('');
     expect(findCompletionQuery('$el', 3)).toBe('$el');
+    expect(findCompletionQuery('x = 9abc', 8)).toBe('abc');
+    expect(findCompletionQuery('x = 1.5', 7)).toBe('');
+    // Only the run before the caret is read: a long word ending in a non-word character costs one
+    // pass, where trying every start in it would take minutes.
+    const long = `${'a'.repeat(100_000)}-`;
+    const started = performance.now();
+    expect(findCompletionQuery(long, long.length)).toBe('');
+    expect(performance.now() - started).toBeLessThan(1000);
     expect(matchCompletions(vocabulary, 'FRUIT.AP').map(({ label }) => label)).toEqual([
       'fruit.apple',
       'fruit.apricot',

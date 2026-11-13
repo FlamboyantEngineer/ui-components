@@ -54,9 +54,9 @@ export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, Cod
 
 function readCopyLabel(strings: UiStrings, variant: CodeBlockVariant, commands: TerminalLine[]) {
   if (variant === 'code') return strings.codeBlockCopy;
-  return commands.length > 0
-    ? strings.codeBlockCopyCommands(commands.length)
-    : strings.codeBlockCopyOutput;
+  // A continuation line belongs to the command above it.
+  const count = commands.filter((line) => !line.isContinuation).length;
+  return count > 0 ? strings.codeBlockCopyCommands(count) : strings.codeBlockCopyOutput;
 }
 
 /** The digit count of the highest line number, from which the stylesheet sizes the gutter. */

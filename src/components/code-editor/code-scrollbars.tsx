@@ -25,7 +25,11 @@ interface CodeScrollMark {
   severity: string;
 }
 
-function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): CodeScrollMark[] {
+function measureMarks({
+  input,
+  gutter,
+  diagnostics,
+}: Pick<CodeScrollbarsProps, 'input' | 'gutter' | 'diagnostics'>): CodeScrollMark[] {
   const viewport = input.current;
   const lines = gutter.current?.children;
   if (!viewport || !lines || viewport.scrollHeight <= viewport.clientHeight) return [];
@@ -55,7 +59,7 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
 
 /** The editor's custom scrollbars share the native viewport, with diagnostics painted inside the vertical track. */
 export function CodeScrollbars(props: CodeScrollbarsProps) {
-  const { input, inputId, gutter, value, wrap } = props;
+  const { input, inputId, gutter, diagnostics, value, wrap } = props;
   const observer = useSharedViewportObserver(input);
   const measurement = useOverlayMetrics({
     viewport: input,
@@ -74,7 +78,7 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
   }, [input, schedule, value, wrap]);
   useEffect(() => {
     const update = () => {
-      const next = measureMarks(props);
+      const next = measureMarks({ input, gutter, diagnostics });
       setMarks((previous) =>
         previous.length === next.length &&
         previous.every(
@@ -88,14 +92,13 @@ export function CodeScrollbars(props: CodeScrollbarsProps) {
       );
     };
     update();
+    // A line that grows or shrinks moves the lines after it and resizes the gutter, so watching the
+    // gutter and the input covers every move of a mark; typing within a line needs no new measure.
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
     if (input.current) observer?.observe(input.current);
-    if (gutter.current) {
-      observer?.observe(gutter.current);
-      for (const line of gutter.current.children) observer?.observe(line);
-    }
+    if (gutter.current) observer?.observe(gutter.current);
     return () => observer?.disconnect();
-  }, [props, input, gutter]);
+  }, [input, gutter, diagnostics, wrap]);
   const { metrics } = measurement;
   return (
     <div {...hooks.slot('scrollbars')}>
