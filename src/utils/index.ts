@@ -104,7 +104,13 @@ export type { KeyedValue } from './stable-keys.js';
 export { assignOccurrenceKeys, toOccurrenceKey } from './stable-keys.js';
 export type { MergeChunk, MergeChunkKind } from './three-way-merge.js';
 export { mergeThreeWay } from './three-way-merge.js';
-export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
+export type {
+  TimeScale,
+  TimeScaleOptions,
+  TimeScaleUnit,
+  TimeTickOptions,
+  TimeTickUnit,
+} from './time-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type {
   TreeDropPosition,

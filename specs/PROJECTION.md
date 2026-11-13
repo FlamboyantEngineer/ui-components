@@ -55,7 +55,7 @@ Verification: `src/components/projection/projection.test.tsx`
 
 ### UIC-PROJECTION-1.8 - Reading a slot
 
-`useProjectedContent(slot)` shall return the content `ProjectionOutlet` would render for `slot` without its fallback, or `undefined` while the slot has no content (no declaration, or one whose children are `null`, `undefined`, a boolean or an empty string), so a component can leave out the element that would hold it. Its content reads context from the component that renders it, as an outlet's does.
+`useProjectedContent(slot)` shall return the content `ProjectionOutlet` would render for `slot` without its fallback, or `undefined` while the slot has no content (no declaration, or one whose children are `null`, `undefined`, a boolean or an empty string), so a component can leave out the element that would hold it. Its content reads context from the component that renders it, as an outlet's does. Content is watched one slot at a time: a reader or outlet renders again only when its own slot changes, so a component may read one slot and publish new elements to another without the two feeding each other.
 
 Implementation: `src/components/projection/projection.tsx`
 Verification: `src/components/projection/projection.test.tsx`

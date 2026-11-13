@@ -59,21 +59,21 @@ Verification: `src/utils/time-scale.test.ts`
 
 ### UIC-SCALES-2.3 - Calendar ticks
 
-`ticks({ unit })` shall return the starts of the calendar days, weeks, months, quarters (January, April, July, October) or years that fall inside the domain, as `YYYY-MM-DD` dates in increasing order, each positioned at midnight in the scale's time zone, so ticks stay on calendar boundaries across daylight saving changes. Weeks start on the first day of the week of `locale`. Tick generation shall stop at the supported calendar limit without repeating dates or emitting a clamped date between unit boundaries.
+`ticks({ unit })` shall return the starts of the calendar days, weeks, months, quarters (January, April, July, October) or years that fall inside the domain, as `YYYY-MM-DD` dates in increasing order, each positioned at midnight in the scale's time zone, so ticks stay on calendar boundaries across daylight saving changes. Weeks start on the first day of the week of `locale`. Tick generation shall stop at the supported calendar limit without repeating dates or emitting a clamped date between unit boundaries. `ticks({ unit: 'hour' })` and `ticks({ unit: 'minute' })` return the whole hours or minutes inside the domain instead, as ISO 8601 date-times in UTC.
 
 Implementation: `src/utils/time-scale.ts`
 Verification: `src/utils/time-scale.test.ts`, `e2e/sparkline.spec.ts`
 
 ### UIC-SCALES-2.4 - Choosing a unit
 
-Without `unit`, `ticks` shall use the smallest of day, week, month, quarter and year whose actual calendar boundaries inside the domain number at most `count` (8 by default). When even years are too many, it ticks every n years, at multiples of n, with n the smallest step that fits.
+Without `unit`, `ticks` shall use the smallest of day, week, month, quarter and year whose actual calendar boundaries inside the domain number at most `count` (8 by default). When even years are too many, it ticks every n years, at multiples of n, with n the smallest step that fits. A domain with a date-time at either end that holds fewer than three day boundaries ticks the clock instead: the smallest of 1, 5, 15 and 30 minutes and 1, 2, 3, 6 and 12 hours whose ticks number at most `count`, at multiples of the step on the clock of the scale's time zone (every 15 minutes from the hour, every 6 hours from midnight), as ISO 8601 date-times in UTC. A domain of dates alone keeps calendar ticks.
 
 Implementation: `src/utils/time-scale.ts`
 Verification: `src/utils/time-scale.test.ts`, `src/components/chart/line-geometry.test.ts`, `e2e/sparkline.spec.ts`
 
 ### UIC-SCALES-2.5 - Labels
 
-`format(value, unit)` and the tick labels shall write dates in the scale's time zone for `locale`: the month and day for days and weeks (`Mar 5`), the month and year for months and quarters (`Apr 2026`), and the year for years.
+`format(value, unit)` and the tick labels shall write dates in the scale's time zone for `locale`: the month and day for days and weeks (`Mar 5`), the month and year for months and quarters (`Apr 2026`), the year for years, and the time of day for hours and minutes (`10:15 AM`).
 
 Implementation: `src/utils/time-scale.ts`
 Verification: `src/utils/time-scale.test.ts`

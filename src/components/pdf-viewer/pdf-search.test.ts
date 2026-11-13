@@ -1,5 +1,23 @@
-import { describe, expect, it } from 'vitest';
-import { createPageText, findMatchFrom, findTextMatches, groupMatchRanges } from './pdf-search.js';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  createPageText,
+  findMatchFrom,
+  findTextMatches,
+  groupMatchRanges,
+  markCurrentMatch,
+  type PdfMatch,
+  type PdfPageText,
+} from './pdf-search.js';
+
+/** Every match's ranges by page, with `current` marked, as the viewer draws them. */
+function groupWithCurrent(
+  texts: readonly PdfPageText[],
+  matches: readonly PdfMatch[],
+  options: { current: number; highlightAll?: boolean },
+) {
+  const groups = groupMatchRanges(texts, matches, options.highlightAll);
+  return markCurrentMatch(groups, { pages: texts, matches }, options);
+}
 
 const pages = [
   createPageText({
@@ -30,7 +48,7 @@ describe('PDF search', () => {
   it('UIC-PDF-VIEWER-5.1 matches a phrase across a line break and splits it over its runs', () => {
     const matches = findTextMatches(pages, 'began   and');
     expect(matches).toEqual([{ pageIndex: 0, start: 18, end: 27 }]);
-    expect(groupMatchRanges(pages, matches, { current: 0 }).get(0)).toEqual([
+    expect(groupWithCurrent(pages, matches, { current: 0 }).get(0)).toEqual([
       { run: 0, start: 18, end: 23, isCurrent: true },
       { run: 1, start: 0, end: 3, isCurrent: true },
     ]);
@@ -41,7 +59,7 @@ describe('PDF search', () => {
     const page = createPageText({
       items: Array.from({ length: count }, () => ({ str: 'a', hasEOL: false })),
     });
-    const ranges = groupMatchRanges([page], [{ pageIndex: 0, start: 0, end: count }], {
+    const ranges = groupWithCurrent([page], [{ pageIndex: 0, start: 0, end: count }], {
       current: 0,
     }).get(0);
     expect(ranges).toHaveLength(count);
@@ -67,9 +85,9 @@ describe('PDF search', () => {
       start: index * 20,
       end: index * 20 + 1,
     }));
-    const ranges = groupMatchRanges([page], matches, { current: 500 }).get(0);
+    const ranges = groupMatchRanges([page], matches).get(0);
     expect(ranges).toHaveLength(matches.length);
-    expect(ranges?.[500]).toEqual({ run: 10_000, start: 0, end: 1, isCurrent: true });
+    expect(ranges?.[500]).toEqual({ run: 10_000, start: 0, end: 1, isCurrent: false });
     expect(reads).toBeLessThan(count);
   });
 
@@ -77,7 +95,7 @@ describe('PDF search', () => {
     const page = createPageText({
       items: ['', 'ab', '', 'cd'].map((str) => ({ str, hasEOL: false })),
     });
-    const ranges = groupMatchRanges(
+    const ranges = groupWithCurrent(
       [page],
       [
         { pageIndex: 0, start: 2, end: 4 },
@@ -97,7 +115,7 @@ describe('PDF search', () => {
     expect(findMatchFrom(matches, 0)).toBe(0);
     expect(findMatchFrom(matches, 1)).toBe(2);
     expect(findMatchFrom(matches, 3)).toBe(0);
-    const ranges = groupMatchRanges(pages, matches, { current: 2 });
+    const ranges = groupWithCurrent(pages, matches, { current: 2 });
     expect(ranges.get(0)?.map((range) => range.isCurrent)).toEqual([false, false]);
     expect(ranges.get(2)).toEqual([{ run: 0, start: 7, end: 14, isCurrent: true }]);
     expect(ranges.has(1)).toBe(false);
@@ -133,8 +151,29 @@ describe('PDF search', () => {
 
   it('UIC-PDF-VIEWER-5.7 highlights only the current match without highlight all', () => {
     const matches = findTextMatches(pages, 'harvest');
-    const ranges = groupMatchRanges(pages, matches, { current: 1, highlightAll: false });
+    const ranges = groupWithCurrent(pages, matches, { current: 1, highlightAll: false });
     expect([...ranges.keys()]).toEqual([0]);
     expect(ranges.get(0)).toEqual([{ run: 2, start: 1, end: 8, isCurrent: true }]);
+  });
+
+  it('UIC-PDF-VIEWER-5.3 steps to another match drawing only the pages it leaves and reaches', () => {
+    const matches = findTextMatches(pages, 'harvest');
+    const groups = groupMatchRanges(pages, matches);
+    const onFirst = markCurrentMatch(groups, { pages, matches }, { current: 1 });
+    const onLast = markCurrentMatch(groups, { pages, matches }, { current: 2 });
+    expect(onFirst.get(2)).toBe(groups.get(2));
+    expect(onLast.get(0)).toBe(groups.get(0));
+    expect(onFirst.get(0)?.map((range) => range.isCurrent)).toEqual([false, true]);
+    expect(onLast.get(2)?.map((range) => range.isCurrent)).toEqual([true]);
+  });
+
+  it('UIC-PDF-VIEWER-5.7 folds each page’s accents once, not again for each query', () => {
+    const texts = [createPageText({ items: [{ str: 'Café crème brûlée', hasEOL: false }] })];
+    findTextMatches(texts, 'creme', { ignoreAccents: true });
+    const normalize = vi.spyOn(String.prototype, 'normalize');
+    expect(findTextMatches(texts, 'brulee', { ignoreAccents: true })).toHaveLength(1);
+    const calls = normalize.mock.calls.length;
+    normalize.mockRestore();
+    expect(calls).toBe(1);
   });
 });

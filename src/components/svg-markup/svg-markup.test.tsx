@@ -246,6 +246,25 @@ describe('SvgMarkup', () => {
     expectHooksMatchSpec(container, 'SVG-MARKUP');
   });
 
+  it('UIC-SVG-MARKUP-2.2 keeps the drawing inside its box', () => {
+    const markup =
+      '<svg viewBox="0 0 10 10" overflow="visible" transform="scale(100)" transform-origin="0 0" opacity="0.5" filter="url(#f)" mask="url(#m)" clip-path="url(#c)"><rect width="10" height="10"/></svg>';
+    const { container } = render(<SvgMarkup markup={markup} />);
+    const svg = container.firstElementChild as SVGSVGElement;
+    expect(svg).toHaveAttribute('viewBox', '0 0 10 10');
+    for (const name of [
+      'overflow',
+      'transform',
+      'transform-origin',
+      'opacity',
+      'filter',
+      'mask',
+      'clip-path',
+    ]) {
+      expect(svg).not.toHaveAttribute(name);
+    }
+  });
+
   it('UIC-SVG-MARKUP-2.3 is decorative without a label and an image with one', () => {
     const { container, rerender } = render(<SvgMarkup markup={outlineMarkup} />);
     const svg = container.firstElementChild;

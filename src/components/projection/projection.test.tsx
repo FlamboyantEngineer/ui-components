@@ -226,6 +226,29 @@ describe('Projection', () => {
     expect(region('Tools')).toHaveTextContent('Ruler');
   });
 
+  it('UIC-PROJECTION-1.8 renders a reader again only for its own slot', () => {
+    let renders = 0;
+    // Reads the title and publishes a new element of it as the heading on every render.
+    function Heading() {
+      renders += 1;
+      const title = useProjectedContent('title');
+      return (
+        <ProjectionContent slot="heading">
+          <h2>{title}</h2>
+        </ProjectionContent>
+      );
+    }
+    render(
+      <ProjectionProvider>
+        <ProjectionContent slot="title">Pantry</ProjectionContent>
+        <Heading />
+        <ProjectionOutlet slot="heading" />
+      </ProjectionProvider>,
+    );
+    expect(screen.getByRole('heading', { name: 'Pantry' })).toBeInTheDocument();
+    expect(renders).toBeLessThan(5);
+  });
+
   it('UIC-PROJECTION-1.8 reads a slot, undefined while it has no content', () => {
     const seen: unknown[] = [];
     function Reader() {

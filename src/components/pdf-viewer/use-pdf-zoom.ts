@@ -4,6 +4,8 @@ import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useSt
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { createWheelStepCounter, isZoomWheel } from '../../utils/use-wheel-steps.js';
+import { toWheelPixels } from '../../utils/wheel-scroll.js';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import {
   findLargestPage,
@@ -81,11 +83,17 @@ function useWheelZoom(
     if (!scroller) return undefined;
     // React registers wheel listeners as passive, so only a native listener can prevent the
     // browser's own zoom.
+    // A trackpad pinch sends many small deltas: they add up to whole steps, one level each.
+    const count = createWheelStepCounter();
     const onWheel = (event: WheelEvent) => {
-      if (!event.ctrlKey && !event.metaKey) return;
+      if (!isZoomWheel(event)) return;
       event.preventDefault();
-      if (event.deltaY === 0) return;
-      const level = findNextZoomLevel(levels, percent, event.deltaY < 0 ? 1 : -1);
+      const { y } = toWheelPixels(event, { width: scroller.clientWidth, height: 400 });
+      if (y === 0) return;
+      // A wheel that counts in lines or pages, as some mice do, steps once per event.
+      const direction = event.deltaMode === 0 ? count(y) : y < 0 ? 1 : -1;
+      if (direction === null) return;
+      const level = findNextZoomLevel(levels, percent, direction);
       if (level !== undefined) setZoom(level);
     };
     scroller.addEventListener('wheel', onWheel, { passive: false });

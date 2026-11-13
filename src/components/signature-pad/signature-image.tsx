@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { type RefObject, useEffect, useId, useRef, useState } from 'react';
 import { ClipboardGlyph, DeleteGlyph, UploadGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
@@ -36,7 +36,7 @@ export interface ImageIntake {
   /** Why the latest file was refused, or `null`. */
   message: string | null;
   /** Mounts the hidden file input the chooser opens from. */
-  setChooser: (input: HTMLInputElement | null) => void;
+  chooserRef: RefObject<HTMLInputElement | null>;
   take: (file: Blob | null) => Promise<void>;
   /** Opens the file chooser. Called from a press or a menu action, so the browser allows it. */
   upload: () => void;
@@ -58,7 +58,7 @@ export function useImageIntake(options: ImageIntakeOptions): ImageIntake {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const latest = useRef(0);
-  const [chooser, setChooser] = useState<HTMLInputElement | null>(null);
+  const chooserRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [wasActive, setWasActive] = useState(isActive);
   if (wasActive !== isActive) {
@@ -85,6 +85,7 @@ export function useImageIntake(options: ImageIntakeOptions): ImageIntake {
   };
   const read = async (ticket: number, file: Blob | null) => {
     if (ticket !== latest.current) return;
+    const chooser = chooserRef.current;
     if (!file || !chooser) {
       setMessage(strings.signatureImageNoPaste);
       return;
@@ -99,12 +100,18 @@ export function useImageIntake(options: ImageIntakeOptions): ImageIntake {
   const take = (file: Blob | null) => read(begin(), file);
   return {
     message,
-    setChooser,
+    chooserRef,
     take,
-    upload: () => chooser?.click(),
+    upload: () => {
+      const chooser = chooserRef.current;
+      if (!chooser) return;
+      // Without this, choosing the same file again fires no change.
+      chooser.value = '';
+      chooser.click();
+    },
     paste: async () => {
       const ticket = begin();
-      await read(ticket, await readClipboardImage(chooser));
+      await read(ticket, await readClipboardImage(chooserRef.current));
     },
     clear() {
       latest.current += 1;
@@ -116,10 +123,10 @@ export function useImageIntake(options: ImageIntakeOptions): ImageIntake {
 
 /** The hidden file input of the image intake, mounted in every mode so the menu can open it. */
 export function SignatureImageChooser({ intake }: { intake: ImageIntake }) {
-  const { setChooser, take } = intake;
+  const { chooserRef, take } = intake;
   return (
     <FileTrigger
-      ref={setChooser}
+      ref={chooserRef}
       acceptedFileTypes={[...signatureImageTypes]}
       onSelect={(files) => {
         const [file] = files ? Array.from(files) : [];

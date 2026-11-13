@@ -40,6 +40,17 @@ describe('resolveDonutGeometry', () => {
     expect(whole?.path).toBe(
       'M50,0A50,50 0 0 1 50,100L50,80A30,30 0 0 0 50,20ZM50,100A50,50 0 0 1 50,0L50,20A30,30 0 0 0 50,80Z',
     );
+
+    // A slice so near the whole ring that its ends round to one point is drawn in two halves too.
+    const [nearly] = resolveDonutGeometry({
+      values: [
+        { series: 0, id: 0, value: 999_999 },
+        { series: 1, id: 1, value: 0.001 },
+      ],
+      diameter: 100,
+    }).slices;
+    expect(nearly?.path.match(/A50,50/g)).toHaveLength(2);
+    expect(nearly?.path.startsWith('M50,0A50,50 0 0 1 50,100')).toBe(true);
   });
 
   it('UIC-CHART-7.1 draws proportional slices when their total exceeds the numeric range', () => {

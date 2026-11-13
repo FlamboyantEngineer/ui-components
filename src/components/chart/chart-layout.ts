@@ -1,5 +1,11 @@
 // The drawing box shared by the charts with axes (specs/CHART.md).
 
+import {
+  createLinearScale,
+  type LinearScale,
+  type LinearScaleOptions,
+} from '../../utils/linear-scale.js';
+
 /** Space around the plotted area for the axes' labels, in pixels. */
 export interface ChartMargin {
   top: number;
@@ -36,4 +42,29 @@ export function countTicks(length: number, spacing: number): number {
 /** A coordinate rounded to two decimals, for stable markup. */
 export function roundCoordinate(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/** The ends of a value axis the caller fixed (`minValue`, `maxX`, …); a missing one is open. */
+export interface AxisBounds {
+  low?: number | undefined;
+  high?: number | undefined;
+}
+
+/**
+ * A linear scale over `domain`, in increasing order whatever order the ends come in, whose open
+ * ends extend to whole tick steps while the ends the caller fixed stay exactly where they are.
+ */
+export function createBoundedScale(
+  options: Omit<LinearScaleOptions, 'nice'>,
+  bounds: AxisBounds,
+): LinearScale {
+  const [low, high] = [...options.domain].sort((a, b) => a - b) as [number, number];
+  const fixed = new Set([bounds.low, bounds.high].filter((bound) => bound !== undefined));
+  const ordered = { ...options, domain: [low, high] as const };
+  if (fixed.size === 0) return createLinearScale({ ...ordered, nice: true });
+  const nice = createLinearScale({ ...ordered, nice: true }).domain;
+  return createLinearScale({
+    ...ordered,
+    domain: [fixed.has(low) ? low : nice[0], fixed.has(high) ? high : nice[1]],
+  });
 }

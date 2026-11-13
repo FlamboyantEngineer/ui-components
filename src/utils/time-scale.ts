@@ -16,6 +16,9 @@ import { readTimeInstant } from './read-time-instant.js';
 /** The calendar unit between a time scale's ticks. */
 export type TimeScaleUnit = 'day' | 'week' | 'month' | 'quarter' | 'year';
 
+/** The unit between ticks: a calendar unit, or hours and minutes for a domain shorter than days. */
+export type TimeTickUnit = TimeScaleUnit | 'hour' | 'minute';
+
 export interface TimeScaleOptions {
   /** The first and last instants, as ISO 8601 dates (`2026-03-01`) or date-times. */
   domain: readonly [string, string];
@@ -29,7 +32,7 @@ export interface TimeScaleOptions {
 
 export interface TimeTickOptions {
   /** The unit between ticks. Defaults to the smallest whose ticks number at most `count`. */
-  unit?: TimeScaleUnit | undefined;
+  unit?: TimeTickUnit | undefined;
   /** The most ticks a chosen unit makes. Defaults to 8. */
   count?: number | undefined;
 }
@@ -41,10 +44,13 @@ export interface TimeScale {
   map(value: string): number;
   /** The instant at a position, as an ISO 8601 date-time in UTC; empty for a non-finite position. */
   invert(position: number): string;
-  /** The starts of calendar units inside the domain, as `YYYY-MM-DD` dates in increasing order. */
+  /**
+   * The starts of calendar units inside the domain, as `YYYY-MM-DD` dates in increasing order, or
+   * for hours and minutes the instants as ISO 8601 date-times in UTC.
+   */
   ticks(options?: TimeTickOptions): Array<ScaleTick<string>>;
   /** An ISO 8601 date or date-time as the label of a tick of `unit`. */
-  format(value: string, unit: TimeScaleUnit): string;
+  format(value: string, unit: TimeTickUnit): string;
 }
 
 /** How ticks step: one unit at a time, or several years for long domains. */
@@ -55,7 +61,9 @@ interface TickPlan {
 
 const defaultTimeTickCount = 8;
 const units: readonly TimeScaleUnit[] = ['day', 'week', 'month', 'quarter', 'year'];
-const labelFormats: Readonly<Record<TimeScaleUnit, Intl.DateTimeFormatOptions>> = {
+const labelFormats: Readonly<Record<TimeTickUnit, Intl.DateTimeFormatOptions>> = {
+  minute: { hour: 'numeric', minute: '2-digit' },
+  hour: { hour: 'numeric', minute: '2-digit' },
   day: { month: 'short', day: 'numeric' },
   week: { month: 'short', day: 'numeric' },
   month: { month: 'short', year: 'numeric' },
@@ -63,8 +71,85 @@ const labelFormats: Readonly<Record<TimeScaleUnit, Intl.DateTimeFormatOptions>> 
   year: { year: 'numeric' },
 };
 
-function planTicks(
+/** A sub-day tick step: a unit and how many of it. */
+interface ClockPlan {
+  unit: 'hour' | 'minute';
+  step: number;
+}
+
+/** The first and last instants of a domain, in epoch milliseconds. */
+type TimeSpan = readonly [low: number, high: number];
+
+/** The sub-day steps a domain shorter than a few days may tick at, smallest first. */
+const clockPlans: readonly ClockPlan[] = [
+  ...[1, 5, 15, 30].map((step) => ({ unit: 'minute' as const, step })),
+  ...[1, 2, 3, 6, 12].map((step) => ({ unit: 'hour' as const, step })),
+];
+
+const clockUnitMs = { minute: 60_000, hour: 3_600_000 } as const;
+
+/**
+ * The instants of a sub-day plan inside `[low, high]`: whole multiples of the step on the clock of
+ * `timeZone` (every 15 minutes from the hour, every 6 hours from midnight), as epoch milliseconds.
+ */
+function listClockTicks([low, high]: TimeSpan, plan: ClockPlan, timeZone: string): number[] {
+  const unitMs = clockUnitMs[plan.unit];
+  const start = fromDate(new Date(low), timeZone);
+  const floored =
+    plan.unit === 'minute'
+      ? start.set({
+          minute: Math.floor(start.minute / plan.step) * plan.step,
+          second: 0,
+          millisecond: 0,
+        })
+      : start.set({
+          hour: Math.floor(start.hour / plan.step) * plan.step,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        });
+  const first = floored.toDate().getTime();
+  const result: number[] = [];
+  for (
+    let at = first < low ? first + plan.step * unitMs : first;
+    at <= high;
+    at += plan.step * unitMs
+  )
+    result.push(at);
+  return result;
+}
+
+/** The sub-day plan a domain of date-times takes, when days alone tick it too sparsely. */
+function planClockTicks(
   { unit, count }: TimeTickOptions,
+  countTicks: (plan: ClockPlan) => number,
+): ClockPlan | undefined {
+  if (unit === 'hour' || unit === 'minute') return { unit, step: 1 };
+  if (unit) return undefined;
+  const wanted = typeof count === 'number' && Number.isFinite(count) ? count : defaultTimeTickCount;
+  const most = Math.max(1, Math.round(wanted));
+  return clockPlans.find((plan) => countTicks(plan) <= most);
+}
+
+/**
+ * The clock ticks of a domain: when the caller asks for hours or minutes, or when the domain holds
+ * date-times that days would tick fewer than three times; otherwise `undefined`.
+ */
+function findClockTicks(
+  span: TimeSpan,
+  options: TimeTickOptions & { hasClock: boolean; countDays: () => number },
+  timeZone: string,
+): { unit: ClockPlan['unit']; instants: number[] } | undefined {
+  const { unit, hasClock, countDays } = options;
+  const needsClock =
+    unit === 'hour' || unit === 'minute' || (unit === undefined && hasClock && countDays() < 3);
+  const countTicks = (plan: ClockPlan) => listClockTicks(span, plan, timeZone).length;
+  const plan = needsClock ? planClockTicks(options, countTicks) : undefined;
+  return plan && { unit: plan.unit, instants: listClockTicks(span, plan, timeZone) };
+}
+
+function planTicks(
+  { unit, count }: { unit?: TimeScaleUnit | undefined; count?: number | undefined },
   countTicks: (plan: TickPlan) => number,
 ): TickPlan {
   if (unit) return { unit, step: 1 };
@@ -147,20 +232,24 @@ export function addTimeUnits(date: string, unit: TimeScaleUnit, count: number): 
 export function createTimeScale(options: TimeScaleOptions): TimeScale {
   const timeZone = options.timeZone ?? getLocalTimeZone();
   const locale = options.locale ?? getDateTimeFormat(undefined).resolvedOptions().locale;
-  const [start, end] = options.domain.map((text) => readTimeInstant(text, timeZone)) as [
-    number,
-    number,
-  ];
+  const start = readTimeInstant(options.domain[0], timeZone);
+  const end = readTimeInstant(options.domain[1], timeZone);
   const isReadable = Number.isFinite(start) && Number.isFinite(end);
   const linear = createLinearScale({ domain: [start, end], range: options.range });
   const instantOf = (date: CalendarDate) => toZoned(date, timeZone).toDate().getTime();
   const map = (value: string) =>
     isReadable ? linear.map(readTimeInstant(value, timeZone)) : Number.NaN;
-  const format = (value: string, unit: TimeScaleUnit) => {
+  const hasClock = options.domain.some((text) => text.includes('T'));
+  const format = (value: string, unit: TimeTickUnit) => {
     const instant = readTimeInstant(value, timeZone);
     if (!Number.isFinite(instant)) return '';
     return getDateTimeFormat(locale, { timeZone, ...labelFormats[unit] }).format(instant);
   };
+  const toTick = (value: string, unit: TimeTickUnit) => ({
+    value,
+    position: map(value),
+    label: format(value, unit),
+  });
   const ticks = (tickOptions: TimeTickOptions = {}) => {
     if (!isReadable) return [];
     const [low, high] = [Math.min(start, end), Math.max(start, end)];
@@ -193,12 +282,17 @@ export function createTimeScale(options: TimeScaleOptions): TimeScale {
       const months = (highDate.year - first.year) * 12 + highDate.month - first.month;
       return Math.floor(months / (plan.unit === 'quarter' ? 3 : 1)) + 1;
     };
-    const plan = planTicks(tickOptions, countTicks);
+    const countDays = () => countTicks({ unit: 'day', step: 1 });
+    const clock = findClockTicks([low, high], { ...tickOptions, hasClock, countDays }, timeZone);
+    if (clock) return clock.instants.map((at) => toTick(new Date(at).toISOString(), clock.unit));
+    const plan = planTicks(
+      { unit: tickOptions.unit as TimeScaleUnit | undefined, count: tickOptions.count },
+      countTicks,
+    );
     let date = firstTick(plan);
     const result: Array<ScaleTick<string>> = [];
     for (; date && instantOf(date) <= high; date = addUnit(date, plan, locale)) {
-      const value = date.toString();
-      result.push({ value, position: map(value), label: format(value, plan.unit) });
+      result.push(toTick(date.toString(), plan.unit));
     }
     return result;
   };

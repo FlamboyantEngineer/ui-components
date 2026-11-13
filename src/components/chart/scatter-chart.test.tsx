@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ScatterChart, type ScatterChartSeries } from './scatter-chart.js';
 
@@ -45,6 +45,21 @@ describe('ScatterChart', () => {
     expect(points[0]?.getAttribute('cx')).toBe(points[2]?.getAttribute('cx'));
     expect(document.querySelectorAll('.ui-chart-axis')).toHaveLength(2);
     expectHooksMatchSpec(document.body, 'CHART', { slots: ['plot', 'ui-scatter-chart__point'] });
+  });
+
+  it('UIC-CHART-10.1 skips drawing the plot again when a render changes nothing it shows', () => {
+    const props = { label: 'Yield', series: samples, xLabel: 'Rain', yLabel: 'Crop' };
+    const { rerender } = render(<ScatterChart {...props} />);
+    // `format` is a getter that binds the method, though the types read it as a plain method.
+    const prototype = Intl.NumberFormat.prototype as unknown as { format: unknown };
+    const formats = vi.spyOn(prototype, 'format', 'get');
+    try {
+      rerender(<ScatterChart {...props} className="again" />);
+      // Drawing the plot formats both coordinates of each of the four points; the frame formats less.
+      expect(formats.mock.calls.length).toBeLessThan(8);
+    } finally {
+      formats.mockRestore();
+    }
   });
 
   it('UIC-CHART-10.2 moves by keyboard and shows the coordinates in the tooltip', async () => {

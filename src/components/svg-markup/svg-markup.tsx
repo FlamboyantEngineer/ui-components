@@ -23,9 +23,13 @@ const reactPropNames: Readonly<Record<string, string>> = {
   'xmlns:xlink': 'xmlnsXlink',
 };
 
-/** Root attributes the component and its caller own; the markup's values are dropped. */
+/**
+ * Root attributes the component and its caller own, and those that would let the drawing paint
+ * outside its box or over the page (overflow, transforms, filters, masks, clips, opacity); the
+ * markup's values are dropped.
+ */
 const ownedRootAttribute =
-  /^(class|style|width|height|role|focusable|tabindex|id|aria-.+|data-.+)$/i;
+  /^(class|style|width|height|role|focusable|tabindex|id|aria-.+|data-.+|overflow|transform|transform-origin|transform-box|filter|mask|clip-path|opacity)$/i;
 
 function toCamelCase(name: string): string {
   return name.replace(/[-:]([a-z])/g, (_, letter: string) => letter.toUpperCase());

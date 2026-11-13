@@ -85,7 +85,9 @@ test.describe('Lab options', () => {
     await lab.open('mini-app');
     const app = demo(page, 'network');
     await expect(output(page, 'network', 'ready')).toHaveText('1');
-    await app.getByRole('button', { name: 'Allow https://cdn.example.org' }).click();
+    // The frames above size themselves to their content as they start, moving the button, so a
+    // press by pointer can land beside it; the keyboard presses it wherever it is.
+    await app.getByRole('button', { name: 'Allow https://cdn.example.org' }).press('Enter');
     await expect(output(page, 'network', 'ready')).toHaveText('2');
     await expect(
       app.frameLocator('iframe').getByText(/connect-src[^;]*https:\/\/cdn\.example\.org/),

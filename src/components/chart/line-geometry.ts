@@ -2,7 +2,7 @@
 
 import type { Key } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
-import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
+import type { LinearScale, ScaleTick } from '../../utils/linear-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { withAxisFormat } from './chart-format.js';
@@ -11,6 +11,7 @@ import {
   type ChartBox,
   type ChartMargin,
   countTicks,
+  createBoundedScale,
   resolvePlotBox,
   roundCoordinate,
 } from './chart-layout.js';
@@ -181,16 +182,17 @@ function layOutSeries(
 
 /** The value axis, also used to measure tick labels before laying out paths. */
 export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): LinearScale {
-  const isFixed = input.minValue !== undefined || input.maxValue !== undefined;
-  const scale = createLinearScale({
-    domain: findValueDomain(input),
-    range: [plot.bottom, plot.top],
-    nice: !isFixed,
-    clamp: true,
-    tickCount: countTicks(plot.bottom - plot.top, yTickSpacing),
-    locale: input.locale,
-    formatOptions: input.formatOptions,
-  });
+  const scale = createBoundedScale(
+    {
+      domain: findValueDomain(input),
+      range: [plot.bottom, plot.top],
+      clamp: true,
+      tickCount: countTicks(plot.bottom - plot.top, yTickSpacing),
+      locale: input.locale,
+      formatOptions: input.formatOptions,
+    },
+    { low: input.minValue, high: input.maxValue },
+  );
   return withAxisFormat(scale, input.formatAxisValue);
 }
 

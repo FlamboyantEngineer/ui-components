@@ -123,6 +123,10 @@ describe('SignaturePad image mode', () => {
       expect.stringMatching(/^data:image\/png/) as unknown,
     );
     expect(area).not.toHaveAccessibleDescription();
+    // The chooser forgets the file it gave, so choosing the same file again reads it again.
+    expect(fileInput(container).value).not.toBe('');
+    await user.click(screen.getByRole('button', { name: 'Upload image' }));
+    expect(fileInput(container).value).toBe('');
     expect(container.querySelector('.ui-field')).toHaveAttribute('data-mode', 'image');
     expectHooksMatchSpec(container, 'SIGNATURE-PAD', {
       slots: ['image', 'image-surface', 'image-preview', 'image-message'],

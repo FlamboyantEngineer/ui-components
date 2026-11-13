@@ -36,7 +36,7 @@ Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts
 
 ### UIC-MINI-APP-2.1 - Bridge
 
-The frame's first script shall define a frozen `window.miniApp` with `state`, `call(name, args)` and `setState(state)`. When the frame first loads, the host transfers a `MessagePort` to it (its origin is opaque, so the message is addressed to the frame's window with the target origin `*`), and the bridge takes only the first such port from the host's window. Messages the mini-app sends before then wait in a queue. Everything the host receives on the port is checked against the bridge's message shapes, and anything else is ignored.
+The frame's first script shall define a frozen `window.miniApp` with `state`, `call(name, args)` and `setState(state)`. Before any of the mini-app's code runs, the bridge opens a `MessageChannel` and posts one of its ports to the host's window (the target origin `*`, since the frame's origin is opaque and it cannot know the host's), keeping the other. The host listens from the moment it inserts the frame and takes only the first such port posted from the frame's own window. The bridge posts it before any of the mini-app's code runs, and messages from one window arrive in the order they were posted, so a document the frame navigates to never reaches the channel. Everything the host receives on the port is checked against the bridge's message shapes, and anything else is ignored.
 
 Implementation: `src/components/mini-app/mini-app-bridge.ts`, `src/components/mini-app/use-mini-app-session.ts`
 Verification: `src/components/mini-app/mini-app.test.tsx`, `e2e/mini-app.spec.ts`

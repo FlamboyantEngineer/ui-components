@@ -106,7 +106,7 @@ export function placeReferences<V>(
     if (isHorizontal && reference.type === 'band') label.labelY = start + labelGap;
     return [
       {
-        key: toKeyIdentity(reference.id),
+        key: `${axis.direction}:${toKeyIdentity(reference.id)}`,
         kind: reference.type ?? 'line',
         axis: axis.direction,
         tone: reference.tone,

@@ -341,6 +341,35 @@ describe('DiagramCanvas nodes', () => {
     expect(status()).toHaveTextContent('1 item removed');
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.5 removes a pressed edge with Delete on the viewport', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const onEdgesChange = vi.fn();
+    const { container, rerender } = render(
+      <EditableDiagram onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} />,
+    );
+    const hit = requireDefined(container.querySelector('.ui-diagram-canvas__edge-hit'));
+    await user.pointer({ keys: '[MouseLeft]', target: hit });
+    const viewport = requireDefined(container.querySelector('.ui-diagram-canvas__viewport'));
+    expect(hit.parentElement).toHaveAttribute('data-selected', 'true');
+    expect(viewport).toHaveFocus();
+    await user.keyboard('{Delete}');
+    expect(onEdgesChange).toHaveBeenLastCalledWith([pipeEdges[1]]);
+    expect(onNodesChange).not.toHaveBeenCalled();
+    expect(status()).toHaveTextContent('1 item removed');
+
+    rerender(
+      <EditableDiagram
+        isEditing={false}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      />,
+    );
+    await user.pointer({ keys: '[MouseLeft]', target: hit });
+    await user.keyboard('{Backspace}');
+    expect(onEdgesChange).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-DIAGRAM-CANVAS-4.1 UIC-DIAGRAM-CANVAS-4.5 acts on the selection the current mode allows', async () => {
     const onNodesChange = vi.fn();
     const onSelectionChange = vi.fn();

@@ -7,6 +7,7 @@ import {
   findMatchFrom,
   findTextMatches,
   groupMatchRanges,
+  markCurrentMatch,
   type PdfMatch,
   type PdfMatchRange,
   type PdfSearchOptions,
@@ -199,9 +200,14 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
         : texts.some((text) => text.text.trim())
           ? 'ready'
           : 'unavailable';
+  // Every match is grouped once per search; stepping through them groups only the current page again.
+  const allRanges = useMemo(
+    () => groupMatchRanges(texts ?? [], matches, highlightAll),
+    [texts, matches, highlightAll],
+  );
   const rangesByPage = useMemo(
-    () => groupMatchRanges(texts ?? [], matches, { current, highlightAll }),
-    [texts, matches, current, highlightAll],
+    () => markCurrentMatch(allRanges, { pages: texts ?? [], matches }, { current, highlightAll }),
+    [allRanges, texts, matches, current, highlightAll],
   );
   return {
     ...search,

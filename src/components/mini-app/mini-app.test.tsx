@@ -37,28 +37,21 @@ function rootOf(frame: HTMLElement): HTMLElement {
 }
 
 /**
- * Takes the port the host transfers to `frame` once it loads. jsdom loads `about:blank` in place of
- * the `srcdoc`, so the test plays the bridge's part on the port. Call it right after rendering,
- * before the frame's `load`.
+ * Opens the channel as the frame's bridge does, posting one end to the host's window from the
+ * frame's window, and keeps the other. jsdom loads `about:blank` in place of the `srcdoc`, so the
+ * test plays the bridge's part. Call it right after rendering, before the frame's `load`.
  */
-function connect(frame: HTMLIFrameElement): Promise<FramePort> {
-  const target = frame.contentWindow;
-  if (!target) throw new Error('The frame has no window.');
-  const post = vi.spyOn(target, 'postMessage').mockImplementation(() => undefined);
-  return takePort(post);
-}
-
-async function takePort(post: { mock: { calls: unknown[][] } }): Promise<FramePort> {
-  await waitFor(() => expect(post.mock.calls).not.toHaveLength(0));
-  const [message, origin, transfer] = post.mock.calls[0] ?? [];
-  expect(message).toEqual({ type: 'ui-mini-app:connect' });
-  expect(origin).toBe('*');
-  const port = (transfer as MessagePort[] | undefined)?.[0];
-  if (!port) throw new Error('The host transferred no port.');
-  openPorts.push(port);
+function connect(
+  frame: HTMLIFrameElement,
+  { data = { type: 'ui-mini-app:connect' } as unknown, source = frame.contentWindow } = {},
+): FramePort {
+  const channel = new MessageChannel();
+  window.dispatchEvent(new MessageEvent('message', { data, source, ports: [channel.port2] }));
+  const port = channel.port1;
+  openPorts.push(port, channel.port2);
   const replies: unknown[] = [];
   port.onmessage = (event) => replies.push(event.data);
-  return { port, replies, send: (data) => port.postMessage(data) };
+  return { port, replies, send: (message: unknown) => port.postMessage(message) };
 }
 
 describe('MiniApp', () => {
@@ -96,7 +89,7 @@ describe('MiniApp', () => {
     const frame = frameOf();
     expect(rootOf(frame)).toHaveAttribute('data-status', 'loading');
     expect(screen.getByRole('status')).toHaveTextContent('Loading Loan calculator…');
-    const { send } = await connect(frame);
+    const { send } = connect(frame);
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'ready'));
     send({ type: 'ready' });
@@ -110,7 +103,7 @@ describe('MiniApp', () => {
     renderMiniApp();
     const frame = frameOf();
     expect(frame).not.toHaveAttribute('height');
-    const { send } = await connect(frame);
+    const { send } = connect(frame);
     send({ type: 'resize', height: 240.2 });
     await waitFor(() => expect(frame).toHaveAttribute('height', '241'));
     send({ type: 'resize', height: 96 });
@@ -129,7 +122,7 @@ describe('MiniApp', () => {
       '.ui-mini-app__frame { box-sizing: border-box; border: 1px solid; padding: 2px 0 3.5px; }';
     document.head.append(sheet);
     try {
-      const { send } = await connect(frame);
+      const { send } = connect(frame);
       send({ type: 'resize', height: 100 });
       await waitFor(() => expect(frame).toHaveAttribute('height', '108'));
       sheet.textContent = '.ui-mini-app__frame { box-sizing: content-box; border: 1px solid; }';
@@ -145,7 +138,7 @@ describe('MiniApp', () => {
     const frame = frameOf();
     let inner = 100;
     Object.defineProperty(frame, 'clientHeight', { configurable: true, get: () => inner });
-    const { send, replies } = await connect(frame);
+    const { send, replies } = connect(frame);
     send({ type: 'resize', height: 100 });
     await waitFor(() => expect(frame).toHaveAttribute('height', '100'));
     inner = 60;
@@ -165,7 +158,7 @@ describe('MiniApp', () => {
     const double = vi.fn((args: unknown) => Number(args) * 2);
     const later = vi.fn(async (args: unknown) => `rate for ${String(args)}`);
     renderMiniApp({ capabilities: { double, later } });
-    const { send, replies } = await connect(frameOf());
+    const { send, replies } = connect(frameOf());
     send({ type: 'call', id: 1, name: 'double', args: 21 });
     send({ type: 'call', id: 2, name: 'later', args: 'EUR' });
     await waitFor(() => expect(replies).toHaveLength(2));
@@ -184,7 +177,7 @@ describe('MiniApp', () => {
         uncloneable: () => () => undefined,
       },
     });
-    const { send, replies } = await connect(frameOf());
+    const { send, replies } = connect(frameOf());
     send({ type: 'call', id: 1, name: 'missing', args: null });
     send({ type: 'call', id: 2, name: 'toString', args: null });
     send({ type: 'call', id: 3, name: 'fail', args: null });
@@ -209,7 +202,7 @@ describe('MiniApp', () => {
   it('UIC-MINI-APP-2.2 UIC-MINI-APP-3.3 answers with the latest capabilities without restarting', async () => {
     const { rerender } = renderMiniApp({ capabilities: { rate: () => 1 } });
     const frame = frameOf();
-    const { send, replies } = await connect(frame);
+    const { send, replies } = connect(frame);
     rerender(<MiniApp title="Loan calculator" source={source} capabilities={{ rate: () => 2 }} />);
     expect(frameOf()).toBe(frame);
     send({ type: 'call', id: 7, name: 'rate', args: null });
@@ -222,7 +215,7 @@ describe('MiniApp', () => {
     const frame = frameOf();
     const document = frame.getAttribute('srcdoc') ?? '';
     expect(document).toContain('state: {"amount":1200},');
-    const { send } = await connect(frame);
+    const { send } = connect(frame);
     send({ type: 'state', value: { amount: 1500 } });
     await waitFor(() => expect(onStateChange).toHaveBeenCalledWith({ amount: 1500 }));
     rerender(
@@ -241,7 +234,7 @@ describe('MiniApp', () => {
     const onStateChange = vi.fn();
     const onError = vi.fn();
     renderMiniApp({ onStateChange, onError });
-    const { send } = await connect(frameOf());
+    const { send } = connect(frameOf());
     const deep: unknown[] = [];
     let level = deep;
     for (let depth = 0; depth < 70; depth += 1) level.push((level = []));
@@ -266,7 +259,7 @@ describe('MiniApp', () => {
     const onReady = vi.fn();
     renderMiniApp({ onError, onReady });
     const frame = frameOf();
-    const { send } = await connect(frame);
+    const { send } = connect(frame);
     send({ type: 'error', message: 'rate is not defined' });
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'error'));
@@ -286,7 +279,7 @@ describe('MiniApp', () => {
     const onError = vi.fn();
     renderMiniApp({ onError });
     const frame = frameOf();
-    const { send } = await connect(frame);
+    const { send } = connect(frame);
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'ready'));
     send({ type: 'error', message: 'Division by zero' });
@@ -303,6 +296,7 @@ describe('MiniApp', () => {
     const onError = vi.fn();
     renderMiniApp({ onError, readyTimeout: 2000 });
     const frame = frameOf();
+    connect(frame);
     await act(() => vi.advanceTimersByTimeAsync(1999));
     expect(rootOf(frame)).toHaveAttribute('data-status', 'loading');
     await act(() => vi.advanceTimersByTimeAsync(1));
@@ -317,6 +311,7 @@ describe('MiniApp', () => {
     vi.useFakeTimers();
     renderMiniApp({ readyTimeout: -1 });
     const frame = frameOf();
+    connect(frame);
     await act(() => vi.advanceTimersByTimeAsync(9999));
     expect(rootOf(frame)).toHaveAttribute('data-status', 'loading');
     await act(() => vi.advanceTimersByTimeAsync(1));
@@ -327,7 +322,7 @@ describe('MiniApp', () => {
     const onError = vi.fn();
     renderMiniApp({ onError });
     const frame = frameOf();
-    const { send, port } = await connect(frame);
+    const { send, port } = connect(frame);
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'ready'));
     const closed = new Promise((resolve) => port.addEventListener('close', resolve));
@@ -343,12 +338,26 @@ describe('MiniApp', () => {
     await closed;
   });
 
+  it('UIC-MINI-APP-2.1 takes only the first port the frame’s own window posts', async () => {
+    renderMiniApp();
+    const frame = frameOf();
+    const stranger = connect(frame, { source: window });
+    const unknown = connect(frame, { data: { type: 'ui-mini-app:other' } });
+    const bridge = connect(frame);
+    const late = connect(frame);
+    for (const other of [stranger, unknown, late]) other.send({ type: 'ready' });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(rootOf(frame)).toHaveAttribute('data-status', 'loading');
+    bridge.send({ type: 'ready' });
+    await waitFor(() => expect(rootOf(frame)).toHaveAttribute('data-status', 'ready'));
+  });
+
   it('UIC-MINI-APP-2.1 ignores messages that are not the bridge’s', async () => {
     const onStateChange = vi.fn();
     const onError = vi.fn();
     renderMiniApp({ onStateChange, onError });
     const frame = frameOf();
-    const { send, replies } = await connect(frame);
+    const { send, replies } = connect(frame);
     for (const message of [
       null,
       'ready',
@@ -370,7 +379,7 @@ describe('MiniApp', () => {
   it('UIC-MINI-APP-3.3 restarts with a new frame and the current initialState when the source changes', async () => {
     const { rerender } = renderMiniApp({ initialState: 1 });
     const first = frameOf();
-    const { send, port } = await connect(first);
+    const { send, port } = connect(first);
     send({ type: 'ready' });
     await waitFor(() => expect(rootOf(first)).toHaveAttribute('data-status', 'ready'));
     const closed = new Promise((resolve) => port.addEventListener('close', resolve));
@@ -403,7 +412,7 @@ describe('MiniApp', () => {
 
   it('UIC-MINI-APP-3.3 closes the channel when unmounted', async () => {
     const { unmount } = renderMiniApp();
-    const { port } = await connect(frameOf());
+    const { port } = connect(frameOf());
     const closed = new Promise((resolve) => port.addEventListener('close', resolve));
     unmount();
     await closed;
@@ -418,7 +427,7 @@ describe('MiniApp', () => {
         <MiniApp title="Second" source={source} onStateChange={second} />
       </>,
     );
-    const [one, two] = await Promise.all([connect(frameOf('First')), connect(frameOf('Second'))]);
+    const [one, two] = [connect(frameOf('First')), connect(frameOf('Second'))];
     expect(one.port).not.toBe(two.port);
     one.send({ type: 'ready' });
     two.send({ type: 'state', value: 'second' });

@@ -45,7 +45,7 @@ Verification: `src/components/svg-markup/svg-markup.test.tsx`, `src/components/s
 
 ### UIC-SVG-MARKUP-2.2 - Root attributes
 
-The root `<svg>` shall keep the markup's drawing attributes (`viewBox`, `fill`, `stroke`, `xmlns` and the like) and drop the markup's `class`, `style`, `width`, `height`, `id`, `role`, `focusable`, `tabindex`, `aria-*` and `data-*`, which the component and its caller own. The stylesheet sizes the drawing; the reference sheet uses 24 pixels on its own, and inside an `Icon` the drawing fills the icon box.
+The root `<svg>` shall keep the markup's drawing attributes (`viewBox`, `fill`, `stroke`, `xmlns` and the like) and drop the markup's `class`, `style`, `width`, `height`, `id`, `role`, `focusable`, `tabindex`, `aria-*` and `data-*`, which the component and its caller own, and the root's `overflow`, `transform`, `transform-origin`, `transform-box`, `filter`, `mask`, `clip-path` and `opacity`, so untrusted markup cannot draw outside its box or over the page; inside the drawing these attributes stay. The stylesheet sizes the drawing; the reference sheet uses 24 pixels on its own, and inside an `Icon` the drawing fills the icon box.
 
 Implementation: `src/components/svg-markup/svg-markup.tsx`, `labs/reference/svg-markup.css`
 Verification: `src/components/svg-markup/svg-markup.test.tsx`, `e2e/svg-markup.spec.ts`
