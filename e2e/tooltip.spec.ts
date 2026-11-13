@@ -325,14 +325,19 @@ test.describe('Anchored tooltip lab', () => {
       'Current stage',
     );
     await expect(async () => beside('Draft')).toPass();
-    await demo.getByRole('button', { name: 'Show Review' }).click();
+    // Replacing the anchor shifts its neighboring control. Isolate anchor tracking from pointer
+    // hit testing while that layout changes by activating the control from the keyboard.
+    await demo.getByRole('button', { name: 'Show Review' }).focus();
+    await page.keyboard.press('Enter');
     await expect(
       demo.getByRole('button', { name: 'Review', exact: true }),
     ).toHaveAccessibleDescription('Current stage');
     await expect(async () => beside('Review')).toPass();
-    await demo.getByRole('button', { name: 'Remove the stage' }).click();
+    await demo.getByRole('button', { name: 'Remove the stage' }).focus();
+    await page.keyboard.press('Enter');
     await expect(hint).toHaveCount(0);
-    await demo.getByRole('button', { name: 'Show Draft' }).click();
+    await demo.getByRole('button', { name: 'Show Draft' }).focus();
+    await page.keyboard.press('Enter');
     await expect(hint).toBeVisible();
     await expect(async () => beside('Draft')).toPass();
   });

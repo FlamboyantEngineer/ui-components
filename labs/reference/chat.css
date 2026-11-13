@@ -57,6 +57,7 @@
   flex: none;
   gap: 4px;
   padding: 6px 8px;
+  padding-inline-start: 4px;
   border: 1px solid var(--ref-field-border);
   border-bottom: 0;
   border-radius: var(--ref-radius) var(--ref-radius) 0 0;
@@ -78,6 +79,7 @@
 }
 
 .ui-chat__queue-handle {
+  flex: none;
   cursor: grab;
 }
 
@@ -112,7 +114,6 @@
   align-items: center;
   gap: 4px;
   min-width: 0;
-  padding-inline-start: 6px;
   border-radius: var(--ref-radius-sm);
 }
 
