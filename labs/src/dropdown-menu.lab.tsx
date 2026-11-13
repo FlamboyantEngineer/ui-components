@@ -94,6 +94,32 @@ function DisabledWhileOpen() {
   );
 }
 
+/** A trigger that shows only its value, named apart from it, and locked with a hint that says why. */
+function LockedMode() {
+  const [isLocked, setLocked] = useState(true);
+  return (
+    <div data-lab-case="locked-mode">
+      <p>
+        <Button size="sm" onPress={() => setLocked((locked) => !locked)}>
+          {isLocked ? 'Unlock' : 'Lock'}
+        </Button>
+      </p>
+      <DropdownMenu
+        label="Editing"
+        triggerLabel="Mode"
+        aria-label="Modes"
+        items={[
+          { id: 'editing', label: 'Editing' },
+          { id: 'viewing', label: 'Viewing' },
+        ]}
+        isDisabled={isLocked}
+        focusableWhenDisabled
+        tooltip={isLocked ? 'Locked while the file is checked out' : undefined}
+      />
+    </div>
+  );
+}
+
 function Choice() {
   const [layout, setLayout] = useState<Selection>(new Set(['list']));
   const chosen = layout === 'all' ? 'all' : [...layout].map(String).join(', ');
@@ -311,6 +337,12 @@ mountLab(
     </LabSection>
     <LabSection title="Choice" description="A single choice shown in the trigger label.">
       <Choice />
+    </LabSection>
+    <LabSection
+      title="Named trigger, locked with a hint"
+      description="The trigger shows its value and is named apart from it; locked, it stays focusable to show why."
+    >
+      <LockedMode />
     </LabSection>
     <LabSection
       title="Disabled while open"
