@@ -23,6 +23,7 @@ function createReleaseFixture() {
     'lib/npm.mjs',
     'lib/script.mjs',
     'lib/reference-stylesheet.mjs',
+    'lib/fonts.mjs',
     'lib/tar.mjs',
   ];
   for (const script of scripts) {
@@ -45,7 +46,7 @@ function createReleaseFixture() {
   const manifest = {
     name: 'release-fixture',
     version: '0.1.0',
-    files: ['dist', 'labs/build/reference.css'],
+    files: ['dist', 'labs/build/reference.css', 'labs/build/fonts.css', 'labs/build/vendor/fonts'],
     scripts: {
       prepare: 'node missing-prepare.mjs',
       ...Object.fromEntries(
@@ -58,6 +59,7 @@ function createReleaseFixture() {
   writeFileSync(join(fixture, 'package.json'), manifestText);
   writeFileSync(join(fixture, '.gitignore'), 'dist/\nlabs/build/\n');
   git(['init', '--initial-branch=main']);
+  git(['config', 'core.autocrlf', 'false']);
   git(['config', 'user.name', 'Library tests']);
   git(['config', 'user.email', 'library@example.test']);
   git(['config', 'commit.gpgsign', 'false']);
@@ -70,9 +72,13 @@ function createReleaseFixture() {
   mkdirSync(join(fixture, 'labs/build'), { recursive: true });
   writeFileSync(join(fixture, 'dist/index.js'), 'export const answer = 42;\n');
   writeFileSync(join(fixture, 'labs/build/reference.css'), '.ui-button {}\n');
+  writeFileSync(join(fixture, 'labs/build/fonts.css'), '@font-face {}\n');
+  mkdirSync(join(fixture, 'labs/build/vendor/fonts'), { recursive: true });
+  writeFileSync(join(fixture, 'labs/build/vendor/fonts/sample.woff2'), 'font fixture');
   return { fixture, git, manifestText };
 }
 
+// This runs the release CLI, several npm processes and real archive packing on both platforms.
 it('UIC-LABS-1.4 packs the tagged manifest and build output while preserving the checkout', () => {
   const { fixture, git, manifestText } = createReleaseFixture();
   execFileSync(process.execPath, [join(fixture, 'scripts/release.mjs')], {
@@ -90,6 +96,11 @@ it('UIC-LABS-1.4 packs the tagged manifest and build output while preserving the
   expect(readFileSync(join(extracted, 'package/dist/index.js'), 'utf8')).toBe(
     git(['show', 'v0.1.0:dist/index.js']),
   );
+  for (const asset of ['labs/build/fonts.css', 'labs/build/vendor/fonts/sample.woff2']) {
+    expect(readFileSync(join(extracted, 'package', asset), 'utf8')).toBe(
+      git(['show', `v0.1.0:${asset}`]),
+    );
+  }
   expect(readFileSync(join(fixture, 'package.json'), 'utf8')).toBe(manifestText);
   expect(git(['branch', '--show-current']).trim()).toBe('main');
   // The package check ran on the checkout, then on the release tree it tagged.
@@ -97,7 +108,7 @@ it('UIC-LABS-1.4 packs the tagged manifest and build output while preserving the
   expect(checks).toHaveLength(2);
   expect(checks[0]).toBe('checkout');
   expect(checks[1]).toMatch(/ui-release-.*package$/);
-});
+}, 30_000);
 
 it('UIC-LABS-1.4 refuses to release with untracked files, which the build would compile', () => {
   const { fixture, git } = createReleaseFixture();

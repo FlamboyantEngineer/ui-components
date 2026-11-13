@@ -117,6 +117,10 @@ export async function waitForLab(page: Page): Promise<void> {
   const root = page.locator('html');
   await expect(root).toHaveAttribute('data-lab-ready', 'true');
   await expect(root).toHaveAttribute('data-lab-stylesheet-state', /^(none|loaded)$/);
+  await page.waitForFunction(() => {
+    const fonts = document.getElementById('ui-lab-fonts');
+    return fonts instanceof HTMLLinkElement && fonts.sheet !== null;
+  });
   // The lab fonts load once a layout uses them and then move text; settle them before measuring.
   await page.evaluate(async () => {
     void document.body.offsetHeight;
