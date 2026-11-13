@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { getToolCallTrigger } from '../../../test/chat-tool-call-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { SparklesGlyph } from '../../core/glyphs.js';
 import { ChatToolCall, type ChatToolCallStatus } from './chat-tool-call.js';
 
 const statusTexts: Record<ChatToolCallStatus, [string, string]> = {
   pending: ['Pending', 'clock'],
   running: ['Running', 'refresh'],
   'approval-requested': ['Needs approval', 'hand-raised'],
-  succeeded: ['Done', 'wrench'],
+  succeeded: ['Done', 'letter'],
   failed: ['Failed', 'error'],
   denied: ['Denied', 'no-symbol'],
   cancelled: ['Cancelled', 'x-circle'],
@@ -135,7 +136,7 @@ describe('ChatToolCall', () => {
       command: 'terminal',
       search: 'search',
       fetch: 'globe',
-      other: 'wrench',
+      other: 'letter',
     } as const;
     for (const [kind, name] of Object.entries(kindGlyphs)) {
       rerender(
@@ -155,6 +156,59 @@ describe('ChatToolCall', () => {
     rerender(<ChatToolCall id="call" name="read_file" status="succeeded" />);
     expect(root).toHaveAttribute('data-kind', 'other');
     expect(root.querySelector('.ui-chat-tool-call__target')).toBeNull();
+  });
+
+  it('UIC-CHAT-TOOL-CALL-1.9 shows the letter of its source, else of its name, once an other call succeeded', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="read_files" source="OneDrive" status="running" />,
+    );
+    const glyph = () => container.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'refresh');
+    rerender(<ChatToolCall id="call" name="read_files" source="OneDrive" status="succeeded" />);
+    expect(glyph()).toHaveClass('ui-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'letter');
+    expect(glyph()).toHaveAttribute('data-letter', 'O');
+    expect(glyph()).toHaveAttribute('aria-hidden', 'true');
+    expect(glyph()).toHaveTextContent('O');
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Read files Done');
+    rerender(<ChatToolCall id="call" name="read_files" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-letter', 'R');
+    rerender(<ChatToolCall id="call" name="read_files" source="📁 日記" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-letter', '日');
+    rerender(<ChatToolCall id="call" name="++" source="✨" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-glyph', 'wrench');
+    expect(glyph()).not.toHaveAttribute('data-letter');
+    rerender(
+      <ChatToolCall id="call" name="read_files" source="OneDrive" kind="read" status="succeeded" />,
+    );
+    expect(glyph()).toHaveAttribute('data-glyph', 'file-text');
+  });
+
+  it('UIC-CHAT-TOOL-CALL-1.9 shows the glyph given for the tool once the call succeeded', () => {
+    const { container, rerender } = render(
+      <ChatToolCall
+        id="call"
+        name="read_files"
+        kind="read"
+        glyph={SparklesGlyph}
+        status="failed"
+      />,
+    );
+    const glyph = () => container.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'error');
+    rerender(
+      <ChatToolCall
+        id="call"
+        name="read_files"
+        kind="read"
+        glyph={SparklesGlyph}
+        status="succeeded"
+      />,
+    );
+    expect(glyph()).toHaveAttribute('data-glyph', 'sparkles');
+    rerender(<ChatToolCall id="call" name="read_files" glyph={SparklesGlyph} status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-glyph', 'sparkles');
+    expectHooksMatchSpec(container, 'CHAT-TOOL-CALL', {});
   });
 
   it('UIC-CHAT-TOOL-CALL-1.3 publishes each status with its text and glyph, busy while running', () => {

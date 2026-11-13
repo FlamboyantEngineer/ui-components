@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { article, assistantPeople, renderChat } from '../../../test/chat-fixtures.js';
+import { SparklesGlyph } from '../../core/glyphs.js';
 import type { ChatCustomPart, ChatMessageData } from '../chat-parts/chat-parts.js';
 import type { ChatProps } from './chat.js';
 
@@ -58,6 +59,7 @@ function inlineOptions(drawn: string[], version: string, icon?: ReactNode): Part
     onAnswerQuestion: () => undefined,
     getReference: () => undefined,
     feedbackReasons: ['Too long'],
+    toolGlyphs: { search_trains: SparklesGlyph },
     thinkingIcon: icon ?? (
       <svg viewBox="0 0 8 8">
         <path d="M0 0h8" />
