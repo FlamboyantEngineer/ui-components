@@ -342,11 +342,11 @@ describe('UnsavedChangesGuard', () => {
     await expect(first).resolves.toBe(false);
     expect(await screen.findByRole('alertdialog', { name: 'Second leave' })).toBeVisible();
     expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
-    await act(async () => save.resolve());
-    expect(screen.getByRole('alertdialog', { name: 'Second leave' })).toBeVisible();
     expect(await settled(second)).toBe('pending');
-    await user.click(screen.getByRole('button', { name: 'Stay' }));
-    await expect(second).resolves.toBe(false);
+    // Its save leaves nothing dirty, so the new question lets the reader leave
+    // (UIC-UNSAVED-CHANGES-GUARD-2.7); it never shows that save as its own.
+    await act(async () => save.resolve());
+    await expect(second).resolves.toBe(true);
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a late discard or refusal of a replaced question to itself', async () => {
@@ -370,11 +370,13 @@ describe('UnsavedChangesGuard', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     const third = leave({ title: 'Third leave' });
     await expect(second).resolves.toBe(false);
-    await act(async () => discard.resolve());
+    // The late refusal shows nothing on the new question.
     await act(async () => save.reject(new Error('The server is busy.')));
     expect(screen.getByRole('alertdialog', { name: 'Third leave' })).toBeVisible();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    // The late discard leaves nothing dirty, so the new question lets the reader leave
+    // (UIC-UNSAVED-CHANGES-GUARD-2.7).
+    await act(async () => discard.resolve());
     await expect(third).resolves.toBe(true);
   });
 

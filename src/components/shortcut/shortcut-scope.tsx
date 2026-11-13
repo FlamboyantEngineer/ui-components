@@ -25,6 +25,7 @@ import {
   type ShortcutRegistration,
   toShortcutSteps,
 } from './shortcut-registry.js';
+import { useDetectedPlatform } from './use-detected-platform.js';
 
 export interface ShortcutScopeProps extends Omit<ContainerProps<'div'>, 'children'>, BaseProps {
   /** The content whose shortcuts the scope holds. */
@@ -125,6 +126,9 @@ export function useShortcut(
   const steps = shortcut === null ? [] : toShortcutSteps(shortcut);
   const keys = steps.map((step) => formatAriaKeyShortcuts(step));
   const identity = keys.join(' ');
+  // The attribute renders in the server's notation until hydrated, as `Shortcut` draws its keys;
+  // registration and matching use the real platform.
+  const platform = useDetectedPlatform();
   const scopeRef = options.isGlobal ? null : (scope?.ref ?? null);
   const latest = useLatest(toRegistration({ steps, onPress, scope, options }));
   useEffect(() => {
@@ -132,5 +136,9 @@ export function useShortcut(
     const owner = getOwnerDocument(scopeRef?.current ?? container);
     return registerShortcut(owner, latest);
   }, [identity, latest, container, scopeRef]);
-  return { ariaKeyShortcuts: keys.length === 1 ? keys[0] : undefined };
+  const [single] = steps;
+  return {
+    ariaKeyShortcuts:
+      steps.length === 1 && single ? formatAriaKeyShortcuts(single, platform) : undefined,
+  };
 }

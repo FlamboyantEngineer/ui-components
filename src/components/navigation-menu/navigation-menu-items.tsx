@@ -12,6 +12,7 @@ import {
   Disclosure as AriaDisclosure,
   DisclosurePanel as AriaDisclosurePanel,
 } from '../../primitives/index.js';
+import { isComposingKey } from '../../utils/is-composing-key.js';
 import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { Link, type LinkProps } from '../link/link.js';
 import {
@@ -64,6 +65,8 @@ export function NavigationMenuItem({
   };
   const closeOnEscape = (event: KeyboardEvent) => {
     if (event.key !== 'Escape' || !isOpen) return;
+    // The panel's content handled it, or it belongs to an input method's composition.
+    if (event.defaultPrevented || isComposingKey(event.nativeEvent)) return;
     event.stopPropagation();
     menu.setOpen(null, 'press');
     triggerRef.current?.focus();
