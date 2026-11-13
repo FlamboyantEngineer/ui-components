@@ -18,12 +18,16 @@ import {
   type MenuTriggerProps,
   useMenuSelection,
 } from '../menu/menu.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface DropdownMenuProps
   extends
     Omit<MenuTriggerProps, 'children'>,
     DropdownMenuMenuProps,
-    Pick<ButtonProps, 'variant' | 'size' | 'isDisabled' | 'ref' | 'onPress'>,
+    Pick<
+      ButtonProps,
+      'variant' | 'size' | 'isDisabled' | 'focusableWhenDisabled' | 'tooltip' | 'ref' | 'onPress'
+    >,
     BaseProps {
   /** The trigger's text, or its accessible name when `iconOnly` (then it must be text). */
   label: ReactNode;
@@ -39,6 +43,12 @@ export interface DropdownMenuProps
   placement?: Placement | undefined;
   /** Makes a split button: the labelled button runs `onPress`, a chevron beside it opens the menu. */
   onPress?: ButtonProps['onPress'];
+  /**
+   * Names the button that opens the menu, for a trigger that shows only its current value: read
+   * before that value, which stays part of the name; `aria-label` names the menu. It is the whole
+   * name of an `iconOnly` trigger and of a split button's chevron.
+   */
+  triggerLabel?: string | undefined;
 }
 
 type DropdownMenuMenuProps = Pick<
@@ -85,6 +95,7 @@ function DropdownMenuTrigger({
   showCaret = true,
   variant,
   className,
+  triggerLabel,
   ...rest
 }: DropdownMenuTriggerProps) {
   const isOpen = useContext(OverlayTriggerStateContext)?.isOpen ?? false;
@@ -95,7 +106,7 @@ function DropdownMenuTrigger({
         {...props}
         variant={variant ?? 'ghost'}
         icon={icon ?? MoreGlyph}
-        label={typeof label === 'string' ? label : ''}
+        label={triggerLabel ?? (typeof label === 'string' ? label : '')}
       />
     );
   }
@@ -107,6 +118,8 @@ function DropdownMenuTrigger({
       startIcon={icon}
       endIcon={showCaret ? caret : undefined}
     >
+      {/* Read before the value the trigger shows, so its name still holds that visible text. */}
+      {triggerLabel ? <VisuallyHidden>{`${triggerLabel} `}</VisuallyHidden> : null}
       {label}
     </Button>
   );
@@ -138,13 +151,15 @@ function DropdownSplitButton({
     variant = 'secondary',
     size,
     isDisabled,
+    focusableWhenDisabled,
     className,
+    triggerLabel,
     iconOnly: _iconOnly,
     showCaret: _showCaret,
     ...rest
   } = trigger;
   const [data, button] = splitDataAttributes(rest);
-  const shared = { variant, size, isDisabled };
+  const shared = { variant, size, isDisabled, focusableWhenDisabled };
   return (
     <div {...data} {...hooks.root({ className, data: { open: isOpen, split: true } })} role="group">
       <Button
@@ -160,7 +175,7 @@ function DropdownSplitButton({
         <Button
           {...shared}
           icon={ChevronDownGlyph}
-          label={strings.moreOptions}
+          label={triggerLabel ?? strings.moreOptions}
           className={hooks.slotClass('toggle')}
         />
         <MenuPopover placement={placement}>

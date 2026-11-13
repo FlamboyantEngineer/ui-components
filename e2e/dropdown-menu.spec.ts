@@ -177,6 +177,25 @@ test.describe('Dropdown Menu lab', () => {
     await expect(area.locator('[data-lab-output="moved"]')).toHaveText('oslo');
   });
 
+  test('UIC-DROPDOWN-MENU-1.9 UIC-DROPDOWN-MENU-1.10 names a value trigger and explains its lock', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dropdown-menu');
+    const demo = page.locator('[data-lab-case="locked-mode"]');
+    const trigger = demo.getByRole('button', { name: 'Mode Editing', exact: true });
+    await expect(trigger).toHaveAttribute('aria-disabled', 'true');
+    await trigger.focus();
+    await expect(page.getByRole('tooltip')).toHaveText('Locked while the file is checked out');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Unlock' }).click();
+    await trigger.click();
+    await expect(page.getByRole('menu', { name: 'Modes' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-DROPDOWN-MENU-1.8 closes an open menu for good when its trigger turns disabled', async ({
     page,
     lab,

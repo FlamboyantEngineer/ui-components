@@ -114,7 +114,7 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(form.locator('[data-lab-dirty]')).toHaveText('All changes saved');
   });
 
-  test('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a replacing question open when the replaced save ends', async ({
+  test('UIC-UNSAVED-CHANGES-GUARD-2.6 closes a replacing question when the replaced save leaves nothing unsaved', async ({
     page,
     lab,
   }) => {
@@ -129,11 +129,9 @@ test.describe('Unsaved Changes Guard lab', () => {
     await expect(second).toBeVisible();
     await expect(demo.locator('[data-lab-answers]')).toHaveText('Leave the plan? Stayed');
     await page.clock.runFor(1500);
-    await expect(second).toBeVisible();
-    await expect(page.locator('.ui-modal__primary')).not.toHaveAttribute('data-pending');
-    await second.getByRole('button', { name: 'Stay' }).click();
+    await expect(second).toBeHidden();
     await expect(demo.locator('[data-lab-answers]')).toHaveText(
-      'Leave the plan? Stayed · Sign out now? Stayed',
+      'Leave the plan? Stayed · Sign out now? Left',
     );
   });
 
@@ -198,7 +196,7 @@ test.describe('Unsaved Changes Guard lab', () => {
     // The save elsewhere has rendered before the second leave asks.
     await expect(dialog.getByRole('listitem')).toHaveCount(0);
     await page.clock.runFor(100);
-    await expect(demo.locator('[data-lab-answers]')).toHaveText('First Stayed · Second Left');
+    await expect(demo.locator('[data-lab-answers]')).toHaveText('First Left · Second Left');
     await expect(dialog).toBeHidden();
   });
 

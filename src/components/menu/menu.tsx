@@ -172,7 +172,10 @@ export function useMenuSelection({
   defaultSelectedKeys,
   onSelectionChange,
 }: Pick<MenuProps, 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'>) {
-  const [own, setOwn] = useState(defaultSelectedKeys);
+  // Never undefined, so the React Aria menu stays controlled from its first selection on.
+  const [own, setOwn] = useState<MenuProps['defaultSelectedKeys']>(
+    () => defaultSelectedKeys ?? new Set(),
+  );
   const isControlled = selectedKeys !== undefined;
   return {
     selectedKeys: isControlled ? selectedKeys : own,

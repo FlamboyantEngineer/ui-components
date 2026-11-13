@@ -322,7 +322,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A question replaced"
-      description="Press the button, then Save at once: a second later a sign-out asks its own question, which answers the first Stayed. The first save still finishes after two seconds, and the sign-out question stays open, ready for Save, Discard or Stay."
+      description="Press the button, then Save at once: a second later a sign-out asks its own question, which answers the first Stayed. The first save still finishes after two seconds; nothing is then unsaved, so the sign-out question closes and signs out."
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <ReplacedQuestion />
@@ -338,7 +338,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A clean leave replaces the question"
-      description="Press the button: a second later the reading list is saved elsewhere and a second leave finds nothing unsaved. It answers the first question Stayed, closes it and leaves."
+      description="Press the button: a second later the reading list is saved elsewhere and a second leave finds nothing unsaved. The save elsewhere leaves nothing unsaved, so the open question answers Left and closes, and the second leave goes ahead."
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <SavedElsewhere />

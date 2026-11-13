@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, useState } from 'react';
+import { type KeyboardEvent, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
@@ -52,7 +52,9 @@ export function useCommandPages(options: CommandPagesOptions) {
       ? rankCommands(page.entries, { query, match: { startsWith, contains }, filter })
       : page.entries;
   const enter = (id: Key) => {
-    setSavedQueries([...savedQueries.slice(0, depth), query]);
+    // Each page before this one keeps its place, a page opened through `defaultPath` an empty query.
+    const before = Array.from({ length: depth }, (_, index) => savedQueries[index] ?? '');
+    setSavedQueries([...before, query]);
     setPath([...page.pages.map((each) => each.id), id]);
     setQuery('');
   };
@@ -61,12 +63,21 @@ export function useCommandPages(options: CommandPagesOptions) {
     setPath(page.pages.slice(0, -1).map((each) => each.id));
     setQuery(savedQueries[depth - 1] ?? '');
   };
+  // A Backspace that went back a page, while it is held: its repeats neither go back further nor
+  // delete the query the page before restored.
+  const backspaceHeld = useRef(false);
   // Seen before the field: on an empty field of an inner page, Escape and Backspace go back a page.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
+    if (!event.repeat) backspaceHeld.current = false;
+    if (event.key === 'Backspace' && event.repeat && backspaceHeld.current) {
+      event.preventDefault();
+      return;
+    }
     if (depth === 0 || query !== '' || isComposingKey(event.nativeEvent)) return;
     if (event.key !== 'Escape' && event.key !== 'Backspace') return;
     event.preventDefault();
     event.stopPropagation();
+    backspaceHeld.current = event.key === 'Backspace';
     back();
   };
   return {

@@ -574,6 +574,20 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     await user.keyboard('{ArrowDown}{Enter}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
+  it('UIC-MENU-3.3 holds an uncontrolled selection controlled from the start', async () => {
+    const user = userEvent.setup();
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    render(
+      <MenuButton aria-label="View" selectionMode="single">
+        <MenuItem id="name">Name</MenuItem>
+        <MenuItem id="date">Date</MenuItem>
+      </MenuButton>,
+    );
+    await openMenu(user);
+    await user.click(screen.getByRole('menuitemradio', { name: 'Date' }));
+    expect(errors.mock.calls.flat().join(' ')).not.toMatch(/uncontrolled to controlled/);
+    errors.mockRestore();
+  });
 
   it('UIC-MENU-3.3 takes a selection on a section described as data', async () => {
     const user = userEvent.setup();

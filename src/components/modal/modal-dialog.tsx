@@ -13,7 +13,11 @@ import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.
 import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
-import { getDeepActiveElement, resolveFocusTarget } from '../../utils/focus-target.js';
+import {
+  findControllingElement,
+  getDeepActiveElement,
+  resolveFocusTarget,
+} from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -153,13 +157,19 @@ function ModalOpening({
   const isShadowed =
     focusedAtOpening !== null && focusedAtOpening.getRootNode() !== focusedAtOpening.ownerDocument;
   const opener = returnsToOpener || isShadowed ? focusedAtOpening : null;
+  // An opener inside a menu leaves with the menu: focus then goes to the control that opened it.
+  const [successor] = useState(() => (opener ? findControllingElement(opener) : null));
   // Closing while the content it was opened from loads, focus waits on that content's boundary.
   useHoldFocusOnLeave(
     () => dialogRef.current,
     () =>
       resolveFocusTarget(finalFocus) ?? (isHTMLElement(focusedAtOpening) ? focusedAtOpening : null),
   );
-  useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
+  useFocusReturn({
+    containerRef: dialogRef,
+    finalFocus,
+    fallback: () => (opener?.isConnected ? opener : successor),
+  });
   useExitComplete(onExitComplete);
   return null;
 }

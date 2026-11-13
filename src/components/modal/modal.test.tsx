@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Portal, PortalContainerProvider } from '../portal/portal.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
 import { isModalPrimaryShortcut, Modal, type ModalProps, ModalTrigger } from './modal.js';
@@ -528,6 +529,45 @@ describe('Modal', () => {
       await user.keyboard('{Escape}');
       await waitFor(() => expect(more).toHaveFocus());
     });
+
+    it.each([
+      ['blocking', {}],
+      ['non-modal', { isNonModal: true }],
+      ['retained', { keepMounted: true }],
+    ] as const)(
+      'UIC-MODAL-3.3 returns focus to the menu button of a %s modal opened from a menu item',
+      async (_, presentation) => {
+        const user = userEvent.setup();
+        function FromMenu() {
+          const [isOpen, setOpen] = useState(false);
+          return (
+            <>
+              <DropdownMenu
+                label="Actions"
+                items={[{ id: 'rename', label: 'Rename' }]}
+                onAction={() => setOpen(true)}
+              />
+              <Modal
+                title="Rename"
+                isOpen={isOpen}
+                onOpenChange={setOpen}
+                cancelAction={{}}
+                {...presentation}
+              >
+                Body
+              </Modal>
+            </>
+          );
+        }
+        render(<FromMenu />);
+        const trigger = screen.getByRole('button', { name: 'Actions' });
+        await user.click(trigger);
+        await user.click(await screen.findByRole('menuitem', { name: 'Rename' }));
+        const dialog = await screen.findByRole('dialog', { name: 'Rename' });
+        await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+        await waitFor(() => expect(trigger).toHaveFocus());
+      },
+    );
   });
 
   describe('header and body', () => {

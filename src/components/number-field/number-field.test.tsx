@@ -266,6 +266,25 @@ describe('NumberField', () => {
     expect(root(container)).toHaveAttribute('data-validation', 'valid');
   });
 
+  it.each([
+    { value: 113620.68, step: 0.01 },
+    { value: 5000000.01, step: 0.01 },
+    { value: 999999.99, step: 0.01 },
+    { value: 0.7, step: 0.2, minValue: 0.1 },
+    { value: 9007199254740990, step: 5 },
+  ])('UIC-NUMBER-FIELD-2.2 takes $value as on the step of $step', ({ value, ...rules }) => {
+    const { container } = render(<NumberField label="Amount" defaultValue={value} {...rules} />);
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    expect(screen.getByRole('textbox', { name: 'Amount' })).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('UIC-NUMBER-FIELD-2.2 reports a large value off the step', () => {
+    const { container } = render(
+      <NumberField label="Amount" defaultValue={113620.685} step={0.01} />,
+    );
+    expect(message(container)).toBe('Enter a value in steps of 0.01.');
+  });
+
   it('UIC-NUMBER-FIELD-2.1 UIC-NUMBER-FIELD-2.2 shows external values without hiding their validation errors', () => {
     const onChange = vi.fn();
     const onCommit = vi.fn();

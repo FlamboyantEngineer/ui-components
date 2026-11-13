@@ -36,6 +36,8 @@ function readKeys(event: Pick<KeyboardEvent, 'key' | 'code'>): string[] {
  * Cyrillic layout reads `z`. Other keys (`+`, `-`, `ArrowUp`) read as typed.
  */
 export function readCommandKey(event: Pick<KeyboardEvent, 'key' | 'code'>): string {
+  // Browsers send keydowns without a key when they autofill a field.
+  if (typeof event.key !== 'string') return '';
   const typed = event.key.toLowerCase();
   if (event.key.length !== 1 || latinLetterOrDigit.test(event.key)) return typed;
   const physical = letterOrDigitCode.exec(event.code ?? '');
@@ -70,6 +72,7 @@ function describeKeyPress(event: ChordKeyEvent): string[] {
  * other modifier held. AltGr typing a character is text entry, never a chord.
  */
 export function matchesChord(event: ChordKeyEvent, chord: ShortcutChord): boolean {
+  if (typeof event.key !== 'string') return false;
   const keys = formatAriaKeyShortcuts(chord);
   if (keys === '' || isAltGraphText(event)) return false;
   return describeKeyPress(event).includes(keys);

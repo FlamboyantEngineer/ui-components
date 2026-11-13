@@ -40,8 +40,6 @@ interface MenubarContextValue {
   register: (key: string, trigger: TriggerEntry | null) => (() => void) | undefined;
   /** React Aria's trigger opened or closed a menu. */
   setOpen: (key: string, isOpen: boolean) => void;
-  /** Closes a menu with its submenus. */
-  close: (key: string) => void;
   /** A top-level item took focus, so it becomes the tab stop. */
   setTabKey: (key: string) => void;
   /** The pointer entered a top-level item: while another menu is open, its menu opens instead. */
@@ -273,7 +271,6 @@ export function useMenubarState({ rootRef, orientation, size, direction }: Menub
     tabKey,
     register,
     setOpen,
-    close,
     setTabKey,
     switchTo: (key) => {
       if (openKey !== null && openKey !== key) moveTo({ key, focus: null });

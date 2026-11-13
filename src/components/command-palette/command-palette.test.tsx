@@ -622,6 +622,22 @@ describe('CommandPalette', () => {
       await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenLastCalledWith(false);
     });
+    it('UIC-COMMAND-PALETTE-2.8 goes back one page for a held Backspace', async () => {
+      const user = userEvent.setup();
+      render(<CommandPalette items={settings} defaultOpen defaultPath={['display']} />);
+      await user.keyboard('de{Enter}');
+      expect(items()).toEqual(['Compact']);
+      const search = screen.getByRole('searchbox');
+      await user.keyboard('{Backspace}');
+      expect(screen.getByRole('menu', { name: 'Display' })).toBeInTheDocument();
+      expect(search).toHaveValue('de');
+      // The key stays down: its repeats neither go back again nor delete the restored query.
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set repeat
+      expect(fireEvent.keyDown(search, { key: 'Backspace', repeat: true })).toBe(false);
+      expect(screen.getByRole('menu', { name: 'Display' })).toBeInTheDocument();
+      await user.keyboard('{Backspace}');
+      expect(search).toHaveValue('d');
+    });
 
     it('UIC-COMMAND-PALETTE-2.8 leaves composing keys alone, follows a removed page and starts each opening afresh', async () => {
       const user = userEvent.setup();

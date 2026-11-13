@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -175,6 +175,20 @@ describe('NavigationMenu', () => {
     await user.keyboard('{Escape}');
     expect(trigger('Fruit')).toHaveAttribute('aria-expanded', 'false');
     expect(trigger('Fruit')).toHaveFocus();
+  });
+  it('UIC-NAVIGATION-MENU-2.4 leaves an Escape the panel handled, or a composing one, alone', async () => {
+    const user = userEvent.setup();
+    render(<Menu defaultOpenKey="fruit" />);
+    const pears = screen.getByRole('link', { name: 'Pears' });
+    act(() => pears.focus());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing
+    fireEvent.keyDown(pears, { key: 'Escape', isComposing: true });
+    expect(trigger('Fruit')).toHaveAttribute('aria-expanded', 'true');
+    pears.addEventListener('keydown', (event) => event.preventDefault(), { once: true });
+    await user.keyboard('{Escape}');
+    expect(trigger('Fruit')).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Escape}');
+    expect(trigger('Fruit')).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('UIC-NAVIGATION-MENU-2.4 closes on a press outside, focus leaving and a link press', async () => {

@@ -100,6 +100,29 @@ describe('PdfViewer', () => {
     await waitFor(() => expect(engine.render).toHaveBeenCalledTimes(6));
   });
 
+  it('UIC-PDF-VIEWER-2.1 draws the pages again when the device pixel ratio changes', async () => {
+    vi.stubGlobal('devicePixelRatio', 1);
+    const queries = new Set<() => void>();
+    vi.stubGlobal('matchMedia', (media: string) => ({
+      media,
+      matches: true,
+      addEventListener: (_type: string, listener: () => void) => queries.add(listener),
+      removeEventListener: (_type: string, listener: () => void) => queries.delete(listener),
+    }));
+    const { container, engine } = await renderReady({ defaultZoom: 100 });
+    const canvas = container.querySelector('canvas');
+    expect(canvas).toHaveAttribute('width', '560');
+    const drawn = engine.render.mock.calls.length;
+    // The reader zooms the browser: the ratio doubles and the resolution query reports it.
+    vi.stubGlobal('devicePixelRatio', 2);
+    act(() => {
+      for (const listener of [...queries]) listener();
+    });
+    expect(canvas).toHaveAttribute('width', '1120');
+    await waitFor(() => expect(engine.render.mock.calls.length).toBeGreaterThan(drawn));
+    expect(engine.render).toHaveBeenLastCalledWith(expect.objectContaining({ canvas }));
+  });
+
   it('UIC-PDF-VIEWER-2.5 leaves annotations and links out while they are switched off', async () => {
     const links: Record<number, TestLink[]> = {
       0: [{ rect: [46, 388, 202, 404], url: 'https://example.com/' }],

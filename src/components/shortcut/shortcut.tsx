@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, Fragment, type ReactNode, use, useSyncExternalStore } from 'react';
+import { createContext, Fragment, type ReactNode, use } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -11,11 +11,11 @@ import {
   formatShortcutAccessibleText,
   formatShortcutSteps,
   getShortcutKeySeparator,
-  getShortcutPlatform,
   type ShortcutChord,
   type ShortcutPlatform,
   type ShortcutSequence,
 } from './shortcut-format.js';
+import { useDetectedPlatform } from './use-detected-platform.js';
 
 /**
  * How a shortcut draws its keys: each in a keycap (`keycaps`), or as quiet inline text such as
@@ -66,15 +66,6 @@ export interface KeyHintsProps
 
 const hooks = createHooks('shortcut', ['keys', 'chord', 'key', 'text']);
 const hintHooks = createHooks('key-hints', ['hint', 'action']);
-
-const subscribeToNothing = () => () => {};
-/** What detection reports without a browser, so the server and hydration render the same notation. */
-const getServerPlatform = (): ShortcutPlatform => 'linux';
-
-/** The detected platform: the server's notation while hydrating, the browser's once hydrated. */
-export function useDetectedPlatform(): ShortcutPlatform {
-  return useSyncExternalStore(subscribeToNothing, getShortcutPlatform, getServerPlatform);
-}
 
 /** One chord's keys, as keycaps or text, with the platform separator between them. */
 function Keycaps({ keys, separator }: { keys: readonly string[]; separator: string }) {
@@ -164,3 +155,4 @@ export { formatAriaKeyShortcuts } from './shortcut-format.js';
 export { isChordPress, matchesChord, readCommandKey } from './shortcut-match.js';
 export type { ShortcutOptions, ShortcutScopeProps } from './shortcut-scope.js';
 export { ShortcutScope, useShortcut } from './shortcut-scope.js';
+export { useDetectedPlatform } from './use-detected-platform.js';

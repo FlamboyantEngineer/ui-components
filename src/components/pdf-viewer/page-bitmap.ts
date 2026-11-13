@@ -1,10 +1,9 @@
 // Draws page bitmaps: on the viewer's canvases and on the canvases a print lays out.
 
-import { getOwnerWindow } from '../../utils/owner-window.js';
 import type { PdfPage, PdfRenderTask, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
-interface CanvasPixels {
+export interface CanvasPixels {
   width: number;
   height: number;
 }
@@ -58,19 +57,6 @@ export function drawPage<V extends PdfViewport, C extends PdfTextContent>(
     isCancelled = true;
     task.cancel();
   };
-}
-
-/**
- * A page bitmap's size in device pixels, at the pixel ratio of the window `node` is in (1 before
- * there is a node), capped so a deep zoom stays within memory.
- */
-export function measureCanvasPixels(
-  width: number,
-  height: number,
-  node: Node | null,
-): CanvasPixels {
-  const deviceRatio = node ? getOwnerWindow(node).devicePixelRatio || 1 : 1;
-  return capCanvasPixels(width, height, deviceRatio);
 }
 
 /**

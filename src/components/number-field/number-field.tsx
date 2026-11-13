@@ -24,6 +24,7 @@ import {
   type NumberSliderFieldProps,
 } from './number-slider.js';
 import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
+import { snapNumberValue } from './snap-number-value.js';
 import { TextNumberControl } from './text-number-control.js';
 import { type NumberFieldUnits, toQuantityFormatOptions } from './unit-number.js';
 
@@ -139,14 +140,6 @@ interface NumberRules {
   strings: UiStrings;
 }
 
-// Tolerates the binary rounding of decimal steps (0.1 + 0.2).
-const stepTolerance = 1e-9;
-
-function isOnStep(value: number, step: number, origin: number): boolean {
-  const steps = (value - origin) / step;
-  return Math.abs(steps - Math.round(steps)) < stepTolerance;
-}
-
 /** A finite number: NaN and the infinities read as no value, shown and submitted empty. */
 function isReadableNumber(value: number | null): value is number {
   return value !== null && Number.isFinite(value);
@@ -170,7 +163,9 @@ function checkNumber(value: number | null, rules: NumberRules): FieldIssue | nul
     const message = strings.rangeOverflow(format(maxValue));
     return { severity: 'error', message, validity: 'rangeOverflow' };
   }
-  if (step !== undefined && step > 0 && !isOnStep(value, step, minValue ?? 0)) {
+  // On the step when snapping leaves it alone: counting steps by division loses the grid to binary
+  // rounding as the value grows (113620.68 / 0.01).
+  if (step !== undefined && step > 0 && snapNumberValue(value, { minValue, step }) !== value) {
     return {
       severity: 'error',
       message: strings.stepMismatch(format(step)),

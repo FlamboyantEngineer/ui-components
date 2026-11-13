@@ -40,11 +40,14 @@ export function useTourTarget(target: TourTarget | undefined, isOpen: boolean) {
   const lookUp = useLatest(() => resolveTourTarget(target, getOwnerDocument(container)));
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const element = lookUp.current();
-    element?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     // eslint-disable-next-line react-hooks/set-state-in-effect -- The target is looked up in the committed document.
-    setResolved({ element });
+    setResolved({ element: lookUp.current() });
   }, [target, isOpen, container, lookUp]);
+  // Each element the step comes to target scrolls into view, a late one too once it appears.
+  const element = resolved?.element ?? null;
+  useLayoutEffect(() => {
+    if (isOpen) element?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [element, isOpen]);
   const follow = useLatest(() =>
     setResolved((current) => {
       const element = lookUp.current();

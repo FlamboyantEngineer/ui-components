@@ -1,6 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { ShortcutChord, ShortcutSequence } from './shortcut-format.js';
@@ -124,6 +126,30 @@ describe('ShortcutScope and useShortcut', () => {
     expect(ran).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    ['a drawer', 'ui-drawer', {}, false],
+    ['the command palette', 'ui-command-palette', {}, false],
+    ['a modal tour', 'ui-tour', {}, false],
+    ['a leaving drawer', 'ui-drawer', { 'data-exiting': 'true' }, true],
+    ['a non-modal modal', 'ui-modal', { 'data-non-modal': 'true' }, true],
+    ['a non-modal tour', 'ui-tour', { 'data-non-modal': 'true' }, true],
+  ] as const)(
+    'UIC-SHORTCUT-4.2 holds document-wide shortcuts from a press inside %s as it should',
+    (_, hook, data, answers) => {
+      const ran = vi.fn();
+      render(
+        <>
+          <Action name="Document" shortcut="Ctrl+J" onPress={ran} />
+          <div className={hook} {...data}>
+            <button type="button">Inside</button>
+          </div>
+        </>,
+      );
+      press({ key: 'j', ctrlKey: true }, screen.getByRole('button', { name: 'Inside' }));
+      expect(ran).toHaveBeenCalledTimes(answers ? 1 : 0);
+    },
+  );
+
   it('UIC-SHORTCUT-4.3 runs a sequence, and expires or cancels it predictably', () => {
     vi.useFakeTimers();
     const ran = vi.fn();
@@ -146,6 +172,32 @@ describe('ShortcutScope and useShortcut', () => {
     press({ key: 'g' });
     press({ key: 'i' });
     expect(ran).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-SHORTCUT-4.3 waits through the repeats of a held first key', () => {
+    const ran = vi.fn();
+    render(<Action name="Inbox" shortcut={['G', 'I']} onPress={ran} />);
+    press({ key: 'g' });
+    expect(press({ key: 'g', repeat: true }).defaultPrevented).toBe(true);
+    press({ key: 'i' });
+    expect(ran).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-SHORTCUT-1.8 UIC-SHORTCUT-4.4 ignores a keydown without a key, and answers on inputs that take no text', () => {
+    const ran = vi.fn();
+    render(
+      <>
+        <Action name="Save" shortcut="Ctrl+S" onPress={ran} />
+        <input type="checkbox" aria-label="Done" />
+        <input type="text" aria-label="Title" />
+      </>,
+    );
+    const autofill = new Event('keydown', { bubbles: true, cancelable: true });
+    expect(() => act(() => document.body.dispatchEvent(autofill))).not.toThrow();
+    press({ key: 's', ctrlKey: true }, screen.getByRole('checkbox', { name: 'Done' }));
+    expect(ran).toHaveBeenCalledTimes(1);
+    press({ key: 's', ctrlKey: true }, screen.getByRole('textbox', { name: 'Title' }));
+    expect(ran).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-SHORTCUT-4.3 lets the first shortcut a chord matches decide between a chord and a sequence', () => {
@@ -243,5 +295,39 @@ describe('ShortcutScope and useShortcut', () => {
     expect(ran.mock.calls).toEqual([['Framed']]);
     unmount();
     frame.remove();
+  });
+
+  it('UIC-SHORTCUT-4.5 hydrates aria-keyshortcuts in the server notation, then the detected one', async () => {
+    vi.resetModules();
+    vi.stubGlobal('navigator', { platform: 'MacIntel' });
+    const fresh = await import('./shortcut-scope.js');
+    function Save() {
+      const { ariaKeyShortcuts } = fresh.useShortcut('Ctrl+S', () => undefined);
+      return (
+        <button type="button" aria-keyshortcuts={ariaKeyShortcuts}>
+          Save
+        </button>
+      );
+    }
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
+    const markup = renderToString(<Save />);
+    expect(markup).toContain('aria-keyshortcuts="Control+S"');
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = markup;
+    const hydrateErrors: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, <Save />, {
+        onRecoverableError: (error) => hydrateErrors.push(error),
+      });
+    });
+    expect(hydrateErrors).toEqual([]);
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Meta+S',
+    );
+    act(() => app?.unmount());
+    host.remove();
+    vi.unstubAllGlobals();
   });
 });

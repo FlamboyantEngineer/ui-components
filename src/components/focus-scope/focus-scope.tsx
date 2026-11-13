@@ -68,7 +68,7 @@ function FocusTargets({ containerRef, initialFocus, finalFocus }: FocusTargetsPr
   useEffect(() => {
     resolveFocusTarget(initialRef.current)?.focus();
   }, []);
-  useFocusReturn({ containerRef, finalFocus, fallback: null });
+  useFocusReturn({ containerRef, finalFocus });
   return null;
 }
 

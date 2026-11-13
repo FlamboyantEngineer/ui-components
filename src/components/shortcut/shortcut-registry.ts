@@ -1,6 +1,6 @@
 // Each document's registered shortcuts, and which one a key press answers.
 
-import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { isTextEntryTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 import {
   formatAriaKeyShortcuts,
@@ -38,8 +38,18 @@ interface Registry {
 
 const registries = new WeakMap<Document, Registry>();
 
-/** A press from inside one of these is left to it: a modal overlay holds the page while open. */
-const modalSelector = '[data-layer="modal"]:not([data-exiting]), [aria-modal="true"]';
+/**
+ * A press from inside one of these is left to it: an overlay that blocks the page while open and
+ * not leaving (a blocking or anchored modal, a drawer, the command palette, a modal tour), or any
+ * `aria-modal` element.
+ */
+const modalSelector = [
+  '.ui-modal:not([data-non-modal]):not([data-exiting])',
+  '.ui-drawer:not([data-exiting])',
+  '.ui-command-palette:not([data-exiting])',
+  '.ui-tour:not([data-non-modal])',
+  '[aria-modal="true"]',
+].join(', ');
 
 /** Keys pressed on the way to a chord, which neither start nor break a sequence. */
 const modifierKeys = new Set(['Alt', 'AltGraph', 'CapsLock', 'Control', 'Meta', 'Shift']);
@@ -99,7 +109,7 @@ function rankEntry(entry: ShortcutEntry, event: KeyboardEvent, path: PressPath) 
   const shortcut = entry.current;
   const { nodes, modal } = path;
   if (shortcut.isDisabled || (event.repeat && !shortcut.allowsRepeat)) return null;
-  if (!shortcut.allowsEditable && isEditableTarget(nodes[0] ?? event.target)) return null;
+  if (!shortcut.allowsEditable && isTextEntryTarget(nodes[0] ?? event.target)) return null;
   if (!shortcut.allowsReserved && isReserved(shortcut.steps)) return null;
   const limit = modal === -1 ? nodes.length : modal;
   if (shortcut.scope === null) return modal === -1 ? nodes.length : null;
@@ -151,10 +161,17 @@ function matchesStep(entry: ShortcutEntry, step: number, event: KeyboardEvent): 
 }
 
 function handleKeyDown(registry: Registry, event: KeyboardEvent) {
+  // A keydown without a key, as browsers send when they autofill a field, is no press.
+  if (typeof event.key !== 'string') return;
   if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
   if (modifierKeys.has(event.key)) return;
-  const ranked = rankEntries(registry, event);
   const pending = registry.pending;
+  // A key held after a sequence's first step repeats it; the sequence still awaits its next step.
+  if (pending && event.repeat) {
+    event.preventDefault();
+    return;
+  }
+  const ranked = rankEntries(registry, event);
   if (pending) {
     const next = ranked.filter(
       (entry) => pending.candidates.includes(entry) && matchesStep(entry, pending.step, event),

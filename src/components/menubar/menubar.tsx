@@ -6,7 +6,6 @@ import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../cor
 import {
   Button as AriaButton,
   RootMenuTriggerStateContext,
-  useInteractOutside,
   useLocale,
 } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
@@ -95,12 +94,6 @@ function MenubarTrigger({ itemKey, isOpen, label, className, ...rest }: MenubarT
       excludeFromTabOrder={bar.tabKey !== itemKey}
       onFocus={() => bar.setTabKey(itemKey)}
       onHoverStart={() => bar.switchTo(itemKey)}
-      onPressStart={(event) => {
-        // React Aria's trigger only opens on a pointer press; a second press closes the menu.
-        if (isOpen && event.pointerType !== 'touch' && event.pointerType !== 'keyboard') {
-          bar.close(itemKey);
-        }
-      }}
       // React Aria's button takes no role; the items of a menubar are menu items.
       render={(props) => <button {...props} role="menuitem" />}
     >
@@ -119,14 +112,6 @@ export function MenubarMenu({ items, children, onAction, ...trigger }: MenubarMe
   const key = useId();
   const popoverRef = useRef<HTMLElement>(null);
   const isOpen = bar.openKey === key;
-  // A menu that leaves the page usable does not close on a press outside by itself.
-  useInteractOutside({
-    ref: popoverRef,
-    isDisabled: !isOpen,
-    onInteractOutside: (event) => {
-      if (!bar.isInside(event.target as Element)) bar.close(key);
-    },
-  });
   return (
     <MenuTrigger isOpen={isOpen} onOpenChange={(open) => bar.setOpen(key, open)}>
       <MenubarTrigger {...trigger} itemKey={key} isOpen={isOpen} />

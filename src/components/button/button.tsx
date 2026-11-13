@@ -11,6 +11,7 @@ import {
   Link as AriaLink,
   ProgressBar,
 } from '../../primitives/index.js';
+import { toBubblingKeyHandlers } from '../../utils/bubbling-keys.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isNewContextTarget } from '../../utils/merge-safe-rel.js';
 import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
@@ -297,7 +298,8 @@ export function Button({
   });
   const isDisabled = useInheritedDisabled(given);
   const newTab = useNewTab({ ...given, isExternal, endIcon }, { ...presentation, isDisabled });
-  const rest = usePrimaryActionKeys({ ...given, target: newTab.target });
+  const keys = toBubblingKeyHandlers(given);
+  const rest = usePrimaryActionKeys({ ...given, ...keys, target: newTab.target });
   const own = { ...rest, isDisabled };
   const selection = useButtonSelection(own);
   const { isBusy, ...action } = useButtonAction({ ...own, ...selection, onError, pendingDelay });
