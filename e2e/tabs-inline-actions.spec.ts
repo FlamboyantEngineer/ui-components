@@ -286,7 +286,8 @@ test('UIC-TABS-3.11 a menu list that falls back to scrolling takes the wheel in 
     });
     await expect(bar).toHaveAttribute('data-overflow', 'scroll');
     await list.evaluate((element) => {
-      element.scrollLeft = 0;
+      // The stylesheet glides the list; the test puts it back at once.
+      element.scrollTo({ left: 0, behavior: 'instant' });
     });
     // The vertical wheel scrolls toward the inline end: leftward, so negative, right to left.
     // The list glides (scroll-behavior: smooth), so its position is read once it settles.

@@ -161,7 +161,8 @@ test.describe('Dock Panel lab', () => {
     await expect(fades.first()).toHaveCSS('width', '26px');
     // A vertical wheel scrolls it sideways, with no snapping, and keeps the offset.
     await list.evaluate((node) => {
-      node.scrollLeft = 0;
+      // The stylesheet glides the list; the test puts it back at once.
+      node.scrollTo({ left: 0, behavior: 'instant' });
     });
     await expect(panel.locator('.ui-dock-panel__fade[data-edge="start"]')).toBeHidden();
     await list.hover();
