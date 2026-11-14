@@ -3,6 +3,7 @@
 import { type MouseEvent, type RefObject, useEffect, useMemo, useState } from 'react';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
+import { measureScale } from '../../utils/element-scale.js';
 import { observeViewport } from '../../utils/observe-viewport.js';
 import { isSameOverviewLayers } from '../../utils/same-overview-layers.js';
 import {
@@ -19,6 +20,7 @@ import {
   type ScrollOverviewSource,
   type ScrollOverviewSourceLayer,
 } from './scroll-overview-markers.js';
+import { pageToward, resolveThumb, useScrollTop, useThumbDrag } from './scroll-overview-thumb.js';
 
 export type {
   ScrollOverviewElementMarker,
@@ -34,13 +36,13 @@ export interface ScrollOverviewProps extends RefProps<HTMLDivElement>, BaseProps
   /** Named marker layers, combined with equal weight where they meet. Replaces `markers`. */
   layers?: readonly ScrollOverviewSourceLayer[] | undefined;
   /**
-   * Makes the strip pressable: a press on a marker scrolls the container to it and calls this with
-   * the marker as given. Without it the strip is decorative and lets presses through.
+   * Makes the markers pressable: a press on a marker scrolls the container to it and calls this
+   * with the marker as given. Without it a press on the track pages the container toward it.
    */
   onMarkerActivate?: ((marker: ScrollOverviewSource) => void) | undefined;
 }
 
-const hooks = createHooks('scroll-overview', []);
+const hooks = createHooks('scroll-overview', ['thumb']);
 
 const noMetrics: OverviewMetrics = { height: 0, scrollHeight: 0, layers: [] };
 
@@ -56,8 +58,8 @@ function useOverviewMetrics(
   useEffect(() => {
     const container = scrollRef.current;
     const view = container?.ownerDocument.defaultView;
-    if (!container || !view || layers.length === 0) {
-      setMetrics((current) => (current.layers.length === 0 ? current : noMetrics));
+    if (!container || !view) {
+      setMetrics(noMetrics);
       return undefined;
     }
     const measure = () => {
@@ -81,9 +83,12 @@ function useOverviewMetrics(
 }
 
 /**
- * A strip that paints where markers sit in a scroll container's content, scaled to the container's
- * visible height, for a stylesheet to place beside or over its scrollbar. Markers are given by
- * content range or by element; an element marker follows its element as the content changes.
+ * A custom vertical scrollbar for a scroll container whose native scrollbar the host hides: a
+ * track as tall as the container's visible height, painted with where markers sit in its content,
+ * and a thumb over them that follows the scroll position and scrolls the container when dragged.
+ * A press on the track pages toward it, or with `onMarkerActivate` jumps to the marker pressed.
+ * Markers are given by content range or by element; an element marker follows its element as the
+ * content changes.
  */
 export function ScrollOverview({
   scrollRef,
@@ -106,30 +111,43 @@ export function ScrollOverview({
     metrics.height,
   );
   const isInteractive = onMarkerActivate !== undefined;
+  const top = useScrollTop(scrollRef, metrics);
+  const thumb = resolveThumb(metrics.height, metrics.scrollHeight, top);
+  const drag = useThumbDrag(scrollRef, thumb);
+  // A press on the track: onto the marker there, if markers are pressable, else a page that way.
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
     const container = scrollRef.current;
-    if (!onMarkerActivate || !container) return;
-    const y = event.clientY - event.currentTarget.getBoundingClientRect().top;
-    const marker = markerAt(metrics, y);
-    if (!marker) return;
-    container.scrollTo({ top: marker.top });
-    onMarkerActivate(marker.source);
+    if (!container || event.target !== event.currentTarget) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    const y = (event.clientY - box.top) / measureScale(event.currentTarget).y;
+    const marker = onMarkerActivate ? markerAt(metrics, y) : null;
+    if (marker) {
+      container.scrollTo({ top: marker.top });
+      onMarkerActivate?.(marker.source);
+    } else if (thumb) pageToward(container, thumb, y);
   };
   return (
     <div
       {...rest}
       {...hooks.root({
         className,
-        data: { empty: image === 'none', interactive: isInteractive },
+        data: { empty: image === 'none', interactive: isInteractive, scrollable: thumb !== null },
       })}
       ref={ref}
       aria-hidden="true"
       style={{
         ...measuredProperty('scroll-overview-image', image),
+        position: 'relative',
         height: metrics.height,
-        pointerEvents: isInteractive ? undefined : 'none',
       }}
-      onClick={isInteractive ? onClick : undefined}
-    />
+      onClick={onClick}
+    >
+      <div
+        {...hooks.slot('thumb')}
+        hidden={thumb === null}
+        style={{ position: 'absolute', top: thumb?.offset ?? 0, height: thumb?.size ?? 0 }}
+        {...drag}
+      />
+    </div>
   );
 }
