@@ -158,16 +158,23 @@ test.describe('Banner lab', () => {
     const banner = matrixCell(page, 'tone=warning content=actions and dismiss').locator(
       '.ui-banner',
     );
-    const middle = async (selector: string) => {
-      const box = await banner.locator(selector).first().boundingBox();
-      return (box?.y ?? 0) + (box?.height ?? 0) / 2;
-    };
-    const content = await middle('.ui-banner__content');
-    const contentBox = await banner.locator('.ui-banner__content').boundingBox();
+    // Measure every part in one frame, after the enter animation, so the banner cannot move between reads.
+    await expect(banner).not.toHaveAttribute('data-entering');
+    const { height, offsets } = await banner.evaluate((node) => {
+      const box = (selector: string) =>
+        (node.querySelector(selector) as Element).getBoundingClientRect();
+      const content = box('.ui-banner__content');
+      const middle = content.top + content.height / 2;
+      return {
+        height: content.height,
+        offsets: ['.ui-banner__icon', '.ui-banner__actions', '.ui-banner__dismiss'].map((part) => {
+          const rect = box(part);
+          return Math.abs(rect.top + rect.height / 2 - middle);
+        }),
+      };
+    });
     // The content takes several lines, so a top-aligned glyph would sit well above its middle.
-    expect(contentBox?.height ?? 0).toBeGreaterThan(40);
-    for (const part of ['.ui-banner__icon', '.ui-banner__actions', '.ui-banner__dismiss']) {
-      expect(Math.abs((await middle(part)) - content)).toBeLessThan(2);
-    }
+    expect(height).toBeGreaterThan(40);
+    for (const offset of offsets) expect(offset).toBeLessThan(2);
   });
 });

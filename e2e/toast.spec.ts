@@ -24,14 +24,19 @@ test.describe('Toast lab', () => {
   }) => {
     await lab.open('toast');
     const toast = matrixCell(page, 'tone=warning content=action').locator('.ui-toast');
-    const middle = async (selector: string) => {
-      const box = await toast.locator(selector).first().boundingBox();
-      return (box?.y ?? 0) + (box?.height ?? 0) / 2;
-    };
-    const content = await middle('.ui-toast__content');
-    for (const part of ['.ui-toast__icon', '.ui-toast__action', '.ui-toast__close']) {
-      expect(Math.abs((await middle(part)) - content)).toBeLessThan(2);
-    }
+    // Measure every part in one frame, after the enter animation, so the toast cannot move between reads.
+    await expect(toast).not.toHaveAttribute('data-entering');
+    const offsets = await toast.evaluate((node) => {
+      const middle = (selector: string) => {
+        const box = (node.querySelector(selector) as Element).getBoundingClientRect();
+        return box.top + box.height / 2;
+      };
+      const content = middle('.ui-toast__content');
+      return ['.ui-toast__icon', '.ui-toast__action', '.ui-toast__close'].map((part) =>
+        Math.abs(middle(part) - content),
+      );
+    });
+    for (const offset of offsets) expect(offset).toBeLessThan(2);
   });
 
   test('UIC-TOAST-2.3 shows every toast of a list in place, reachable and uncovered', async ({
