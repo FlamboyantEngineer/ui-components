@@ -13,7 +13,7 @@ Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
 
 ### UIC-MENUBAR-1.2 - Orientation and size
 
-`orientation` (`horizontal`, the default, or `vertical`) shall be published in `data-orientation` and decide which arrow keys move along the bar; menus open below their item at `bottom start` in a row and beside it at `end top` in a column. `size` (`xs`, `sm`, `md`, the default, or `lg`) shall be published in `data-size` and set the row density of every menu (`sm` for an `xs` bar, as for dropdown menu triggers; [UIC-MENU-1.2](MENU.md#uic-menu-12---size)).
+`orientation` (`horizontal`, the default, or `vertical`) shall be published in `data-orientation` and decide which arrow keys move along the bar; menus open below their item at `bottom start` in a row and beside it at `end top` in a column. `size` (`xs`, `sm`, `md`, the default, or `lg`) shall be published in `data-size` and set the row density of every menu (`sm` for an `xs` bar, as for dropdown menu triggers; [UIC-MENU-1.2](MENU.md#uic-menu-12---size)). The reference sheet draws a horizontal bar like a toolbar, as wide as its container with no border or background of its own, and a vertical bar as wide as its items.
 
 Implementation: `src/components/menubar/menubar.tsx`, `labs/reference/menubar.css`
 Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`

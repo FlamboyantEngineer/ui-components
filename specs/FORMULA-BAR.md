@@ -1,6 +1,6 @@
 # Formula Bar
 
-`FormulaBar` sits above a spreadsheet grid, such as a [Table](TABLE.md#uic-table-14---spreadsheet-mode) in spreadsheet mode: a reference box shows the active cell's A1-style reference and moves to the cell the reader types, and a one-line [Code Editor](CODE-EDITOR.md) shows the cell's raw content, such as a formula, highlighted by the caller's tokenizer. Enter commits the content and Escape restores it. The library has no formula engine: the caller stores the content, evaluates it and may show the result beside the input. The pure helpers `formatCellReference` and `parseCellReference` convert between cells and references.
+`FormulaBar` sits above a spreadsheet grid, such as a [Table](TABLE.md#uic-table-14---spreadsheet-mode) in spreadsheet mode: a reference box shows the active cell's A1-style reference and moves to the cell the reader types, and a one-line [Code Editor](CODE-EDITOR.md) shows the cell's raw content, such as a formula, highlighted by the caller's tokenizer. Enter commits the content and Escape restores it. The library has no formula engine: the caller stores and evaluates the content, and shows results in its grid. The pure helpers `formatCellReference` and `parseCellReference` convert between cells and references.
 
 ## UIC-FORMULA-BAR-1 - Cell references
 
@@ -52,14 +52,14 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 
 ### UIC-FORMULA-BAR-3.3 - Caller evaluation
 
-With `evaluate`, the bar shall show `evaluate(content, cell)` for the draft and the active cell in `ui-formula-bar__result`, after a visually hidden label from the provider's `formulaResult` string, and describe the editor with it, updating as the reader types. An empty evaluation, such as an empty cell's, draws no result and takes no room, so the editor keeps the bar's full width, and the editor has no result to be described by. The bar evaluates nothing itself.
+Withdrawn. The bar shows the content alone: a caller shows evaluated values in its grid, not beside the bar's content.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
-Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
+Verification: `src/components/formula-bar/formula-bar.test.tsx`
 
 ### UIC-FORMULA-BAR-3.4 - Without buttons
 
-With `showActions={false}` the bar shall draw neither the cancel nor the confirm button and keep no room for them; Enter and Escape in the editor still commit and cancel as in UIC-FORMULA-BAR-3.2, with the same composition guard and the same locked, read-only and dirty rules, and the editor's description gains the provider string `formulaKeysHint` ("Enter confirms, Escape cancels."), after the result, so a reader learns the keys the missing buttons stood for. `showActions` defaults to true.
+With `showActions={false}` the bar shall draw neither the cancel nor the confirm button and keep no room for them; Enter and Escape in the editor still commit and cancel as in UIC-FORMULA-BAR-3.2, with the same composition guard and the same locked, read-only and dirty rules, and the editor's description gains the provider string `formulaKeysHint` ("Enter confirms, Escape cancels."), so a reader learns the keys the missing buttons stood for. `showActions` defaults to true.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
@@ -73,7 +73,7 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-ba
 
 ### UIC-FORMULA-BAR-3.6 - Sizes
 
-`size` (`xs`, `sm`, `md` or `lg`, default `md`) shall set the bar's control size: the root publishes `data-size`, so a stylesheet sizes the reference box, the content, the glyph and the result together, and the cancel, confirm and fₓ buttons take the size a step below the bar's (`xs` for `xs` and `sm`, `sm` for `md`, `md` for `lg`), as icon buttons beside a field of that size. Every size keeps the same parts and behaviour; the reference stylesheet makes the reference box and the one-line content as tall as a control of the size.
+`size` (`xs`, `sm`, `md` or `lg`, default `md`) shall set the bar's control size: the root publishes `data-size`, so a stylesheet sizes the reference box, the content and the glyph together, and the cancel, confirm and fₓ buttons take the size a step below the bar's (`xs` for `xs` and `sm`, `sm` for `md`, `md` for `lg`), as icon buttons beside a field of that size. Every size keeps the same parts and behaviour; the reference stylesheet makes the reference box and the one-line content as tall as a control of the size.
 
 Implementation: `src/components/formula-bar/formula-bar.tsx`, `src/components/formula-bar/formula-bar-functions.tsx`
 Verification: `src/components/formula-bar/formula-bar.test.tsx`, `e2e/formula-bar.spec.ts`
@@ -123,7 +123,6 @@ Verification: `test/formula-bar-controls-entry.test.ts`, `src/components/formula
 | `ui-formula-bar__glyph`             | slot  |                        | The decorative fₓ glyph, without `functions`.                     |
 | `ui-formula-bar__functions`         | slot  |                        | The fₓ button listing `functions` (also `ui-dropdown-menu`).      |
 | `ui-formula-bar__editor`            | slot  |                        | The single-line code editor (also `ui-code-editor`).              |
-| `ui-formula-bar__result`            | slot  |                        | The caller's evaluation of the content.                           |
 | `data-size`                         | state | `xs`, `sm`, `md`, `lg` | On the root: the bar's control size.                              |
 | `data-dirty`                        | state | `true`                 | On the root while the content differs from the cell's.            |
 | `data-disabled`                     | state | `true`                 | On the root while disabled or no cell is active.                  |

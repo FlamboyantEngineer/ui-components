@@ -157,7 +157,7 @@ function useSortedPresets(
 
 export function DecimalControl({ state, control, config, steps }: DecimalControlProps) {
   const {
-    hideStepper,
+    showStepper,
     startAdornment,
     endAdornment,
     endAdornmentPlacement,
@@ -190,7 +190,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
     >
       {({ state: inputState }) => (
         <Group {...hooks.slot('group')}>
-          {hideStepper ? null : (
+          {showStepper ? (
             <Stepper
               slot="decrement"
               labelledBy={control['aria-labelledby']}
@@ -198,7 +198,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
               icon={decrementIcon}
               isDisabled={entry.isPastPresets(inputState, -1)}
             />
-          )}
+          ) : null}
           {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
           <NumberAdornment side="start">{startAdornment}</NumberAdornment>
           <NumberValue
@@ -215,7 +215,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
             />
           </NumberValue>
           <NumberAdornment side="end">{endAdornment}</NumberAdornment>
-          {hideStepper ? null : (
+          {showStepper ? (
             <Stepper
               slot="increment"
               labelledBy={control['aria-labelledby']}
@@ -223,7 +223,7 @@ export function DecimalControl({ state, control, config, steps }: DecimalControl
               icon={incrementIcon}
               isDisabled={entry.isPastPresets(inputState, 1)}
             />
-          )}
+          ) : null}
         </Group>
       )}
     </AriaNumberField>

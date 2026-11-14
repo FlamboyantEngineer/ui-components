@@ -717,7 +717,6 @@
   "formulaCellReference": "Cell reference",
   "formulaCellContent": "Cell content",
   "formulaInvalidReference": "No cell named {text}",
-  "formulaResult": "Result",
   "formulaKeysHint": "Enter confirms, Escape cancels.",
   "formulaFunctions": "Insert function",
   "relationItems": "Items",

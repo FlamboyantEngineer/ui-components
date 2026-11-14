@@ -1,22 +1,23 @@
-/* Menubar. The menus are the library menu in its popover; the bar draws only its top-level items. */
+/*
+ * Menubar. The menus are the library menu in its popover; the bar draws only its top-level items,
+ * like a toolbar: it spans the width it is given, with no frame or fill of its own.
+ */
 
 .ui-menubar {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 2px;
   box-sizing: border-box;
-  padding: 2px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-surface);
+  padding: 2px 0;
   color: var(--ref-text);
   font: var(--ref-font-size-md)/1.2 var(--ref-font);
-  vertical-align: top;
 }
 
 .ui-menubar[data-orientation='vertical'] {
+  display: inline-flex;
   flex-direction: column;
   align-items: stretch;
+  vertical-align: top;
 }
 
 .ui-menubar__trigger {

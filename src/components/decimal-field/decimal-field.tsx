@@ -51,8 +51,8 @@ export interface DecimalFieldProps
   commitBehavior?: DecimalFieldCommitBehavior | undefined;
   /** How the value is written in the locale: grouping and the fraction digits shown at least. */
   formatOptions?: DecimalFormatOptions | undefined;
-  /** Leave out the decrement and increment buttons; the arrow keys still step the value. */
-  hideStepper?: boolean | undefined;
+  /** Draw the decrement and increment buttons; without them the arrow keys still step the value. */
+  showStepper?: boolean | undefined;
 }
 
 export const decimalFieldHooks = createHooks('decimal-field', [
@@ -158,7 +158,7 @@ export function DecimalField({
   placeholder,
   autoComplete,
   enterKeyHint,
-  hideStepper = false,
+  showStepper = false,
   commitBehavior = 'snap',
   formatOptions,
   minValue,
@@ -188,13 +188,13 @@ export function DecimalField({
   return (
     <Field
       {...field}
-      {...hooks.root({ className: field.className, data: { hideStepper } })}
+      {...hooks.root({ className: field.className, data: { showStepper } })}
       state={state}
       commitOnBlur
     >
       {(control) => (
         <DecimalControl
-          {...{ state, control, entry, hideStepper, placeholder, autoComplete, enterKeyHint }}
+          {...{ state, control, entry, showStepper, placeholder, autoComplete, enterKeyHint }}
           name={rest.name}
           aria={{
             'aria-valuenow': decimal === null ? undefined : Number(decimal),
@@ -217,7 +217,7 @@ interface DecimalControlProps extends Pick<
   state: FieldState<string | null>;
   control: FieldControlProps;
   entry: ReturnType<typeof useDecimalEntry>;
-  hideStepper: boolean;
+  showStepper: boolean;
   /** The spinbutton's values; the exact one is its value text. */
   aria: {
     'aria-valuenow': number | undefined;
@@ -234,7 +234,7 @@ function DecimalControl({
   state,
   control,
   entry,
-  hideStepper,
+  showStepper,
   aria,
   name,
   isAtMinimum,
@@ -265,7 +265,7 @@ function DecimalControl({
       onChange={entry.edit}
     >
       <Group {...hooks.slot('group')}>
-        {hideStepper ? null : stepper(-1)}
+        {showStepper ? stepper(-1) : null}
         <Input
           {...hooks.slot('input')}
           {...aria}
@@ -276,7 +276,7 @@ function DecimalControl({
           onBlur={() => entry.finish(false)}
           onKeyDown={entry.onKeyDown}
         />
-        {hideStepper ? null : stepper(1)}
+        {showStepper ? stepper(1) : null}
       </Group>
       <FieldFormValue name={name} value={state.value} isDisabled={state.isDisabled} />
     </AriaTextField>
