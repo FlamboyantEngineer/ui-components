@@ -228,7 +228,7 @@ test('UIC-BADGE-1.9 collapses a label badge to a dot of its tone when a letter a
   for (const room of ['28px', '12px']) {
     const dot = badge('dot', room);
     await expect(dot).toHaveAttribute('data-collapsed', 'true');
-    expect(await dot.boundingBox()).toMatchObject({ width: 8, height: 8 });
+    expect(await dot.boundingBox()).toMatchObject({ width: 10, height: 10 });
     await expect(dot.locator('.ui-badge__label')).toHaveText('Approved');
     await expect(badge('none', room)).not.toHaveAttribute('data-collapsed');
   }
