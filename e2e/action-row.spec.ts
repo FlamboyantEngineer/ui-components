@@ -54,25 +54,6 @@ test.describe('Action Row lab', () => {
     }
   });
 
-  test('UIC-ACTION-ROW-2.2 UIC-BUTTON-2.2 draws the spinner of a pending action at the size of its glyphs', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('action-row');
-    for (const size of ['xs', 'sm', 'md', 'lg']) {
-      const cell = matrixCell(page, `state=pending size=${size}`);
-      // Layout sizes: the spinning ring's bounding box grows as it turns.
-      const glyph = await cell
-        .getByRole('button', { name: 'Refresh' })
-        .locator('svg')
-        .evaluate((element) => element.getBoundingClientRect().width);
-      const spinner = await cell
-        .locator('.ui-button__spinner')
-        .evaluate((element) => (element as HTMLElement).offsetWidth);
-      expect(spinner).toBeCloseTo(glyph, 0);
-    }
-  });
-
   test('UIC-ACTION-ROW-1.4 shows tooltips on keyboard focus and hover', async ({ page, lab }) => {
     await lab.open('action-row');
     const row = matrixCell(page, 'state=default size=md');

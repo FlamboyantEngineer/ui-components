@@ -219,14 +219,16 @@ test.describe('Completion List lab', () => {
     const reopened = await london.boundingBox();
     if (!reopened) throw new Error('The reopened second completion has no bounds.');
     // A reader's pointer moves more than once; a busy browser may take the list's first move as
-    // the stationary pointer it waits past, so the pointer keeps moving until London follows it.
-    let offset = 0;
+    // the stationary pointer it waits past. Each try leaves the option and comes back to a point
+    // inside it, so the option sees a fresh enter and moves over it, and the pointer never drifts
+    // off the option however many tries a loaded runner needs.
+    const centre = { x: reopened.x + reopened.width / 2, y: reopened.y + reopened.height / 2 };
+    let step = 0;
     await expect(async () => {
-      offset += 3;
-      await page.mouse.move(
-        reopened.x + reopened.width / 2 + offset,
-        reopened.y + reopened.height / 2,
-      );
+      step = (step % 5) + 1;
+      await page.mouse.move(centre.x, reopened.y - reopened.height);
+      await page.mouse.move(centre.x - 3 * step, centre.y, { steps: 2 });
+      await page.mouse.move(centre.x + 3 * step, centre.y, { steps: 2 });
       await expect(london).toHaveAttribute('aria-selected', 'true', { timeout: 500 });
     }).toPass();
     await input.press('Enter');

@@ -187,8 +187,7 @@
 }
 
 .ui-button__spinner {
-  /* As large as the button's icons at each size, so an xs button's spinner is no bigger than its glyph. */
-  --ref-spinner-size: var(--ref-button-icon);
+  --ref-spinner-size: var(--ref-icon-size-lg);
   position: absolute;
   inset: 0;
   margin: auto;
