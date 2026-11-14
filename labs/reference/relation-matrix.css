@@ -159,5 +159,5 @@
 }
 
 .ui-relation-matrix__cell[data-tone] .ui-relation-matrix__mark {
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }

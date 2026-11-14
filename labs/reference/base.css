@@ -223,8 +223,10 @@
  */
 [data-tone] {
   --ref-tone: var(--ref-muted);
-  /* The colour a tone's washes and frames mix from: the tone itself, but warning's bright fill. */
-  --ref-tone-wash: var(--ref-tone);
+  /* What a tone fills, washes and frames with: the tone itself, but warning's bright gold fill,
+     which takes dark text (--ref-on-tone-fill) where the others take the canvas colour. */
+  --ref-tone-fill: var(--ref-tone);
+  --ref-on-tone-fill: var(--ref-canvas);
 }
 [data-tone='info'] {
   --ref-tone: var(--ref-info);
@@ -234,7 +236,8 @@
 }
 [data-tone='warning'] {
   --ref-tone: var(--ref-warning);
-  --ref-tone-wash: var(--ref-warning-fill);
+  --ref-tone-fill: var(--ref-warning-fill);
+  --ref-on-tone-fill: var(--ref-on-warning-fill);
 }
 [data-tone='danger'] {
   --ref-tone: var(--ref-danger);

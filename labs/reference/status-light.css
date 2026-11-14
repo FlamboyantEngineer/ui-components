@@ -15,7 +15,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 
 .ui-status-light[data-size='sm'] {
@@ -48,7 +48,7 @@
 }
 
 .ui-status-light[data-status='away'] .ui-status-light__dot {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 .ui-status-light[data-status='busy'] .ui-status-light__dot {

@@ -390,7 +390,7 @@
 }
 
 .ui-rich-text-editor__scroll-marker[data-severity='warning'] {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 /* A marked block: a tint and an underline, wavy for an error and dotted for a warning. */

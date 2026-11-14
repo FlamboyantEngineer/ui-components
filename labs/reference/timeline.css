@@ -187,9 +187,9 @@
   margin: 0;
   padding: 0 8px;
   border: 1px solid
-    color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-border), var(--ref-canvas));
+    color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), var(--ref-canvas));
   border-radius: var(--ref-radius-sm);
-  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-subtle), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-subtle), var(--ref-canvas));
   color: var(--ref-text);
   font: inherit;
   font-size: var(--ref-font-size-sm);
@@ -231,7 +231,7 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-strong), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-strong), var(--ref-canvas));
 }
 
 .ui-timeline__item-label {
@@ -269,7 +269,7 @@
 }
 
 .ui-timeline__item:hover .ui-timeline__handle {
-  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-border), transparent);
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), transparent);
 }
 
 /* A milestone is a diamond centred on its day, with its label beside it. */
@@ -290,9 +290,9 @@
   inset: 1px;
   transform: rotate(45deg);
   border: 1px solid
-    color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-solid), var(--ref-canvas));
+    color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-solid), var(--ref-canvas));
   border-radius: var(--ref-radius-xs);
-  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), var(--ref-canvas));
 }
 
 .ui-timeline__item[data-kind='milestone'][data-selected] {
