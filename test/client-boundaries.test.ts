@@ -25,7 +25,9 @@ describe('client boundaries', { timeout: 60_000 }, () => {
     expect(isMarked('src/core/provider.tsx')).toBe(true);
     expect(isMarked('src/primitives/core.ts')).toBe(true);
     expect(isMarked('src/components/html-markup/sanitize-html.ts')).toBe(false);
-    expect(isMarked('src/components/meta-line/meta-line.tsx')).toBe(false);
+    expect(isMarked('src/components/meta-line/meta-line-base.tsx')).toBe(false);
+    expect(isMarked('src/components/meta-line/meta-line-text.ts')).toBe(false);
+    expect(isMarked('src/components/meta-line/meta-line.tsx')).toBe(true);
     expect(isMarked('src/core/glyphs.tsx')).toBe(true);
     for (const path of [
       'src/primitives/date-values.ts',

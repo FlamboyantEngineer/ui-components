@@ -15,7 +15,7 @@ Verification: `test/client-boundaries.test.ts`
 
 Every other module, including the entry points (`index.ts`), shall carry no directive, so the package is not client-only as a whole: entry points re-export client components as client references, and utilities such as `sanitizeHtml`, `parseMarkdown`, `formatMetaLine`, `splitTextDiff` and the board, table and chart helpers stay callable on the server. The pure value helpers those utilities call are server-safe modules too: the date functions and ISO adapters (`src/primitives/date-values.ts`), color parsing (`src/primitives/color-values.ts`), `createValueStore` (apart from its `useStoreValue` hook), the PDF viewer's page bitmaps and rotation and the table's column names. Components that render only elements and other server-safe components, such as `MetaLine`, render on the server.
 
-Implementation: `scripts/check-client-boundaries.mjs`, `src/index.ts`, `src/components/html-markup/sanitize-html.ts`, `src/components/meta-line/meta-line.tsx`, `src/primitives/date-values.ts`, `src/primitives/color-values.ts`, `src/utils/value-store.ts`, `src/components/pdf-viewer/page-bitmap.ts`
+Implementation: `scripts/check-client-boundaries.mjs`, `src/index.ts`, `src/components/html-markup/sanitize-html.ts`, `src/components/meta-line/meta-line-base.tsx`, `src/components/meta-line/meta-line-text.ts`, `src/primitives/date-values.ts`, `src/primitives/color-values.ts`, `src/utils/value-store.ts`, `src/components/pdf-viewer/page-bitmap.ts`
 Verification: `test/client-boundaries.test.ts`
 
 ### UIC-SERVER-COMPONENTS-1.3 - The build keeps the directives
