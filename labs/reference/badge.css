@@ -30,8 +30,8 @@
 }
 
 .ui-badge[data-variant='subtle']:not([data-tone='neutral']) {
-  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-badge[data-variant='solid'] {
@@ -44,7 +44,7 @@
 }
 
 .ui-badge[data-count][data-variant='subtle']:not([data-tone='neutral']) {
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-badge[data-count][data-variant='subtle'] {

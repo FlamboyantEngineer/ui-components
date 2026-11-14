@@ -108,7 +108,7 @@ test.describe('Field lab', () => {
     const expected = [
       ['required', 'invalid', 'A value is required.', 'rgb(207, 34, 46)'],
       ['invalid', 'invalid', 'A stone is not a fruit.', 'rgb(207, 34, 46)'],
-      ['warning', 'warning', 'Limes are very sour.', 'rgb(154, 103, 0)'],
+      ['warning', 'warning', 'Limes are very sour.', 'rgb(135, 108, 0)'],
       ['pending', 'pending', 'Validating', 'rgb(89, 99, 110)'],
     ] as const;
     for (const [state, status, message, colour] of expected) {
@@ -455,7 +455,8 @@ test.describe('Field lab', () => {
     lab,
   }) => {
     await lab.open('field');
-    const tooltip = page.locator('.ui-field__message-tooltip');
+    // A tooltip still leaving can overlap the next one entering; only the current one counts.
+    const tooltip = page.locator('.ui-field__message-tooltip:not([data-exiting])');
     const row = page.locator('[data-lab-tooltip-row]');
     const below = page.locator('[data-lab-below-row]');
     const code = field(page, 'tooltip-code');

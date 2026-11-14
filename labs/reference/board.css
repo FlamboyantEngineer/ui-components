@@ -80,8 +80,8 @@
 }
 
 .ui-board__column[data-over-limit] {
-  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), var(--ref-canvas));
+  border-color: var(--ref-warning-fill);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), var(--ref-canvas));
 }
 
 .ui-board__column[data-dragging] {

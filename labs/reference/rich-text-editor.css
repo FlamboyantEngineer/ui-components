@@ -401,6 +401,6 @@
 }
 
 .ui-rich-text-editor__content > [data-severity='warning'] {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
   text-decoration: dotted underline var(--ref-warning);
 }

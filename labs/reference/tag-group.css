@@ -48,8 +48,8 @@
 }
 
 .ui-tag-group__tag:not([data-tone='neutral']) {
-  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-wash) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-hovered] {
