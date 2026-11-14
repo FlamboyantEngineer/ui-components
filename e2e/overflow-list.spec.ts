@@ -88,7 +88,7 @@ test.describe('Overflow List lab', () => {
 
     await slider.fill('80');
     await expect(row.locator('.ui-overflow-list__item')).toHaveCount(0);
-    await expect(row.getByRole('button', { name: 'Fruit' })).toBeVisible();
+    await expect(row.getByRole('button', { name: `${fruit.length} items` })).toBeVisible();
     await slider.fill('560');
     await expect(row.locator('.ui-overflow-list__item')).toHaveCount(fruit.length);
   });

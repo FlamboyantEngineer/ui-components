@@ -53,8 +53,8 @@ function ScaledFrame({ scale, children }: { scale: number; children: ReactNode }
 }
 
 function MoreFruit({ hidden }: { hidden: readonly string[] }) {
-  // When nothing is left in the row the menu holds every item, so it names them instead of "more".
-  const label = hidden.length === fruit.length ? 'Fruit' : `${hidden.length} more`;
+  // When nothing is left in the row the menu holds every item, so it counts items instead of "more".
+  const label = hidden.length === fruit.length ? `${hidden.length} items` : `${hidden.length} more`;
   return (
     <DropdownMenu
       size="sm"

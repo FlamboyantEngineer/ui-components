@@ -123,10 +123,16 @@ test.describe('Math Preview lab', () => {
   }) => {
     await lab.open('math-preview');
     for (const display of ['inline', 'display']) {
-      const cell = matrixCell(page, { source: 'long, narrow', display });
+      const cell = matrixCell(page, { source: 'long sum', display });
       const frame = cell.locator(':scope > div');
       const math = cell.locator('.ui-math-preview__math');
       await expect(math.locator('math')).toBeVisible();
+      // The lab's frame grows to fit its math, so the test narrows it to a box the math overflows.
+      await frame.evaluate((element: HTMLElement) => {
+        element.style.minWidth = '0';
+        element.style.width = '200px';
+      });
+      await expect(math).toHaveAttribute('data-overflowing', 'true');
       const frameBox = await frame.boundingBox();
       const mathBox = await math.boundingBox();
       expect(mathBox && frameBox && mathBox.x + mathBox.width).toBeLessThanOrEqual(
