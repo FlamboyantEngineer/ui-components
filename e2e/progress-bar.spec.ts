@@ -213,7 +213,7 @@ test.describe('Progress Bar lab', () => {
     }
   });
 
-  test('UIC-PROGRESS-BAR-2.1 turns the spinner arc like the circular progress, in the text colour', async ({
+  test('UIC-PROGRESS-BAR-2.1 turns and stretches the spinner arc like the circular progress, in the text colour', async ({
     page,
     lab,
   }) => {
@@ -230,6 +230,12 @@ test.describe('Progress Bar lab', () => {
       const expected = ['ref-spinner-turn', 'cubic-bezier(0.65, 0, 0.35, 1)', 'infinite'];
       expect(await ring.evaluate(motion)).toEqual(expected);
       expect(await circular.evaluate(motion)).toEqual(expected);
+      // The arc grows and shrinks as it turns, on the spinner and the progress bar alike.
+      const arc = (node: Element) => getComputedStyle(node).animationName;
+      expect(await ring.locator('.ui-spinner__fill').evaluate(arc)).toBe('ref-spinner-arc');
+      expect(await circular.locator('.ui-progress-bar__fill').evaluate(arc)).toBe(
+        'ref-spinner-arc',
+      );
       // The spinner is the arc only; the progress bar adds its track.
       await expect(ring.locator('circle')).toHaveCount(1);
       await expect(circular.locator('circle')).toHaveCount(2);
