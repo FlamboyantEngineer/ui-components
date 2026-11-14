@@ -192,9 +192,9 @@ Verification: `src/components/rich-text-editor/format-toolbar.test.tsx`, `src/co
 
 ### UIC-RICH-TEXT-EDITOR-7.1 - Floating over selected text
 
-`SelectionToolbar` shall show a non-modal popover (`ui-selection-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes and as the layout moves it without an edit (a scroll, a window resize, the content resizing, rewrapping or moving, such as when a sidebar opens or fonts load), measured at most once per animation frame and only while it may show (a range in a read-only, unfocused or dismissed editor is not followed); a caret or a selected node shows none, and neither does a range scrolled out of the window or the content, until it shows again. It holds a `ToolbarRow` (its root also `ui-selection-toolbar__row`, its toolbar strip named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
+`SelectionToolbar` shall show a [Floating Toolbar](FLOATING-TOOLBAR.md) (`ui-selection-toolbar`, beside `ui-floating-toolbar`) above a selected text range while the document or the toolbar has focus and the editor is editable, following the selection as it changes and as the layout moves it without an edit (a scroll, a window resize, the content resizing, rewrapping or moving, such as when a sidebar opens or fonts load), measured at most once per animation frame and only while it may show (a range in a read-only, unfocused or dismissed editor is not followed); a caret or a selected node shows none, and neither does a range scrolled out of the window or the content, until it shows again. It holds its toolbar row (also `ui-selection-toolbar__row`, its toolbar strip named by `aria-label`, `aria-labelledby` or `selectionFormatting`) of the mark buttons and the link button, then its `children`.
 
-Implementation: `src/components/rich-text-editor/selection-toolbar.tsx`, `src/utils/overlay-auto-update.ts`
+Implementation: `src/components/rich-text-editor/selection-toolbar.tsx`, `src/components/floating-toolbar/floating-toolbar.tsx`, `src/utils/overlay-auto-update.ts`
 Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-7.2 - Keyboard
@@ -425,7 +425,7 @@ Verification: `src/components/rich-text-editor/rich-text-view-mount.test.tsx`
 | `ui-format-toolbar__block-preview`   | slot      |                                                       | A block type option's name drawn as a preview, with `data-block`.               |
 | `data-block`                         | attribute | `paragraph`, `heading-1` to `heading-3`, `code-block` | On a block preview: the block type it previews.                                 |
 | `ui-format-toolbar__link-editor`     | slot      |                                                       | The link editor popover, alongside `ui-popover`.                                |
-| `ui-selection-toolbar`               | root      |                                                       | `SelectionToolbar`'s non-modal popover.                                         |
+| `ui-selection-toolbar`               | root      |                                                       | `SelectionToolbar`'s floating toolbar, alongside `ui-floating-toolbar`.         |
 | `ui-selection-toolbar__row`          | slot      |                                                       | Its toolbar row, alongside `ui-toolbar-row`.                                    |
 | `ui-selection-toolbar__link-editor`  | slot      |                                                       | Its link editor popover, alongside `ui-popover`.                                |
 | `ui-insert-menu`                     | root      |                                                       | The slash menu's popover, alongside `ui-completion-list`.                       |

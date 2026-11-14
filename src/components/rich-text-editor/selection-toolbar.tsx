@@ -7,17 +7,15 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import { TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import { type FocusEvent, type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
+import { type FocusEvent, type ReactNode, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { type Placement, Popover, useLocale } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
-import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
-import { ToolbarRow } from '../layout/layout.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { FloatingToolbar } from '../floating-toolbar/floating-toolbar.js';
 import { FormatButtons, LinkButton } from './format-controls.js';
 import { getMarkItems } from './format-items.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
@@ -43,18 +41,6 @@ const hooks = createHooks('selection-toolbar', ['row', 'link-editor']);
 function isInsideToolbar(target: EventTarget | null, toolbar: HTMLElement | null): boolean {
   if (!isElement(target)) return false;
   return Boolean(toolbar?.contains(target) || target.closest(`.${hooks.slotClass('link-editor')}`));
-}
-
-/**
- * React Aria places an open popover again only when its placement changes, so a moved selection
- * alternates between the logical and the physical spelling of the same placement.
- */
-function useFollowedPlacement(key: string): Placement {
-  const { direction } = useLocale();
-  const [spelling, setSpelling] = useState({ key, isPhysical: false });
-  if (spelling.key !== key) setSpelling({ key, isPhysical: !spelling.isPhysical });
-  if (!spelling.isPhysical) return 'top start';
-  return direction === 'rtl' ? 'top right' : 'top left';
 }
 
 /** The viewport box of the selected text range, or null for a caret or a node selection. */
@@ -116,15 +102,14 @@ export function SelectionToolbar({ ref, className, children, ...rest }: Selectio
   const controller = useRichTextController();
   const { ref: returnFocusRef, request: returnFocus } = useFocusReturn(controller);
   const { surfaceRef } = useRichTextEditorContext('SelectionToolbar');
-  const zIndex = useLayerZIndex('dropdown');
   const rowRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useMergedRefs(rowRef, returnFocusRef);
   const [hasEditorFocus, setEditorFocus] = useState(false);
   const [hasOwnFocus, setOwnFocus] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);
   const canShow = (range: SelectionBox) =>
     controller.isEditable && dismissed !== range.key && (hasEditorFocus || hasOwnFocus);
   const box = useSelectionBox(canShow);
-  const placement = useFollowedPlacement(box?.key ?? '');
   const isOpen = box !== null && box.isVisible && canShow(box);
 
   useEditorEventListener('focus', () => (setEditorFocus(true), false));
@@ -139,51 +124,41 @@ export function SelectionToolbar({ ref, className, children, ...rest }: Selectio
     return true;
   });
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape') return;
-    event.preventDefault();
+  const dismiss = () => {
     setDismissed(box?.key ?? null);
     controller.focus();
   };
   const onBlur = (event: FocusEvent) => {
     if (!isInsideToolbar(event.relatedTarget, rowRef.current)) setOwnFocus(false);
   };
-  const ownFocusHandlers = { onFocus: () => setOwnFocus(true), onBlur, onKeyDown };
   const label = rest['aria-labelledby']
     ? undefined
     : (rest['aria-label'] ?? strings.selectionFormatting);
   return (
-    <Popover
+    <FloatingToolbar
       ref={ref}
       {...hooks.root({ className, props: rest })}
       isOpen={isOpen}
-      isNonModal
       triggerRef={surfaceRef}
       getTargetRect={() => box?.rect ?? null}
-      placement={placement}
-      offset={DEFAULT_OVERLAY_GAP}
-      style={{ zIndex }}
+      targetKey={box?.key ?? ''}
+      onDismiss={dismiss}
+      rowRef={rowRefs}
+      rowClassName={hooks.slotClass('row')}
+      aria-label={label}
+      aria-labelledby={rest['aria-labelledby']}
+      onFocus={() => setOwnFocus(true)}
+      onBlur={onBlur}
     >
-      <div ref={returnFocusRef} {...ownFocusHandlers}>
-        <ToolbarRow
-          ref={rowRef}
-          className={hooks.slotClass('row')}
-          aria-label={label}
-          aria-labelledby={rest['aria-labelledby']}
-          justify="start"
-          space="xs"
-        >
-          <FormatButtons controller={controller} items={getMarkItems(strings)} />
-          {controller.supports({ type: 'set-link', href: null }) ? (
-            <LinkButton
-              controller={controller}
-              className={hooks.slotClass('link-editor')}
-              onCommand={returnFocus}
-            />
-          ) : null}
-          {children}
-        </ToolbarRow>
-      </div>
-    </Popover>
+      <FormatButtons controller={controller} items={getMarkItems(strings)} />
+      {controller.supports({ type: 'set-link', href: null }) ? (
+        <LinkButton
+          controller={controller}
+          className={hooks.slotClass('link-editor')}
+          onCommand={returnFocus}
+        />
+      ) : null}
+      {children}
+    </FloatingToolbar>
   );
 }

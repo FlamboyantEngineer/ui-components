@@ -84,6 +84,7 @@
 @import url('reference/file-upload.css') layer(ui-reference);
 @import url('reference/filter-bar.css') layer(ui-reference);
 @import url('reference/find-bar.css') layer(ui-reference);
+@import url('reference/floating-toolbar.css') layer(ui-reference);
 @import url('reference/focus-scope.css') layer(ui-reference);
 @import url('reference/folder-manager.css') layer(ui-reference);
 @import url('reference/form.css') layer(ui-reference);
