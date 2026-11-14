@@ -227,7 +227,7 @@ test.describe('Progress Bar lab', () => {
         const style = getComputedStyle(node);
         return [style.animationName, style.animationTimingFunction, style.animationIterationCount];
       };
-      const expected = ['ref-spinner-turn', 'cubic-bezier(0.65, 0, 0.35, 1)', 'infinite'];
+      const expected = ['ref-spinner-turn', 'cubic-bezier(0.4, 0.2, 0.6, 0.8)', 'infinite'];
       expect(await ring.evaluate(motion)).toEqual(expected);
       expect(await circular.evaluate(motion)).toEqual(expected);
       // The arc grows and shrinks as it turns, on the spinner and the progress bar alike.

@@ -161,7 +161,7 @@
   --ref-duration-slow: 0.4s;
   /* One turn of a spinner, and one cycle of a pulse or a sliding bar. */
   --ref-duration-spin: 2.4s;
-  --ref-ease-spin: cubic-bezier(0.65, 0, 0.35, 1);
+  --ref-ease-spin: cubic-bezier(0.4, 0.2, 0.6, 0.8);
   --ref-duration-loop: 1.2s;
 }
 
@@ -236,9 +236,10 @@
 /*
  * Spinners: every busy indicator is the library spinner, the indeterminate circular progress's
  * arc without its track, drawn in its text colour, --ref-spinner-size across. Each cycle starts
- * at the top, makes two revolutions that speed up and slow down, and ends at the top again, while
- * the arc grows from a short stroke to most of the ring and shrinks back as its tail catches up.
- * At rest, as under reduced motion, it is a quarter arc from the top.
+ * at the top, makes two revolutions that speed up and slow down without stopping, so the loop
+ * flows on, and ends at the top again, while the arc grows from nothing to most of the ring and
+ * shrinks back to nothing as its tail catches up. At rest, as under reduced motion, it is a
+ * quarter arc from the top.
  * Partials place it, colour it and pick its size through their own slot class; reduced motion
  * stills it with every other animation.
  */
@@ -271,12 +272,12 @@
 /* Dash lengths are shares of the ring's normalised length of 100, one dash per lap. */
 .ui-spinner__fill,
 .ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__fill {
-  animation: ref-spinner-arc var(--ref-duration-spin) ease-in-out infinite;
+  animation: ref-spinner-arc var(--ref-duration-spin) var(--ref-ease-spin) infinite;
 }
 
 @keyframes ref-spinner-arc {
   0% {
-    stroke-dasharray: 6 94;
+    stroke-dasharray: 0 100;
     stroke-dashoffset: 0;
   }
   50% {
@@ -284,7 +285,7 @@
     stroke-dashoffset: -15;
   }
   100% {
-    stroke-dasharray: 6 94;
+    stroke-dasharray: 0 100;
     stroke-dashoffset: -100;
   }
 }
