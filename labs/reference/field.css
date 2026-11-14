@@ -14,6 +14,9 @@
   box-sizing: border-box;
   width: 280px;
   max-width: 100%;
+  /* The width is a preference, never a floor: a flex or grid track narrower than 280 pixels, such as
+     one of two fields side by side in a popover, shrinks the field instead of letting it spill out. */
+  min-width: 0;
   font-size: var(--ref-font-size-md);
 }
 

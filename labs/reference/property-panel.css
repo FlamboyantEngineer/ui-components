@@ -1,10 +1,13 @@
 /* Property Panel: hairline sections, rows with the label on a column beside the control. */
 
+/* The panel's width comes from its box, never its content (it is a size container), so it fills a
+   column it sits in and keeps a usable width in a box that shrinks to fit, such as a table cell. */
 .ui-property-panel {
   container: ui-property-panel / inline-size;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  align-self: stretch;
+  min-width: 12rem;
   font-size: var(--ref-font-size-md);
 }
 

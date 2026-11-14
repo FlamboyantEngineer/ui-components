@@ -81,6 +81,7 @@ describe('NavigationRail', () => {
     const button = toggle();
     const body = nav().querySelector('.ui-navigation-rail__body');
     expect(button).toHaveClass('ui-navigation-rail__toggle', 'ui-button');
+    expect(nav().querySelector('.ui-navigation-rail__header')?.firstElementChild).toBe(button);
     expect(button).toHaveAttribute('aria-expanded', 'true');
     expect(button).toHaveAttribute('aria-controls', body?.id);
     expect(button.querySelector('[data-glyph]')).toHaveAttribute(

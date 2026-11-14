@@ -116,4 +116,33 @@ test.describe('Math Preview lab', () => {
     await expect(edit.locator('annotation')).toHaveText(String.raw`\pi r^2 h`);
     await lab.expectAccessible('[data-lab-demo="in-place"]');
   });
+
+  test('UIC-MATH-PREVIEW-1.2 scrolls math wider than its box inside the box', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('math-preview');
+    for (const display of ['inline', 'display']) {
+      const cell = matrixCell(page, { source: 'long sum', display });
+      const frame = cell.locator(':scope > div');
+      const math = cell.locator('.ui-math-preview__math');
+      await expect(math.locator('math')).toBeVisible();
+      // The lab's frame grows to fit its math, so the test narrows it to a box the math overflows.
+      await frame.evaluate((element: HTMLElement) => {
+        element.style.minWidth = '0';
+        element.style.width = '200px';
+      });
+      await expect(math).toHaveAttribute('data-overflowing', 'true');
+      const frameBox = await frame.boundingBox();
+      const mathBox = await math.boundingBox();
+      expect(mathBox && frameBox && mathBox.x + mathBox.width).toBeLessThanOrEqual(
+        (frameBox?.x ?? 0) + (frameBox?.width ?? 0) + 0.5,
+      );
+      expect(await math.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+        true,
+      );
+      await expect(math).toHaveAttribute('tabindex', '0');
+      await expect(math).toHaveAttribute('data-overflowing', 'true');
+    }
+  });
 });

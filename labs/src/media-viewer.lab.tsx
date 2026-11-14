@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   MediaViewer,
@@ -128,6 +128,14 @@ function ZoomedAtFirst() {
 }
 
 /** A gallery of thumbnails, each opening the viewer at its photo. */
+const thumbnailButton: CSSProperties = {
+  padding: 3,
+  border: '1px solid var(--ref-border, currentColor)',
+  borderRadius: 'var(--ref-radius, 4px)',
+  background: 'none',
+  cursor: 'pointer',
+};
+
 function Gallery() {
   const [selected, setSelected] = useState<Key | null>(null);
   const [shown, setShown] = useState<Key>('none');
@@ -135,17 +143,25 @@ function Gallery() {
     <>
       <div style={{ display: 'flex', gap: 8 }} data-lab-gallery="photos">
         {photos.map((photo) => (
-          <Button
+          // Lab-only thumbnail: a plain button that takes its image's size, unlike a control.
+          <button
             key={photo.id}
-            variant="ghost"
+            type="button"
             aria-label={`View ${photo.name}`}
-            onPress={() => {
+            style={thumbnailButton}
+            onClick={() => {
               setSelected(photo.id);
               setShown(photo.id);
             }}
           >
-            <img src={photo.src} alt="" width={96} height={64} style={{ objectFit: 'cover' }} />
-          </Button>
+            <img
+              src={photo.src}
+              alt=""
+              width={96}
+              height={64}
+              style={{ display: 'block', objectFit: 'cover' }}
+            />
+          </button>
         ))}
       </div>
       <MediaViewer

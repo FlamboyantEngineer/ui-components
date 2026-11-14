@@ -47,6 +47,23 @@ describe('MathPreview', () => {
     });
   });
 
+  it('UIC-MATH-PREVIEW-1.1 takes focus while its math is wider than its box', async () => {
+    const { renderer, calls } = createRenderer();
+    const width = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(400);
+    const room = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      const { container } = render(<MathPreview source="a" renderer={renderer} />);
+      await waitFor(() => expect(calls).toHaveLength(1));
+      await act(async () => calls[0]?.settle({ ok: true, mathml: mathml('a') }));
+      const math = container.querySelector('.ui-math-preview__math');
+      expect(math).toHaveAttribute('data-overflowing', 'true');
+      expect(math).toHaveAttribute('tabindex', '0');
+    } finally {
+      width.mockRestore();
+      room.mockRestore();
+    }
+  });
+
   it('UIC-MATH-PREVIEW-1.1 shows the pending note before anything has typeset', async () => {
     const { renderer, calls } = createRenderer();
     const { container } = render(<MathPreview source="x" renderer={renderer} />);

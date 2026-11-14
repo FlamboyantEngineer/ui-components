@@ -238,12 +238,12 @@ export function NavigationRail({
     >
       <NavigationRailContext value={state}>
         <div {...hooks.slot('header')}>
-          {header}
           <RailToggle
             isCollapsed={isCollapsed}
             bodyId={bodyId}
             onPress={() => setCollapsed(!isCollapsed)}
           />
+          {header}
         </div>
         <FocusScope>
           <RailBody id={bodyId}>{children}</RailBody>

@@ -43,7 +43,7 @@ Verification: `src/components/media-viewer/media-layout.test.ts`, `src/component
 
 ### UIC-MEDIA-VIEWER-2.2 - Rotate
 
-The header's rotate button (`ui-media-viewer__rotate`, `rotate` glyph, provider string `rotateClockwise`) shall turn an image a quarter turn clockwise; a sideways image fits and scrolls by its turned size.
+The header's rotate button (`ui-media-viewer__rotate`, `rotate` glyph, an arrow turning up and to the right, provider string `rotateClockwise`) shall turn an image a quarter turn clockwise; a sideways image fits and scrolls by its turned size.
 
 Implementation: `src/components/media-viewer/media-viewer.tsx`, `src/components/media-viewer/media-layout.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/media-viewer/media-layout.test.ts`, `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`

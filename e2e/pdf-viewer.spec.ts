@@ -639,6 +639,34 @@ test.describe('PDF Viewer lab', () => {
     await expect(find.locator('[data-lab-output="matches"]')).toHaveText('1 of 1');
   });
 
+  test('UIC-PDF-VIEWER-10.1 UIC-TABS-1.4 keeps the sidebar tabs whole above the scrolling panel', async ({
+    page,
+    lab,
+  }) => {
+    const reader = await openCase(page, lab, 'bytes');
+    const sidebar = reader.locator('.ui-pdf-viewer__sidebar');
+    for (const name of ['Pages', 'Outline']) {
+      const tab = sidebar.getByRole('tab', { name, exact: true });
+      await tab.click();
+      const panel = sidebar.getByRole('tabpanel');
+      for (const end of [false, true]) {
+        await panel.evaluate((element, toEnd) => {
+          element.scrollTop = toEnd ? element.scrollHeight : 0;
+        }, end);
+        const tabBox = await box(tab);
+        expect((await box(panel)).y).toBeGreaterThanOrEqual(tabBox.y + tabBox.height - 1);
+        expect(
+          await tab.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            return element.contains(
+              document.elementFromPoint(rect.x + rect.width / 2, rect.bottom - 2),
+            );
+          }),
+        ).toBe(true);
+      }
+    }
+  });
+
   test('UIC-PDF-VIEWER-10.4 resizes the sidebar by pointer and keyboard without replacing the document', async ({
     page,
     lab,

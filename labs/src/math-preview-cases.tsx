@@ -5,7 +5,8 @@ import { LabSection, StateMatrix } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const column: CSSProperties = { width: 360 };
-const narrow: CSSProperties = { width: 200 };
+/** A corner case's frame: at least a column wide, and wider when its math is. */
+const growingColumn: CSSProperties = { minWidth: 360, width: 'max-content' };
 
 /** Each field size: the label, the source's type and the preview follow it. */
 export function MathFieldSizes() {
@@ -38,7 +39,7 @@ const sources = {
   'tall operators': String.raw`\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}`,
   'accents and text': String.raw`\hat{\theta} = \text{arg max}_{\theta} \; \mathcal{L}(\theta \mid x)`,
   'unicode letters': String.raw`\text{Größe} = \text{サイズ} \times α`,
-  'long, narrow': String.raw`a_1 + a_2 + a_3 + a_4 + a_5 + a_6 + a_7 + a_8 + a_9 + a_{10} + a_{11} + a_{12} = S`,
+  'long sum': String.raw`a_1 + a_2 + a_3 + a_4 + a_5 + a_6 + a_7 + a_8 + a_9 + a_{10} + a_{11} + a_{12} = S`,
   'only spaces': '   ',
   'unknown command': String.raw`\frob{x}`,
   'unbalanced brace': String.raw`\frac{a}{b`,
@@ -51,12 +52,12 @@ export function MathPreviewCorners() {
   return (
     <LabSection
       title="Corner cases"
-      description="Nested fractions, matrices, aligned lines and cases, tall operators, accents and text, letters outside ASCII, a long sum in a narrow column, blank source, an unknown command and an unbalanced brace, each inline and as display math."
+      description="Nested fractions, matrices, aligned lines and cases, tall operators, accents and text, letters outside ASCII, a long sum, blank source, an unknown command and an unbalanced brace, each inline and as display math."
     >
       <StateMatrix
         axes={{ source: Object.keys(sources) as SourceName[], display: ['inline', 'display'] }}
         render={({ source, display }) => (
-          <div style={source === 'long, narrow' ? narrow : column}>
+          <div style={growingColumn}>
             <MathPreview source={sources[source]} display={display as 'inline' | 'display'} />
           </div>
         )}

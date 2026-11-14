@@ -100,21 +100,30 @@ test.describe('Chat List lab', () => {
       await expect(menu).toHaveCount(0);
       await expect(recipe).toBeFocused();
     }
+    const ana = row(page, 'Ana Lima');
+    const anaBox = await ana.boundingBox();
+    if (!anaBox) throw new Error('no row');
     const touch = {
       pointerType: 'touch',
       pointerId: 5,
       isPrimary: true,
-      clientX: at.x,
-      clientY: at.y,
+      clientX: anaBox.x + 40,
+      clientY: anaBox.y + anaBox.height / 2,
     };
-    const ana = row(page, 'Ana Lima');
     await ana.dispatchEvent('pointerdown', touch);
-    await expect(page.getByRole('menu', { name: 'Actions for Ana Lima' })).toBeVisible({
-      timeout: 2000,
-    });
-    // Lifting the finger after the menu opened opens no conversation.
-    await ana.dispatchEvent('pointerup', touch);
-    await expect(page.getByRole('menu', { name: 'Actions for Ana Lima' })).toBeVisible();
+    const anaMenu = page.getByRole('menu', { name: 'Actions for Ana Lima' });
+    await expect(anaMenu).toBeVisible({ timeout: 2000 });
+    await expect(ana).toHaveAttribute('data-pressed', 'true');
+    // The finger lifts over whatever the menu put beneath it, which ends the row's press without
+    // opening the conversation.
+    await page.evaluate((init) => {
+      const under = document.elementFromPoint(init.clientX, init.clientY);
+      under?.dispatchEvent(
+        new PointerEvent('pointerup', { ...init, bubbles: true, composed: true }),
+      );
+    }, touch);
+    await expect(ana).not.toHaveAttribute('data-pressed');
+    await expect(anaMenu).toBeVisible();
     await expect(log).toHaveText('Open: Lisbon trip');
     await page.keyboard.press('Escape');
     await expect(ana).toBeFocused();
