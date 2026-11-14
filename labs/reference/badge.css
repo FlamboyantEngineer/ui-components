@@ -174,12 +174,7 @@
   display: none;
 }
 .ui-badge[data-collapsed] > .ui-badge__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
+  /* Visually hidden by the shared list in base.css; these drop the label's clip-box padding. */
+  margin: 0;
   padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }

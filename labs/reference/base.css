@@ -268,7 +268,8 @@
   :is(.ui-chat-tool-call__status, .ui-chat-tool-call__duration),
 .ui-emoji-picker__categories .ui-tabs__label,
 .ui-field[data-message-display='tooltip'] .ui-field__message,
-.ui-select-field__chip-frame:has(.ui-select-field__chips) .ui-select-field__value {
+.ui-select-field__chip-frame:has(.ui-select-field__chips) .ui-select-field__value,
+.ui-badge[data-collapsed] > .ui-badge__label {
   position: absolute;
   width: 1px;
   height: 1px;

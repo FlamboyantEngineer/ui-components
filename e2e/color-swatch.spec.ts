@@ -144,9 +144,10 @@ test.describe('Color Swatch lab', () => {
       if (!icon || !glyph || !box) throw new Error(`The ${size} button did not lay out`);
       await expect(bar).toHaveCSS('background-color', 'rgb(204, 51, 0)');
       expect(box.y + box.height).toBeCloseTo(icon.y + icon.height, 0);
-      expect(box.width).toBeLessThan(icon.width);
-      expect(box.height).toBeGreaterThanOrEqual(2);
-      expect(box.height).toBeLessThan(icon.height / 4);
+      // The whole icon width and the glyphs' bottom band, the button keeping its size.
+      expect(box.width).toBeCloseTo(icon.width, 0);
+      expect(box.height).toBeGreaterThanOrEqual(3);
+      expect(box.height).toBeLessThanOrEqual(icon.height * 0.1875 + 0.5);
     }
     const empty = matrixCell(page, 'command=fill colour=empty size=md');
     await expect(empty.locator('.ui-color-swatch-button__swatch')).toHaveAttribute(

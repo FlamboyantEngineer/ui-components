@@ -1,6 +1,6 @@
 # Meta Line
 
-`MetaLine` draws one inline line of metadata entries (a date, a count, a status, a link) separated by a middot. Empty entries leave no stray separator. `formatMetaLine` is its text form for tooltips, descriptions and other places that take only a string. The parent owns wrapping, truncation and the spacing around the line.
+`MetaLine` draws one inline line of metadata entries (a date, a count, a status, a link), nodes or [Labels](LABEL.md), separated by a middot. Empty entries leave no stray separator. `formatMetaLine` is its text form for tooltips, descriptions and other places that take only a string. The parent owns wrapping, truncation and the spacing around the line.
 
 ## UIC-META-LINE-1 - Entries
 
@@ -35,6 +35,13 @@ Verification: `src/components/meta-line/meta-line.test.tsx`
 ### UIC-META-LINE-1.5 - Hooks and caller attributes
 
 `MetaLine` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root. Text entries are rendered as text, never as markup.
+
+Implementation: `src/components/meta-line/meta-line.tsx`
+Verification: `src/components/meta-line/meta-line.test.tsx`
+
+### UIC-META-LINE-1.7 - Label entries
+
+An entry given as a label entry (`{ icon?, label?, size?, truncate? }`, a plain object that is not a React element) shall be drawn as a [Label](LABEL.md) with those props: text, an icon alone, or an icon before text. A label entry with neither an icon nor label content is empty and skipped like any other empty entry; the text form takes no label entries.
 
 Implementation: `src/components/meta-line/meta-line.tsx`
 Verification: `src/components/meta-line/meta-line.test.tsx`
