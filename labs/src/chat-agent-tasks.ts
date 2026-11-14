@@ -5,7 +5,7 @@ import type { ChatQuestionItem } from '../../src/components/chat-question/index.
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { nextLabId } from './chat-samples.js';
 
-const tripQuestions: ChatQuestionItem[] = [
+export const tripQuestions: ChatQuestionItem[] = [
   {
     id: 'pace',
     header: 'Pace',

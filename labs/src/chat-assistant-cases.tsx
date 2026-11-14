@@ -1,22 +1,18 @@
-// The Chat lab's live assistant: a fake streaming trip planner driven through useChatController.
+// The Chat lab's live assistant: an agent app whose fake trip planner streams through
+// useChatController, and short chats to keep typing in while a reply streams.
 
 import { useState } from 'react';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
+import { ChatList } from '../../src/components/chat-list/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
-import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Stack } from '../../src/components/layout/layout.js';
-import {
-  type AgentBehaviour,
-  agentBehaviours,
-  agents,
-  fakeUpload,
-  withModelNote,
-} from './chat-agent.js';
-import { createReplyHandlers, useCallbackLog, useLabModelChoice } from './chat-assistant-host.js';
+import { agents } from './chat-agent.js';
+import { AgentConversation, useConversationRows } from './chat-agent-app.js';
+import { agentConversations } from './chat-agent-app-samples.js';
+import { useCallbackLog, useLabModelChoice } from './chat-assistant-host.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';
-import { assistantPeople, plannerId, readerId } from './chat-samples.js';
+import { assistantPeople, nextLabId, plannerId, readerId } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const initialMessages: ChatMessageData[] = [
@@ -39,61 +35,63 @@ const initialMessages: ChatMessageData[] = [
   },
 ];
 
-const commands = [
-  { id: 'summarize', label: 'summarize', description: 'Answer in short' },
-  { id: 'budget', label: 'budget', description: 'Keep an eye on costs' },
-];
-
-/** The host's own note under the composer; the library adds no wording of its own. */
-export const labDisclaimer = 'AI can make mistakes. Check important information.';
-
-/** The live assistant: the behaviour picker, the chat, and what the host received. */
+/** The agent app: its conversations in a list beside the open one, and what the host received. */
 function AssistantDemo() {
-  const [behaviour, setBehaviour] = useState<AgentBehaviour>('answer');
+  const [samples, setSamples] = useState(agentConversations);
+  const [openId, setOpenId] = useState('agent-lisbon');
   const [allowed, setAllowed] = useState<readonly string[]>([]);
+  const [tools, setTools] = useState<readonly string[]>(['web', 'maps']);
   const { modelPicker, choice } = useLabModelChoice();
   const [log, record] = useCallbackLog();
-  const controller = useChatController({
-    send: withModelNote(agents[behaviour], choice),
-    currentUserId: readerId,
-    assistantId: plannerId,
-    initialMessages,
-    upload: fakeUpload,
-    alwaysAllowed: allowed,
-    onAlwaysAllowedChange: setAllowed,
-  });
+  const { rows, onSummary } = useConversationRows(samples);
+  const shared = {
+    modelPicker,
+    choice,
+    tools,
+    onToolsChange: setTools,
+    allowed,
+    onAllowedChange: setAllowed,
+    record,
+  };
+  const startNew = () => {
+    const id = nextLabId('agent-new');
+    setSamples((current) => [{ id, title: 'New chat', messages: [] }, ...current]);
+    setOpenId(id);
+  };
   return (
     <Stack space="sm" data-lab-demo="assistant">
-      <ChoiceGroup
-        label="Agent behaviour for the next message"
-        orientation="horizontal"
-        value={behaviour}
-        onChange={(value) => setBehaviour((value ?? 'answer') as AgentBehaviour)}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '260px minmax(0, 1fr)',
+          gap: 16,
+          height: 680,
+        }}
       >
-        {Object.entries(agentBehaviours).map(([value, label]) => (
-          <Choice key={value} value={value}>
-            {label}
-          </Choice>
-        ))}
-      </ChoiceGroup>
-      <div style={{ height: 620 }}>
-        <Chat
-          {...controller.props}
-          participants={assistantPeople}
-          currentUserId={readerId}
-          conversationId="lab-assistant"
-          title="Trip planner"
+        <ChatList
+          aria-label="Conversations"
+          heading="Recents"
+          conversations={rows}
+          selectedKey={openId}
+          onSelectionChange={setOpenId}
+          onNew={startNew}
           showSearch
-          placeholder="Ask the trip planner…"
-          commands={commands}
-          composerEndControls={<ChatModelPicker {...modelPicker} />}
-          toolRenderers={{ get_weather: forecastRenderer }}
-          renderPart={renderLabPart}
-          disclaimer={labDisclaimer}
-          {...createReplyHandlers(controller.updateMessages, record)}
         />
+        <div style={{ minWidth: 0, height: '100%' }}>
+          {samples.map((sample) => (
+            <AgentConversation
+              key={sample.id}
+              sample={sample}
+              isOpen={sample.id === openId}
+              shared={shared}
+              onSummary={onSummary}
+            />
+          ))}
+        </div>
       </div>
       <p>
+        Tools: <output data-lab-output="tools">{tools.join(', ') || 'none'}</output>
+        {' · '}
         Always allowed: <output data-lab-output="allowed">{allowed.join(', ') || 'nothing'}</output>
         {' · '}
         Host callbacks: <output data-lab-output="assistant-log">{log.join(' · ') || 'none'}</output>
@@ -106,7 +104,7 @@ export function ChatAssistantCases() {
   return (
     <LabSection
       title="Assistant, live"
-      description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). The host's disclaimer sits under the composer, in view whether the conversation is empty or streaming. Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload, and one named huge… is refused before it starts: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with."
+      description="A full agent chat: earlier conversations with a fake trip planner in a list beside the open one, each holding what an agent writes. Two days in Lisbon has photos the reader shared, reasoning, tool calls with their sources' letters, a custom forecast, a cited table with its sources, photos the planner found and an approved booking; Packing list an answered card of questions, a finished plan and a diff; Weekend budget a file read, a command, code and terminal output; Museums on Monday a failed search tried again and a denied cancellation. Send a message for the full answer streamed through useChatController: steps with a live status line, Markdown with a table, code (Copy and Apply) and citations, then photos. Type / for the other behaviours: book (an approval awaited in the stream: Approve, Deny with a reason, Always allow), cancel (an approval answered by a new turn), ask (questions with previews), plan (a plan, a diff and a terminal block), ferry (fails once: Retry) or summarize. A reply goes on streaming while another conversation is open, and its row says it is working. New chat opens an empty conversation with starters; its first message names it. Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer. The + menu at the composer's start attaches files, adds a saved place, turns the agent's tools on or off, inserts a command, and holds the composer's own Sending options (steer automatically, send with Ctrl+Enter). Attach files from it (a file named broken… fails its first upload, and one named huge… is refused before it starts), press Up in the empty composer to recall earlier prompts, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with; choosing leaves the composer at rest."
     >
       <AssistantDemo />
     </LabSection>
