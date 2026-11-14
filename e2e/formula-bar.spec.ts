@@ -10,7 +10,6 @@ function spreadsheet(page: Page) {
     root,
     reference: root.getByRole('textbox', { name: 'Cell reference' }),
     content: root.getByRole('textbox', { name: 'Cell content' }),
-    result: root.locator('.ui-formula-bar__result'),
     output: root.locator('[data-lab-output]'),
     cell: (row: number, column: string) =>
       grid.locator(`[data-key="${toCollectionKey(`row-${row}`)}"] > [data-column="${column}"]`),
@@ -18,7 +17,7 @@ function spreadsheet(page: Page) {
 }
 
 test.describe('Formula Bar lab', () => {
-  test('UIC-FORMULA-BAR-2.1 UIC-FORMULA-BAR-3.1 UIC-FORMULA-BAR-3.3 follows the selected cell', async ({
+  test('UIC-FORMULA-BAR-2.1 UIC-FORMULA-BAR-3.1 follows the selected cell', async ({
     page,
     lab,
   }) => {
@@ -26,7 +25,6 @@ test.describe('Formula Bar lab', () => {
     const sheet = spreadsheet(page);
     await expect(sheet.reference).toHaveValue('D2');
     await expect(sheet.content).toHaveValue('=B2*C2');
-    await expect(sheet.result).toHaveText('Result 2');
     await expect(sheet.root.locator('.ui-code-editor__token[data-token="key"]')).toHaveText([
       'B2',
       'C2',
@@ -37,7 +35,7 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.content).toHaveValue('6');
     await sheet.cell(6, 'D').click();
     await expect(sheet.content).toHaveValue('=SUM(D2:D5)');
-    await expect(sheet.result).toHaveText('Result 13.4');
+    await expect(sheet.root.locator('.ui-formula-bar__result')).toHaveCount(0);
     const bar = requireDefined(await sheet.root.locator('.ui-formula-bar').boundingBox());
     const grid = requireDefined(await sheet.root.getByRole('grid').boundingBox());
     expect(bar.y + bar.height).toBeLessThanOrEqual(grid.y + 1);
@@ -92,7 +90,6 @@ test.describe('Formula Bar lab', () => {
     await page.keyboard.press('End');
     await page.keyboard.type('+1');
     await expect(sheet.root.locator('.ui-formula-bar')).toHaveAttribute('data-dirty', 'true');
-    await expect(sheet.result).toHaveText('Result 3');
     await expect(sheet.cell(2, 'D')).toHaveText('2');
     await page.keyboard.press('Enter');
     await expect(sheet.output).toHaveText('Last commit: D2 = =B2*C2+1');
@@ -192,10 +189,7 @@ test.describe('Formula Bar lab', () => {
     await expect(sheet.cell(5, 'C')).toHaveText('25');
   });
 
-  test('UIC-FORMULA-BAR-3.3 lays out every state alike, with no room for an empty result', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-FORMULA-BAR-3.1 lays out every state alike', async ({ page, lab }) => {
     await lab.open('formula-bar');
     const parts = (content: string, mode: string) =>
       matrixCell(page, `content=${content} mode=${mode}`)
@@ -214,11 +208,10 @@ test.describe('Formula Bar lab', () => {
               }),
             editor: box(editor),
             editorBorder: editor ? getComputedStyle(editor).borderTopColor : '',
-            result: box(bar.querySelector('.ui-formula-bar__result')),
           };
         });
     const contents = ['formula', 'text', 'empty', 'no cell'];
-    const modes = ['editable', 'evaluated', 'read-only', 'disabled'];
+    const modes = ['editable', 'read-only', 'disabled'];
     const editable = await parts('empty', 'editable');
     for (const content of contents) {
       for (const mode of modes) {
@@ -239,16 +232,11 @@ test.describe('Formula Bar lab', () => {
         }
       }
     }
-    // An empty cell's evaluation draws no result: its content is as wide as without evaluation.
-    const empty = await parts('empty', 'evaluated');
-    expect(empty.result).toBeNull();
-    expect(requireDefined(empty.editor).width).toBeCloseTo(
+    // The content takes the room the reference and the buttons leave, with no result beside it.
+    const formula = await parts('formula', 'editable');
+    expect(requireDefined(formula.editor).width).toBeCloseTo(
       requireDefined(editable.editor).width,
       0,
-    );
-    const formula = await parts('formula', 'evaluated');
-    expect(requireDefined(formula.result).left).toBeGreaterThanOrEqual(
-      requireDefined(formula.editor).right,
     );
   });
 

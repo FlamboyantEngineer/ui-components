@@ -69,8 +69,8 @@ export interface NumberEntryFieldProps
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** What a commit does with a value outside the rules. Defaults to `snap`. */
   commitBehavior?: NumberFieldCommitBehavior | undefined;
-  /** Leave out the decrement and increment buttons; the arrow keys still step the value. */
-  hideStepper?: boolean | undefined;
+  /** Draw the decrement and increment buttons; without them the arrow keys still step the value. */
+  showStepper?: boolean | undefined;
   /** The decrement button's glyph, such as `DecreaseFontSizeGlyph`. Defaults to minus. */
   decrementIcon?: GlyphComponent | undefined;
   /** The increment button's glyph, such as `IncreaseFontSizeGlyph`. Defaults to plus. */
@@ -120,7 +120,7 @@ export type NumberControlConfig = Pick<
   | 'placeholder'
   | 'autoComplete'
   | 'enterKeyHint'
-  | 'hideStepper'
+  | 'showStepper'
   | 'decrementIcon'
   | 'incrementIcon'
   | 'stepValues'
@@ -228,7 +228,7 @@ function NumberEntryField({
   placeholder,
   autoComplete,
   enterKeyHint,
-  hideStepper = false,
+  showStepper = false,
   startAdornment,
   endAdornment,
   endAdornmentPlacement = 'edge',
@@ -264,7 +264,7 @@ function NumberEntryField({
   const state = isReadableNumber(held.value) ? held : { ...held, value: null };
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
   const data = {
-    hideStepper,
+    showStepper,
     radix,
     adornmentPlacement: endAdornmentPlacement === 'value' ? 'value' : undefined,
   };
@@ -281,7 +281,7 @@ function NumberEntryField({
           placeholder,
           autoComplete,
           enterKeyHint,
-          hideStepper,
+          showStepper,
           startAdornment,
           endAdornment: endAdornment === undefined && units ? units.unit : endAdornment,
           endAdornmentPlacement,

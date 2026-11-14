@@ -30,8 +30,8 @@
 }
 
 .ui-badge[data-variant='subtle']:not([data-tone='neutral']) {
-  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-badge[data-variant='solid'] {
@@ -40,11 +40,12 @@
   color: var(--ref-canvas);
 }
 .ui-badge[data-variant='solid']:not([data-tone='neutral']) {
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
+  color: var(--ref-on-tone-fill);
 }
 
 .ui-badge[data-count][data-variant='subtle']:not([data-tone='neutral']) {
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-badge[data-count][data-variant='subtle'] {
@@ -97,7 +98,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 .ui-badge[data-muted-dot] .ui-badge__dot {
   opacity: 0.5;
@@ -118,7 +119,7 @@
   min-height: 0;
   padding: 0;
   border: 0;
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 .ui-badge[data-variant='dot'][data-size='sm'] {
   width: 6px;

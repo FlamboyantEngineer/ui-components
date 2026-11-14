@@ -8,7 +8,7 @@
   padding: 16px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-surface);
+  background: var(--ref-canvas);
   color: var(--ref-text);
   font-size: var(--ref-font-size-md);
 }
@@ -51,10 +51,6 @@
   margin-inline: -8px;
   padding: 8px;
   border-radius: var(--ref-radius);
-}
-
-.ui-approval-panel__approver + .ui-approval-panel__approver {
-  border-top: 1px solid var(--ref-border);
 }
 
 .ui-approval-panel__approver[data-current] {

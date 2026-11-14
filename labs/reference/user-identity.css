@@ -62,7 +62,7 @@
 }
 
 .ui-user-identity[data-status='away'] .ui-user-identity__indicator {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 .ui-user-identity[data-status='busy'] .ui-user-identity__indicator {

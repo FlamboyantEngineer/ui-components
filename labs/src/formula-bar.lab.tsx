@@ -97,7 +97,6 @@ function Spreadsheet() {
         tokenize={tokenizeFormula}
         completions={formulaFunctions}
         functions={formulaFunctions}
-        evaluate={(content, at) => evaluateAt(content, cells, at)}
         onCommit={(value, at) => write(at, value)}
         isDisabled={isLocked}
         onCellChange={(at) => {
@@ -211,7 +210,6 @@ function SizedBar({
         tokenize={tokenizeFormula}
         completions={formulaFunctions}
         functions={formulaFunctions}
-        evaluate={(value, at) => evaluateAt(value, sampleCells, at)}
         showActions={showActions}
         onCommit={setSaved}
         data-lab-size={size}
@@ -258,16 +256,14 @@ const states = {
 } as const;
 const stateNames = Object.keys(states) as Array<keyof typeof states>;
 
-const sampleCells: SheetCells = { B2: '4', C2: '0.5' };
-
 mountLab(
   <>
     <LabSection
       title="States"
-      description="A formula, plain text, an empty cell and no active cell, editable, with the caller's evaluation, read-only and disabled, each bar 256px wide. The reference, Cancel, Confirm and fₓ keep their places and the content takes the rest; a result appears only when the evaluation has one, so an empty cell's content keeps the full width. The formula's references, operators and functions take the caller's token types."
+      description="A formula, plain text, an empty cell and no active cell, editable, read-only and disabled, each bar 256px wide. The reference, Cancel, Confirm and fₓ keep their places and the content takes the rest. The formula's references, operators and functions take the caller's token types."
     >
       <StateMatrix
-        axes={{ content: stateNames, mode: ['editable', 'evaluated', 'read-only', 'disabled'] }}
+        axes={{ content: stateNames, mode: ['editable', 'read-only', 'disabled'] }}
         render={({ content, mode }) => (
           // Every cell is as wide, so the bars line up and differ only in their state.
           <div style={{ width: 256 }}>
@@ -278,9 +274,6 @@ mountLab(
               tokenize={tokenizeFormula}
               functions={formulaFunctions}
               placeholder="Value or formula"
-              evaluate={
-                mode === 'evaluated' ? (value, at) => evaluateAt(value, sampleCells, at) : undefined
-              }
               isReadOnly={mode === 'read-only'}
               isDisabled={mode === 'disabled'}
             />
@@ -290,7 +283,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Sizes"
-      description="size xs, sm, md (the default) and lg: the reference box, the content, fₓ, Cancel and Confirm and the result follow the bar's size, with the buttons a step smaller than the boxes. Each bar works: edit the formula, pick a function from fₓ, then Confirm or press Enter to save it. Shown with and without the buttons, 360px wide and in a narrower 280px column."
+      description="size xs, sm, md (the default) and lg: the reference box, the content, fₓ, Cancel and Confirm follow the bar's size, with the buttons a step smaller than the boxes. Each bar works: edit the formula, pick a function from fₓ, then Confirm or press Enter to save it. Shown with and without the buttons, 360px wide and in a narrower 280px column."
     >
       <StateMatrix
         axes={{ size: sizes, layout: ['buttons', 'keys only', 'buttons, 280px'] }}
@@ -322,7 +315,6 @@ mountLab(
               cell={{ row: 1, column: 3 }}
               value="=SUM(B2:B40)*C2+AVERAGE(B2:B40)-MIN(B2:B40)+MAX(B2:B40)"
               tokenize={tokenizeFormula}
-              evaluate={(value, at) => evaluateAt(value, sampleCells, at)}
               showActions={actions === 'buttons'}
               data-lab-actions={actions}
             />

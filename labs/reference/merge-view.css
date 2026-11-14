@@ -93,7 +93,7 @@
 }
 
 .ui-merge-view__line[data-change='conflict'] {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
 }
 
 .ui-merge-view__filler > td {
@@ -157,7 +157,7 @@
   padding: 6px 8px;
   border: 1px solid var(--ref-warning);
   border-radius: var(--ref-radius);
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-merge-view__block[data-kind='conflict']:not([data-resolution='unresolved']) {
