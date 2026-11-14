@@ -121,14 +121,15 @@ test('UIC-PROGRESS-BAR-11.4 circular indeterminate arcs rotate around the ring c
         return {
           x: inner.x + inner.width / 2 - outer.x - outer.width / 2,
           y: inner.y + inner.height / 2 - outer.y - outer.height / 2,
-          fillAnimations: fill.getAnimations().length,
+          fillAnimations: fill.getAnimations().map((each) => (each as CSSAnimation).animationName),
         };
       });
     });
     for (const center of centers) {
       expect(center.x).toBeCloseTo(0, 2);
       expect(center.y).toBeCloseTo(0, 2);
-      expect(center.fillAnimations).toBe(0);
+      // The arc stretches like the spinner's; it never takes the linear fill's slide.
+      expect(center.fillAnimations).toEqual(['ref-spinner-arc']);
     }
   }
 });

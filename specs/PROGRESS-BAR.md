@@ -175,7 +175,7 @@ Verification: `src/components/progress-bar/progress-ring.test.tsx`
 
 ### UIC-PROGRESS-BAR-11.4 - Indeterminate
 
-With `isIndeterminate` the ring shall publish `data-indeterminate`, expose no `aria-valuenow` or `aria-valuetext`, and draw a fixed quarter arc that the stylesheet may spin. The reference sheet rotates the ring around its center without applying the linear fill's sliding animation to the arc.
+With `isIndeterminate` the ring shall publish `data-indeterminate`, expose no `aria-valuenow` or `aria-valuetext`, and draw a quarter arc that the stylesheet may spin. The reference sheet rotates the ring around its center and stretches the arc as the [Spinner](#uic-progress-bar-21---decorative-busy-glyph) does, never the linear fill's sliding animation.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progress-ring.spec.ts`
