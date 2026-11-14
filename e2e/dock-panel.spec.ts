@@ -204,10 +204,14 @@ test.describe('Dock Panel lab', () => {
     const list = panel.getByRole('tablist');
     const selected = panel.getByRole('tab', { selected: true });
     await expect(selected).toContainText('Change history');
-    const tab = await box(selected);
-    const strip = await box(list);
-    expect(tab.x).toBeGreaterThanOrEqual(strip.x + 25);
-    expect(tab.x + tab.width).toBeLessThanOrEqual(strip.x + strip.width - 25);
+    // The strip glides to the tab (scroll-behavior: smooth), so the place is read once it settles.
+    await expect
+      .poll(async () => {
+        const tab = await box(selected);
+        const strip = await box(list);
+        return tab.x >= strip.x + 25 && tab.x + tab.width <= strip.x + strip.width - 25;
+      })
+      .toBe(true);
   });
 
   test('UIC-DOCK-PANEL-3.1 UIC-DOCK-PANEL-3.2 UIC-DOCK-PANEL-3.4 resizes the main content in the same frame and saves once', async ({

@@ -7,6 +7,7 @@ export const tabsHooks = createHooks('tabs', [
   'owner',
   'action',
   'scroll-button',
+  'fade',
   'overflow',
   'add',
   'tab',

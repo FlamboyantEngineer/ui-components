@@ -408,6 +408,7 @@ function ReadOnlyFiles() {
             variant="ghost"
             icon={ExternalLinkGlyph}
             label={`Open ${file.name}`}
+            tooltip={`Open ${file.name}`}
             onPress={() => setOpened(file.name)}
           />
         )}

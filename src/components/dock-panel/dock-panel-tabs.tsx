@@ -102,7 +102,14 @@ export function DockPanelTabList({
   listRef?: Ref<HTMLDivElement> | undefined;
 }) {
   return (
-    <TabList ref={listRef} aria-label={label} overflow="scroll" {...hooks.slot('tab-list')}>
+    <TabList
+      ref={listRef}
+      aria-label={label}
+      overflow="scroll"
+      // The panel draws its own fades around the strip.
+      showEdgeFades={false}
+      {...hooks.slot('tab-list')}
+    >
       {panes.map((pane) => (
         <Tab
           key={toKeyIdentity(pane.id)}
