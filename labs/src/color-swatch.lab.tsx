@@ -10,8 +10,8 @@ import { BackgroundColorGlyph, FontColorGlyph } from '../../src/core/drawn-glyph
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
-// Opaque, half and a quarter opaque, fully transparent, and no colour at all.
-const colours = [
+// Opaque, half and a quarter opaque, fully transparent, and no color at all.
+const colors = [
   '#336699',
   '#2e8b57',
   '#33669980',
@@ -47,7 +47,7 @@ function Palette() {
 
 const reds = ['#cc3300', 'rgb(204, 51, 0)', 'hsl(15, 100%, 40%)'] as const;
 
-/** A controlled picker with one colour in three spellings, whose value the buttons set. */
+/** A controlled picker with one color in three spellings, whose value the buttons set. */
 function ControlledPalette() {
   const [value, setValue] = useState('#2e8b57');
   const [reported, setReported] = useState('');
@@ -57,7 +57,7 @@ function ControlledPalette() {
         <Button size="sm" onPress={() => setValue('rgb(204, 51, 0)')}>
           Set red
         </Button>{' '}
-        <Button size="sm" onPress={() => setValue('not a colour')}>
+        <Button size="sm" onPress={() => setValue('not a color')}>
           Set unreadable
         </Button>{' '}
         <Button size="sm" onPress={() => setValue('')}>
@@ -86,14 +86,14 @@ function ControlledPalette() {
   );
 }
 
-const colourCommands = {
+const colorCommands = {
   text: { icon: FontColorGlyph, label: 'Text color' },
   fill: { icon: BackgroundColorGlyph, label: 'Fill color' },
 } as const;
 
-/** Text and fill colour buttons that apply the colours a palette picks. */
-function ColourCommands() {
-  const [colours, setColours] = useState({ text: '#cc3300', fill: '#e69500' });
+/** Text and fill color buttons that apply the colors a palette picks. */
+function ColorCommands() {
+  const [colors, setColors] = useState({ text: '#cc3300', fill: '#e69500' });
   const [applied, setApplied] = useState('');
   return (
     <>
@@ -101,10 +101,10 @@ function ColourCommands() {
         {(['text', 'fill'] as const).map((command) => (
           <ColorSwatchButton
             key={command}
-            {...colourCommands[command]}
-            color={colours[command]}
-            tooltip={colourCommands[command].label}
-            onPress={() => setApplied(`${command} ${colours[command]}`)}
+            {...colorCommands[command]}
+            color={colors[command]}
+            tooltip={colorCommands[command].label}
+            onPress={() => setApplied(`${command} ${colors[command]}`)}
             data-lab-command={command}
           />
         ))}
@@ -112,10 +112,10 @@ function ColourCommands() {
       {(['text', 'fill'] as const).map((command) => (
         <ColorSwatchPicker
           key={command}
-          aria-label={`${colourCommands[command].label} palette`}
-          value={colours[command]}
-          onChange={(color) => setColours((current) => ({ ...current, [command]: color }))}
-          data-lab-picker={`${command}-colour`}
+          aria-label={`${colorCommands[command].label} palette`}
+          value={colors[command]}
+          onChange={(color) => setColors((current) => ({ ...current, [command]: color }))}
+          data-lab-picker={`${command}-color`}
         >
           {palette.map((color) => (
             <ColorSwatchPickerItem key={color} color={color} />
@@ -132,19 +132,19 @@ function ColourCommands() {
 mountLab(
   <>
     <LabSection
-      title="Colours and sizes"
-      description="Opaque, half-opaque, quarter-opaque, fully transparent and empty swatches in every size: a checkerboard shows through a translucent colour, and an empty swatch is the checkerboard alone, named No color."
+      title="Colors and sizes"
+      description="Opaque, half-opaque, quarter-opaque, fully transparent and empty swatches in every size: a checkerboard shows through a translucent color, and an empty swatch is the checkerboard alone, named No color."
     >
       <StateMatrix
-        axes={{ colour: colours, size: sizes }}
-        render={({ colour, size }) => (
-          <ColorSwatch color={colour === 'empty' ? null : colour} size={size} />
+        axes={{ color: colors, size: sizes }}
+        render={({ color, size }) => (
+          <ColorSwatch color={color === 'empty' ? null : color} size={size} />
         )}
       />
     </LabSection>
-    <LabSection title="Names" description="A colour's own name, a given name and an added label.">
+    <LabSection title="Names" description="A color's own name, a given name and an added label.">
       <p>
-        <ColorSwatch color="#336699" data-lab-swatch="named" /> Named by its colour
+        <ColorSwatch color="#336699" data-lab-swatch="named" /> Named by its color
       </p>
       <p>
         <ColorSwatch color="#cc3300" colorName="Signal red" data-lab-swatch="given" /> A given name
@@ -160,14 +160,14 @@ mountLab(
       <Palette />
     </LabSection>
     <LabSection
-      title="Controlled values and equal colours"
+      title="Controlled values and equal colors"
       description="One red in three spellings is three options picked together; an unreadable or empty value picks nothing."
     >
       <ControlledPalette />
     </LabSection>
     <LabSection
       title="Translucent swatches in a picker"
-      description="A picker's swatches show the checkerboard through a translucent colour, picked or not."
+      description="A picker's swatches show the checkerboard through a translucent color, picked or not."
     >
       <ColorSwatchPicker
         aria-label="Translucent palette"
@@ -180,30 +180,30 @@ mountLab(
       </ColorSwatchPicker>
     </LabSection>
     <LabSection
-      title="Colour buttons"
-      description="Text and fill colour glyphs over a bar of their colour, in three sizes, with a translucent, an empty and a disabled case."
+      title="Color buttons"
+      description="Text and fill color glyphs over a bar of their color, in three sizes, with a translucent, an empty and a disabled case."
     >
       <StateMatrix
         axes={{
           command: ['text', 'fill'] as const,
-          colour: ['#cc3300', '#33669980', 'empty', 'disabled'] as const,
+          color: ['#cc3300', '#33669980', 'empty', 'disabled'] as const,
           size: ['sm', 'md', 'lg'] as const,
         }}
-        render={({ command, colour, size }) => (
+        render={({ command, color, size }) => (
           <ColorSwatchButton
-            {...colourCommands[command]}
-            color={colour === 'empty' ? null : colour === 'disabled' ? '#2e8b57' : colour}
-            isDisabled={colour === 'disabled'}
+            {...colorCommands[command]}
+            color={color === 'empty' ? null : color === 'disabled' ? '#2e8b57' : color}
+            isDisabled={color === 'disabled'}
             size={size}
           />
         )}
       />
     </LabSection>
     <LabSection
-      title="Colour commands"
-      description="Pick a text or fill colour below: its button's bar follows, and a press applies it."
+      title="Color commands"
+      description="Pick a text or fill color below: its button's bar follows, and a press applies it."
     >
-      <ColourCommands />
+      <ColorCommands />
     </LabSection>
     <LabSection title="Picker layouts and sizes" description="A grid or a stack of swatches.">
       <StateMatrix

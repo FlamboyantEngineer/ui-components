@@ -163,7 +163,7 @@
   color: var(--ref-muted);
 }
 
-/* A time in a tooltip takes the tooltip's colour. */
+/* A time in a tooltip takes the tooltip's color. */
 .ui-tooltip .ui-chat-message__time {
   color: inherit;
 }

@@ -16,7 +16,7 @@ import { isNewContextTarget, mergeSafeRel } from '../../utils/merge-safe-rel.js'
 import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
-/** Emphasis: `primary` takes the accent colour, `secondary` the surrounding text colour. */
+/** Emphasis: `primary` takes the accent color, `secondary` the surrounding text color. */
 export type LinkVariant = 'primary' | 'secondary';
 
 /** When the stylesheet underlines the link. */

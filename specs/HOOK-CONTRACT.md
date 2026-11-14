@@ -66,7 +66,7 @@ Verification: `test/lint-rules.test.ts`, `test/package.test.ts`, `test/package-b
 
 ### UIC-HOOKS-3.2 - Functional inline styles only
 
-A component may set inline styles only for values it computes at runtime: positions, measured sizes, layout tracks (column widths, virtual offsets), layering and interaction locks. It may expose a measured value as a custom property named `--ui-<name>` (for example `--ui-trigger-width`), which its spec lists with kind `property`. Colours, spacing, borders, typography, shadows and every other visual property belong to the host stylesheet. Literal class names in library markup are hook classes only.
+A component may set inline styles only for values it computes at runtime: positions, measured sizes, layout tracks (column widths, virtual offsets), layering and interaction locks. It may expose a measured value as a custom property named `--ui-<name>` (for example `--ui-trigger-width`), which its spec lists with kind `property`. Colors, spacing, borders, typography, shadows and every other visual property belong to the host stylesheet. Literal class names in library markup are hook classes only.
 
 Implementation: `eslint-rules/index.js`, `src/core/hooks.ts`
 Verification: `test/lint-rules.test.ts`, `src/core/hooks.test.ts`

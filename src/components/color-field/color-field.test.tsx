@@ -14,7 +14,7 @@ function trigger() {
 }
 
 describe('ColorField', () => {
-  it('UIC-COLOR-FIELD-1.1 is a field that starts with no colour', () => {
+  it('UIC-COLOR-FIELD-1.1 is a field that starts with no color', () => {
     const { container } = render(<ColorField label="Accent" />);
     expect(root(container)).toHaveClass('ui-field', 'ui-color-field');
     expect(trigger()).toHaveAccessibleName('Accent No color');
@@ -23,16 +23,16 @@ describe('ColorField', () => {
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control'] });
   });
 
-  it('UIC-COLOR-FIELD-1.2 shows a swatch and the colour text in each format', () => {
+  it('UIC-COLOR-FIELD-1.2 shows a swatch and the color text in each format', () => {
     const { container, rerender } = render(
-      <ColorField id="accent" label="Accent" defaultValue="#aabbcc" description="Brand colour." />,
+      <ColorField id="accent" label="Accent" defaultValue="#aabbcc" description="Brand color." />,
     );
     const value = () => container.querySelector('.ui-color-field__value');
     expect(value()).toHaveTextContent('#AABBCC');
     expect(value()).not.toHaveAttribute('data-placeholder');
     expect(trigger()).toHaveAccessibleName('Accent #AABBCC');
     expect(trigger()).toHaveAttribute('id', 'accent-control');
-    expect(trigger()).toHaveAccessibleDescription('Brand colour.');
+    expect(trigger()).toHaveAccessibleDescription('Brand color.');
     expect(container.querySelector('.ui-color-field__swatch')).toHaveClass('ui-color-swatch');
     rerender(<ColorField id="accent" label="Accent" value="#336699" format="rgb" />);
     expect(value()).toHaveTextContent('rgb(51, 102, 153)');
@@ -40,8 +40,8 @@ describe('ColorField', () => {
     expect(value()).toHaveTextContent('hsl(210, 50%, 40%)');
     rerender(<ColorField id="accent" label="Accent" value="#336699" format="hsb" />);
     expect(value()).toHaveTextContent('hsb(210, 66.67%, 60%)');
-    rerender(<ColorField id="accent" label="Accent" value={null} placeholder="Pick a colour" />);
-    expect(value()).toHaveTextContent('Pick a colour');
+    rerender(<ColorField id="accent" label="Accent" value={null} placeholder="Pick a color" />);
+    expect(value()).toHaveTextContent('Pick a color');
     expect(value()).toHaveAttribute('data-placeholder', 'true');
     rerender(<ColorField id="accent" label="Accent" value="#336699" isDisabled />);
     expect(trigger()).toBeDisabled();
@@ -152,7 +152,7 @@ describe('ColorField', () => {
     expect(trigger()).toHaveAccessibleName('Accent #FF0000');
   });
 
-  it('UIC-COLOR-FIELD-2.2 clears an optional colour from the picker or the keyboard', async () => {
+  it('UIC-COLOR-FIELD-2.2 clears an optional color from the picker or the keyboard', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { unmount } = render(
@@ -253,9 +253,9 @@ describe('ColorField', () => {
     expect(root(container)).toHaveAttribute('data-validation', 'pending');
   });
 
-  it('UIC-COLOR-FIELD-2.4 reports a value that is no colour as invalid', () => {
+  it('UIC-COLOR-FIELD-2.4 reports a value that is no color as invalid', () => {
     const { container, rerender } = render(
-      <ColorField label="Accent" value="not-a-colour" isRequired />,
+      <ColorField label="Accent" value="not-a-color" isRequired />,
     );
     const field = container.querySelector('.ui-field');
     expect(field).toHaveAttribute('data-validation', 'invalid');
@@ -268,11 +268,11 @@ describe('ColorField', () => {
 
   it('UIC-COLOR-FIELD-1.2 gives the trigger the field control props', () => {
     const { rerender } = render(
-      <ColorField id="accent" label="Accent" description="Brand colour." defaultValue="#336699" />,
+      <ColorField id="accent" label="Accent" description="Brand color." defaultValue="#336699" />,
     );
     const trigger = screen.getByRole('button', { name: 'Accent #336699' });
     expect(trigger).toHaveAttribute('id', 'accent-control');
-    expect(trigger).toHaveAccessibleDescription('Brand colour.');
+    expect(trigger).toHaveAccessibleDescription('Brand color.');
     rerender(<ColorField id="accent" label="Accent" defaultValue="#336699" isDisabled />);
     expect(screen.getByRole('button', { name: 'Accent #336699' })).toBeDisabled();
   });

@@ -151,7 +151,7 @@
   flex: none;
   align-items: center;
   /*
-   * A unit reads as part of the quantity: the number's type, figures and colour, its text centred
+   * A unit reads as part of the quantity: the number's type, figures and color, its text centred
    * on the same line box as the input's, so both share a baseline. Controls placed as adornments
    * keep their own type.
    */

@@ -72,7 +72,7 @@ function traceBars(modules: readonly boolean[], offset: number): string {
 
 /**
  * A linear barcode for `value`: an image of its bars between light quiet zones, with the
- * human-readable value under them on request. The host stylesheet colours the bars and the ground.
+ * human-readable value under them on request. The host stylesheet colors the bars and the ground.
  */
 export function Barcode({
   value,

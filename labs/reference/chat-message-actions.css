@@ -1,4 +1,4 @@
-/* Chat Message Actions. The copy status stays visually hidden; a check mark takes the success colour. */
+/* Chat Message Actions. The copy status stays visually hidden; a check mark takes the success color. */
 
 .ui-chat-message-actions {
   display: flex;

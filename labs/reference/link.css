@@ -22,7 +22,7 @@
   font-weight: var(--ref-font-weight-medium);
 }
 
-/* A link in running text that is not underlined keeps a cue besides colour. */
+/* A link in running text that is not underlined keeps a cue besides color. */
 .ui-link:not([data-standalone]):is([data-underline='hover'], [data-underline='none']) {
   font-weight: var(--ref-font-weight-medium);
 }

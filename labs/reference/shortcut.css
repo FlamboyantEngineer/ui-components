@@ -67,7 +67,7 @@
   font: inherit;
 }
 
-/* A shortcut in a tooltip, such as a button's, takes the tooltip's colours. */
+/* A shortcut in a tooltip, such as a button's, takes the tooltip's colors. */
 
 .ui-tooltip .ui-shortcut[data-appearance='text'] {
   color: inherit;

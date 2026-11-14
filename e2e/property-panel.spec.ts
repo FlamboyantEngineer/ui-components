@@ -67,7 +67,7 @@ test.describe('Property Panel lab', () => {
   }) => {
     await lab.open('property-panel');
     const section = cell(page, 'section=actions layout=responsive');
-    const trigger = section.getByRole('button', { name: /^Colours/ });
+    const trigger = section.getByRole('button', { name: /^Colors/ });
     const content = section.locator('.ui-property-section__content');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
@@ -80,9 +80,9 @@ test.describe('Property Panel lab', () => {
     await expect(content).toBeVisible();
 
     await page.keyboard.press('Tab');
-    await expect(section.getByRole('button', { name: /^Add colour/ })).toBeFocused();
+    await expect(section.getByRole('button', { name: /^Add color/ })).toBeFocused();
     await page.keyboard.press('Enter');
-    await section.getByRole('button', { name: /^Add colour/ }).click();
+    await section.getByRole('button', { name: /^Add color/ }).click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await lab.expectAccessible();
   });
@@ -328,25 +328,25 @@ test.describe('Property Panel host cases', () => {
   }) => {
     await lab.open('property-panel');
     const demo = page.locator('[data-lab-demo="owned-disclosures"]');
-    const colours = demo.getByRole('button', { name: /^Colours \d/ });
+    const colors = demo.getByRole('button', { name: /^Colors \d/ });
     const shadow = demo.getByRole('button', { name: /^Shadow/ });
-    await expect(colours).toHaveAttribute('aria-expanded', 'true');
+    await expect(colors).toHaveAttribute('aria-expanded', 'true');
     await expect(shadow).toHaveAttribute('aria-expanded', 'false');
     await shadow.click();
     await expect(demo.locator('[data-lab-output="shadow"]')).toHaveText('open');
     await expect(demo.getByRole('textbox', { name: 'Blur' })).toBeVisible();
-    await colours.click();
-    await expect(colours).toHaveAttribute('aria-expanded', 'false');
+    await colors.click();
+    await expect(colors).toHaveAttribute('aria-expanded', 'false');
     await expect(demo.locator('[data-lab-output="requests"]')).toHaveText(
-      'shadow: open, colours: close',
+      'shadow: open, colors: close',
     );
-    await demo.getByRole('button', { name: 'Open colours from the page' }).click();
-    await expect(colours).toHaveAttribute('aria-expanded', 'true');
+    await demo.getByRole('button', { name: 'Open colors from the page' }).click();
+    await expect(colors).toHaveAttribute('aria-expanded', 'true');
     await demo.getByRole('button', { name: 'Close shadow from the page' }).click();
     await expect(shadow).toHaveAttribute('aria-expanded', 'false');
     await expect(demo.getByRole('textbox', { name: 'Blur' })).toBeHidden();
     await expect(demo.locator('[data-lab-output="requests"]')).toHaveText(
-      'shadow: open, colours: close',
+      'shadow: open, colors: close',
     );
   });
 

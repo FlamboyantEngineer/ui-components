@@ -77,8 +77,8 @@ const attributes = new Set([
   'width',
 ]);
 
-/** A colour attribute takes a colour word or hex value only, never a function such as `url()`. */
-const colourValue = /^(#[\da-f]{3,8}|[a-z]+)$/i;
+/** A color attribute takes a color word or hex value only, never a function such as `url()`. */
+const colorValue = /^(#[\da-f]{3,8}|[a-z]+)$/i;
 
 /** The allowed presentation attributes of a MathML element, by lower-case name. */
 export function readMathAttributes(element: Element): Record<string, string> {
@@ -87,7 +87,7 @@ export function readMathAttributes(element: Element): Record<string, string> {
     const lower = name.toLowerCase();
     if (!attributes.has(lower)) continue;
     if (lower.startsWith('math') && lower !== 'mathvariant' && lower !== 'mathsize') {
-      if (!colourValue.test(value)) continue;
+      if (!colorValue.test(value)) continue;
     }
     props[lower] = value;
   }

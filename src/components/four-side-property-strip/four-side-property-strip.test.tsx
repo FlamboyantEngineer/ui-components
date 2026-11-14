@@ -78,7 +78,7 @@ describe('FourSidePropertyStrip', () => {
     expect(row.querySelector('.ui-property-row__hint')).toHaveTextContent('Inside the frame');
 
     rerender(
-      <PropertyScope query="colour">
+      <PropertyScope query="color">
         <FourSidePropertyStrip label="Padding" renderSide={(side) => <span>{side}</span>} />
       </PropertyScope>,
     );

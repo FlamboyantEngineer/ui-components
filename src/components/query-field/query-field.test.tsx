@@ -6,7 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { CodeDiagnostic, CodeToken } from '../code-editor/code-editor.js';
 import { QueryField, type QueryGrammar } from './query-field.js';
 
-/** A sample language: `field:value` terms; `colour` is unknown, and `old` only warns. */
+/** A sample language: `field:value` terms; `color` is unknown, and `old` only warns. */
 function tokenize(source: string): CodeToken[] {
   return (source.match(/([a-z]+(?=:)|:|\s+|[^\s:]+)/g) ?? []).map((text) => ({
     text,
@@ -16,7 +16,7 @@ function tokenize(source: string): CodeToken[] {
 
 function diagnose(query: string): CodeDiagnostic[] {
   const problems: CodeDiagnostic[] = [];
-  const unknown = query.indexOf('colour:');
+  const unknown = query.indexOf('color:');
   if (unknown >= 0) problems.push({ message: 'Unknown field.', line: 1, column: unknown + 1 });
   const old = query.indexOf('old:');
   if (old >= 0) {
@@ -112,7 +112,7 @@ describe('QueryField', () => {
     expect(onSubmit).toHaveBeenLastCalledWith('genre:history old:x');
     expect(input.closest('.ui-query-field')).not.toHaveAttribute('data-invalid');
     await user.click(input);
-    await user.keyboard('{End} colour:red{Escape}{Enter}');
+    await user.keyboard('{End} color:red{Escape}{Enter}');
     expect(onSubmit).toHaveBeenCalledTimes(2);
     expect(input.closest('.ui-query-field')).toHaveAttribute('data-invalid', 'true');
     expect(input).toHaveAttribute('aria-invalid', 'true');

@@ -109,8 +109,8 @@ describe('tabular formatting glyphs', () => {
   });
 });
 
-describe('text colour and size glyphs', () => {
-  it('UIC-PROVIDER-2.1 exports each text colour and size glyph under its provider key', () => {
+describe('text color and size glyphs', () => {
+  it('UIC-PROVIDER-2.1 exports each text color and size glyph under its provider key', () => {
     const exports: Record<string, string> = {
       FontColorGlyph: 'font-color',
       BackgroundColorGlyph: 'background-color',
@@ -123,7 +123,7 @@ describe('text colour and size glyphs', () => {
     }
   });
 
-  it('UIC-PROVIDER-2.1 keeps the colour glyphs above the swatch band and the size steps apart', () => {
+  it('UIC-PROVIDER-2.1 keeps the color glyphs above the swatch band and the size steps apart', () => {
     for (const path of [glyphPaths.fontColorPath, glyphPaths.backgroundColorPath]) {
       const ys = [...path.matchAll(/[ML](-?[\d.]+)[ ,](-?[\d.]+)/g)].map(([, , y]) => Number(y));
       expect(Math.max(...ys)).toBeLessThanOrEqual(19.5);

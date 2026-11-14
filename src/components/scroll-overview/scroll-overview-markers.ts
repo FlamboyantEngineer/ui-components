@@ -9,7 +9,7 @@ import {
 /** A marker placed on an element in the scroll container's content, measured by the overview. */
 export interface ScrollOverviewElementMarker {
   element: Element;
-  /** Any CSS colour the caller chooses. */
+  /** Any CSS color the caller chooses. */
   color: string;
   /** Where markers share an overview pixel, the lowest priority wins. */
   priority: number;

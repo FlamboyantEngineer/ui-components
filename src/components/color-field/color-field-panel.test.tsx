@@ -13,7 +13,7 @@ describe('ColorField picker', () => {
     vi.unstubAllGlobals();
   });
 
-  it('UIC-COLOR-FIELD-4.1 offers preset swatches that set the colour and keep the picker open', async () => {
+  it('UIC-COLOR-FIELD-4.1 offers preset swatches that set the color and keep the picker open', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
@@ -166,7 +166,7 @@ describe('ColorField picker', () => {
     for (const [value] of onChange.mock.calls) expect(value).toBe('#808080');
   });
 
-  it('UIC-COLOR-FIELD-1.5 keeps the colour, the open picker and focus when the hue control switches', async () => {
+  it('UIC-COLOR-FIELD-1.5 keeps the color, the open picker and focus when the hue control switches', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<ColorField label="Accent" defaultValue="#336699" />);
     await user.click(trigger('Accent'));

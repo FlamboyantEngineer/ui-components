@@ -104,15 +104,15 @@ function RowSample({ state }: { state: (typeof rowStates)[number] }) {
 function SectionSample({ state, name }: { state: (typeof sectionStates)[number]; name: string }) {
   return (
     <PropertySection
-      title="Colours"
+      title="Colors"
       defaultExpanded={state !== 'closed'}
       count={state === 'explicit zero' ? 0 : undefined}
       isDisabled={state === 'disabled'}
-      description={state === 'description and meta' ? 'Colours of the frame.' : undefined}
+      description={state === 'description and meta' ? 'Colors of the frame.' : undefined}
       meta={state === 'description and meta' ? 'shared' : undefined}
       actions={
         state === 'actions' ? (
-          <Button icon={PlusGlyph} label={`Add colour to ${name}`} size="sm" />
+          <Button icon={PlusGlyph} label={`Add color to ${name}`} size="sm" />
         ) : undefined
       }
     >

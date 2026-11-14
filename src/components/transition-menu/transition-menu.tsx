@@ -50,7 +50,7 @@ export interface TransitionMenuChange {
 }
 
 export interface TransitionMenuProps extends RefProps<HTMLSpanElement>, BaseProps {
-  /** Every state, to name and colour the current one and the targets. */
+  /** Every state, to name and color the current one and the targets. */
   states: readonly TransitionMenuState[];
   /** The `id` of the current state. */
   value: Key;

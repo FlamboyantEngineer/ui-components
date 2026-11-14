@@ -364,17 +364,17 @@ describe('Popover', () => {
     await waitFor(() => expect(panel()).toBeNull());
     unmount();
 
-    const { unmount: unmountColour } = render(
+    const { unmount: unmountColor } = render(
       <PopoverTrigger defaultOpen>
-        <Button>Colour</Button>
-        <Popover aria-label="Colour">{null}</Popover>
+        <Button>Color</Button>
+        <Popover aria-label="Color">{null}</Popover>
       </PopoverTrigger>,
     );
-    expect(screen.getByRole('dialog', { name: 'Colour' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Color' })).toBeInTheDocument();
     expect(document.querySelector('.ui-popover__header')).toBeNull();
     expect(document.querySelector('.ui-popover__body')).toBeNull();
     expectHooksMatchSpec(document.body, 'POPOVER', { slots: ['dialog'] });
-    unmountColour();
+    unmountColor();
 
     render(
       <>

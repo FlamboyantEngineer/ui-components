@@ -163,7 +163,7 @@ describe('applySettings', () => {
     expect(document.documentElement.dataset.labStylesheetState).toBe('none');
   });
 
-  it('UIC-LABS-2.2 writes light or dark for the system theme, from the colour scheme', () => {
+  it('UIC-LABS-2.2 writes light or dark for the system theme, from the color scheme', () => {
     const dark = { matchMedia: () => ({ matches: true }) } as unknown as Window;
     const light = { matchMedia: () => ({ matches: false }) } as unknown as Window;
     expect(resolveTheme('system', dark)).toBe('dark');

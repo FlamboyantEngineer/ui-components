@@ -6,7 +6,7 @@ import { EmojiPicker } from './emoji-picker.js';
 import { detectEmojiSupport } from './emoji-support.js';
 
 /** How a fake platform draws a glyph. */
-type Drawing = 'colour' | 'letters' | 'blank' | 'parts';
+type Drawing = 'color' | 'letters' | 'blank' | 'parts';
 
 const meltingFace = '\u{1FAE0}';
 const distortedFace = '\u{1FAEA}';
@@ -66,12 +66,12 @@ afterEach(() => {
 });
 
 describe('emoji support', { timeout: 15_000 }, () => {
-  it('UIC-EMOJI-PICKER-5.1 finds the newest version drawn as one colour emoji and the flags', () => {
+  it('UIC-EMOJI-PICKER-5.1 finds the newest version drawn as one color emoji and the flags', () => {
     const { fonts, constructed } = stubPlatform((glyph) => {
       if (glyph === distortedFace) return 'blank';
       if (glyph === '\u{1FAE9}') return 'letters';
       if (glyph === headShaking) return 'parts';
-      return glyph === flag ? 'letters' : 'colour';
+      return glyph === flag ? 'letters' : 'color';
     });
     const support = detectEmojiSupport('Inter');
     expect(support).toEqual({ version: 15, countryFlags: false });
@@ -80,10 +80,10 @@ describe('emoji support', { timeout: 15_000 }, () => {
     expect(constructed).toHaveBeenCalledTimes(1);
   });
 
-  it('UIC-EMOJI-PICKER-5.1 cannot tell without a colour emoji font or a canvas', () => {
+  it('UIC-EMOJI-PICKER-5.1 cannot tell without a color emoji font or a canvas', () => {
     stubPlatform(() => 'letters');
     expect(detectEmojiSupport('Plain')).toEqual({ version: undefined, countryFlags: true });
-    stubPlatform((glyph) => ([shakingFace, '\u{1F600}'].includes(glyph) ? 'colour' : 'parts'));
+    stubPlatform((glyph) => ([shakingFace, '\u{1F600}'].includes(glyph) ? 'color' : 'parts'));
     expect(detectEmojiSupport('Partial')).toEqual({ version: 15, countryFlags: false });
     vi.stubGlobal('OffscreenCanvas', function NoContext() {
       return { getContext: () => null };
@@ -100,7 +100,7 @@ describe('emoji support', { timeout: 15_000 }, () => {
     stubPlatform((glyph) =>
       glyph === flag || (glyph.codePointAt(0) ?? 0) >= 0x1fae0 || glyph === headShaking
         ? 'letters'
-        : 'colour',
+        : 'color',
     );
     const { rerender } = render(<EmojiPicker loadEmoji={loadFixture} />);
     await user.click(await screen.findByRole('tab', { name: 'Flags' }));
@@ -140,7 +140,7 @@ describe('emoji support', { timeout: 15_000 }, () => {
       };
     });
     expect(detectEmojiSupport('Refused')).toEqual(unknown);
-    const { constructed } = stubPlatform(() => 'colour');
+    const { constructed } = stubPlatform(() => 'color');
     const realGetImageData = vi.fn(() => {
       throw new DOMException('The canvas has been tainted by cross-origin data.', 'SecurityError');
     });
@@ -161,7 +161,7 @@ describe('emoji support', { timeout: 15_000 }, () => {
     expect(detectEmojiSupport('Refused')).toEqual(unknown);
     expect(realGetImageData).toHaveBeenCalled();
     // No failure was kept: a canvas that works now measures.
-    stubPlatform(() => 'colour');
+    stubPlatform(() => 'color');
     expect(detectEmojiSupport('Refused')).toEqual({ version: 17, countryFlags: true });
   });
 

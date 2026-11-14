@@ -8,7 +8,7 @@ interface ToolCallLetterGlyphProps {
 
 /**
  * A glyph drawn on the fly for a tool without one: a letter in a rounded outline box, on the same
- * 24 by 24 view box, 1.5 stroke and current colour as the drawn glyphs. The letter takes the
+ * 24 by 24 view box, 1.5 stroke and current color as the drawn glyphs. The letter takes the
  * surrounding font, so it matches the text beside it.
  */
 export function ToolCallLetterGlyph({ letter, className }: ToolCallLetterGlyphProps) {

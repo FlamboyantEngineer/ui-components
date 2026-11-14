@@ -540,7 +540,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Previous values"
-      description="Each colour was edited from Blue to Green, and the control marks Blue with FieldPreviousValue: as text, with an icon, or locked with its restore disabled. Its restore button is named by restoreLabel and puts that one value back. changeLayout places the marker before the control (inline) or above it (stacked), or hides it, leaving the field's own Restore."
+      description="Each color was edited from Blue to Green, and the control marks Blue with FieldPreviousValue: as text, with an icon, or locked with its restore disabled. Its restore button is named by restoreLabel and puts that one value back. changeLayout places the marker before the control (inline) or above it (stacked), or hides it, leaving the field's own Restore."
     >
       <PreviousValues />
     </LabSection>

@@ -1,6 +1,6 @@
 # Label
 
-`Label` draws text with an optional decorative leading icon, or an icon alone; it replaces the former `IconLabel`, and [Meta Line](META-LINE.md) draws its entries with it. It inherits the host's font, line height and colour; its size chooses only the icon box and the gap the stylesheet puts between them.
+`Label` draws text with an optional decorative leading icon, or an icon alone; it replaces the former `IconLabel`, and [Meta Line](META-LINE.md) draws its entries with it. It inherits the host's font, line height and color; its size chooses only the icon box and the gap the stylesheet puts between them.
 
 ## UIC-LABEL-1 - Contract
 

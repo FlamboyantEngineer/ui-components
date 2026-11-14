@@ -1,6 +1,6 @@
 // The default renderer: KaTeX, loaded on first use, typesetting to MathML only. Untrusted source
 // gets no links, styles or HTML from `\href`, `\url`, `\htmlClass` and the like (`trust: false`):
-// such a command shows as its source in the text colour. Sizes and macro expansion are bounded so a
+// such a command shows as its source in the text color. Sizes and macro expansion are bounded so a
 // short source cannot grow without end.
 
 import type { MathRender, MathRenderOptions } from './math-render.js';
@@ -22,7 +22,7 @@ export async function renderKatexMath(
       output: 'mathml',
       throwOnError: true,
       trust: false,
-      // A refused command shows as its source in the text colour, not KaTeX's fixed red.
+      // A refused command shows as its source in the text color, not KaTeX's fixed red.
       errorColor: 'currentColor',
       strict: 'ignore',
       maxSize,

@@ -5,7 +5,7 @@ import { UiProvider } from '../../core/provider.js';
 import { ColorSwatch } from './color-swatch.js';
 
 describe('ColorSwatch', () => {
-  it('UIC-COLOR-SWATCH-1.1 fills itself with the colour and is named by it', () => {
+  it('UIC-COLOR-SWATCH-1.1 fills itself with the color and is named by it', () => {
     const { container } = render(
       <>
         <ColorSwatch color="#336699" />
@@ -24,7 +24,7 @@ describe('ColorSwatch', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH');
   });
 
-  it('UIC-COLOR-SWATCH-1.1 publishes the colour it draws, alpha included, for a backdrop', () => {
+  it('UIC-COLOR-SWATCH-1.1 publishes the color it draws, alpha included, for a backdrop', () => {
     const { container } = render(
       <>
         <ColorSwatch color="#33669980" colorName="Half" />
@@ -41,9 +41,9 @@ describe('ColorSwatch', () => {
     expect(fill('Quarter')).toMatch(/^hsla\(210, .*, 0\.25\)$|^rgba\(.*, 0\.25\)$/);
     expect(fill('Clear')).toBe('rgba(51, 102, 153, 0)');
     expect(fill('Solid')).toBe('rgba(51, 102, 153, 1)');
-    // A fully transparent colour is a colour, not an empty swatch.
+    // A fully transparent color is a color, not an empty swatch.
     expect(screen.getByRole('img', { name: 'Clear' })).not.toHaveAttribute('data-empty');
-    // The inline fill stays, so the swatch draws its colour unstyled.
+    // The inline fill stays, so the swatch draws its color unstyled.
     expect(screen.getByRole('img', { name: 'Half' }).style.backgroundColor).toMatch(
       /^rgba\(51, 102, 153, 0\.50?\d*\)$/,
     );

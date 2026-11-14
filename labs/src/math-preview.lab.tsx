@@ -179,7 +179,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Untrusted source"
-      description="Links, styles and HTML commands render nothing active; colours keep only names and hex values."
+      description="Links, styles and HTML commands render nothing active; colors keep only names and hex values."
     >
       <ul data-lab-demo="untrusted" style={column}>
         {untrusted.map((source) => (

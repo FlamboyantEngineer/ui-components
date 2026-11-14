@@ -58,7 +58,7 @@ export function placeMarkers(
 
 /**
  * Marks each block a marker covers with its severity (`data-severity`) and its messages as the
- * block's accessible description, so the finding is not told by colour alone. A block under
+ * block's accessible description, so the finding is not told by color alone. A block under
  * several markers takes the gravest severity and every message.
  */
 export function decorateMarkers(doc: DocNode, placed: readonly PlacedMarker[]): DecorationSet {

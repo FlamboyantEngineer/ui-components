@@ -90,7 +90,7 @@ test.describe('Completion List lab', () => {
     await field.press('End');
     await field.press('Control+Space');
     // A script click switches the source while the field keeps focus.
-    await demo.getByRole('button', { name: 'Complete colours' }).evaluate((button: HTMLElement) => {
+    await demo.getByRole('button', { name: 'Complete colors' }).evaluate((button: HTMLElement) => {
       button.click();
     });
     await expect(options()).toHaveText(['blue', 'brown']);

@@ -106,10 +106,10 @@ test.describe('Inline Error lab', () => {
         glyph,
       );
     }
-    const colour = (tone: string) =>
+    const color = (tone: string) =>
       cell(tone, 'settled').evaluate((node) => getComputedStyle(node).color);
     expect(
-      new Set([await colour('danger'), await colour('warning'), await colour('success')]).size,
+      new Set([await color('danger'), await color('warning'), await color('success')]).size,
     ).toBe(3);
     const pending = cell('danger', 'pending');
     await expect(live('danger', 'pending')).toHaveAttribute('role', 'status');

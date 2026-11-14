@@ -12,7 +12,7 @@ import type { TableColumnPin } from './table-rows.js';
 const column = (id: string, pin?: TableColumnPin) => ({ id, pin });
 const columns = [
   column('name'),
-  column('colour'),
+  column('color'),
   column('weight', 'end'),
   column('id', 'start'),
   column('origin'),
@@ -24,7 +24,7 @@ describe('table column layout helpers', () => {
     expect(ids(orderColumns(columns, ['origin', 'name']))).toEqual([
       'origin',
       'name',
-      'colour',
+      'color',
       'weight',
       'id',
     ]);
@@ -32,17 +32,17 @@ describe('table column layout helpers', () => {
   });
 
   it('UIC-TABLE-8.8 drops hidden columns and puts pinned columns at their edges', () => {
-    const arranged = arrangeColumns(columns, { order: ['origin'], hidden: ['colour'] });
+    const arranged = arrangeColumns(columns, { order: ['origin'], hidden: ['color'] });
     expect(ids(arranged)).toEqual(['id', 'origin', 'name', 'weight']);
   });
 
   it('UIC-TABLE-8.8 moves a column beside another of its pinned group only', () => {
     expect(
       applyColumnMove(columns, {}, { id: 'name', targetId: 'origin', position: 'after' }),
-    ).toEqual(['colour', 'weight', 'id', 'origin', 'name']);
+    ).toEqual(['color', 'weight', 'id', 'origin', 'name']);
     expect(
       applyColumnMove(columns, {}, { id: 'origin', targetId: 'name', position: 'before' }),
-    ).toEqual(['origin', 'name', 'colour', 'weight', 'id']);
+    ).toEqual(['origin', 'name', 'color', 'weight', 'id']);
     expect(applyColumnMove(columns, {}, { id: 'name', targetId: 'id', position: 'before' })).toBe(
       null,
     );
@@ -55,11 +55,11 @@ describe('table column layout helpers', () => {
     const drawn = arrangeColumns(columns, {});
     expect(stepColumnMove(drawn, 'name', 1)).toEqual({
       id: 'name',
-      targetId: 'colour',
+      targetId: 'color',
       position: 'after',
     });
-    expect(stepColumnMove(drawn, 'colour', -1)).toEqual({
-      id: 'colour',
+    expect(stepColumnMove(drawn, 'color', -1)).toEqual({
+      id: 'color',
       targetId: 'name',
       position: 'before',
     });
@@ -77,7 +77,7 @@ describe('table column layout helpers', () => {
   });
 
   it('UIC-TABLE-8.8 covers runs of one group and merges the gaps between them', () => {
-    const size = { id: 'size', header: 'Size', columns: ['weight', 'colour'] };
+    const size = { id: 'size', header: 'Size', columns: ['weight', 'color'] };
     const cells = groupColumnCells(arrangeColumns(columns, {}), [size], {
       leading: 1,
       trailing: 1,

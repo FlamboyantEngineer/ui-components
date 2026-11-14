@@ -19,7 +19,7 @@ describe('renderKatexMath', () => {
     ]) {
       const result = await typeset(source, { displayMode: false });
       expect(result.ok && result.mathml).not.toMatch(/\shref=|\sclass="c"|<a\s/);
-      // A refused command shows in the text colour, not a fixed red.
+      // A refused command shows in the text color, not a fixed red.
       expect(result.ok && result.mathml).not.toContain('#cc0000');
     }
     expect(await typeset('\\def\\a{\\a}\\a', { displayMode: false })).toEqual({

@@ -55,9 +55,9 @@ const results: ChatPart[] = [
     status: 'pending',
     questions: [
       {
-        id: 'colour',
+        id: 'color',
         selectionMode: 'single',
-        question: 'Which colour?',
+        question: 'Which color?',
         options: [
           { id: 'blue', label: 'Blue' },
           { id: 'green', label: 'Green' },

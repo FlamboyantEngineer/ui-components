@@ -6,7 +6,7 @@ const bar = (page: Page, commands: string) =>
 const log = (page: Page, name: string) => page.locator(`[data-lab-log="${name}"]`);
 const message = (page: Page, id: string) => page.locator(`[data-lab-message="${id}"]`);
 
-/** Waits until an overlay has settled, so axe sees its final colours. */
+/** Waits until an overlay has settled, so axe sees its final colors. */
 async function expectSettled(overlay: Locator) {
   await expect(overlay).not.toHaveAttribute('data-entering');
   await expect(overlay).not.toHaveAttribute('data-exiting');

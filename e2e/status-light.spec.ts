@@ -27,16 +27,16 @@ test.describe('Status Light lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-STATUS-LIGHT-1.2 colours each tone', async ({ page, lab }) => {
+  test('UIC-STATUS-LIGHT-1.2 colors each tone', async ({ page, lab }) => {
     await lab.open('status-light');
-    const colours = await Promise.all(
+    const colors = await Promise.all(
       ['neutral', 'info', 'success', 'warning', 'danger'].map((tone) =>
         matrixCell(page, `tone=${tone} size=md`)
           .locator(`.ui-status-light__dot`)
           .evaluate((node) => getComputedStyle(node).backgroundColor),
       ),
     );
-    expect(new Set(colours).size).toBe(5);
+    expect(new Set(colors).size).toBe(5);
   });
 
   test('UIC-STATUS-LIGHT-1.4 UIC-STATUS-LIGHT-2.1 labels presence states and names dot-only lights', async ({
@@ -55,12 +55,12 @@ test.describe('Status Light lab', () => {
     await expect(dotOnly).toHaveRole('img');
     await expect(dotOnly).toHaveAccessibleName('Jon Berg is busy');
     await expect(dotOnly.locator('.ui-status-light__label')).toHaveCount(0);
-    const dotColour = (status: string, label: string) =>
+    const dotColor = (status: string, label: string) =>
       cell(status, label)
         .locator('.ui-status-light__dot')
         .evaluate((node) => getComputedStyle(node).backgroundColor);
-    expect(await dotColour('busy', 'default')).toBe(await dotColour('busy', 'dot only'));
-    expect(await dotColour('active', 'default')).not.toBe(await dotColour('away', 'default'));
+    expect(await dotColor('busy', 'default')).toBe(await dotColor('busy', 'dot only'));
+    expect(await dotColor('active', 'default')).not.toBe(await dotColor('away', 'default'));
     await lab.expectAccessible();
   });
 

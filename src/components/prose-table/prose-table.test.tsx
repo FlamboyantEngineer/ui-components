@@ -6,21 +6,21 @@ import { ProseTable } from './prose-table.js';
 
 const header = [
   { key: 'fruit', content: 'Fruit' },
-  { key: 'colour', content: 'Colour' },
+  { key: 'color', content: 'Color' },
 ];
 const rows = [
   {
     key: 'apple',
     cells: [
       { key: 'fruit', content: <strong>Apple</strong> },
-      { key: 'colour', content: 'Red' },
+      { key: 'color', content: 'Red' },
     ],
   },
   {
     key: 'pear',
     cells: [
       { key: 'fruit', content: <a href="#pear">Pear</a> },
-      { key: 'colour', content: 'Green' },
+      { key: 'color', content: 'Green' },
     ],
   },
 ];
@@ -31,7 +31,7 @@ describe('ProseTable', () => {
     const table = container.querySelector('table') as HTMLElement;
     expect(table).toHaveClass('ui-prose-table');
     const headings = [...table.querySelectorAll('thead > tr > th')];
-    expect(headings.map((heading) => heading.textContent)).toEqual(['Fruit', 'Colour']);
+    expect(headings.map((heading) => heading.textContent)).toEqual(['Fruit', 'Color']);
     expect(headings.every((heading) => heading.getAttribute('scope') === 'col')).toBe(true);
     const bodyRows = table.querySelectorAll('tbody > tr');
     expect(bodyRows).toHaveLength(2);
@@ -63,7 +63,7 @@ describe('ProseTable', () => {
       within(table)
         .getAllByRole('columnheader')
         .map((cell) => cell.textContent),
-    ).toEqual(['Fruit', 'Colour']);
+    ).toEqual(['Fruit', 'Color']);
     expect(within(table).queryAllByRole('rowheader')).toHaveLength(0);
     expect(within(table).getAllByRole('cell')).toHaveLength(4);
     expect(within(table).getByRole('link', { name: 'Pear' })).toHaveAttribute('href', '#pear');
@@ -77,7 +77,7 @@ describe('ProseTable', () => {
         rows={rows}
         className="caller"
         id="fruit-table"
-        aria-label="Fruit colours"
+        aria-label="Fruit colors"
         data-testid="probe"
       />,
     );
@@ -85,15 +85,15 @@ describe('ProseTable', () => {
     expect(table).toHaveClass('ui-prose-table', 'caller');
     expect(table).toHaveAttribute('id', 'fruit-table');
     expect(table).toHaveAttribute('data-testid', 'probe');
-    expect(screen.getByRole('table', { name: 'Fruit colours' })).toBe(table);
+    expect(screen.getByRole('table', { name: 'Fruit colors' })).toBe(table);
     expectHooksMatchSpec(container, 'PROSE-TABLE');
   });
 
   it('UIC-PROSE-TABLE-2.1 names the table with its caption', () => {
     const { container, rerender } = render(
-      <ProseTable header={header} rows={rows} caption="Fruit by colour" />,
+      <ProseTable header={header} rows={rows} caption="Fruit by color" />,
     );
-    const table = screen.getByRole('table', { name: 'Fruit by colour' });
+    const table = screen.getByRole('table', { name: 'Fruit by color' });
     expect(table.firstElementChild?.tagName).toBe('CAPTION');
     expect(table.firstElementChild).toHaveClass('ui-prose-table__caption');
     expectHooksMatchSpec(container, 'PROSE-TABLE', { slots: ['caption'] });

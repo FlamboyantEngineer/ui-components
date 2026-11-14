@@ -59,10 +59,10 @@ describe('Modal controller', () => {
 
   it('UIC-MODAL-CONTROLLER-1.2 passes the handle to content and render functions', async () => {
     const { controller } = renderHost();
-    let colour!: Promise<string | undefined>;
+    let color!: Promise<string | undefined>;
     act(() => {
-      colour = controller.open<string>({
-        title: 'Pick a colour',
+      color = controller.open<string>({
+        title: 'Pick a color',
         content: (handle) => (
           <button type="button" onClick={() => handle.close('Teal')}>
             Teal
@@ -71,7 +71,7 @@ describe('Modal controller', () => {
       }).result;
     });
     await userEvent.click(screen.getByRole('button', { name: 'Teal' }));
-    await expect(colour).resolves.toBe('Teal');
+    await expect(color).resolves.toBe('Teal');
 
     let custom!: Promise<boolean | undefined>;
     act(() => {

@@ -27,7 +27,7 @@ Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-i
 
 ### UIC-USER-IDENTITY-1.4 - Avatar identity
 
-`src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape` shall reach the avatar unchanged, so the row follows the avatar's picture, initials, colour slot, group glyph and shape rules ([AVATAR.md](AVATAR.md)).
+`src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape` shall reach the avatar unchanged, so the row follows the avatar's picture, initials, color slot, group glyph and shape rules ([AVATAR.md](AVATAR.md)).
 
 Implementation: `src/components/user-identity/user-identity.tsx`, `src/components/avatar/avatar.tsx`
 Verification: `src/components/user-identity/user-identity.test.tsx`

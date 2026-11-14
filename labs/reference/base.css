@@ -2,7 +2,7 @@
  * Reference stylesheet base: theme variables, the opt-in document base and the constructs several
  * partials share.
  * Theme: data-theme="dark" on the root element draws the dark theme; "light" or no attribute the
- * light one. The labs' theme picker writes it, following the reader's colour scheme by default.
+ * light one. The labs' theme picker writes it, following the reader's color scheme by default.
  */
 
 /*
@@ -15,7 +15,7 @@
  */
 
 /*
- * Tokens. Every partial draws its colours, type, shape, focus, state opacity and motion from these;
+ * Tokens. Every partial draws its colors, type, shape, focus, state opacity and motion from these;
  * `npm run check:labs` rejects literal values that a token covers. Component-scoped tokens
  * (`--ref-<component>-*`) are only for sizes one component varies by its own data attributes.
  */
@@ -79,8 +79,8 @@
     transparent
   );
 
-  /* Categories: series, avatars and other values told apart by colour. -fill keeps its contrast
-     under --ref-on-fill in both themes; the plain colour is for marks on the canvas. */
+  /* Categories: series, avatars and other values told apart by color. -fill keeps its contrast
+     under --ref-on-fill in both themes; the plain color is for marks on the canvas. */
   --ref-category-0-fill: #1d4ed8;
   --ref-category-1-fill: #b45309;
   --ref-category-2-fill: #6d28d9;
@@ -135,7 +135,7 @@
    * Field frames: the box a value is typed or picked in, in every field, search box, editor and
    * composer. A frame takes the field fill and border while it takes input and the inactive fill
    * once disabled (with muted text) or read-only (with a dashed border); focus turns its border to
-   * --ref-focus with --ref-focus-ring-thin around it, and validation and dirty marks colour it.
+   * --ref-focus with --ref-focus-ring-thin around it, and validation and dirty marks color it.
    */
   --ref-field-border: var(--ref-border);
   --ref-field-fill: var(--ref-canvas);
@@ -150,7 +150,7 @@
   --ref-focus-inset: inset 0 0 0 2px var(--ref-focus);
 
   /* State and motion. A changed, unsaved field takes --ref-dirty on its frame, like the validation
-     colours; a control without a frame of its own takes the outline. Its own colour, since the
+     colors; a control without a frame of its own takes the outline. Its own color, since the
      accent already marks focus. */
   --ref-dirty: var(--ref-category-2);
   --ref-dirty-outline: 1px solid var(--ref-dirty);
@@ -166,7 +166,7 @@
 
 /*
  * Document base, opt-in: a page whose root element carries data-reference-document takes the
- * reference type, text colour, canvas and colour scheme, as the labs do. Without it the sheet styles
+ * reference type, text color, canvas and color scheme, as the labs do. Without it the sheet styles
  * components only, inside the host's own page.
  */
 :root[data-reference-document] {
@@ -207,14 +207,14 @@
   --ref-category-6: #f778ba;
 }
 
-/* The dark document base, for an opted-in document only: the host keeps its own colour scheme. */
+/* The dark document base, for an opted-in document only: the host keeps its own color scheme. */
 :root[data-reference-document][data-theme='dark'] {
   color-scheme: dark;
 }
 
 /*
- * Tones: an element that publishes data-tone takes its tone's colour in --ref-tone, for its own
- * rules and its slots'. Neutral is the muted text colour.
+ * Tones: an element that publishes data-tone takes its tone's color in --ref-tone, for its own
+ * rules and its slots'. Neutral is the muted text color.
  */
 [data-tone] {
   --ref-tone: var(--ref-muted);
@@ -234,7 +234,7 @@
 
 /*
  * Spinners: every busy ring shares one geometry, a ring open on one side that turns once per
- * --ref-duration-spin in its text colour, --ref-spinner-size across. Partials place it, colour it
+ * --ref-duration-spin in its text color, --ref-spinner-size across. Partials place it, color it
  * and pick its size; reduced motion stills it with every other animation.
  */
 .ui-spinner,
@@ -319,18 +319,18 @@
 }
 
 /*
- * Forced colours: the system draws its own palette and drops every box-shadow, so the focus halos
+ * Forced colors: the system draws its own palette and drops every box-shadow, so the focus halos
  * the partials draw with --ref-focus-halo and --ref-focus-inset would vanish. A focused hook element
- * takes an outline in the system highlight colour instead, inset so no scrolling list clips it.
+ * takes an outline in the system highlight color instead, inset so no scrolling list clips it.
  */
 @media (forced-colors: active) {
   :is([class^='ui-'], [class*=' ui-']):is(:focus-visible, [data-focus-visible]) {
-    outline: 2px solid Highlight !important; /* token-exempt: a system colour in forced colours */
+    outline: 2px solid Highlight !important; /* token-exempt: a system color in forced colors */
     outline-offset: -2px !important;
   }
 }
 
-/* More contrast: borders take the strong border colour, so every frame and divider stands out. */
+/* More contrast: borders take the strong border color, so every frame and divider stands out. */
 @media (prefers-contrast: more) {
   :root,
   :root[data-theme='dark'] {

@@ -64,7 +64,7 @@
   opacity: 0;
 }
 
-/* Eight colour slots from the category fills, each legible under the initials in both themes. */
+/* Eight color slots from the category fills, each legible under the initials in both themes. */
 :is(.ui-avatar, .ui-avatar-group__dot)[data-color='0'] {
   --ref-avatar-color: var(--ref-category-0-fill);
 }

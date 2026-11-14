@@ -193,7 +193,7 @@ function ConfirmedReset() {
         />
         <DateTimeField label="Best before" name="best-before" data-lab-field="best-before" />
         <ColorField
-          label="Lid colour"
+          label="Lid color"
           name="lid"
           allowsTyping
           defaultValue="#336699"
@@ -345,7 +345,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Cancelled reset"
-      description="Edit the fields (a date typed in part, a typed colour), the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
+      description="Edit the fields (a date typed in part, a typed color), the search, the combobox, the checkbox and the switch, then press Reset: while Keep edits is on, the form cancels the reset and the edits stay; switch it off and Reset puts the first values back."
     >
       <ConfirmedReset />
     </LabSection>
@@ -369,7 +369,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Saving from a toolbar"
-      description="Save asks the form whether what its fields show can be saved, without showing their validation: a date typed in part, a range with one end empty or a colour that does not read refuses it. Check shows every message and focuses the first."
+      description="Save asks the form whether what its fields show can be saved, without showing their validation: a date typed in part, a range with one end empty or a color that does not read refuses it. Check shows every message and focuses the first."
     >
       <ExternalSave />
     </LabSection>

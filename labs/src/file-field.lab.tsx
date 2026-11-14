@@ -18,9 +18,9 @@ import {
 } from './field-states.js';
 import { LabOutput } from './lab-output.js';
 
-/** A small square thumbnail in one colour, as a data URL. */
-function swatch(colour: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="${colour}"/></svg>`;
+/** A small square thumbnail in one color, as a data URL. */
+function swatch(color: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="${color}"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 

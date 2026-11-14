@@ -93,7 +93,7 @@ const historyTitles = [
   'Learning to read sheet music',
   'Packing list for a ferry trip',
   'Repotting a fig tree',
-  'Watercolour paper weights',
+  'Watercolor paper weights',
   'Converting oven temperatures',
   'Bird feeder placement',
   'Knitting a first scarf',

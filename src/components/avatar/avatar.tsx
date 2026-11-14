@@ -19,7 +19,7 @@ import { AvatarRoot } from './avatar-root.js';
 /** Circle size. `fill` takes the whole box its container gives it. */
 export type AvatarSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'> | 'fill';
 
-/** `filled` sets initials on the colour slot; `outlined` rings the circle and leaves the ground to the host. */
+/** `filled` sets initials on the color slot; `outlined` rings the circle and leaves the ground to the host. */
 export type AvatarVariant = 'filled' | 'outlined';
 
 /** A group draws a decorative group glyph instead of a picture or initials. */
@@ -58,7 +58,7 @@ export type AvatarImageProps = Pick<
 
 /** The identity fields every component that draws an avatar accepts and hands to it unchanged. */
 export interface AvatarIdentity {
-  /** Display name. The initials, the derived colour and the accessible name come from it. */
+  /** Display name. The initials, the derived color and the accessible name come from it. */
   name: string;
   /** Picture URL. A picture that fails to load falls back to the initials. */
   src?: string | undefined;
@@ -66,9 +66,9 @@ export interface AvatarIdentity {
   imageProps?: AvatarImageProps | undefined;
   /** Initials to show instead of the ones derived from `name`. */
   initials?: string | undefined;
-  /** Stable key for the derived colour, such as an id, so a renamed person keeps their colour. Defaults to `name`. */
+  /** Stable key for the derived color, such as an id, so a renamed person keeps their color. Defaults to `name`. */
   colorKey?: string | undefined;
-  /** An explicit colour slot, wrapped into the palette. Wins over the derived slot. */
+  /** An explicit color slot, wrapped into the palette. Wins over the derived slot. */
   colorIndex?: number | undefined;
   /** Defaults to `person`. */
   kind?: AvatarKind | undefined;
@@ -98,7 +98,7 @@ export interface AvatarProps
   size?: AvatarSize | undefined;
   /** Defaults to `filled`. */
   variant?: AvatarVariant | undefined;
-  /** How many colour slots the host stylesheet defines. Defaults to `DEFAULT_AVATAR_COLOR_COUNT`. */
+  /** How many color slots the host stylesheet defines. Defaults to `DEFAULT_AVATAR_COLOR_COUNT`. */
   colorCount?: number | undefined;
   /** Accessible name, when it should say more than `name` (`Maria Santos, Away`). Defaults to `name`. */
   label?: string | undefined;
@@ -236,7 +236,7 @@ function AvatarBadge({
   );
 }
 
-/** A person's picture, or their initials on a stable colour slot; a group glyph for a group. */
+/** A person's picture, or their initials on a stable color slot; a group glyph for a group. */
 export function Avatar(props: AvatarProps) {
   const [
     identity,

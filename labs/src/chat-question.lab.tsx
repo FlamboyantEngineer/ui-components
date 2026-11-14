@@ -265,7 +265,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Answered marks"
-      description="answeredMark chooses how an answered question's tab shows it: icon (the default) draws a check before the label; style draws nothing, leaving data-answered to the stylesheet, which colours the tab here. Either way the tab is described as Answered."
+      description="answeredMark chooses how an answered question's tab shows it: icon (the default) draws a check before the label; style draws nothing, leaving data-answered to the stylesheet, which colors the tab here. Either way the tab is described as Answered."
     >
       <Recorded name="mark-icon" questions={setupQuestions} />
       <Recorded name="mark-style" questions={setupQuestions} answeredMark="style" />

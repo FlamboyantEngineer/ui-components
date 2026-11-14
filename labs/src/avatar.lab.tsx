@@ -133,8 +133,8 @@ mountLab(
         />
       </LabSection>
       <LabSection
-        title="Colour slots"
-        description="Each of the eight slots the reference sheet defines, set with an explicit colour index."
+        title="Color slots"
+        description="Each of the eight slots the reference sheet defines, set with an explicit color index."
       >
         <StateMatrix
           axes={{ variant: variants, slot: slots }}

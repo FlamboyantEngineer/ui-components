@@ -512,7 +512,7 @@ const fieldCases: Record<string, RootRefCase> = {
     root: 'ui-field',
   },
   CodeEditor: { element: (ref) => <CodeEditor ref={ref} label="Query" />, root: 'ui-field' },
-  ColorField: { element: (ref) => <ColorField ref={ref} label="Colour" />, root: 'ui-field' },
+  ColorField: { element: (ref) => <ColorField ref={ref} label="Color" />, root: 'ui-field' },
   DateTimeField: { element: (ref) => <DateTimeField ref={ref} label="Due" />, root: 'ui-field' },
   DecimalField: { element: (ref) => <DecimalField ref={ref} label="Weight" />, root: 'ui-field' },
   FileField: {
@@ -575,7 +575,7 @@ const inputCases: Record<string, RootRefCase> = {
   },
   ColorSwatchPicker: {
     element: (ref) => (
-      <ColorSwatchPicker ref={ref} aria-label="Colours">
+      <ColorSwatchPicker ref={ref} aria-label="Colors">
         <ColorSwatchPickerItem color="#ff0000" />
       </ColorSwatchPicker>
     ),
@@ -583,7 +583,7 @@ const inputCases: Record<string, RootRefCase> = {
   },
   ColorSwatchPickerItem: {
     element: (ref) => (
-      <ColorSwatchPicker aria-label="Colours">
+      <ColorSwatchPicker aria-label="Colors">
         <ColorSwatchPickerItem ref={ref} color="#ff0000" />
       </ColorSwatchPicker>
     ),

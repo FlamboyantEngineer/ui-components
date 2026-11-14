@@ -29,7 +29,7 @@ export interface DonutChartProps
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
-  /** The segments, clockwise from the top, in the order of their colour slots. */
+  /** The segments, clockwise from the top, in the order of their color slots. */
   segments: readonly DonutChartSegment[];
   /** The ring's diameter, in pixels. Defaults to 160. */
   diameter?: number | undefined;

@@ -18,16 +18,16 @@ interface Crop {
   id: string;
   name: string;
   kind: string;
-  colour: string;
+  color: string;
   weight: number;
 }
 
 const crops: Crop[] = [
-  { id: 'pear', name: 'Pear', kind: 'Fruit', colour: 'Green', weight: 170 },
-  { id: 'leek', name: 'Leek', kind: 'Vegetable', colour: 'Green', weight: 300 },
-  { id: 'plum', name: 'Plum', kind: 'Fruit', colour: 'Purple', weight: 60 },
-  { id: 'beet', name: 'Beet', kind: 'Vegetable', colour: 'Purple', weight: 140 },
-  { id: 'lime', name: 'Lime', kind: 'Fruit', colour: 'Green', weight: 65 },
+  { id: 'pear', name: 'Pear', kind: 'Fruit', color: 'Green', weight: 170 },
+  { id: 'leek', name: 'Leek', kind: 'Vegetable', color: 'Green', weight: 300 },
+  { id: 'plum', name: 'Plum', kind: 'Fruit', color: 'Purple', weight: 60 },
+  { id: 'beet', name: 'Beet', kind: 'Vegetable', color: 'Purple', weight: 140 },
+  { id: 'lime', name: 'Lime', kind: 'Fruit', color: 'Green', weight: 65 },
 ];
 
 const cropColumns: TableColumn<Crop>[] = [
@@ -41,8 +41,8 @@ const cropColumns: TableColumn<Crop>[] = [
     filter: { type: 'set' },
   },
   {
-    id: 'colour',
-    header: 'Colour',
+    id: 'color',
+    header: 'Color',
     allowsSorting: true,
     allowsHiding: true,
     allowsReordering: true,
@@ -77,7 +77,7 @@ const byKindThenName: readonly SortDescriptor[] = [
 /** The host owns the sort by several columns and sorts the rows itself with `sortTableRows`. */
 export function ControlledMultipleSort() {
   const [sort, setSort] = useState<readonly SortDescriptor[]>([
-    { column: 'colour', direction: 'ascending' },
+    { column: 'color', direction: 'ascending' },
   ]);
   const rows = sortTableRows(crops, { columns: cropColumns, sort, locale: 'en' });
   return (
@@ -114,16 +114,16 @@ export function ControlledLayout() {
       <Button
         size="sm"
         variant="secondary"
-        onPress={() => setLayout({ ...layout, order: ['name', 'weight', 'colour', 'kind'] })}
+        onPress={() => setLayout({ ...layout, order: ['name', 'weight', 'color', 'kind'] })}
       >
-        Weight before Colour and Kind
+        Weight before Color and Kind
       </Button>{' '}
       <Button
         size="sm"
         variant="secondary"
-        onPress={() => setLayout({ ...layout, hidden: ['colour'] })}
+        onPress={() => setLayout({ ...layout, hidden: ['color'] })}
       >
-        Hide Colour
+        Hide Color
       </Button>{' '}
       <Button size="sm" variant="secondary" onPress={() => setLayout({})}>
         Reset the layout
@@ -141,7 +141,7 @@ export function ControlledLayout() {
   );
 }
 
-const startLayout: TableColumnLayout = { order: ['colour', 'name', 'kind'], hidden: ['weight'] };
+const startLayout: TableColumnLayout = { order: ['color', 'name', 'kind'], hidden: ['weight'] };
 const startFilter: TableFilter = { query: 'p', columns: { kind: ['Fruit'] } };
 
 /**

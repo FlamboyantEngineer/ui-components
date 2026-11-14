@@ -55,7 +55,7 @@ describe('FilterBar', () => {
     render(
       <FilterBar
         fields={fields}
-        defaultValue={[genre, pages, { field: 'colour', operator: 'equals', value: 'red' }]}
+        defaultValue={[genre, pages, { field: 'color', operator: 'equals', value: 'red' }]}
       />,
     );
     const bar = screen.getByRole('group', { name: 'Filters' });

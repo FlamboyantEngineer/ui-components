@@ -20,7 +20,7 @@ interface Produce {
   id: string;
   name: string;
   kind: string;
-  colour: string;
+  color: string;
   origin: string;
   weight: number;
   price: number;
@@ -40,7 +40,7 @@ const produce: Produce[] = [
     id: 'apple',
     name: 'Apple',
     kind: 'Fruit',
-    colour: 'Red',
+    color: 'Red',
     origin: 'Lisbon',
     weight: 180,
     price: 1.2,
@@ -50,7 +50,7 @@ const produce: Produce[] = [
     id: 'banana',
     name: 'Banana',
     kind: 'Fruit',
-    colour: 'Yellow',
+    color: 'Yellow',
     origin: 'Quito',
     weight: 120,
     price: 0.4,
@@ -60,7 +60,7 @@ const produce: Produce[] = [
     id: 'carrot',
     name: 'Carrot',
     kind: 'Vegetable',
-    colour: 'Orange',
+    color: 'Orange',
     origin: 'Porto',
     weight: 60,
     price: 0.3,
@@ -70,7 +70,7 @@ const produce: Produce[] = [
     id: 'date',
     name: 'Date',
     kind: 'Fruit',
-    colour: 'Brown',
+    color: 'Brown',
     origin: 'Cairo',
     weight: 24,
     price: 2.1,
@@ -80,7 +80,7 @@ const produce: Produce[] = [
     id: 'eggplant',
     name: 'Eggplant',
     kind: 'Vegetable',
-    colour: 'Purple',
+    color: 'Purple',
     origin: 'Izmir',
     weight: 300,
     price: 1.6,
@@ -90,7 +90,7 @@ const produce: Produce[] = [
     id: 'fig',
     name: 'Fig',
     kind: 'Fruit',
-    colour: 'Purple',
+    color: 'Purple',
     origin: 'Izmir',
     weight: 50,
     price: 0.9,
@@ -100,7 +100,7 @@ const produce: Produce[] = [
     id: 'garlic',
     name: 'Garlic',
     kind: 'Vegetable',
-    colour: 'White',
+    color: 'White',
     origin: 'Seville',
     weight: 40,
     price: 0.5,
@@ -110,7 +110,7 @@ const produce: Produce[] = [
     id: 'kiwi',
     name: 'Kiwi',
     kind: 'Fruit',
-    colour: 'Brown',
+    color: 'Brown',
     origin: 'Napier',
     weight: 75,
     price: 0.6,
@@ -148,13 +148,13 @@ const places: Place[] = [
 const sortColumns: TableColumn<Produce>[] = [
   { id: 'name', header: 'Name', allowsSorting: true },
   { id: 'kind', header: 'Kind', allowsSorting: true },
-  { id: 'colour', header: 'Colour', allowsSorting: true },
+  { id: 'color', header: 'Color', allowsSorting: true },
   { id: 'weight', header: 'Weight (g)', align: 'end', allowsSorting: true },
 ];
 
 const filterColumns: TableColumn<Produce>[] = [
   { id: 'name', header: 'Name', filter: { type: 'text' } },
-  { id: 'colour', header: 'Colour', filter: { type: 'set' } },
+  { id: 'color', header: 'Color', filter: { type: 'set' } },
   { id: 'weight', header: 'Weight (g)', align: 'end', filter: { type: 'number' } },
   { id: 'picked', header: 'Picked', filter: { type: 'date' } },
 ];
@@ -162,14 +162,14 @@ const filterColumns: TableColumn<Produce>[] = [
 const layoutColumns: TableColumn<Produce>[] = [
   { id: 'name', header: 'Name', pin: 'start', width: 120 },
   { id: 'kind', header: 'Kind', width: 140, allowsHiding: true, allowsReordering: true },
-  { id: 'colour', header: 'Colour', width: 140, allowsHiding: true, allowsReordering: true },
+  { id: 'color', header: 'Color', width: 140, allowsHiding: true, allowsReordering: true },
   { id: 'origin', header: 'Origin', width: 140, allowsHiding: true, allowsReordering: true },
   { id: 'weight', header: 'Weight (g)', width: 140, align: 'end', allowsReordering: true },
   { id: 'price', header: 'Price', width: 120, align: 'end', pin: 'end' },
 ];
 
 const layoutGroups: TableColumnGroup[] = [
-  { id: 'look', header: 'Look', columns: ['kind', 'colour'] },
+  { id: 'look', header: 'Look', columns: ['kind', 'color'] },
   { id: 'measures', header: 'Measures', columns: ['weight', 'price'] },
 ];
 
@@ -277,7 +277,7 @@ export function ColumnFilters() {
 
 /** A caller that filters on its side, as a server would, and shows the table its filter. */
 export function CallerFilter() {
-  const [filter, setFilter] = useState<TableFilter>({ columns: { colour: ['Purple'] } });
+  const [filter, setFilter] = useState<TableFilter>({ columns: { color: ['Purple'] } });
   const columns = [requireDefined(filterColumns[0]), requireDefined(filterColumns[1])];
   // The caller filters as the table would, as a server could.
   const rows = filterTableRows(produce, columns, filter);
@@ -288,7 +288,7 @@ export function CallerFilter() {
         rows={rows}
         columns={columns}
         filterable
-        filterLabel="Search names and colours"
+        filterLabel="Search names and colors"
         filter={filter}
         onFilterChange={setFilter}
         size="sm"

@@ -15,14 +15,14 @@ import {
 import { LabOutput } from './lab-output.js';
 
 const formats = ['hex', 'rgb', 'hsl', 'hsb'] as const satisfies readonly ColorFieldFormat[];
-// A swatch's colour with each amount of alpha, and none at all.
-const swatchColours = {
+// A swatch's color with each amount of alpha, and none at all.
+const swatchColors = {
   opaque: '#336699',
   half: '#33669980',
   clear: '#33669900',
   empty: null,
 } as const;
-// The first colour comes back at the end: each place is its own swatch.
+// The first color comes back at the end: each place is its own swatch.
 const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d', '#cc3300'];
 
 function Sample({
@@ -52,7 +52,7 @@ function Picking() {
       <ColorField
         label="Marker"
         defaultValue="#2e8b57"
-        description="Pick in the area, the hue slider or the hex input; the colour commits on close."
+        description="Pick in the area, the hue slider or the hex input; the color commits on close."
         onChange={(value) => setChanged(value ?? 'empty')}
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="picking"
@@ -65,16 +65,16 @@ function Picking() {
   );
 }
 
-/** The picker edits the hue on a wheel or a slider; switching keeps the colour and the picker. */
+/** The picker edits the hue on a wheel or a slider; switching keeps the color and the picker. */
 function HueWheel() {
   const [hueControl, setHueControl] = useState<ColorFieldHueControl>('wheel');
-  const [colour, setColour] = useState<string | null>('hsba(200, 60%, 70%, 0.8)');
+  const [color, setColor] = useState<string | null>('hsba(200, 60%, 70%, 0.8)');
   return (
     <>
       <ColorField
         label="Tint"
-        value={colour}
-        onChange={setColour}
+        value={color}
+        onChange={setColor}
         valueFormat="hsb"
         hueControl={hueControl}
         description="Drag around the ring or use the arrow keys on it: only the hue changes."
@@ -88,7 +88,7 @@ function HueWheel() {
         {hueControl === 'wheel' ? 'Use a hue slider' : 'Use a hue wheel'}
       </Button>
       <LabOutput name="Hue control">{hueControl}</LabOutput>
-      <LabOutput name="Tint">{colour ?? 'empty'}</LabOutput>
+      <LabOutput name="Tint">{color ?? 'empty'}</LabOutput>
     </>
   );
 }
@@ -145,7 +145,7 @@ function Transparency() {
       <ColorField
         label="Shade"
         defaultValue="#33669980"
-        description="Translucent without allowsTransparency: the picker offers opacity, with # above the hex input, until it closes on an opaque colour."
+        description="Translucent without allowsTransparency: the picker offers opacity, with # above the hex input, until it closes on an opaque color."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="auto-alpha"
       />
@@ -159,7 +159,7 @@ function Presets() {
   return (
     <>
       <ColorField
-        label="Label colour"
+        label="Label color"
         defaultValue="#336699"
         swatches={swatches}
         allowsEyeDropper
@@ -174,7 +174,7 @@ function Presets() {
 
 const translucentSwatches = ['#336699', '#33669980', 'rgba(204, 51, 0, 0.25)', '#2e8b5700'];
 
-/** Colours with and without alpha in the closed field's swatch and among the presets. */
+/** Colors with and without alpha in the closed field's swatch and among the presets. */
 function TranslucentPresets() {
   return (
     <ColorField
@@ -182,7 +182,7 @@ function TranslucentPresets() {
       defaultValue="#33669980"
       swatches={translucentSwatches}
       allowsTransparency
-      description="The trigger's swatch and the presets show a checkerboard through a translucent colour."
+      description="The trigger's swatch and the presets show a checkerboard through a translucent color."
       data-lab-field="translucent-presets"
     />
   );
@@ -204,18 +204,18 @@ function EyeDropperDemo() {
     <>
       <LabOutput name="Eye dropper">{availability}</LabOutput>
       <ColorField
-        label="Sampled colour"
+        label="Sampled color"
         value={value}
         onChange={setValue}
         allowsEyeDropper
-        description="allowsEyeDropper: the picker's footer has a Pick a color from the screen button where the browser can sample the screen. Press it, then click anywhere on the screen; Escape cancels the sample and leaves the colour as it was. Without the API the button is left out and the colour is picked as usual."
+        description="allowsEyeDropper: the picker's footer has a Pick a color from the screen button where the browser can sample the screen. Press it, then click anywhere on the screen; Escape cancels the sample and leaves the color as it was. Without the API the button is left out and the color is picked as usual."
         onCommit={(next) => setCommitted(next ?? 'empty')}
         data-lab-field="eye-dropper"
       />
       <LabOutput name="Sampled value">{value ?? 'empty'}</LabOutput>
       <LabOutput name="Sampled committed">{committed}</LabOutput>
       <ColorField
-        label="Unsampled colour"
+        label="Unsampled color"
         defaultValue="#336699"
         description="Without allowsEyeDropper (the default) the picker has no eye dropper, in any browser."
         data-lab-field="no-eye-dropper"
@@ -230,13 +230,13 @@ function Typing() {
   return (
     <>
       <ColorField
-        label="Text colour"
+        label="Text color"
         defaultValue="#2e8b57"
         allowsTyping
         spellCheck={false}
         autoComplete="off"
         swatches={swatches}
-        description="Type hex, rgb() or hsl(): a colour is the value as it is typed; Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
+        description="Type hex, rgb() or hsl(): a color is the value as it is typed; Enter, or leaving the field, commits. Enter and Escape that an input method composition owns stay with it."
         onChange={(value) => setTyped(value ?? 'empty')}
         onCommit={(value) => setCommitted(value ?? 'empty')}
         showRestoreButton
@@ -310,27 +310,27 @@ mountLab(
     </LabSection>
     <LabSection
       title="Formats"
-      description="The colour text in each format, with transparency allowed or not, for an opaque and a translucent colour. A colour shown with alpha always offers opacity in its picker; allowsTransparency also offers it for an opaque colour."
+      description="The color text in each format, with transparency allowed or not, for an opaque and a translucent color. A color shown with alpha always offers opacity in its picker; allowsTransparency also offers it for an opaque color."
     >
       <StateMatrix
         axes={{
           format: formats,
           transparency: ['allowed', 'off'],
-          colour: ['translucent', 'opaque'],
+          color: ['translucent', 'opaque'],
         }}
-        render={({ format, transparency, colour }) => (
+        render={({ format, transparency, color }) => (
           <ColorField
             label={`Accent, ${format}`}
             format={format}
             allowsTransparency={transparency === 'allowed'}
-            defaultValue={colour === 'opaque' ? '#336699' : 'rgba(51, 102, 153, 0.75)'}
+            defaultValue={color === 'opaque' ? '#336699' : 'rgba(51, 102, 153, 0.75)'}
           />
         )}
       />
     </LabSection>
     <LabSection
       title="Transparency"
-      description="With allowsTransparency the picker always offers opacity: an alpha slider over a checkerboard and an Alpha input, with # above the hex input. Without it an opaque colour is edited alone, with no # label, and a translucent one still gets the opacity controls."
+      description="With allowsTransparency the picker always offers opacity: an alpha slider over a checkerboard and an Alpha input, with # above the hex input. Without it an opaque color is edited alone, with no # label, and a translucent one still gets the opacity controls."
     >
       <Transparency />
     </LabSection>
@@ -368,13 +368,13 @@ mountLab(
       description="The closed field's swatch over a checkerboard: opaque, half-opaque, fully transparent and empty, at xs, sm, md and lg, and translucent presets."
     >
       <StateMatrix
-        axes={{ colour: ['opaque', 'half', 'clear', 'empty'], size: ['xs', 'sm', 'md', 'lg'] }}
-        render={({ colour, size }) => (
+        axes={{ color: ['opaque', 'half', 'clear', 'empty'], size: ['xs', 'sm', 'md', 'lg'] }}
+        render={({ color, size }) => (
           <ColorField
-            label={`Tint ${colour} ${size}`}
+            label={`Tint ${color} ${size}`}
             size={size}
             allowsTransparency
-            defaultValue={swatchColours[colour]}
+            defaultValue={swatchColors[color]}
           />
         )}
       />
@@ -389,7 +389,7 @@ mountLab(
     >
       <EyeDropperDemo />
     </LabSection>
-    <LabSection title="Typing a colour" description="The closed field takes typed colours.">
+    <LabSection title="Typing a color" description="The closed field takes typed colors.">
       <Typing />
     </LabSection>
     <LabSection title="Picking and clearing" description="Backspace on the trigger clears too.">
@@ -402,12 +402,12 @@ mountLab(
       <Saved />
     </LabSection>
     <LabSection
-      title="Unreadable stored colour"
-      description="A stored value that is no colour shows no colour and is invalid."
+      title="Unreadable stored color"
+      description="A stored value that is no color shows no color and is invalid."
     >
-      <ColorField label="Imported colour" defaultValue="not-a-colour" data-lab-field="unreadable" />
+      <ColorField label="Imported color" defaultValue="not-a-color" data-lab-field="unreadable" />
     </LabSection>
-    <LabSection title="Form value" description="A named field submits its stored colour.">
+    <LabSection title="Form value" description="A named field submits its stored color.">
       <FormValue />
     </LabSection>
   </>,

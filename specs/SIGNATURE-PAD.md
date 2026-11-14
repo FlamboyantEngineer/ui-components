@@ -73,7 +73,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`, `e2e/signat
 
 ### UIC-SIGNATURE-PAD-2.4 - Standalone output
 
-`formatSignatureSvg(drawing)` shall return SVG markup of the drawing: its space as the `viewBox`, `width` and `height`, and one path per stroke, unfilled, in `currentColor`, three units wide with round caps and joins, so inlined markup takes the text colour and an image draws in black. Path data is escaped, so no value can break out of its attribute. `formatSignatureDataUrl(drawing)` returns the markup as a `data:image/svg+xml` URL.
+`formatSignatureSvg(drawing)` shall return SVG markup of the drawing: its space as the `viewBox`, `width` and `height`, and one path per stroke, unfilled, in `currentColor`, three units wide with round caps and joins, so inlined markup takes the text color and an image draws in black. Path data is escaped, so no value can break out of its attribute. `formatSignatureDataUrl(drawing)` returns the markup as a `data:image/svg+xml` URL.
 
 Implementation: `src/components/signature-pad/signature-path.ts`
 Verification: `src/components/signature-pad/signature-path.test.ts`, `e2e/signature-pad.spec.ts`

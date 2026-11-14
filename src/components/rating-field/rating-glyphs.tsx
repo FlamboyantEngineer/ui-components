@@ -40,7 +40,7 @@ function toFill(share: number): RatingGlyphFill {
 /**
  * One position per glyph: an empty glyph and, over it, a filled one that the stylesheet clips to the
  * position's share (`--ui-rating-fill` while partial). Filled and empty glyphs differ in shape as
- * well as colour, so the value never depends on colour alone. Both glyphs are decorative.
+ * well as color, so the value never depends on color alone. Both glyphs are decorative.
  */
 export function RatingGlyphs({
   hooks,

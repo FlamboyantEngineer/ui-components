@@ -20,7 +20,7 @@ const commands: CommandPaletteEntry[] = [
       {
         id: 'theme',
         label: 'Change theme',
-        keywords: ['colour', 'dark mode'],
+        keywords: ['color', 'dark mode'],
         commands: themes.map((theme) => ({ id: `theme-${theme.toLowerCase()}`, label: theme })),
       },
       {

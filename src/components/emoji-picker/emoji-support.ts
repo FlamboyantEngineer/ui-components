@@ -39,16 +39,16 @@ const probeSize = 16;
 const unknownSupport: EmojiSupport = { version: undefined, countryFlags: true };
 const measured = new Map<string, EmojiSupport>();
 
-function drawProbe(context: ProbeContext, glyph: string, colour: string): Uint8ClampedArray {
+function drawProbe(context: ProbeContext, glyph: string, color: string): Uint8ClampedArray {
   context.clearRect(0, 0, probeSize * 2, probeSize);
-  context.fillStyle = colour;
+  context.fillStyle = color;
   context.fillText(glyph, 0, 0);
   return context.getImageData(0, 0, probeSize * 2, probeSize).data;
 }
 
 /**
- * Whether `glyph` draws as one colour emoji: something is drawn, the fill colour does not change it
- * (a missing glyph or plain letters take the fill colour), and it is no wider than one emoji (an
+ * Whether `glyph` draws as one color emoji: something is drawn, the fill color does not change it
+ * (a missing glyph or plain letters take the fill color), and it is no wider than one emoji (an
  * unknown sequence draws as its parts side by side).
  */
 function isDrawn(context: ProbeContext, glyph: string, emojiWidth: number): boolean {
@@ -72,7 +72,7 @@ function measureSupport(fontFamily: string): EmojiSupport | null {
     context.textBaseline = 'top';
     const emojiWidth = context.measureText('\u{1F600}').width;
     const newest = versionProbes.find(([, glyph]) => isDrawn(context, glyph, emojiWidth));
-    // Without even the oldest emoji there is no colour emoji font to judge by.
+    // Without even the oldest emoji there is no color emoji font to judge by.
     if (!newest) return unknownSupport;
     return { version: newest[0], countryFlags: isDrawn(context, flagProbe, emojiWidth) };
   } catch {

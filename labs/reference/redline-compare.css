@@ -225,7 +225,7 @@
   color: var(--ref-accent-ink);
 }
 
-/* On a changed word's tint the accent ink loses contrast; the link keeps the text's colour and its underline. */
+/* On a changed word's tint the accent ink loses contrast; the link keeps the text's color and its underline. */
 .ui-redline-compare__word[data-change] .ui-redline-compare__mark[data-mark='link'] {
   color: inherit;
   text-decoration: underline;

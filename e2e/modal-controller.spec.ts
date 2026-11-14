@@ -34,12 +34,12 @@ test.describe('Modal Controller lab', () => {
     lab,
   }) => {
     await lab.open('modal-controller');
-    await page.locator('[data-lab-open="colour"]').click();
+    await page.locator('[data-lab-open="color"]').click();
     await page.getByRole('button', { name: 'Plum' }).click();
-    await expect(page.locator('[data-lab-output="colour"]')).toHaveText('Plum');
-    await page.locator('[data-lab-open="colour"]').click();
+    await expect(page.locator('[data-lab-output="color"]')).toHaveText('Plum');
+    await page.locator('[data-lab-open="color"]').click();
     await page.keyboard.press('Escape');
-    await expect(page.locator('[data-lab-output="colour"]')).toHaveText('dismissed');
+    await expect(page.locator('[data-lab-output="color"]')).toHaveText('dismissed');
 
     await page.locator('[data-lab-open="rename"]').click();
     const rename = page.getByRole('button', { name: 'Rename', exact: true });
@@ -117,8 +117,8 @@ test.describe('Modal Controller lab', () => {
   }) => {
     await lab.open('modal-controller', { theme: 'dark' });
     await lab.expectAccessible();
-    await page.locator('[data-lab-open="colour"]').click();
-    await expect(page.getByRole('dialog', { name: 'Pick a colour' })).toBeVisible();
+    await page.locator('[data-lab-open="color"]').click();
+    await expect(page.getByRole('dialog', { name: 'Pick a color' })).toBeVisible();
     await lab.expectAccessible('.ui-modal');
   });
 

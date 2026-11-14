@@ -458,26 +458,26 @@ test.describe('Table lab', () => {
     await lab.open('table');
     const root = section(page, 'column-filters');
     const grid = root.getByRole('grid');
-    const colour = grid.getByRole('columnheader', { name: /^Colour/ });
-    await colour.focus();
+    const color = grid.getByRole('columnheader', { name: /^Color/ });
+    await color.focus();
     await page.keyboard.press('ArrowRight');
-    const button = grid.getByRole('button', { name: 'Filter colour' });
+    const button = grid.getByRole('button', { name: 'Filter color' });
     await expect(button).toBeFocused();
     await page.keyboard.press('Enter');
-    const dialog = page.getByRole('dialog', { name: 'Filter colour' });
+    const dialog = page.getByRole('dialog', { name: 'Filter color' });
     await expect(dialog).toBeVisible();
     await dialog.getByText('Purple', { exact: true }).click();
     await expect.poll(() => names(grid)).toEqual(['Eggplant', 'Fig']);
-    await expect(colour).toHaveAttribute('data-filtered', 'true');
+    await expect(color).toHaveAttribute('data-filtered', 'true');
     await lab.expectAccessible('[role="dialog"]');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     // React Aria returns focus to the grid's focused item: the header that owns the button.
-    await expect(colour).toBeFocused();
+    await expect(color).toBeFocused();
     await root.getByRole('searchbox', { name: 'Search produce' }).fill('fig');
     await expect.poll(() => names(grid)).toEqual(['Fig']);
     await expect(root.locator('[data-lab-output]')).toHaveText(
-      '{"columns":{"colour":["Purple"]},"query":"fig"}',
+      '{"columns":{"color":["Purple"]},"query":"fig"}',
     );
 
     const weight = grid.getByRole('button', { name: 'Filter weight (g)' });
@@ -499,7 +499,7 @@ test.describe('Table lab', () => {
     const root = section(page, 'caller-filter');
     const grid = root.getByRole('grid');
     expect(await names(grid)).toEqual(['Eggplant', 'Fig']);
-    await expect(grid.getByRole('columnheader', { name: /^Colour/ })).toHaveAttribute(
+    await expect(grid.getByRole('columnheader', { name: /^Color/ })).toHaveAttribute(
       'data-filtered',
       'true',
     );
@@ -543,25 +543,25 @@ test.describe('Table lab', () => {
           cells.filter((cell) => cell.hasAttribute('data-key')).map((cell) => cell.textContent),
         );
     await root
-      .locator('.ui-table__column[data-column="colour"] .ui-table__column-label')
+      .locator('.ui-table__column[data-column="color"] .ui-table__column-label')
       .dragTo(root.getByRole('columnheader', { name: /^Kind/ }), {
         targetPosition: { x: 4, y: 10 },
       });
     await expect
       .poll(headers)
-      .toEqual(['', 'Name', 'Colour', 'Kind', 'Origin', 'Weight (g)', 'Price']);
+      .toEqual(['', 'Name', 'Color', 'Kind', 'Origin', 'Weight (g)', 'Price']);
     const kind = root.getByRole('columnheader', { name: /^Kind/ });
     await kind.focus();
     await page.keyboard.press('Alt+ArrowRight');
     await expect
       .poll(headers)
-      .toEqual(['', 'Name', 'Colour', 'Origin', 'Kind', 'Weight (g)', 'Price']);
+      .toEqual(['', 'Name', 'Color', 'Origin', 'Kind', 'Weight (g)', 'Price']);
     await expect(kind).toBeFocused();
     await page.keyboard.press('Alt+ArrowRight');
     await page.keyboard.press('Alt+ArrowRight');
     await expect
       .poll(headers)
-      .toEqual(['', 'Name', 'Colour', 'Origin', 'Weight (g)', 'Kind', 'Price']);
+      .toEqual(['', 'Name', 'Color', 'Origin', 'Weight (g)', 'Kind', 'Price']);
     await expect(root.locator('[data-lab-output]')).toContainText('"order":');
   });
 
@@ -582,9 +582,9 @@ test.describe('Table lab', () => {
     const look = root.getByRole('columnheader', { name: 'Look' });
     await expect(look).toHaveAttribute('colspan', '2');
     const kind = await root.getByRole('columnheader', { name: /^Kind/ }).boundingBox();
-    const colour = await root.getByRole('columnheader', { name: /^Colour/ }).boundingBox();
+    const color = await root.getByRole('columnheader', { name: /^Color/ }).boundingBox();
     expect(Math.round((await look.boundingBox())?.width ?? 0)).toBe(
-      Math.round((kind?.width ?? 0) + (colour?.width ?? 0)),
+      Math.round((kind?.width ?? 0) + (color?.width ?? 0)),
     );
   });
 
@@ -899,10 +899,10 @@ test.describe('Table lab', () => {
     await root.getByRole('button', { name: 'Arrange' }).click();
     await expect(banana.locator('.ui-table__drag-handle')).toBeVisible();
     await expect(banana).toHaveAttribute('data-lab-mark', '');
-    await root.getByRole('button', { name: 'Group by colour' }).click();
+    await root.getByRole('button', { name: 'Group by color' }).click();
     await expect(table).not.toHaveAttribute('data-reordering');
     await expect(root.locator('.ui-table__group-row').first()).toBeVisible();
-    await root.getByRole('button', { name: 'Group by colour' }).click();
+    await root.getByRole('button', { name: 'Group by color' }).click();
     await expect(table).toHaveAttribute('data-reordering', 'true');
     await expect(root.locator('.ui-table__grid')).toHaveAttribute('data-lab-mark', '');
   });

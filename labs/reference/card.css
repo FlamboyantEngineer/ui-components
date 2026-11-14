@@ -307,7 +307,7 @@
     to right,
     #000 85%,
     transparent
-  ); /* token-exempt: an alpha mask, not a colour */
+  ); /* token-exempt: an alpha mask, not a color */
 }
 
 [dir='rtl'] .ui-card__skeleton {
@@ -315,7 +315,7 @@
     to left,
     #000 85%,
     transparent
-  ); /* token-exempt: an alpha mask, not a colour */
+  ); /* token-exempt: an alpha mask, not a color */
 }
 
 .ui-card-grid {

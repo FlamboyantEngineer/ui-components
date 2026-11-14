@@ -71,7 +71,7 @@ describe('Avatar', () => {
     expect(initials()).toBe('AI');
   });
 
-  it('UIC-AVATAR-1.3 publishes a stable colour slot from the key, never an inline colour', () => {
+  it('UIC-AVATAR-1.3 publishes a stable color slot from the key, never an inline color', () => {
     const { container, rerender } = render(<Avatar name="Maria Santos" />);
     expect(root(container)).toHaveAttribute(
       'data-color',

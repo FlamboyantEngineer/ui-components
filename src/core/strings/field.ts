@@ -87,19 +87,19 @@ interface FieldStrings {
   valueFalse: string;
   /** The default label of a value that is not set. */
   valueUnset: string;
-  /** Stands for an empty colour value. */
+  /** Stands for an empty color value. */
   noColor: string;
-  /** Names a list of colour swatches to pick from. */
+  /** Names a list of color swatches to pick from. */
   colorSwatches: string;
-  /** The message of typed text that is not a colour. */
+  /** The message of typed text that is not a color. */
   colorUnreadable: string;
-  /** Names the hexadecimal input of a colour picker. */
+  /** Names the hexadecimal input of a color picker. */
   hexColor: string;
-  /** Names a colour picker's choice of format (hex, RGB, HSL). */
+  /** Names a color picker's choice of format (hex, RGB, HSL). */
   colorFormat: string;
-  /** Names the button that opens a colour field's picker, from the field's label. */
+  /** Names the button that opens a color field's picker, from the field's label. */
   colorPicker: (label: string) => string;
-  /** Names the button that samples a colour from the screen. */
+  /** Names the button that samples a color from the screen. */
   pickScreenColor: string;
   /** Names the button that removes a chosen value, read with the value it removes. */
   remove: string;

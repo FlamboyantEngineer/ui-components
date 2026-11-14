@@ -11,7 +11,7 @@ test.describe('Prose Table lab', () => {
     const host = await body.locator('p').boundingBox();
     const box = await table.boundingBox();
     expect(Math.round(box?.width ?? 0)).toBe(Math.round(host?.width ?? 1));
-    await expect(table.locator('thead th')).toHaveText(['Fruit', 'Colour', 'Season']);
+    await expect(table.locator('thead th')).toHaveText(['Fruit', 'Color', 'Season']);
     await expect(table.locator('tbody td').first()).toHaveCSS('border-top-style', 'solid');
     await expect(
       matrixCell(page, 'content=text text=small').locator('.ui-prose-table td').first(),
@@ -28,7 +28,7 @@ test.describe('Prose Table lab', () => {
     await lab.open('prose-table');
     const cell = matrixCell(page, 'content=inline markup text=body');
     const table = cell.getByRole('table');
-    await expect(table.getByRole('columnheader')).toHaveText(['Fruit', 'Colour', 'Season']);
+    await expect(table.getByRole('columnheader')).toHaveText(['Fruit', 'Color', 'Season']);
     await expect(table.getByRole('row')).toHaveCount(3);
     await expect(table.getByRole('grid')).toHaveCount(0);
     await expect(table).not.toHaveAttribute('tabindex');

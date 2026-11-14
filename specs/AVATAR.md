@@ -1,6 +1,6 @@
 # Avatar
 
-`Avatar` draws a person as their picture, or as their initials on a stable colour slot when there is no picture. A group draws a group glyph. The avatar never writes a colour: it publishes the slot number and the host stylesheet maps each slot to a colour and a legible ink.
+`Avatar` draws a person as their picture, or as their initials on a stable color slot when there is no picture. A group draws a group glyph. The avatar never writes a color: it publishes the slot number and the host stylesheet maps each slot to a color and a legible ink.
 
 ## UIC-AVATAR-1 - Content
 
@@ -18,9 +18,9 @@ The initials shall be the trimmed `initials` prop when it is not blank, otherwis
 Implementation: `src/components/avatar/avatar.tsx`, `src/utils/initials.ts`
 Verification: `src/components/avatar/avatar.test.tsx`
 
-### UIC-AVATAR-1.3 - Colour slot
+### UIC-AVATAR-1.3 - Color slot
 
-`Avatar` shall publish a colour slot in `data-color`: the explicit `colorIndex` truncated and wrapped into the palette when it is a finite number, otherwise `getColorIndex(colorKey, colorCount)` ([COLOR-INDEX.md](COLOR-INDEX.md)), with `name` standing in for a blank or missing `colorKey`. `colorCount` is the number of slots the host stylesheet defines, `8` by default; an invalid count uses the default. The same key keeps the same slot whatever the name, so a renamed person keeps their colour. A group publishes no slot unless it has an explicit `colorIndex`. The avatar sets no inline colour.
+`Avatar` shall publish a color slot in `data-color`: the explicit `colorIndex` truncated and wrapped into the palette when it is a finite number, otherwise `getColorIndex(colorKey, colorCount)` ([COLOR-INDEX.md](COLOR-INDEX.md)), with `name` standing in for a blank or missing `colorKey`. `colorCount` is the number of slots the host stylesheet defines, `8` by default; an invalid count uses the default. The same key keeps the same slot whatever the name, so a renamed person keeps their color. A group publishes no slot unless it has an explicit `colorIndex`. The avatar sets no inline color.
 
 Implementation: `src/components/avatar/avatar.tsx`, `src/utils/color-index.ts`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-2.2 - Variants
 
-`variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the colour slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground. The reference stylesheet draws the ring over the `ui-avatar__surface` slot, which keeps the whole box, so no light seam shows between the picture or fill and the ring in any shape, theme or pixel ratio, and the box size and status indicator are unchanged.
+`variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the color slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground. The reference stylesheet draws the ring over the `ui-avatar__surface` slot, which keeps the whole box, so no light seam shows between the picture or fill and the ring in any shape, theme or pixel ratio, and the box size and status indicator are unchanged.
 
 Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
@@ -168,18 +168,18 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-pres
 
 ## Hooks
 
-| Hook                  | Kind      | Values                         | Description                                               |
-| --------------------- | --------- | ------------------------------ | --------------------------------------------------------- |
-| `ui-avatar`           | root      |                                | The avatar (`<span>`).                                    |
-| `ui-avatar__image`    | slot      |                                | The picture (`<img>`), while it loads or has loaded.      |
-| `ui-avatar__initials` | slot      |                                | The initials, without a picture or after it failed.       |
-| `ui-avatar__glyph`    | slot      |                                | The group glyph's `<svg>` (also `ui-glyph`).              |
-| `data-size`           | attribute | `xs`, `sm`, `md`, `lg`, `fill` | Circle size.                                              |
-| `data-variant`        | attribute | `filled`, `outlined`           | Filled circle or ring.                                    |
-| `data-kind`           | attribute | `person`, `group`              | Whether the avatar draws a person or a group.             |
-| `data-shape`          | attribute | `circle`, `rounded`, `square`  | The avatar's corners.                                     |
-| `data-color`          | attribute |                                | The colour slot, an integer from `0` to `colorCount - 1`. |
-| `data-loading`        | state     | `true`                         | While the picture loads.                                  |
+| Hook                  | Kind      | Values                         | Description                                              |
+| --------------------- | --------- | ------------------------------ | -------------------------------------------------------- |
+| `ui-avatar`           | root      |                                | The avatar (`<span>`).                                   |
+| `ui-avatar__image`    | slot      |                                | The picture (`<img>`), while it loads or has loaded.     |
+| `ui-avatar__initials` | slot      |                                | The initials, without a picture or after it failed.      |
+| `ui-avatar__glyph`    | slot      |                                | The group glyph's `<svg>` (also `ui-glyph`).             |
+| `data-size`           | attribute | `xs`, `sm`, `md`, `lg`, `fill` | Circle size.                                             |
+| `data-variant`        | attribute | `filled`, `outlined`           | Filled circle or ring.                                   |
+| `data-kind`           | attribute | `person`, `group`              | Whether the avatar draws a person or a group.            |
+| `data-shape`          | attribute | `circle`, `rounded`, `square`  | The avatar's corners.                                    |
+| `data-color`          | attribute |                                | The color slot, an integer from `0` to `colorCount - 1`. |
+| `data-loading`        | state     | `true`                         | While the picture loads.                                 |
 
 | `ui-avatar__surface` | slot | | The clipped picture or initials; the status dot sits outside it. |
 | `ui-avatar__indicator` | slot | | The decorative status badge, when there is a status. |

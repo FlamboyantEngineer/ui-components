@@ -127,7 +127,7 @@
   border-style: solid;
 }
 
-/* Every toggle alike: a bare glyph, muted while unlinked and in the accent colour while linked. */
+/* Every toggle alike: a bare glyph, muted while unlinked and in the accent color while linked. */
 .ui-four-side-property-strip__link.ui-button {
   flex: none;
   border-color: transparent;
@@ -165,7 +165,7 @@
   text-align: end;
 }
 
-/* A wrong side's control takes the danger colour, linked or not. */
+/* A wrong side's control takes the danger color, linked or not. */
 .ui-four-side-property-strip .ui-four-side-property-strip__side[data-invalid] > input {
   border-color: var(--ref-danger);
 }

@@ -71,7 +71,7 @@ function replaceAll(text: string, matches: readonly Match[], replacement: string
 
 /**
  * The passage's highlights, which the host draws, not the bar or the reference stylesheet: every
- * match in the highlight tint and the current one in the accent tint, a colour of its own and no
+ * match in the highlight tint and the current one in the accent tint, a color of its own and no
  * border. The outlined look is one a host may pick instead.
  */
 const matchStyle: CSSProperties = {
@@ -248,7 +248,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Find and replace in a passage"
-      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again. The passage draws its own highlights: the current match takes a colour of its own, and the checkbox swaps in an outlined host style."
+      description="Type to find; Enter and Shift+Enter step, the options match case or whole words, Replace and Replace all rewrite the recipe, and Escape or Close closes the bar (an Escape that cancels an input method candidate only cancels it). Ctrl+F in the passage opens it again. The passage draws its own highlights: the current match takes a color of its own, and the checkbox swaps in an outlined host style."
     >
       <Passage />
     </LabSection>

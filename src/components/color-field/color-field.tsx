@@ -40,7 +40,7 @@ export type ColorFieldTextInputProps = Pick<
 >;
 
 export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFieldTextInputProps {
-  /** How the colour is written beside the swatch and edited in the picker (controlled). */
+  /** How the color is written beside the swatch and edited in the picker (controlled). */
   format?: ColorFieldFormat | undefined;
   /** The initial format when uncontrolled. Defaults to `hex`. */
   defaultFormat?: ColorFieldFormat | undefined;
@@ -50,21 +50,21 @@ export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFi
   formats?: readonly ColorFieldFormat[] | undefined;
   /**
    * How the value is stored. Defaults to lowercase hex: `#rrggbb`, or `#rrggbbaa` with alpha (while
-   * transparency is allowed or the colour is translucent).
+   * transparency is allowed or the color is translucent).
    */
   valueFormat?: ColorFieldFormat | undefined;
   /**
-   * Offers opacity for every colour: the picker always has its alpha slider and input, and the
-   * colour is written and stored with its alpha (`#rrggbbaa`, `rgba()`). Without it the picker
-   * offers opacity only for a translucent colour, from the moment it shows one until it closes on
-   * an opaque one, and an opaque colour stays opaque.
+   * Offers opacity for every color: the picker always has its alpha slider and input, and the
+   * color is written and stored with its alpha (`#rrggbbaa`, `rgba()`). Without it the picker
+   * offers opacity only for a translucent color, from the moment it shows one until it closes on
+   * an opaque one, and an opaque color stays opaque.
    */
   allowsTransparency?: boolean | undefined;
-  /** Preset colours the picker offers as swatches. */
+  /** Preset colors the picker offers as swatches. */
   swatches?: readonly string[] | undefined;
-  /** Adds a picker button that samples a colour from the screen, where the browser can. */
+  /** Adds a picker button that samples a color from the screen, where the browser can. */
   allowsEyeDropper?: boolean | undefined;
-  /** Draws a text input to type a colour into beside a swatch button, instead of a text trigger. */
+  /** Draws a text input to type a color into beside a swatch button, instead of a text trigger. */
   allowsTyping?: boolean | undefined;
   /** How the picker edits the hue: a slider (the default) or a wheel. */
   hueControl?: ColorFieldHueControl | undefined;
@@ -73,12 +73,12 @@ export interface ColorFieldProps extends FieldInputProps<string | null>, ColorFi
 interface ColorTriggerProps {
   control: FieldControlProps;
   state: FieldState<string | null>;
-  /** The value as a CSS colour, or `null` without one. */
+  /** The value as a CSS color, or `null` without one. */
   color: string | null;
   text: string;
 }
 
-/** A value that is no colour, such as one loaded from elsewhere, is invalid rather than empty. */
+/** A value that is no color, such as one loaded from elsewhere, is invalid rather than empty. */
 function createColorCheck(message: string) {
   return (value: string | null): FieldIssue | null =>
     value !== null && value.trim() !== '' && toColorText(value) === null
@@ -86,11 +86,11 @@ function createColorCheck(message: string) {
       : null;
 }
 
-// The picker needs a colour to show while the value is empty.
+// The picker needs a color to show while the value is empty.
 const emptyPickerColor = '#808080';
 
 /**
- * The trigger is named by the field label and the colour text, and stays focusable while read-only.
+ * The trigger is named by the field label and the color text, and stays focusable while read-only.
  * Backspace or Delete clears an optional value; every other key goes on to the field, for its undo
  * chords.
  */
@@ -122,9 +122,9 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
 }
 
 /**
- * The colour the picker shows: the one it last picked while the stored text is still the text that
- * colour was stored as, else the stored colour. Stored text cannot hold a grey's hue or black's
- * saturation, so reading the picker's colour back from it would stop the hue slider on a grey.
+ * The color the picker shows: the one it last picked while the stored text is still the text that
+ * color was stored as, else the stored color. Stored text cannot hold a grey's hue or black's
+ * saturation, so reading the picker's color back from it would stop the hue slider on a grey.
  */
 function usePickerColor(
   state: FieldState<string | null>,
@@ -146,7 +146,7 @@ function usePickerColor(
 
 /**
  * Whether the picker offers opacity: always with `allowsTransparency`, and otherwise while the
- * colour is translucent, kept until the picker closes on an opaque colour, so raising the alpha to
+ * color is translucent, kept until the picker closes on an opaque color, so raising the alpha to
  * one does not take the slider away mid-drag.
  */
 function useShowsAlpha(allowsTransparency: boolean, color: string | null, isOpen: boolean) {
@@ -159,7 +159,7 @@ function useShowsAlpha(allowsTransparency: boolean, color: string | null, isOpen
 
 /**
  * Whether the picker is open: it opens only while the field is editable, closes when the field is
- * locked, and commits the picked colour as it closes.
+ * locked, and commits the picked color as it closes.
  */
 function usePickerOpen(state: FieldState<string | null>) {
   const [isOpen, setOpen] = useState(false);
@@ -174,11 +174,11 @@ function usePickerOpen(state: FieldState<string | null>) {
 }
 
 /**
- * A field for a colour value, stored as lowercase hex (or in `valueFormat`) or `null`. Its trigger
- * shows a swatch and the colour text (or, with `allowsTyping`, a swatch button and a text input) and
+ * A field for a color value, stored as lowercase hex (or in `valueFormat`) or `null`. Its trigger
+ * shows a swatch and the color text (or, with `allowsTyping`, a swatch button and a text input) and
  * opens a picker: a format choice, a saturation and brightness area, a hue slider (and, with
- * `allowsTransparency` or a translucent colour, an alpha slider), the format's inputs, an eye dropper, preset swatches and,
- * unless required, a Clear button. The picked colour commits when the picker closes. With `name`, a hidden input submits the stored value.
+ * `allowsTransparency` or a translucent color, an alpha slider), the format's inputs, an eye dropper, preset swatches and,
+ * unless required, a Clear button. The picked color commits when the picker closes. With `name`, a hidden input submits the stored value.
  */
 export function ColorField({
   format,

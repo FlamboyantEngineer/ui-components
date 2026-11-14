@@ -8,16 +8,16 @@ import {
 } from './color-values.js';
 
 describe('color values', () => {
-  it('UIC-COLOR-FIELD-3.1 writes alpha while transparency is allowed or the colour is translucent', () => {
+  it('UIC-COLOR-FIELD-3.1 writes alpha while transparency is allowed or the color is translucent', () => {
     expect(formatColor('#33669980', 'rgb', true)).toBe('rgba(51, 102, 153, 0.5)');
     expect(formatColor('#33669980', 'hex', true)).toBe('#33669980');
     expect(formatColor('#336699', 'hex', true)).toBe('#336699FF');
     expect(formatColor('#336699', 'hsl', true)).toBe('hsla(210, 50%, 40%, 1)');
-    // Without transparency an opaque colour has no alpha, and a translucent one keeps it.
+    // Without transparency an opaque color has no alpha, and a translucent one keeps it.
     expect(formatColor('#336699', 'hex')).toBe('#336699');
     expect(formatColor('#33669980', 'hex')).toBe('#33669980');
     expect(formatColor('#33669980', 'rgb')).toBe('rgba(51, 102, 153, 0.5)');
-    expect(formatColor('not a colour', 'hex')).toBe('not a colour');
+    expect(formatColor('not a color', 'hex')).toBe('not a color');
   });
 
   it('UIC-COLOR-FIELD-3.1 keeps every hex alpha byte exact', () => {
@@ -54,7 +54,7 @@ describe('color values', () => {
     expect(storeColorText('rgb(51, 102, 153)', 'hsl')).toBe('hsl(210, 50%, 40%)');
     expect(storeColorText('336699', 'hex')).toBe('#336699');
     expect(storeColorText('hsl(210, 50%, 40%)', 'hex')).toBe('#336699');
-    expect(storeColorText('not a colour', 'hex')).toBeNull();
+    expect(storeColorText('not a color', 'hex')).toBeNull();
     // Hex has no digits for a fraction: the channels round to whole numbers.
     expect(storeColorText('rgb(10.5, 20, 30)', 'hex')).toBe('#0b141e');
     expect(formatColor('rgb(10.4, 20.6, 30)', 'hex')).toBe('#0A151E');
@@ -63,7 +63,7 @@ describe('color values', () => {
     );
     expect(toColorText(' 336699 ')).toBe('#336699');
     expect(toColorText('rgb(51, 102, 153)')).toBe('rgb(51, 102, 153)');
-    expect(toColorText('not a colour')).toBeNull();
+    expect(toColorText('not a color')).toBeNull();
     expect(toColorText('  ')).toBeNull();
     expect(toColorText(null)).toBeNull();
   });

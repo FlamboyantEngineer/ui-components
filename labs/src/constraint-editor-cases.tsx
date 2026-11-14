@@ -13,7 +13,7 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[]
 const column: CSSProperties = { width: 380 };
 const narrow: CSSProperties = { width: 240 };
 
-const colours = [
+const colors = [
   { id: 'red', label: 'Red' },
   { id: 'green', label: 'Green' },
   { id: 'blue', label: 'Blue' },
@@ -114,7 +114,7 @@ export function ConstraintEditorCorners() {
                 kind={sample.kind}
                 aria-label={`Constraints, ${corner}`}
                 defaultValue={sample.value}
-                options={colours}
+                options={colors}
                 lockedConstraints={sample.locked}
                 constraints={sample.constraints}
                 renderConstraint={

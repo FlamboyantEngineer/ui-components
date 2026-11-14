@@ -10,7 +10,7 @@ export type LabStylesheet =
 export interface LabSettings {
   stylesheet: LabStylesheet;
   /**
-   * `system` follows the reader's colour scheme, writing `light` or `dark`; any other value is
+   * `system` follows the reader's color scheme, writing `light` or `dark`; any other value is
    * written to `themeAttribute` on the root element as it is, and empty writes nothing.
    */
   theme: string;
@@ -22,7 +22,7 @@ type StylesheetState = 'none' | 'loading' | 'loaded' | 'error';
 
 export const DEFAULT_THEME_ATTRIBUTE = 'data-theme';
 
-/** The theme that follows the reader's colour scheme. */
+/** The theme that follows the reader's color scheme. */
 export const SYSTEM_THEME = 'system';
 
 const darkSchemeQuery = '(prefers-color-scheme: dark)';
@@ -158,7 +158,7 @@ export function resolveTheme(theme: string, view: Window | null = window): strin
   return view?.matchMedia?.(darkSchemeQuery).matches ? 'dark' : 'light';
 }
 
-/** Calls `onChange` whenever the reader's colour scheme changes; returns the unsubscribe. */
+/** Calls `onChange` whenever the reader's color scheme changes; returns the unsubscribe. */
 export function watchColorScheme(onChange: () => void, view: Window = window): () => void {
   const query = view.matchMedia?.(darkSchemeQuery);
   query?.addEventListener('change', onChange);
@@ -170,7 +170,7 @@ export function watchColorScheme(onChange: () => void, view: Window = window): (
  * applies the settings before the body is parsed and the lab bar applies them again, so the
  * attribute last written is remembered on the root (`data-lab-theme-attribute`), not in memory.
  * `data-lab-stylesheet-state` on the root reports none, loading, loaded or error, and
- * `data-lab-scheme` the colour scheme a light or dark theme sets, which the chrome follows.
+ * `data-lab-scheme` the color scheme a light or dark theme sets, which the chrome follows.
  */
 export function applySettings(
   settings: LabSettings,

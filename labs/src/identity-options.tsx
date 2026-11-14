@@ -16,8 +16,8 @@ const responsiveImage: AvatarImageProps = {
 };
 
 /**
- * The props for one identity option: initials given by the caller, a stable colour key, an
- * explicit colour slot in a six-colour palette, or a picture with responsive candidates.
+ * The props for one identity option: initials given by the caller, a stable color key, an
+ * explicit color slot in a six-color palette, or a picture with responsive candidates.
  */
 export function identityOptionProps(option: (typeof identityOptions)[number]) {
   if (option === 'initials') return { initials: 'MF' };

@@ -1,7 +1,7 @@
 import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('User Identity lab avatar options and badges', () => {
-  test('UIC-USER-IDENTITY-1.4 passes initials, shapes, colours and image props to the avatar', async ({
+  test('UIC-USER-IDENTITY-1.4 passes initials, shapes, colors and image props to the avatar', async ({
     page,
     lab,
   }) => {
@@ -21,7 +21,7 @@ test.describe('User Identity lab avatar options and badges', () => {
     await expect(image).toHaveAttribute('loading', 'lazy');
   });
 
-  test('UIC-USER-IDENTITY-1.4 keeps a keyed colour across renames and options across a fallback', async ({
+  test('UIC-USER-IDENTITY-1.4 keeps a keyed color across renames and options across a fallback', async ({
     page,
     lab,
   }) => {

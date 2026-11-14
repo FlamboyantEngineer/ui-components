@@ -53,12 +53,12 @@ test.describe('QR Code lab', () => {
   }) => {
     await lab.open('qr-code', { theme: 'dark' });
     const code = page.locator('[data-lab-code="editable"]');
-    const colours = await code.evaluate((element) => ({
+    const colors = await code.evaluate((element) => ({
       ground: getComputedStyle(element).backgroundColor,
       modules: getComputedStyle(element.querySelector('path') as Element).fill,
     }));
     // Readers expect dark modules on a light ground, whatever the theme.
-    expect(colours).toEqual({ ground: 'rgb(255, 255, 255)', modules: 'rgb(0, 0, 0)' });
+    expect(colors).toEqual({ ground: 'rgb(255, 255, 255)', modules: 'rgb(0, 0, 0)' });
     await lab.expectAccessible();
     await lab.open('qr-code');
     await lab.expectAccessible();

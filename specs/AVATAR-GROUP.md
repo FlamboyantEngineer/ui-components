@@ -105,7 +105,7 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 
 ### UIC-AVATAR-GROUP-12.1 - Presence layouts
 
-`layout="strip"` shall show spaced avatars; `layout="dots"` shows decorative colour dots and an overflow count, hidden from assistive technology for use inside another named control. The default layout is an overlapping stack.
+`layout="strip"` shall show spaced avatars; `layout="dots"` shows decorative color dots and an overflow count, hidden from assistive technology for use inside another named control. The default layout is an overlapping stack.
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`, `labs/reference/avatar-group.css`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e/avatar-group-presence.spec.ts`
@@ -145,5 +145,5 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`
 | `ui-avatar-group__dot` | slot | | Each visible person's dot (`dots` variant). |
 | `ui-avatar-group__menu` | slot | | The menu of hidden people (also `ui-menu`). |
 | `data-overflow` | attribute | `count`, `menu` | What the `+N` count does. |
-| `data-color` | attribute | | A dot's colour slot, as on the avatar ([AVATAR.md](AVATAR.md)). |
+| `data-color` | attribute | | A dot's color slot, as on the avatar ([AVATAR.md](AVATAR.md)). |
 | `data-layout` | attribute | `stack`, `strip`, `dots` | Overlapping, spaced or decorative-dot layout. |

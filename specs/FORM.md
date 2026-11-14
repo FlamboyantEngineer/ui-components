@@ -34,7 +34,7 @@ Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
 
 ### UIC-FORM-1.5 - Native validation
 
-`validationBehavior` (`FieldValidationBehavior`) shall set how the form validates, `native` by default, and become the validation behavior of the fields inside that set none (UIC-FIELD-3.10). In the `native` behavior the browser's constraint validation blocks a submit while a field's control reports its error as custom validity; only the first `invalid` event of the blocked submit (the browser fires one per invalid control, and none for a field whose control is a button or a group, such as a period, date or colour field) shows every field's validation, once each, and focuses the first blocking field in document order, as a blocked `aria` submit does (its own control only when no field blocks), and the fields show their own messages instead of the browser's. In the `aria` behavior the form does not validate natively (`noValidate`).
+`validationBehavior` (`FieldValidationBehavior`) shall set how the form validates, `native` by default, and become the validation behavior of the fields inside that set none (UIC-FIELD-3.10). In the `native` behavior the browser's constraint validation blocks a submit while a field's control reports its error as custom validity; only the first `invalid` event of the blocked submit (the browser fires one per invalid control, and none for a field whose control is a button or a group, such as a period, date or color field) shows every field's validation, once each, and focuses the first blocking field in document order, as a blocked `aria` submit does (its own control only when no field blocks), and the fields show their own messages instead of the browser's. In the `aria` behavior the form does not validate natively (`noValidate`).
 
 Implementation: `src/components/form/form.tsx`, `src/components/field/field-form.ts`
 Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
@@ -64,7 +64,7 @@ Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
 
 ### UIC-FORM-2.1 - Drafts block
 
-The form's verdict shall count what its fields show, not only their values: a field whose control shows a draft that has not become a value (a date typed in part, a range with one end empty, typed text that is no colour, UIC-FIELD-3.11) blocks the form until the draft is corrected or put back, even while the field's value is the last one it accepted.
+The form's verdict shall count what its fields show, not only their values: a field whose control shows a draft that has not become a value (a date typed in part, a range with one end empty, typed text that is no color, UIC-FIELD-3.11) blocks the form until the draft is corrected or put back, even while the field's value is the last one it accepted.
 
 Implementation: `src/components/form/form-validity.ts`, `src/components/field/field-form.ts`
 Verification: `src/components/form/form-validity.test.tsx`, `e2e/form.spec.ts`

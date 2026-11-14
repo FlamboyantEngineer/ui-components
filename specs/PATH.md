@@ -36,7 +36,7 @@ Verification: `src/components/path/path.test.tsx`, `e2e/path.spec.ts`
 
 ### UIC-PATH-2.2 - Start truncation
 
-The root shall be one line that inherits the host's font and colour. The reference sheet clips an overflowing path at its start with an ellipsis, keeping the final label visible, and lets it shrink beside sibling actions in a row; a path that fits is not clipped.
+The root shall be one line that inherits the host's font and color. The reference sheet clips an overflowing path at its start with an ellipsis, keeping the final label visible, and lets it shrink beside sibling actions in a row; a path that fits is not clipped.
 
 Implementation: `src/components/path/path.tsx`, `labs/reference/path.css`
 Verification: `e2e/path.spec.ts`

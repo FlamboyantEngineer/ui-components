@@ -69,7 +69,7 @@ describe('Fieldset', () => {
         <SearchField label="Search" />
         <InlineEdit label="Title" value="Rye loaf" onSave={() => {}} />
         <GridSizePicker onSelect={onSelect} />
-        <ColorSwatchPicker aria-label="Colours" onChange={onChange}>
+        <ColorSwatchPicker aria-label="Colors" onChange={onChange}>
           <ColorSwatchPickerItem color="#ff0000" />
         </ColorSwatchPicker>
       </Fieldset>,

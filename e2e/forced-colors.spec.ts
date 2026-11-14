@@ -29,7 +29,7 @@ async function focusWithoutOutline(): Promise<string | null> {
 }
 
 for (const name of labNames) {
-  test(`UIC-LABS-3.10 ${name} keeps a visible focus ring in forced colours`, async ({
+  test(`UIC-LABS-3.10 ${name} keeps a visible focus ring in forced colors`, async ({
     page,
     lab,
   }) => {

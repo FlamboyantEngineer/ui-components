@@ -1,6 +1,6 @@
 # Status Light
 
-`StatusLight` names a status with a coloured dot beside a short label, such as a service state (`Running`, `Stopped`) or a person's presence (`Away`). The label carries the meaning; the dot's colour repeats it. It reuses the presence vocabulary of [Presence Avatar](AVATAR.md) (`active`, `away`, `busy`, `idle`) so a presence state can show on its own, labelled from the provider's strings. A [Badge](BADGE.md) with the `status` variant is a tinted pill with a dot; its `dot` variant is a bare marker.
+`StatusLight` names a status with a colored dot beside a short label, such as a service state (`Running`, `Stopped`) or a person's presence (`Away`). The label carries the meaning; the dot's color repeats it. It reuses the presence vocabulary of [Presence Avatar](AVATAR.md) (`active`, `away`, `busy`, `idle`) so a presence state can show on its own, labelled from the provider's strings. A [Badge](BADGE.md) with the `status` variant is a tinted pill with a dot; its `dot` variant is a bare marker.
 
 ## UIC-STATUS-LIGHT-1 - Status light
 
@@ -13,7 +13,7 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 
 ### UIC-STATUS-LIGHT-1.2 - Tones
 
-`tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`, so the stylesheet colours the dot.
+`tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`, so the stylesheet colors the dot.
 
 Implementation: `src/components/status-light/status-light.tsx`, `labs/reference/status-light.css`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 
 ### UIC-STATUS-LIGHT-1.4 - Presence
 
-`status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the type Avatar, User Identity and User Card take) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colours each presence as the presence avatar's indicator does, over the tone.
+`status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the type Avatar, User Identity and User Card take) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colors each presence as the presence avatar's indicator does, over the tone.
 
 Implementation: `src/components/status-light/status-light.tsx`, `src/core/strings/common.ts`, `labs/reference/status-light.css`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-l
 
 ### UIC-STATUS-LIGHT-2.2 - Static output
 
-A status light shall take no tab stop and announce nothing on its own; a host whose status change should be heard places it in its own status region. The colour is never the only signal: the label or name states the status.
+A status light shall take no tab stop and announce nothing on its own; a host whose status change should be heard places it in its own status region. The color is never the only signal: the label or name states the status.
 
 Implementation: `src/components/status-light/status-light.tsx`
 Verification: `src/components/status-light/status-light.test.tsx`, `e2e/status-light.spec.ts`

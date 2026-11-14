@@ -37,7 +37,7 @@ function HandleRows({ isHandleOnly = true }: { isHandleOnly?: boolean }) {
           <DragHandle aria-label="Drag Apple" />
           Apple
         </div>
-        <div role="gridcell" tabIndex={-1} aria-label="Colour cell">
+        <div role="gridcell" tabIndex={-1} aria-label="Color cell">
           Red
         </div>
         <div role="row" aria-label="Seed row">
@@ -187,8 +187,8 @@ describe('DragHandle', { timeout: 15_000 }, () => {
       const appleCell = cell('Apple');
       await press(user, screen.getByText('Apple'), { x: 60 });
       expect(appleCell).not.toHaveAttribute('tabindex');
-      await press(user, cell('Colour'), { x: 200 });
-      expect(cell('Colour')).toHaveAttribute('tabindex', '-1');
+      await press(user, cell('Color'), { x: 200 });
+      expect(cell('Color')).toHaveAttribute('tabindex', '-1');
       nextFrame();
       expect(appleCell).toHaveAttribute('tabindex', '-1');
       unmount();

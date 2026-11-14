@@ -112,7 +112,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Layers"
-      description="Two named layers of content ranges; where they meet, their colours mix. Without onMarkerActivate the strip lets presses through."
+      description="Two named layers of content ranges; where they meet, their colors mix. Without onMarkerActivate the strip lets presses through."
     >
       <LayeredRanges />
     </LabSection>

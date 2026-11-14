@@ -116,7 +116,7 @@ for (const { lab: name, frame, focus } of frames) {
       const target = element.matches(focus) ? element : element.querySelector(focus);
       (target as HTMLElement).focus();
     }, focus ?? 'input, textarea, button');
-    await expect(probe).toHaveCSS('border-top-color', await focusColour(page));
+    await expect(probe).toHaveCSS('border-top-color', await focusColor(page));
     expect(
       await probe.evaluate((element) => {
         const computed = getComputedStyle(element);
@@ -126,13 +126,13 @@ for (const { lab: name, frame, focus } of frames) {
   });
 }
 
-async function focusColour(page: Page) {
+async function focusColor(page: Page) {
   return page.evaluate(() => {
     const probe = document.createElement('div');
     probe.style.color = 'var(--ref-focus)';
     document.body.append(probe);
-    const colour = getComputedStyle(probe).color;
+    const color = getComputedStyle(probe).color;
     probe.remove();
-    return colour;
+    return color;
   });
 }

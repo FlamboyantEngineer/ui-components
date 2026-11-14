@@ -33,9 +33,9 @@ function PictureFallback() {
 }
 
 /**
- * A name the reader edits: the identity with a stable colour key keeps its colour slot, the one
- * coloured by its name changes with it. Breaking the picture keeps the chosen shape, initials
- * and colour slot on the fallback.
+ * A name the reader edits: the identity with a stable color key keeps its color slot, the one
+ * colored by its name changes with it. Breaking the picture keeps the chosen shape, initials
+ * and color slot on the fallback.
  */
 function StableIdentity() {
   const [name, setName] = useState('Maria Santos');
@@ -45,8 +45,8 @@ function StableIdentity() {
       <label>
         Display name <input value={name} onChange={(event) => setName(event.target.value)} />
       </label>
-      <UserIdentity name={name} colorKey="person-42" description="Keyed colour" />
-      <UserIdentity name={name} description="Colour from the name" />
+      <UserIdentity name={name} colorKey="person-42" description="Keyed color" />
+      <UserIdentity name={name} description="Color from the name" />
       <UserIdentity
         name={name}
         description="Picture with options"
@@ -137,7 +137,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Avatar options"
-      description="Each shape against initials given by the caller (MF), a stable colour key, an explicit colour slot in a six-colour palette, and a picture with a sharper candidate for dense screens, loaded lazily."
+      description="Each shape against initials given by the caller (MF), a stable color key, an explicit color slot in a six-color palette, and a picture with a sharper candidate for dense screens, loaded lazily."
     >
       <StateMatrix
         axes={{ option: identityOptions, shape: identityShapes }}
@@ -152,8 +152,8 @@ mountLab(
       />
     </LabSection>
     <LabSection
-      title="Stable colour and fallback"
-      description="Edit the name: the keyed identity keeps its colour while the other follows the name. Break the picture: the fallback keeps the square shape, the MF initials and colour slot 4."
+      title="Stable color and fallback"
+      description="Edit the name: the keyed identity keeps its color while the other follows the name. Break the picture: the fallback keeps the square shape, the MF initials and color slot 4."
     >
       <StableIdentity />
     </LabSection>
