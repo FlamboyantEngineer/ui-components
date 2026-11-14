@@ -12,6 +12,7 @@ function FontSize() {
     <>
       <NumberField
         label="Font size"
+        showStepper
         description="The buttons and arrows move through 8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72 and 96; any size from 1 to 400 can be typed."
         defaultValue={11}
         minValue={1}
@@ -41,6 +42,7 @@ export function NumberFieldPresetsSection() {
         render={({ state }) => (
           <NumberField
             label="Size"
+            showStepper
             defaultValue={state === 'at last preset' ? 96 : 12}
             stepValues={fontSizes}
             decrementIcon={DecreaseFontSizeGlyph}

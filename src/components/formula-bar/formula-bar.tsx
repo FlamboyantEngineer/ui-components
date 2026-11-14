@@ -56,8 +56,6 @@ export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, Ar
    * brackets; nothing is committed. Without them the fₓ mark is decorative.
    */
   functions?: readonly Completion[] | undefined;
-  /** The caller's evaluation of the content being edited, shown as its result. */
-  evaluate?: ((value: string, cell: CellCoordinates) => string) | undefined;
   /** Shown while the content is empty. */
   placeholder?: string | undefined;
   /** Keeps the content readable and selectable but refuses edits. */
@@ -72,9 +70,6 @@ export interface FormulaBarProps extends RefProps<HTMLDivElement>, BaseProps, Ar
   /** The bar's control size, which its reference box, content and buttons follow. Defaults to `md`. */
   size?: ControlSize | undefined;
 }
-
-/** Space-separated ids for an ARIA id list, or undefined when there are none. */
-const joinIds = (...ids: (string | null)[]) => ids.filter(Boolean).join(' ') || undefined;
 
 const describeSource = (cell: CellCoordinates | null, value: string) =>
   cell ? `${cell.row}:${cell.column}:${value}` : '';
@@ -176,16 +171,6 @@ function FormulaBarReference({
   );
 }
 
-/** The caller's evaluation of the draft, after a visually hidden label. */
-function FormulaBarResult({ id, result }: { id: string; result: string }) {
-  const strings = useUiStrings();
-  return (
-    <span {...hooks.slot('result')} id={id}>
-      <VisuallyHidden as="span">{strings.formulaResult}</VisuallyHidden> {result}
-    </span>
-  );
-}
-
 /**
  * The content's draft and what the bar may do with it. A locked bar (disabled, or without a cell)
  * keeps its draft for when it unlocks, but neither commits nor drops it meanwhile.
@@ -235,7 +220,7 @@ function useFormulaDraft({
  * A bar above a spreadsheet grid: the active cell's A1 reference, which the reader edits to move
  * to another cell, and the cell's raw content on one line of `CodeEditor`, highlighted by the
  * caller's tokenizer. Enter or the confirm button commits the content, Escape or the cancel button
- * restores it, and the caller's evaluation shows the result; the library evaluates nothing.
+ * restores it; the library evaluates nothing.
  */
 function FormulaBarEditor({
   cell,
@@ -249,7 +234,6 @@ function FormulaBarEditor({
   tokenize,
   completions,
   functions,
-  evaluate,
   placeholder,
   isReadOnly = false,
   isDisabled = false,
@@ -259,13 +243,10 @@ function FormulaBarEditor({
   ...rest
 }: FormulaBarProps) {
   const strings = useUiStrings();
-  const resultId = useId();
   const hintId = useId();
   const { text, setDraft, isDirty, isLocked, canCancel, canCommit, commit, cancel, onKeyDown } =
     useFormulaDraft({ cell, value, onCommit, onCancel, onDraftChange, isReadOnly, isDisabled });
   const editorRef = useRef<HTMLTextAreaElement>(null);
-  // An empty result, such as an empty cell's, takes no room and describes nothing.
-  const result = evaluate && cell ? evaluate(text, cell) : '';
   const data = { size, dirty: isDirty, disabled: isLocked };
   return (
     <div
@@ -302,7 +283,7 @@ function FormulaBarEditor({
         variant="surface"
         className={hooks.slotClass('editor')}
         aria-label={strings.formulaCellContent}
-        aria-describedby={joinIds(result ? resultId : null, showActions ? null : hintId)}
+        aria-describedby={showActions ? undefined : hintId}
         multiline={false}
         value={text}
         onChange={setDraft}
@@ -313,7 +294,6 @@ function FormulaBarEditor({
         isDisabled={isLocked}
         onKeyDown={onKeyDown}
       />
-      {result ? <FormulaBarResult id={resultId} result={result} /> : null}
     </div>
   );
 }

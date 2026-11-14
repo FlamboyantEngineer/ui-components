@@ -1,4 +1,4 @@
-/* Formula Bar: the reference box, the cancel and confirm buttons, the glyph, the content and its result. */
+/* Formula Bar: the reference box, the cancel and confirm buttons, the glyph and the content. */
 
 /*
  * Each size sets the bar's control height, text size and line: the reference box and the content
@@ -112,18 +112,6 @@
   font: inherit;
   font-family: var(--ref-mono);
   line-height: var(--ref-formula-bar-line);
-}
-
-.ui-formula-bar__result {
-  flex: 0 1 auto;
-  min-width: 2ch;
-  max-width: 30%;
-  padding: 0 8px;
-  border-inline-start: 1px solid var(--ref-border);
-  font-family: var(--ref-mono);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .ui-formula-bar__reference-control {

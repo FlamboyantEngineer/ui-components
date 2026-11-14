@@ -15,7 +15,7 @@ function unread(count: number) {
 const trailingEntries: MenuEntry[] = [
   { id: 'inbox', label: 'Inbox', icon: BellGlyph, trailing: unread(7) },
   { id: 'mentions', label: 'Mentions', trailing: unread(0) },
-  { id: 'updates', label: 'Updates', shortcut: 'Ctrl+U', trailing: unread(12) },
+  { id: 'updates', label: 'Updates', shortcut: 'Ctrl+Alt+Shift+U', trailing: unread(12) },
   { id: 'profile', label: 'Profile' },
   {
     id: 'digest',

@@ -13,14 +13,12 @@
 }
 
 .ui-annotation-layer__mark {
-  box-shadow: inset 0 -2px color-mix(in srgb, var(--ref-warning) var(--ref-tint-solid), transparent);
   border-radius: var(--ref-radius-xs);
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: var(--ref-highlight);
 }
 
 .ui-annotation-layer__mark[data-active] {
-  box-shadow: inset 0 -2px var(--ref-warning);
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-strong), transparent);
+  background: var(--ref-highlight-current);
 }
 
 .ui-annotation-layer__margin {
@@ -111,7 +109,7 @@
 }
 
 .ui-annotation-layer__marker[data-active] {
-  border-color: var(--ref-warning);
+  border-color: var(--ref-warning-fill);
   color: var(--ref-text);
 }
 

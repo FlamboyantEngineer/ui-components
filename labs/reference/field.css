@@ -186,7 +186,8 @@
 }
 
 .ui-field__message-tooltip[data-severity='warning'] {
-  border: 1px solid color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-border));
+  border: 1px solid
+    color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint-border), var(--ref-border));
 }
 
 /* Several issues listed in the message start where a single one does: no indent, no bullets. */

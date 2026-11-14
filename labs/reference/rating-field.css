@@ -55,7 +55,7 @@
 
 /* The filled glyph differs in shape from the outline, so a rating never reads by colour alone. */
 :is(.ui-rating-field__fill, .ui-rating__fill) {
-  color: var(--ref-warning);
+  color: var(--ref-warning-fill);
   fill: currentColor;
 }
 
@@ -73,6 +73,26 @@
   :is(.ui-rating-field__item, .ui-rating__item)[data-fill='partial']
   :is(.ui-rating-field__fill, .ui-rating__fill) {
   clip-path: inset(0 0 0 calc(100% - var(--ui-rating-fill)));
+}
+
+/*
+ * The outline shows only where the filled glyph does not, so a custom pair of glyphs, such as a
+ * thumbs-up fill over a thumbs-down outline, never draws one over the other.
+ */
+:is(.ui-rating-field__item, .ui-rating__item)[data-fill='full']
+  :is(.ui-rating-field__glyph, .ui-rating__glyph) {
+  visibility: hidden;
+}
+
+:is(.ui-rating-field__item, .ui-rating__item)[data-fill='partial']
+  :is(.ui-rating-field__glyph, .ui-rating__glyph) {
+  clip-path: inset(0 0 0 var(--ui-rating-fill));
+}
+
+[dir='rtl']
+  :is(.ui-rating-field__item, .ui-rating__item)[data-fill='partial']
+  :is(.ui-rating-field__glyph, .ui-rating__glyph) {
+  clip-path: inset(0 var(--ui-rating-fill) 0 0);
 }
 
 /* Each radio covers its share of the glyph: a half radio the inline-start half, a whole one the rest. */

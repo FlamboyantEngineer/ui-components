@@ -22,7 +22,7 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-1.3 - Steppers
 
-`NumberField` shall draw a decrement and an increment button (`ui-number-field__decrement` with the `minus` glyph and `ui-number-field__increment` with the `plus` glyph) around the input, inside a group (`ui-number-field__group`). They are named from the field label (`Decrease <label>`, `Increase <label>`), stay out of the tab order, keep focus in the input when pressed with a pointer, and are disabled when the value cannot move further. Arrow Up and Arrow Down step the value from the keyboard, by `step` (1 by default). `hideStepper` leaves the buttons out and publishes `data-hide-stepper` on the root; the keys still step.
+With `showStepper`, `NumberField` shall draw a decrement and an increment button (`ui-number-field__decrement` with the `minus` glyph and `ui-number-field__increment` with the `plus` glyph) around the input, inside a group (`ui-number-field__group`). They are named from the field label (`Decrease <label>`, `Increase <label>`), stay out of the tab order, keep focus in the input when pressed with a pointer, and are disabled when the value cannot move further. Arrow Up and Arrow Down step the value from the keyboard, by `step` (1 by default). `showStepper` publishes `data-show-stepper` on the root. Without it, the default, the field is the input alone; the keys still step.
 
 Implementation: `src/components/number-field/number-field.tsx`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
@@ -284,7 +284,7 @@ Verification: `src/components/number-field/number-slider.test.tsx`, `e2e/number-
 | `ui-number-field__endpoints`   | slot      |                                    | A range's start and end inputs, or the inputs before a track.                                |
 | `ui-number-field__endpoint`    | slot      |                                    | One value's React Aria number field, around its input.                                       |
 | `ui-number-field__separator`   | slot      |                                    | The dash between a range's inputs.                                                           |
-| `data-hide-stepper`            | state     | `true`                             | On the root: the step buttons are left out.                                                  |
+| `data-show-stepper`            | state     | `true`                             | On the root: the step buttons are drawn.                                                     |
 | `data-adornment-placement`     | attribute | `value`                            | On the root: the end adornment follows the number.                                           |
 | `data-invalid`                 | state     | `true`                             | On the box, the group and the input: invalid (React Aria).                                   |
 | `data-required`                | state     | `true`                             | On the box: a value is required (React Aria).                                                |

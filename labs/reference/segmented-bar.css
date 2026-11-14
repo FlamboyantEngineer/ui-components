@@ -98,7 +98,7 @@
 
 .ui-segmented-bar__item:not([data-tone='neutral']) .ui-segmented-bar__swatch,
 .ui-segmented-bar__segment:not([data-tone='neutral']) {
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 
 .ui-segmented-bar__legend {
