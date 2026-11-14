@@ -22,9 +22,13 @@
   min-width: 0;
 }
 
+/*
+ * The run button centres on the editor's one-line box (the md editor: an 18px line, 8px padding
+ * and a 1px border on each side), not on the whole editor, which grows with its diagnostics.
+ */
 .ui-query-field__submit {
   flex: none;
-  margin-top: 2px;
+  margin-top: calc((18px + 2 * 8px + 2px - var(--ref-control-height-sm)) / 2);
 }
 
 .ui-query-field[data-disabled] .ui-query-field__label {

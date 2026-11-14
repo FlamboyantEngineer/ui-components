@@ -147,3 +147,39 @@
 [dir='rtl'] .ui-badge[data-placement='overlay'] {
   transform: translate(-40%, -40%);
 }
+
+/*
+ * A label badge whose room is narrower than its first letter and an ellipsis draws only a dot of
+ * its tone (UIC-BADGE-1.9), as a dot badge does; its text stays in the page, visually hidden.
+ */
+.ui-badge[data-collapsed][data-variant] {
+  flex: none;
+  width: 8px;
+  min-width: 0;
+  height: 8px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--ref-tone);
+}
+.ui-badge[data-collapsed][data-variant][data-size='sm'] {
+  width: 6px;
+  height: 6px;
+}
+.ui-badge[data-collapsed][data-variant][data-size='lg'] {
+  width: 10px;
+  height: 10px;
+}
+.ui-badge[data-collapsed] > :not(.ui-badge__label, .ui-badge__accessible-label) {
+  display: none;
+}
+.ui-badge[data-collapsed] > .ui-badge__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

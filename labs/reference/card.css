@@ -232,6 +232,38 @@
   min-width: 0;
   overflow: hidden;
 }
+/* A leading badge that collapsed to its dot keeps the dot whole (UIC-BADGE-1.9). */
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
+  > .ui-card__header
+  > .ui-card__leading:has(> .ui-badge[data-collapsed]:only-child) {
+  flex: none;
+}
+/*
+ * In a minimal card, which has no room to spare beside its abbreviation and More, that dot sits on
+ * the card's start edge, level with the title row, instead of in the row.
+ */
+.ui-card[data-presentation='minimal'] > .ui-card__header {
+  position: relative;
+}
+.ui-card[data-presentation='minimal']
+  > .ui-card__header
+  > .ui-card__leading:has(> .ui-badge[data-collapsed]:only-child) {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  min-height: 0;
+  translate: -60% -50%;
+}
+[dir='rtl']
+  .ui-card[data-presentation='minimal']
+  > .ui-card__header
+  > .ui-card__leading:has(> .ui-badge[data-collapsed]:only-child) {
+  translate: 60% -50%;
+}
+.ui-card[data-presentation='minimal']
+  > .ui-card__header:has(> .ui-card__leading > .ui-badge[data-collapsed]:only-child) {
+  padding-inline-start: 5px;
+}
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
   .ui-card__title
   > .ui-truncation-tooltip {

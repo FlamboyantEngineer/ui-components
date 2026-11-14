@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -8,7 +8,9 @@ import type { UiStrings } from '../../core/strings.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { type BadgeCollapse, useBadgeCollapse } from './badge-collapse.js';
 
 export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -45,6 +47,12 @@ export interface BadgeLabelProps extends BadgeCommonProps {
   startIcon?: IconSource;
   /** A decorative icon after the label: an imported icon component or rendered element. */
   endIcon?: IconSource;
+  /**
+   * `dot` (the default) draws the badge as a dot of its tone once its room is narrower than the
+   * label's first letter and an ellipsis; the text stays for assistive technology and in a tooltip.
+   * `none` keeps cutting the text.
+   */
+  collapse?: BadgeCollapse | undefined;
   count?: never;
   max?: never;
   more?: never;
@@ -66,6 +74,7 @@ export interface BadgeCountProps extends BadgeCommonProps {
   /** Count appearance, independent of tone. Defaults to `subtle`. */
   variant?: BadgeCountVariant | undefined;
   children?: never;
+  collapse?: never;
   announce?: never;
   mutedDot?: never;
   startIcon?: never;
@@ -78,6 +87,7 @@ export interface BadgeDotProps extends BadgeCommonProps {
   /** `overlay` pins the dot to the upper trailing corner of a positioned host. Defaults to `inline`. */
   placement?: BadgePlacement | undefined;
   children?: never;
+  collapse?: never;
   count?: never;
   max?: never;
   more?: never;
@@ -210,6 +220,7 @@ function LabelBadge({
   mutedDot = false,
   startIcon,
   endIcon,
+  collapse = 'dot',
   tone = 'neutral',
   size = 'md',
   bare = false,
@@ -217,6 +228,8 @@ function LabelBadge({
   'aria-label': ariaLabel,
   ...rest
 }: BadgeLabelProps) {
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const isCollapsed = useBadgeCollapse(labelRef, collapse);
   const isStatus = variant === 'status';
   const role = isStatus && announce ? 'status' : undefined;
   const { name, hiddenText } = resolveLabelName({
@@ -224,14 +237,18 @@ function LabelBadge({
     ariaLabel,
     ariaHidden: rest['aria-hidden'],
   });
-  const data = { variant, tone, size, bare, mutedDot: isStatus && mutedDot };
+  const data = { variant, tone, size, bare, mutedDot: isStatus && mutedDot, collapsed: isCollapsed };
   return (
     <span {...rest} {...hooks.root({ className, data })} role={role} aria-label={name}>
       {isStatus ? <span {...hooks.slot('dot')} aria-hidden="true" /> : null}
       {renderLabelIcon(startIcon, 'start-icon')}
-      <span {...hooks.slot('label')} aria-hidden={hiddenText !== undefined || undefined}>
+      <TruncationTooltip
+        ref={labelRef}
+        className={hooks.slotClass('label')}
+        aria-hidden={hiddenText !== undefined || undefined}
+      >
         {children}
-      </span>
+      </TruncationTooltip>
       {renderLabelIcon(endIcon, 'end-icon')}
       {hiddenText === undefined ? null : <AccessibleLabel>{hiddenText}</AccessibleLabel>}
     </span>

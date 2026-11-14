@@ -101,11 +101,12 @@
 
 .ui-color-swatch-button__swatch.ui-color-swatch {
   position: absolute;
-  right: 12.5%;
+  /* The whole width of the icon box and the glyphs' 4.5px band at the bottom (of 24). */
+  right: 0;
   bottom: 0;
-  left: 12.5%;
+  left: 0;
   width: auto;
-  height: max(2px, 16.667%);
+  height: max(3px, 18.75%);
   border-radius: var(--ref-radius-xs);
   box-shadow: none;
   background-size:

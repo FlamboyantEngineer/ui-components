@@ -214,3 +214,28 @@ test('UIC-BADGE-3.1 UIC-BADGE-1.2 shares count geometry and typography across ap
     }
   }
 });
+
+test('UIC-BADGE-1.9 collapses a label badge to a dot of its tone when a letter and an ellipsis no longer fit', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('badge');
+  const badge = (collapse: string, room: string) =>
+    matrixCell(page, `collapse=${collapse} room=${room}`).locator('.ui-badge');
+  for (const room of ['120px', '48px']) {
+    await expect(badge('dot', room)).not.toHaveAttribute('data-collapsed');
+  }
+  for (const room of ['28px', '12px']) {
+    const dot = badge('dot', room);
+    await expect(dot).toHaveAttribute('data-collapsed', 'true');
+    expect(await dot.boundingBox()).toMatchObject({ width: 8, height: 8 });
+    await expect(dot.locator('.ui-badge__label')).toHaveText('Approved');
+    await expect(badge('none', room)).not.toHaveAttribute('data-collapsed');
+  }
+  // The room coming back opens the badge again.
+  const column = matrixCell(page, 'collapse=dot room=28px').locator('[data-lab-room]');
+  await column.evaluate((element: HTMLElement) => {
+    element.style.width = '120px';
+  });
+  await expect(badge('dot', '28px')).not.toHaveAttribute('data-collapsed');
+});

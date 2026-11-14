@@ -197,6 +197,21 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Narrow room"
+      description="Each badge in a column of the given width. A badge cuts its label with an ellipsis, then becomes a dot of its tone once even the first letter and the ellipsis no longer fit; rest the pointer on a cut label to read it whole. With collapse none it keeps cutting the text."
+    >
+      <StateMatrix
+        axes={{ collapse: ['dot', 'none'] as const, room: ['120px', '48px', '28px', '12px'] }}
+        render={({ collapse, room }) => (
+          <div data-lab-room={room} style={{ display: 'flex', width: room, overflow: 'hidden' }}>
+            <Badge tone="success" collapse={collapse}>
+              Approved
+            </Badge>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Icons and dots"
       description="Leading and trailing icons beside a label, and dot markers with no text in every tone and size."
     >
