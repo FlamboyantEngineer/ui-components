@@ -6,7 +6,7 @@
 
 ### UIC-PROPERTY-PANEL-1.1 - Structure
 
-`PropertyPanel` shall render a `<section>` named by its `aria-label` or `aria-labelledby`, holding its `header` in the `ui-property-panel__header` slot when one is given and its children in the `ui-property-panel__body` slot. A header that renders nothing draws no slot.
+`PropertyPanel` shall render a `<section>` named by its `aria-label` or `aria-labelledby`, holding its `header` in the `ui-property-panel__header` slot when one is given and its children in the `ui-property-panel__body` slot. A header that renders nothing draws no slot. In the reference sheet the panel takes its width from its box, not its content (it is a size container): it fills the column it sits in, also as an item of a column that aligns its items to the start, and keeps at least 12rem in a box that shrinks to fit, such as a table cell.
 
 Implementation: `src/components/property-panel/property-panel.tsx`
 Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/property-panel.spec.ts`

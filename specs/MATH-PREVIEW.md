@@ -6,7 +6,7 @@
 
 ### UIC-MATH-PREVIEW-1.1 - Typesetting
 
-`MathPreview` shall render a `<span>` (`ui-math-preview`) that publishes `data-display` (`inline` by default, or `display`) and `data-status`: `empty` for blank source, `pending` while the renderer works, `ready` with the math in `ui-math-preview__math`, and `invalid` when the source does not typeset. Display math is a MathML `<math display="block">`; inline math sits in its line of text. While nothing has typeset yet, `ui-math-preview__pending` holds the provider string `mathPending`.
+`MathPreview` shall render a `<span>` (`ui-math-preview`) that publishes `data-display` (`inline` by default, or `display`) and `data-status`: `empty` for blank source, `pending` while the renderer works, `ready` with the math in `ui-math-preview__math`, and `invalid` when the source does not typeset. Display math is a MathML `<math display="block">`; inline math sits in its line of text. While the math is wider than the `ui-math-preview__math` box, the box publishes `data-overflowing` and takes keyboard focus (`tabindex="0"`), so a reader can scroll it from the keyboard; the reference sheet scrolls such math sideways inside the box rather than letting it spill past, and keeps inline math on its line's baseline. While nothing has typeset yet, `ui-math-preview__pending` holds the provider string `mathPending`.
 
 Implementation: `src/components/math-preview/math-preview.tsx`, `src/components/math-preview/math-render.ts`
 Verification: `src/components/math-preview/math-preview.test.tsx`, `e2e/math-preview.spec.ts`
@@ -94,3 +94,4 @@ Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-prev
 | `data-display`             | attribute | `inline`, `display`                    | On a preview or field root: how the math is set.         |
 | `data-status`              | attribute | `empty`, `pending`, `ready`, `invalid` | On a preview or field root: where the preview stands.    |
 | `data-stale`               | state     | `true`                                 | On a preview: the math shown is for older source.        |
+| `data-overflowing`         | state     | `true`                                 | On the math: it is wider than its box.                   |
