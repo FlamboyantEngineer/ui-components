@@ -1,5 +1,7 @@
 import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
+import { Cluster } from '../../src/components/layout/layout.js';
+import { Link } from '../../src/components/link/link.js';
 import { MoreGlyph } from '../../src/core/glyphs.js';
 import { ChatAssistantCases, ChatTypingWhileStreamingCases } from './chat-assistant-cases.js';
 import { ChatCaretCases } from './chat-caret-cases.js';
@@ -55,6 +57,22 @@ function HeaderMatrix() {
 
 mountLab(
   <>
+    <LabSection
+      title="Chat family examples"
+      description="Focused examples share the Chat family API, contract and reference styling."
+    >
+      <Cluster space="md" wrap="wrap">
+        <Link href="chat-activity.html">Activity</Link>
+        <Link href="chat-controller.html">Controller</Link>
+        <Link href="chat-list.html">Conversation list</Link>
+        <Link href="chat-message-actions.html">Message actions</Link>
+        <Link href="chat-model-picker.html">Model picker</Link>
+        <Link href="chat-parts.html">Message parts</Link>
+        <Link href="chat-question.html">Questions</Link>
+        <Link href="chat-sources.html">Sources</Link>
+        <Link href="chat-tool-call.html">Tool calls</Link>
+      </Cluster>
+    </LabSection>
     <ChatEverythingCases />
     <ChatAssistantCases />
     <ChatTypingWhileStreamingCases />

@@ -2,11 +2,12 @@
 // the progress line and the busy buttons show; and the reader's sending options in the "+" menu.
 
 import { type ReactNode, useState } from 'react';
-import { Chat, type ChatProps } from '../../src/components/chat/index.js';
 import {
+  Chat,
+  type ChatProps,
   type ChatSendFunction,
   useChatController,
-} from '../../src/components/chat-controller/index.js';
+} from '../../src/components/chat/index.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';

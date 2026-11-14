@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { isThenable } from '../../utils/is-thenable.js';
 import { runPendingAction } from '../button/button.js';
-import type { ActionRowAction } from './action-verbs.js';
+import type { ActionRowAction } from './action-row-action.js';
 
 /** An action as its button or overflow menu item runs it: the press and the pending state. */
 export interface ActionPress {

@@ -2,10 +2,13 @@
 // images, of which the chat mounts only the ones near the view.
 
 import { useEffect, useRef, useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
-import { useChatController } from '../../src/components/chat-controller/index.js';
-import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
+import type { AttachmentData } from '../../src/components/attachment/attachment.js';
+import {
+  Chat,
+  type ChatMessageData,
+  type ChatPart,
+  useChatController,
+} from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
@@ -42,7 +45,7 @@ function picture(hue: number): string {
 }
 
 function pictures(index: number, count: number): ChatPart {
-  const attachments: ChatAttachmentData[] = Array.from({ length: count }, (_, at) => ({
+  const attachments: AttachmentData[] = Array.from({ length: count }, (_, at) => ({
     id: `long-${index}-picture-${at}`,
     name: `photo-${index}-${at}.svg`,
     mediaType: 'image/svg+xml',

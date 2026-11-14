@@ -12,14 +12,14 @@ import { createContext, useContext, useMemo, useRef } from 'react';
 import { mergeClassNames } from '../../../core/hooks.js';
 import { mergeRefs } from '../../../utils/merge-props.js';
 import { Icon, toIconProps } from '../../icon/icon.js';
-import { RecordLabel, type RecordLabelResolver } from '../../record-label/record-label.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
+import { MessageReference, type MessageReferenceResolver } from '../message-reference.js';
 import { getPillText, type PillAttributes } from './composer-schema.js';
 import type { MessageComposerTrigger } from './composer-triggers.js';
 
 /** What the editor's pills draw with. */
 interface ComposerPillOptions {
-  getReference: RecordLabelResolver | undefined;
+  getReference: MessageReferenceResolver | undefined;
   isEditable: boolean;
   /** The host's triggers, whose `getIcon` draws their tokens' icons. */
   triggers?: readonly MessageComposerTrigger[] | undefined;
@@ -70,10 +70,10 @@ function ReferenceChip({ nodeProps }: Pick<NodeViewComponentProps, 'nodeProps'>)
     view.focus();
   });
   return (
-    <RecordLabel
-      mode="chip"
+    <MessageReference
+      label={label}
+
       {...getReference?.({ id, label, ...(recordType === undefined ? {} : { recordType }) })}
-      identifier={label}
       onRemove={isEditable ? remove : undefined}
     />
   );

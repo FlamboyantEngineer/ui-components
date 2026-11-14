@@ -2,19 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ToolbarRow } from '../components/layout/toolbar-row.js';
 import { PinInput } from '../components/pin-input/pin-input.js';
 import { TextField } from '../components/text-field/text-field.js';
-import { ToolbarScroller } from '../components/toolbar-scroller/toolbar-scroller.js';
+import { ToolbarRow } from '../components/toolbar-row/toolbar-row.js';
 
 const toolbars: Record<string, (children: ReactNode) => ReactNode> = {
   ToolbarRow: (children) => <ToolbarRow aria-label="Tools">{children}</ToolbarRow>,
-  ToolbarScroller: (children) => <ToolbarScroller aria-label="Tools">{children}</ToolbarScroller>,
 };
 
 describe('text controls inside toolbars', () => {
   it.each(Object.keys(toolbars))(
-    'UIC-LAYOUT-3.3 UIC-TOOLBAR-SCROLLER-1.2 keeps the caret keys of a text field in a %s until the caret reaches an end',
+    'UIC-TOOLBAR-ROW-1.1 keeps the caret keys of a text field in a %s until the caret reaches an end',
     async (name) => {
       const user = userEvent.setup();
       render(
@@ -45,7 +43,7 @@ describe('text controls inside toolbars', () => {
     },
   );
 
-  it('UIC-LAYOUT-3.3 leaves the arrows between PIN cells to the PIN input', async () => {
+  it('UIC-TOOLBAR-ROW-1.1 leaves the arrows between PIN cells to the PIN input', async () => {
     const user = userEvent.setup();
     render(
       <ToolbarRow aria-label="Tools">

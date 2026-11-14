@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MoreGlyph as ActionMoreGlyph } from '../../core/glyphs.js';
 import { ActionRow } from '../action-row/action-row.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -109,7 +110,8 @@ describe('Button refusing a trigger it sits in', () => {
       <ActionRow
         actions={[
           {
-            verb: 'more',
+            id: 'more',
+            icon: ActionMoreGlyph,
             label: 'Actions',
             isDisabled: true,
             tooltip: 'Unavailable while saving',

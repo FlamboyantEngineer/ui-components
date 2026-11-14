@@ -70,7 +70,7 @@ function TreeRowLabel<T extends TreeItemData>(props: {
   if (rename?.editingKey === item.id) label = rename.renderEditor(item);
   else if (renderLabel) label = renderLabel(item, state);
   else label = <TextMatch>{getTextValue(item)}</TextMatch>;
-  return <span {...hooks.slot('label')}>{label}</span>;
+  return <div {...hooks.slot('label')}>{label}</div>;
 }
 
 /** Why loading a branch's children failed, with a retry, in the row. */

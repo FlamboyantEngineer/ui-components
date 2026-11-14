@@ -2,7 +2,7 @@
 // searches that succeed, then the run finishes with an answer. The failure is a quiet row with its
 // error closed, and opens nothing: the group collapses once the answer follows.
 
-import type { ChatPart, ChatToolCallPart } from '../../src/components/chat-parts/index.js';
+import type { ChatPart, ChatToolCallPart } from '../../src/components/chat/index.js';
 import { type ReplyFrame, ReplyStream } from './chat-parts-stream.js';
 
 type CallStatus = ChatToolCallPart['status'];

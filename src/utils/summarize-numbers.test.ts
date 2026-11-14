@@ -15,7 +15,7 @@ describe('summarizeNumbers', () => {
     expect(zeros.max).toBe(0);
   });
 
-  it('UIC-CHART-6.3 UIC-SPARKLINE-1.2 handles a series beyond function argument limits', () => {
+  it('UIC-CHART-6.3 UIC-CHART-12.2 handles a series beyond function argument limits', () => {
     const values = Array.from({ length: 200_000 }, (_, index) => index - 100_000);
     expect(summarizeNumbers(values)).toEqual({
       count: 200_000,

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Attribution } from '../../src/components/attribution/attribution.js';
 import { Button } from '../../src/components/button/button.js';
+import { Card } from '../../src/components/card/card.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 import {
@@ -46,7 +46,7 @@ function LiveNotes() {
               template="added {time} by {person}"
               showAvatar
               cardTrigger="hover"
-              card={<UserCard name={jon.name} src={jon.src} description="Field research" />}
+              card={<Card title={jon.name} description="Field research" />}
               data-lab-note={note.id}
             />
           </li>
@@ -118,7 +118,7 @@ mountLab(
             showAvatar={person === 'avatar'}
             card={
               person === 'card' ? (
-                <UserCard name={maria.name} description="maria@example.com" />
+                <Card title={maria.name} description="maria@example.com" />
               ) : undefined
             }
           />
@@ -143,7 +143,7 @@ mountLab(
                 showAvatar
                 card={
                   person === 'card' ? (
-                    <UserCard name={who.name} description="Field research" />
+                    <Card title={who.name} description="Field research" />
                   ) : undefined
                 }
               />

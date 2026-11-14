@@ -16,7 +16,7 @@ import {
   type TableColumn,
   type TableRow,
 } from './table-rows.js';
-import type { CellEditing, CellMove } from './use-cell-editing.js';
+import type { CellEditing } from './use-cell-editing.js';
 
 /**
  * The text a cell's editor starts with: the cell's text or number, `true` or `false`, or a date's
@@ -32,8 +32,6 @@ interface TableCellEditorViewProps<T> {
   row: T;
   column: TableColumn<T>;
   editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release' | 'dismiss'>;
-  /** Spreadsheet mode: Enter and Tab commit and move to the next cell. */
-  movesOnCommit: boolean;
 }
 
 interface DefaultEditorProps {
@@ -43,11 +41,10 @@ interface DefaultEditorProps {
   label: string;
   /** Reads the text as the cell's value, with the column's message when it refuses it. */
   read: (text: string) => CellReading;
-  onCommit: (value: TableCellValue, move?: CellMove) => void;
+  onCommit: (value: TableCellValue) => void;
   onRelease: (value: TableCellValue) => void;
   onCancel: () => void;
   onDismiss: () => void;
-  movesOnCommit: boolean;
 }
 
 /** Hands the arrow keys, Home, End and type-ahead to the editor while it is open. */
@@ -74,19 +71,12 @@ function handleEscape(event: KeyboardEvent, cancel: () => void): void {
   cancel();
 }
 
-/** Where a commit key moves focus in spreadsheet mode: Enter down, Tab along, Shift back. */
-function getCommitMove(event: KeyboardEvent, movesOnCommit: boolean): CellMove | undefined {
-  if (!movesOnCommit) return undefined;
-  if (event.key === 'Tab') return event.shiftKey ? 'start' : 'end';
-  return event.shiftKey ? 'up' : 'down';
-}
-
 /**
  * A text input that commits on Enter and when focus leaves it, and cancels on Escape. A value the
  * column refuses keeps the editor open with its message; leaving then drops the text.
  */
 function DefaultCellEditor(props: DefaultEditorProps) {
-  const { label, read, movesOnCommit } = props;
+  const { label, read } = props;
   const [text, setText] = useState(props.initialText);
   const [error, setError] = useState<string | null>(null);
   // Leaving the document fires blur too: only the first way out counts.
@@ -102,7 +92,7 @@ function DefaultCellEditor(props: DefaultEditorProps) {
     setError(reading.error);
     if (reading.error !== null || isDone.current) return;
     isDone.current = true;
-    props.onCommit(reading.value, getCommitMove(event, movesOnCommit));
+    props.onCommit(reading.value);
   };
   const release = () => {
     if (isDone.current) return;
@@ -122,7 +112,7 @@ function DefaultCellEditor(props: DefaultEditorProps) {
         onChange={(event) => setText(event.target.value)}
         onKeyDown={(event) => {
           // Enter confirms an input method's candidate, not the edit.
-          const isCommitKey = event.key === 'Enter' || (event.key === 'Tab' && movesOnCommit);
+          const isCommitKey = event.key === 'Enter';
           if (isCommitKey && !isComposingKey(event.nativeEvent)) commit(event);
           handleEscape(event, () => {
             isDone.current = true;
@@ -148,7 +138,6 @@ export function TableCellEditorView<T extends TableRow>({
   row,
   column,
   editing,
-  movesOnCommit,
 }: TableCellEditorViewProps<T>) {
   useKeyboardNavigationLock();
   const value = getCellValue(row, column);
@@ -170,16 +159,14 @@ export function TableCellEditorView<T extends TableRow>({
   }
   return (
     <DefaultCellEditor
-      initialText={editing.editing?.text ?? formatEditorText(value)}
-      // A typed character that opened the editor replaces the value, so it is never untouched.
-      original={editing.editing?.text === undefined ? { value } : null}
+      initialText={formatEditorText(value)}
+      original={{ value }}
       label={label}
       read={(text) => readCellText(row, column, text)}
-      onCommit={(next, move) => editing.commit(toEdit(next), move)}
+      onCommit={(next) => editing.commit(toEdit(next))}
       onRelease={(next) => editing.release(toEdit(next))}
       onCancel={editing.cancel}
       onDismiss={editing.dismiss}
-      movesOnCommit={movesOnCommit}
     />
   );
 }

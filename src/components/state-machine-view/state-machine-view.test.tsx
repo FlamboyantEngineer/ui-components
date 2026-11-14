@@ -6,11 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { fr } from '../../core/locales/index.js';
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import {
-  type StateMachineState,
-  type StateMachineTransition,
-  StateMachineView,
-} from './state-machine-view.js';
+import { StateMachineGraph, type StateMachineState, type StateMachineTransition } from './index.js';
 
 const states: StateMachineState[] = [
   { id: 'placed', label: 'Placed' },
@@ -42,7 +38,7 @@ function EditableMachine({
   const [items, setItems] = useState(states);
   const [links, setLinks] = useState(transitions);
   return (
-    <StateMachineView
+    <StateMachineGraph
       aria-label="Orders"
       states={items}
       transitions={links}
@@ -57,18 +53,18 @@ function EditableMachine({
   );
 }
 
-describe('StateMachineView', () => {
+describe('StateMachineGraph', () => {
   it('UIC-STATE-MACHINE-VIEW-1.3 forwards ref to its root', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(
-      <StateMachineView states={states} transitions={transitions} ref={ref} />,
+      <StateMachineGraph states={states} transitions={transitions} ref={ref} />,
     );
     expect(ref.current).toBe(container.querySelector('.ui-state-machine-view'));
   });
 
   it('UIC-STATE-MACHINE-VIEW-1.1 UIC-STATE-MACHINE-VIEW-1.3 draws states and labelled transitions on a diagram canvas', () => {
     const { container } = render(
-      <StateMachineView
+      <StateMachineGraph
         states={states}
         transitions={transitions}
         className="host"
@@ -98,7 +94,7 @@ describe('StateMachineView', () => {
 
   it('UIC-STATE-MACHINE-VIEW-1.1 takes its name from the caller or the provider and opens on the outline', () => {
     const { rerender } = render(
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Orders"
         states={states}
         transitions={transitions}
@@ -109,7 +105,7 @@ describe('StateMachineView', () => {
     expect(screen.getByRole('list', { name: 'Outline' })).toHaveTextContent('Paid (pay)');
     rerender(
       <UiProvider messages={{ stateMachine: 'Automate' }}>
-        <StateMachineView states={states} transitions={transitions} />
+        <StateMachineGraph states={states} transitions={transitions} />
       </UiProvider>,
     );
     expect(screen.getByRole('group', { name: 'Automate' })).toBeInTheDocument();
@@ -117,7 +113,7 @@ describe('StateMachineView', () => {
 
   it('UIC-STATE-MACHINE-VIEW-1.2 marks the initial, final and current states', () => {
     const { container, rerender } = render(
-      <StateMachineView states={states} transitions={transitions} currentKey="shipped" />,
+      <StateMachineGraph states={states} transitions={transitions} currentKey="shipped" />,
     );
     const marker = (name: string) =>
       requireDefined(state(name).querySelector('.ui-state-machine-view__state'));
@@ -137,7 +133,7 @@ describe('StateMachineView', () => {
     expect(state('Cancelled')).toHaveAccessibleDescription(
       'Final state. Comes from Placed (cancel).',
     );
-    rerender(<StateMachineView states={states} transitions={transitions} initialKey="paid" />);
+    rerender(<StateMachineGraph states={states} transitions={transitions} initialKey="paid" />);
     expect(marker('Paid')).toHaveAttribute('data-initial', 'true');
     expect(container.querySelectorAll('.ui-state-machine-view__initial-marker')).toHaveLength(1);
   });
@@ -150,7 +146,7 @@ describe('StateMachineView', () => {
           ?.closest('li'),
       );
     const machine = (current: string, initial = 'placed') => (
-      <StateMachineView
+      <StateMachineGraph
         states={states}
         transitions={transitions}
         initialKey={initial}
@@ -181,7 +177,7 @@ describe('StateMachineView', () => {
   });
 
   it('UIC-STATE-MACHINE-VIEW-2.2 lays the states out in layers from the initial state', () => {
-    const { rerender } = render(<StateMachineView states={states} transitions={transitions} />);
+    const { rerender } = render(<StateMachineGraph states={states} transitions={transitions} />);
     const at = (name: string) => [
       parseFloat(state(name).style.left),
       parseFloat(state(name).style.top),
@@ -191,7 +187,9 @@ describe('StateMachineView', () => {
     expect(at('Cancelled')[0]).toBe(256);
     expect(at('Shipped')[0]).toBe(512);
     expect(at('Delivered')[0]).toBe(768);
-    rerender(<StateMachineView states={states} transitions={transitions} orientation="vertical" />);
+    rerender(
+      <StateMachineGraph states={states} transitions={transitions} orientation="vertical" />,
+    );
     expect(screen.getByRole('group', { name: 'State machine' })).toHaveAttribute(
       'data-orientation',
       'vertical',
@@ -199,7 +197,7 @@ describe('StateMachineView', () => {
     expect(at('Paid')[1]).toBe(156);
     expect(at('Delivered')[1]).toBe(468);
     rerender(
-      <StateMachineView
+      <StateMachineGraph
         states={[{ ...requireDefined(states[0]), x: 500, y: 600 }, ...states.slice(1)]}
         transitions={transitions}
       />,
@@ -211,7 +209,7 @@ describe('StateMachineView', () => {
     const user = userEvent.setup();
     const onStatesChange = vi.fn();
     const { container } = render(
-      <StateMachineView
+      <StateMachineGraph
         states={states}
         transitions={transitions}
         onStatesChange={onStatesChange}
@@ -269,7 +267,7 @@ describe('StateMachineView', () => {
     ];
     const links: StateMachineTransition[] = [{ id: 'a', from: 'b', to: 'c', label: 'go' }];
     const { container } = render(
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Machine"
         states={shared}
         transitions={links}
@@ -311,7 +309,7 @@ describe('StateMachineView', () => {
       { id: '1', from: '1', to: 2, label: 'text' },
     ];
     render(
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Machine"
         states={typed}
         transitions={links}

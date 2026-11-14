@@ -2,11 +2,14 @@ import { type CSSProperties, type ReactNode, useState } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import {
   CalendarGlyph,
+  EditGlyph as ActionEditGlyph,
   FolderGlyph,
   HelpGlyph,
   InfoGlyph,
   LinkGlyph,
   LockGlyph,
+  MoreGlyph as ActionMoreGlyph,
+  RefreshGlyph as ActionRefreshGlyph,
   RefreshGlyph,
   SearchGlyph,
   UsersGlyph,
@@ -15,7 +18,7 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { FilterDockExample } from './list-filter-examples.js';
+import { FilterComposition } from './composition-workflows-filters.js';
 import { requireDefined } from './require-defined.js';
 
 type Position = 'start' | 'end' | 'bottom';
@@ -100,9 +103,11 @@ function InspectorPanes() {
       label="Properties"
       icon={InfoGlyph}
       actions={[
-        { verb: 'edit', onPress: () => {} },
+        { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: () => {} },
         {
-          verb: 'more',
+          id: 'more',
+          label: 'More',
+          icon: ActionMoreGlyph,
           items: [
             { id: 'rename', label: 'Rename' },
             { id: 'duplicate', label: 'Duplicate' },
@@ -271,7 +276,9 @@ function Console() {
             label="Problems"
             icon={WarningGlyph}
             count={12}
-            actions={[{ verb: 'refresh', onPress: () => {} }]}
+            actions={[
+              { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: () => {} },
+            ]}
           >
             <p>Line 4: unknown unit “km/hr”.</p>
           </DockPanelPane>
@@ -560,7 +567,7 @@ mountLab(
       </DockPanel>
     </LabSection>
     <LabSection title="Counted list filters">
-      <FilterDockExample />
+      <FilterComposition />
     </LabSection>
     <LabSection
       title="Positions and states"

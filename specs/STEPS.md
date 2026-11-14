@@ -1,6 +1,6 @@
 # Steps
 
-`Steps` is the ordered list of the steps of a task, such as Upload, Prepare and Import, with where each one stands: complete, current, upcoming, failed or skipped. It is a semantic ordered list with the current step marked by `aria-current="step"`; React Aria has no matching behaviour, so only a pressable step uses its `Button`. Steps already reached can be pressed to return to them. [Wizard](WIZARD.md) frames a task around it; a location trail is a [Breadcrumb](BREADCRUMB.md), and a history of state changes is a [State Timeline](STATE-TIMELINE.md).
+`Steps` is the ordered list of the steps of a task, such as Upload, Prepare and Import, with where each one stands: complete, current, upcoming, failed or skipped. It is a semantic ordered list with the current step marked by `aria-current="step"`; React Aria has no matching behaviour, so only a pressable step uses its `Button`. Steps already reached can be pressed to return to them. [Wizard](WIZARD.md) frames a task around it; a location trail is a [Breadcrumb](BREADCRUMB.md), and a history uses an ordered list of badges and attribution.
 
 ## UIC-STEPS-1 - Structure
 

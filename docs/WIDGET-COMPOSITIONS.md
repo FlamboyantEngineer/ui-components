@@ -1,0 +1,21 @@
+# Host-owned editor compositions
+
+Import the package reference stylesheet once. The examples use `Stack space="md"`, `Cluster space="sm" wrap="wrap"` and `Modal bodyLayout="column"`; their spacing, alignment and narrow-screen wrapping come from that stylesheet. They require no host spacing CSS.
+
+| Host capability                           | Copyable example                                                      | Library interaction retained                                                                                              |
+| ----------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Raw cell reference and formula source bar | `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`    | TextField for the reference, CodeEditor for source, function completions, Button for apply/cancel.                        |
+| Selected-row actions and bulk editing     | `TableWorkflowComposition` in `labs/src/composition-editors-grid.tsx` | Table row selection, ordinary cell editing, sorting and filtering.                                                        |
+| CSV preview, scope and destination        | `TableWorkflowComposition` in `labs/src/composition-editors-grid.tsx` | Pure `formatTableCsv`, `formatCsv`, `formatTsv` and `parseTsv`.                                                           |
+| Event editor                              | `CalendarEditorComposition` in `labs/src/composition-editors.tsx`     | Calendar navigation, geometry, time zones and event drag/resize.                                                          |
+| Timeline item editor                      | `TimelineEditorComposition` in `labs/src/composition-editors.tsx`     | Timeline dependencies, milestones, pointer/keyboard editing and table view.                                               |
+| Asset placement                           | `AssetPlacementComposition` in `labs/src/composition-editors.tsx`     | AssetPicker browsing, asynchronous search, paging and selection.                                                          |
+| Choosing a graph or an ordered sequence   | `StateMachineComposition` in `labs/src/composition-editors-grid.tsx`  | StateMachineGraph canvas/outline editing and StateMachineSequence label interaction share the same state/transition data. |
+
+The examples keep the host's draft, validation and application policy next to its controls. A host can place its editor in a Modal or side panel without moving the calendar, timeline or asset-picker interaction into that form. A rejected or cancelled draft leaves the original collection intact. Hosts decide when external changes replace a draft, whether an empty alternative text is allowed, how assignees are searched, and where focus returns when an edited item disappears.
+
+For timed events, use DateTimeField's `date-time-range` with the calendar's `timeZone`. Decide explicitly whether stored times represent a wall clock, an offset or a named zone, and preserve that representation when saving. An all-day end is inclusive; a timed end is exclusive. All-day conversion is host policy. Timeline milestones use a single date field; bars use a date range. Add PeoplePicker for host-owned assignment and a Link for an item's destination.
+
+A spreadsheet host keeps the active cell, address validation, reference insertion, raw formula draft and cell engine together. `formatCellReference` and `parseCellReference` handle A1 coordinates. CodeEditor accepts the host's tokenizer, diagnostics, completions and a textarea ref in its surface variant for native selection/caret access; Menu and Button provide a function chooser and insertion controls. Apply commits the raw string to the host's engine; Escape or Cancel restores its committed string. The host engine evaluates committed source and displays results.
+
+CSV helpers return text without initiating a download. A host chooses filtered, paged or selected rows before formatting them, then owns file naming, byte-order-mark policy, preview, download or upload. Bulk actions likewise update host rows directly; the table's cell-edit callback remains a batch of committed ordinary cell edits.

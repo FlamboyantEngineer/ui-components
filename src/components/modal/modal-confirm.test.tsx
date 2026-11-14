@@ -7,9 +7,9 @@ import { ErrorGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { DialogTrigger } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
-import { ModalTrigger } from '../modal/modal.js';
-import { createModalController, ModalHost } from '../modal-controller/modal-controller.js';
+import { ModalTrigger } from './modal.js';
 import { confirm, ModalConfirmation, type ModalConfirmationProps } from './modal-confirm.js';
+import { createModalController, ModalHost } from './modal-controller.js';
 
 function deferred() {
   let resolve!: () => void;

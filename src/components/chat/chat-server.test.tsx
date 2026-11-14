@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { renderInDistantZones } from '../../../test/time-zones.js';
-import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import { Chat } from './chat.js';
+import type { ChatMessageData, ChatParticipant } from './chat-parts.js';
 
 const people: ChatParticipant[] = [
   { id: 'sam', name: 'Sam Reed', kind: 'person' },

@@ -1,11 +1,10 @@
 'use client';
 
-import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { type CSSProperties, useLayoutEffect, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { isFocused } from '../../utils/focus-target.js';
-import { mergeRefs } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -30,8 +29,6 @@ export interface CalendarEventContext {
   onEventAction: ((key: Key) => void) | undefined;
   /** The event menus' entries and actions. */
   menu: CalendarEventMenuContext;
-  /** Records an event's button while it is on show, until the returned cleanup runs. */
-  register: (id: Key, element: HTMLElement) => () => void;
   /** The move and resize handles' contract with the calendar. */
   handles: CalendarEventHandlesContext;
 }
@@ -112,17 +109,6 @@ function useFocusHandoff() {
   return ref;
 }
 
-/** The button's ref: the focus handoff, the calendar's record of it, and its context menu target. */
-function useEventButtonRef(id: Key, register: CalendarEventContext['register']) {
-  const handoff = useFocusHandoff();
-  const record = useCallback(
-    (element: HTMLElement | null) => (element ? register(id, element) : undefined),
-    [register, id],
-  );
-  const ref = useMemo(() => mergeRefs(handoff, record), [handoff, record]);
-  return { ref, element: handoff };
-}
-
 /** A rendered event's key: its id's, apart from the preview of the same event being dragged. */
 export function toEventKey(placed: PlacedEvent): string {
   const identity = toKeyIdentity(placed.event.id);
@@ -163,7 +149,7 @@ function readData(placed: PlacedEvent, continuesBefore: boolean, continuesAfter:
 /**
  * One event: a button showing its title, after its time when asked, and named by its title and when
  * it happens; a press calls `onEventAction` with its key and, when the event is editable, opens
- * the event editor; a context menu request opens the
+ * the host action; a context menu request opens the
  * event's menu. A movable event drags to move; an event with start or end edges sits in a frame
  * with them; the preview of a dragged event is drawn without a button.
  */
@@ -195,7 +181,8 @@ function EventButton({
 }: CalendarEventButtonProps) {
   const strings = useUiStrings();
   const { event } = placed;
-  const { ref, element } = useEventButtonRef(event.id, context.register);
+  const element = useFocusHandoff();
+  const ref = element;
   const eventMenu = useEventMenu(event, context.menu, ref);
   const where = { placement, continuesBefore, continuesAfter };
   const gestures = readGestures(placed, where, context.handles);
@@ -237,7 +224,6 @@ function EventButton({
         // The release of a drag is not a click.
         if (drag.consumeClick(press.pointerType)) return;
         context.onEventAction?.(event.id);
-        if (context.menu.isEditable(event)) context.menu.edit(event);
       }}
     >
       <EventText placed={placed} time={time} context={context} />

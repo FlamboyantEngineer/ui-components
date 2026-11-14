@@ -8,7 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { ScrollStrip, type useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
+import { ScrollStrip, type useToolbarScroll } from '../toolbar-row/toolbar-row.js';
 import { type TabListModel, TabsSharedContext } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import type { TabListPartsModel } from './tab-list-parts.js';

@@ -3,16 +3,15 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
 import {
-  type ChatSendFunction,
-  useChatController,
-} from '../../src/components/chat-controller/index.js';
-import {
+  Chat,
+  type ChatMessageData,
   ChatModelPicker,
   type ChatModelPickerProps,
-} from '../../src/components/chat-model-picker/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+  type ChatSendFunction,
+  type ChatTextToken,
+  useChatController,
+} from '../../src/components/chat/index.js';
 import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import { Cluster } from '../../src/components/layout/layout.js';
 import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';

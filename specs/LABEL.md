@@ -41,7 +41,7 @@ Verification: `src/components/label/label.test.tsx`
 
 ### UIC-LABEL-1.6 - Full text of a cut label
 
-With `truncate`, the label shall be a [Truncation Tooltip](TRUNCATION-TOOLTIP.md) that also carries the `ui-label__label` class: while the stylesheet cuts it, resting the pointer on it, or keyboard focus on the control holding it, shows the whole label in that component's visual-only tooltip. A label that fits shows nothing.
+With `truncate`, the label shall be a [Truncation Tooltip](TOOLTIP.md) that also carries the `ui-label__label` class: while the stylesheet cuts it, resting the pointer on it, or keyboard focus on the control holding it, shows the whole label in that component's visual-only tooltip. A label that fits shows nothing.
 
 Implementation: `src/components/label/label.tsx`
 Verification: `src/components/label/label.test.tsx`, `e2e/label.spec.ts`

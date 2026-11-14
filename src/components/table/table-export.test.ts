@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatTableCsv, listExportRows, resolveExportColumns } from './table-export.js';
+import { formatTableCsv } from './table-export.js';
 import type { TableColumn } from './table-rows.js';
-import { buildTableNodes } from './table-tree.js';
 
 interface Item {
   id: string;
@@ -26,8 +25,6 @@ const rows: Item[] = [
     parts: [{ id: 'b1', name: 'Handle "long"', weight: 1 }],
   },
 ];
-
-const getChildRows = (row: Item) => row.parts;
 
 describe('table CSV', () => {
   it('UIC-TABLE-16.2 writes a header of column names and each value as text', () => {
@@ -69,31 +66,5 @@ describe('table CSV', () => {
       formatTableCsv({ rows: frozenRows, columns: frozenColumns, escapeFormulas: false }),
     ).toBe('Name,Weight\r\n"=HYPERLINK(""x"")",-2');
     expect(frozenRows[0]?.name).toBe('=HYPERLINK("x")');
-  });
-
-  it('UIC-TABLE-16.3 lists each scope’s rows with child rows after their parent', () => {
-    const nodes = buildTableNodes(rows, getChildRows);
-    const parts = {
-      page: nodes.slice(1),
-      presented: nodes,
-      selected: [rows[0] as Item],
-      getChildRows,
-    };
-    const ids = (list: readonly Item[]) => list.map((row) => row.id);
-    expect(ids(listExportRows('page', parts, undefined))).toEqual(['b', 'b1']);
-    expect(ids(listExportRows('rows', parts, undefined))).toEqual(['a', 'b', 'b1']);
-    expect(ids(listExportRows('selected', parts, undefined))).toEqual(['a']);
-    const all = [...rows, { id: 'c', name: 'Cherry', weight: 1 }];
-    expect(ids(listExportRows('rows', parts, all))).toEqual(['a', 'b', 'b1', 'c']);
-  });
-
-  it('UIC-TABLE-16.3 writes the chosen columns in their order, hidden ones included', () => {
-    const drawn = columns.slice(0, 1);
-    expect(resolveExportColumns(undefined, columns, drawn)).toBe(drawn);
-    expect(
-      resolveExportColumns(['picked', 'missing', 'name'], columns, drawn).map(
-        (column) => column.id,
-      ),
-    ).toEqual(['picked', 'name']);
   });
 });

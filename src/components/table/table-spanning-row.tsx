@@ -19,12 +19,10 @@ function TableCellElement({
   props,
   cellKey,
   isVirtualized,
-  isInRange,
 }: {
   props: CellElementProps;
   cellKey: CellRenderProps['id'];
   isVirtualized: boolean;
-  isInRange: boolean;
 }) {
   const state = useContext(TableStateContext);
   const onFocus = (event: FocusEvent<HTMLTableCellElement & HTMLDivElement>) => {
@@ -34,24 +32,21 @@ function TableCellElement({
     }
     props.onFocus?.(event);
   };
-  // Cells inside a range of selected cells are marked selected for assistive technology.
-  const selected = isInRange ? { 'aria-selected': 'true' as const } : {};
   // A text control in the cell keeps its caret keys from the grid's navigation and typeahead.
   const keyed = keepTextControlKeys(props);
   return isVirtualized ? (
-    <div {...(keyed as JSX.IntrinsicElements['div'])} {...selected} onFocus={onFocus} />
+    <div {...(keyed as JSX.IntrinsicElements['div'])} onFocus={onFocus} />
   ) : (
-    <td {...(keyed as JSX.IntrinsicElements['td'])} {...selected} onFocus={onFocus} />
+    <td {...(keyed as JSX.IntrinsicElements['td'])} onFocus={onFocus} />
   );
 }
 
-export function renderCellElement(isVirtualized: boolean, isInRange = false, elementId?: string) {
+export function renderCellElement(isVirtualized: boolean, elementId?: string) {
   return (props: CellElementProps, { id }: { id?: Key | undefined }) => (
     <TableCellElement
       props={elementId === undefined ? props : { ...props, id: elementId }}
       cellKey={id}
       isVirtualized={isVirtualized}
-      isInRange={isInRange}
     />
   );
 }
@@ -108,7 +103,7 @@ export function TableSpanningRow(props: TableSpanningRowProps) {
       <Cell
         colSpan={props.colSpan}
         className={props.cellClassName}
-        render={renderCellElement(props.isVirtualized, false, cellId)}
+        render={renderCellElement(props.isVirtualized, cellId)}
       >
         {props.children}
       </Cell>

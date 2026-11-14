@@ -4,7 +4,7 @@ import {
   ChatToolCall,
   type ChatToolCallApproval,
   type ChatToolCallStatus,
-} from '../../src/components/chat-tool-call/chat-tool-call.js';
+} from '../../src/components/chat/index.js';
 import { LabOutput } from './lab-output.js';
 
 /** What a recipe search takes and returns, the matrices' sample call. */

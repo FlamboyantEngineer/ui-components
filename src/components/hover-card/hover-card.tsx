@@ -144,3 +144,6 @@ export function HoverCard({ showArrow = false, className, children, ...rest }: H
     </PopoverPanel>
   );
 }
+
+export type { PreviewOwner, PreviewTriggerProps, PreviewTriggerType } from './preview-trigger.js';
+export { PreviewTrigger, usePreviewOwner } from './preview-trigger.js';

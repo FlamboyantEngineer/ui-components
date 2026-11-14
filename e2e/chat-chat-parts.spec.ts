@@ -1,0 +1,370 @@
+import type { Page } from '@playwright/test';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
+const section = (page: Page, title: string) =>
+  matrix(page, 'chat-parts').locator(`[data-lab-section="${title}"]`);
+const demo = (page: Page, name: string) =>
+  matrix(page, 'chat-parts').locator(`[data-lab-demo="${name}"]`);
+test.describe('Chat Parts lab', () => {
+  test('UIC-CHAT-26.1 UIC-CHAT-26.3 UIC-CHAT-26.4 draws text in both formats with token pills', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const markdown = matrixCell(matrix(page, 'chat-parts'), 'content=tokens format=markdown');
+    await expect(markdown.locator('.ui-chat-parts__text')).toHaveAttribute(
+      'data-format',
+      'markdown',
+    );
+    await expect(markdown.locator('.ui-chat-parts__token[data-kind="command"]')).toHaveText(
+      '/plan',
+    );
+    await expect(markdown.locator('strong .ui-chat-parts__token')).toHaveText('@Ana Lopez');
+    await expect(markdown.locator('code', { hasText: '@Ana' })).toHaveText('@Ana');
+    await expect(markdown.locator('.ui-chat-parts__token')).toHaveCount(2);
+    const plain = matrixCell(matrix(page, 'chat-parts'), 'content=tokens format=plain');
+    await expect(plain.locator('.ui-chat-parts__token')).toHaveCount(3);
+    for (const format of ['markdown', 'plain']) {
+      const literal = matrixCell(matrix(page, 'chat-parts'), `content=literal format=${format}`);
+      await expect(literal.locator('.ui-chat-parts__token')).toHaveCount(1);
+      await expect(literal).toContainText('pasted \uFFF90\uFFFB from');
+    }
+    await expect(plain.locator('.ui-chat-parts__text')).toContainText('**');
+    await expect(
+      matrixCell(matrix(page, 'chat-parts'), 'content=lines format=plain').locator('br'),
+    ).toHaveCount(3);
+    await lab.expectAccessible('[data-lab-section="Text and tokens"]');
+  });
+  test('UIC-CHAT-26.5 draws record references as chips in both formats', async ({ page, lab }) => {
+    await lab.open('chat-parts');
+    for (const format of ['markdown', 'plain']) {
+      const references = matrixCell(
+        matrix(page, 'chat-parts'),
+        `content=references format=${format}`,
+      );
+      const chips = references.locator('.ui-chat-parts__token[data-kind="reference"]');
+      await expect(chips).toHaveCount(4);
+      await expect(chips.first().getByRole('link')).toHaveText('TRIP-4 Lisbon weekend');
+      await expect(chips.nth(2)).toHaveText('Missing item');
+      await expect(chips.nth(3)).toHaveText('Restricted item');
+    }
+    const linked = matrixCell(matrix(page, 'chat-parts'), 'content=linked format=markdown');
+    const outer = linked.getByRole('link', { name: /^the plans for TRIP-4/ });
+    await expect(outer).toHaveAttribute('href', 'https://example.com/plans');
+    await expect(outer.locator('.ui-chat-parts__token[data-kind="reference"]')).toHaveCount(1);
+    await expect(outer.locator('a')).toHaveCount(0);
+    await expect(
+      matrixCell(matrix(page, 'chat-parts'), 'content=linked format=plain').locator(
+        '.ui-chat-parts__token a',
+      ),
+    ).toHaveCount(1);
+    await lab.expectAccessible('[data-lab-section="Text and tokens"]');
+  });
+  test('UIC-CHAT-26.2 UIC-CHAT-26.4 UIC-CHAT-29.2 streams an answer: the steps run, collapse, and the citations preview', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const stream = demo(page, 'stream');
+    const next = stream.getByRole('button', { name: 'Next event' });
+    await expect(stream.getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await next.click();
+    await next.click();
+    const working = stream.getByRole('button', { name: 'Working…' });
+    await expect(working).toHaveAttribute('aria-expanded', 'true');
+    await expect(stream.locator('.ui-chat-steps .ui-chat-tool-call')).toHaveAttribute(
+      'data-status',
+      'running',
+    );
+    await next.click();
+    const worked = stream.getByRole('button', { name: 'Ran a search' });
+    await expect(worked).toHaveAttribute('aria-expanded', 'false');
+    await expect(stream.locator('.ui-chat-steps__panel')).toBeHidden();
+    await next.click();
+    // The answer's mention streams as a pill while the text after it grows.
+    const mention = stream.locator('.ui-chat-parts__text .ui-chat-parts__token');
+    await expect(mention).toHaveText('@Ana Lopez');
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expect(mention).toHaveText('@Ana Lopez');
+    const citation = stream.getByRole('link', { name: /^Source 2: Lisbon to Porto timetable/ });
+    await expect(citation.locator('.ui-chat-citation__marker')).toHaveText('[2]');
+    // From the steps' trigger, Tab reaches the first citation by keyboard, which opens its preview.
+    await worked.focus();
+    await page.keyboard.press('Tab');
+    await expect(citation).toBeFocused();
+    const card = page.getByRole('dialog', { name: 'Lisbon to Porto timetable' });
+    await expect(card).toBeVisible();
+    await expect(card).not.toHaveAttribute('data-entering');
+    await expect(card.locator('.ui-chat-citation__snippet')).toContainText('the 8:05 arrives');
+    await lab.expectAccessible('[data-lab-section="Streamed answer"]');
+  });
+  test('UIC-CHAT-29.2 UIC-CHAT-30.1 opens running steps only on request with expandsActivity false', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const steps = demo(page, 'activity-expansion');
+    const trigger = (opens: string) =>
+      matrixCell(steps, `opens=${opens}`).locator('.ui-chat-steps').getByRole('button').first();
+    await expect(trigger('automatically')).toHaveAttribute('aria-expanded', 'true');
+    const manual = trigger('on request');
+    await expect(manual).toHaveAttribute('aria-expanded', 'false');
+    await expect(manual).toHaveAccessibleName('Working…');
+    await manual.click();
+    await expect(manual).toHaveAttribute('aria-expanded', 'true');
+    await lab.expectAccessible('[data-lab-demo="activity-expansion"]');
+    await steps.getByRole('switch', { name: 'Streaming' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger('automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(manual).toHaveAttribute('aria-expanded', 'true');
+    await expect(manual).not.toHaveAccessibleName('Working…');
+  });
+  test('UIC-CHAT-33.4 marks answered tabs with a check or leaves them to the stylesheet', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const answered = section(page, 'Answered tabs');
+    for (const mark of ['icon', 'style']) {
+      const card = matrixCell(answered, `mark=${mark}`).locator('.ui-chat-question');
+      await expect(card).toHaveAttribute('data-answered-mark', mark);
+      await card.getByRole('radio', { name: /Packed/ }).focus();
+      await page.keyboard.press('Space');
+      const tab = card.getByRole('tab', { name: /Pace/ });
+      await expect(tab).toHaveAttribute('data-answered', 'true');
+      await expect(tab).toHaveAccessibleDescription('Answered');
+      await expect(tab.locator('.ui-tabs__icon')).toHaveCount(mark === 'icon' ? 1 : 0);
+      await expect(card.getByRole('tab', { name: /Stay/ })).not.toHaveAttribute('data-answered');
+    }
+    await lab.expectAccessible('[data-lab-section="Answered tabs"]');
+  });
+  test('UIC-CHAT-29.4 shows a failed step as a quiet row with its error closed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    await expect(
+      matrixCell(matrix(page, 'chat-parts'), 'state=failed parts=rendered').locator(
+        '.ui-chat-steps',
+      ),
+    ).not.toHaveAttribute('data-expanded', 'true');
+    const opened = matrixCell(matrix(page, 'chat-parts'), 'state=failed-opened parts=rendered');
+    const failedRow = opened.locator('.ui-chat-tool-call[data-status="failed"]');
+    const quietRow = opened.locator('.ui-chat-tool-call[data-status="succeeded"]').first();
+    await expect(failedRow).toHaveCSS('border-top-width', '0px');
+    await expect(failedRow).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const rowFont = await quietRow.evaluate((row) => getComputedStyle(row).fontSize);
+    await expect(failedRow).toHaveCSS('font-size', rowFont);
+    await expect(failedRow.locator('.ui-chat-tool-call__status')).toHaveCSS('position', 'absolute');
+    await expect(failedRow.locator('.ui-chat-tool-call__error')).toBeVisible();
+    const run = demo(page, 'failed-run');
+    const next = run.getByRole('button', { name: 'Next event' });
+    const group = run.getByRole('button', { name: /^(Working…|Ran searches, fetched a page)$/ });
+    const hotels = run.getByRole('button', { name: /^Search hotels in Porto Failed/ });
+    const error = run.getByText('did not answer within 10 seconds');
+    await next.click();
+    await next.click();
+    await expect(group).toHaveAccessibleName('Working…');
+    await expect(hotels).toHaveAttribute('aria-expanded', 'false');
+    await expect(error).toBeHidden();
+    await next.click();
+    await expect(group).toHaveAccessibleName('Ran searches, fetched a page');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await group.click();
+    await hotels.focus();
+    await page.keyboard.press('Enter');
+    await expect(hotels).toHaveAttribute('aria-expanded', 'true');
+    await expect(error).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Failed step"]');
+    await page.keyboard.press('Enter');
+    await expect(error).toBeHidden();
+    await expect(hotels).toBeFocused();
+  });
+  test('UIC-CHAT-29.4 keeps a group the reader closed closed when a call fails', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const run = demo(page, 'failed-run');
+    const next = run.getByRole('button', { name: 'Next event' });
+    const group = run.getByRole('button', { name: /^(Working…|Ran searches, fetched a page)$/ });
+    await next.click();
+    await expect(group).toHaveAccessibleName('Working…');
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await next.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await next.click();
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expect(group).toHaveAccessibleName('Ran searches, fetched a page');
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(run.locator('.ui-chat-steps__panel')).toBeHidden();
+  });
+  test('UIC-CHAT-27.3 draws tool renderers in the card body and in place of the card', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const renderers = demo(page, 'tool-renderers');
+    const forecast = renderers.locator('.ui-chat-tool-call [data-lab-forecast="porto"]');
+    await expect(forecast).toContainText('Sunny, 24 °C');
+    await expect(renderers.locator('.ui-chat-tool-call')).toHaveCount(2);
+    await expect(
+      renderers.locator('.ui-chat-tool-call').filter({ hasText: 'Convert the notes to text' }),
+    ).toBeVisible();
+    const booking = renderers.getByRole('region', { name: 'Train booking' });
+    await booking.getByRole('button', { name: 'Book it' }).click();
+    await expect(booking).toHaveAttribute('data-lab-booking', 'approved');
+    await expect(booking).toContainText('Booked.');
+    await renderers.getByRole('button', { name: 'Ask again' }).click();
+    await booking.getByRole('button', { name: 'Not now' }).click();
+    await expect(booking).toHaveAttribute('data-lab-booking', 'denied');
+    await lab.expectAccessible('[data-lab-section="Tool renderers"]');
+  });
+  test('UIC-CHAT-25.2 keeps the DOM ids of hyphenated message ids apart', async ({ page, lab }) => {
+    await lab.open('chat-parts');
+    const ids = demo(page, 'hyphenated-ids');
+    await expect(ids.locator('.ui-chat-tool-call')).toHaveCount(2);
+    await expect(page.locator('[id$="-m%2D1-p"]')).toContainText('Searched the first list');
+    await expect(page.locator('[id$="-m-1-p"]')).toContainText('Searched the second list');
+    await lab.expectAccessible('[data-lab-section="Hyphenated message ids"]');
+  });
+  test('UIC-CHAT-25.2 UIC-CHAT-27.2 UIC-CHAT-27.4 UIC-CHAT-29.3 records decisions in a mixed message', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const conversation = demo(page, 'conversation');
+    const log = conversation.locator('[data-lab-log="conversation"]');
+    const booking = page.locator('[id$="-m2-call-booking"]');
+    await expect(booking).toHaveAttribute('data-status', 'approval-requested');
+    const group = conversation.locator('#m2 .ui-chat-steps');
+    await expect(group).toHaveAttribute('data-expanded', 'true');
+    await lab.expectAccessible('[data-lab-section="Mixed message"]');
+    await booking.getByRole('button', { name: /^Approve/ }).click();
+    await expect(log).toContainText('onApprove(call-booking)');
+    await expect(booking).toHaveAttribute('data-status', 'succeeded');
+    await expect(booking.locator('.ui-chat-tool-call__decision')).toHaveText('Approved');
+    const question = page.locator('[id$="-m2-ask-1"]');
+    await question.getByRole('radio', { name: /^Packed/ }).focus();
+    await page.keyboard.press('Space');
+    await question.getByRole('button', { name: 'Submit' }).click();
+    await expect(log).toContainText('onAnswerQuestion(ask-1, [{"questionId":"pace"');
+    await expect(question).toHaveAttribute('data-status', 'answered');
+    await conversation.getByRole('button', { name: 'Retry' }).click();
+    await expect(log).toContainText('onRetryAttachment(text)');
+    await lab.expectAccessible('[data-lab-section="Mixed message"]');
+  });
+  test('UIC-CHAT-29.1 UIC-CHAT-29.2 UIC-CHAT-39.7 sums up each run of a working session between its notes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const session = demo(page, 'working-session');
+    const groups = session.locator('.ui-chat-steps__trigger');
+    await expect(groups).toHaveText([
+      'Read files, edited files, ran commands',
+      'Read a file, edited a file, ran a command',
+      'Read a file, ran a command',
+    ]);
+    await expect(session.locator('.ui-chat-parts > .ui-markdown')).toHaveCount(3);
+    const last = session.locator('.ui-chat-steps').last();
+    await expect(last).toHaveAttribute('data-expanded', 'true');
+    await expect(last.locator('.ui-chat-steps__glyph')).toHaveAttribute('data-glyph', 'file-text');
+    const build = last.getByRole('button', { name: /^Ran npm run build Done/ });
+    await expect(
+      last.locator('[data-kind="command"] .ui-chat-tool-call__status-glyph'),
+    ).toHaveAttribute('data-glyph', 'terminal');
+    await build.click();
+    await expect(last.getByRole('group', { name: 'Result' })).toContainText('Built in 2.4 s');
+    await lab.expectAccessible('[data-lab-section="Working session"]');
+  });
+  test('UIC-CHAT-30.1 keeps the reader’s choices across a remount', async ({ page, lab }) => {
+    await lab.open('chat-parts');
+    const kept = demo(page, 'kept-expansion');
+    const group = kept.getByRole('button', { name: 'Fetched a page' });
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await group.click();
+    await expect(kept.locator('[data-lab-expanded]')).toHaveText('{"steps:r1":false,"r1":true}');
+    await kept.getByRole('button', { name: 'Remount' }).click();
+    await expect(kept.getByRole('button', { name: 'Fetched a page' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+  test('UIC-CHAT-27.2 UIC-CHAT-39.8 draws a call alone as the same quiet row as in a group', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const grouped = matrixCell(matrix(page, 'chat-parts'), 'state=failed-opened parts=rendered')
+      .locator('.ui-chat-tool-call[data-status="succeeded"]')
+      .first();
+    for (const state of ['single', 'single-done']) {
+      const alone = matrixCell(matrix(page, 'chat-parts'), `state=${state} parts=rendered`).locator(
+        '.ui-chat-tool-call',
+      );
+      await expect(alone).toHaveAttribute('data-variant', 'row');
+      await expect(alone).toHaveCSS('border-top-width', '0px');
+      await expect(alone).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      for (const property of ['font-size', 'color']) {
+        const value = await grouped.evaluate(
+          (row, name) => getComputedStyle(row).getPropertyValue(name),
+          property,
+        );
+        await expect(alone).toHaveCSS(property, value);
+      }
+    }
+    await expect(
+      matrixCell(matrix(page, 'chat-parts'), 'state=single-done parts=rendered').locator(
+        '.ui-chat-tool-call__status',
+      ),
+    ).toHaveCSS('position', 'absolute');
+  });
+  test('UIC-CHAT-25.1 UIC-CHAT-29.1 passes axe on every part type and state of the steps', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    await expect(section(page, 'Part types').locator('.ui-chat-parts')).toHaveCount(12);
+    await expect(
+      matrixCell(matrix(page, 'chat-parts'), 'state=single parts=rendered').locator(
+        '.ui-chat-steps',
+      ),
+    ).toHaveCount(1);
+    await lab.expectAccessible('[data-lab-section="Part types"]');
+    await lab.expectAccessible('[data-lab-section="Steps"]');
+    await lab.expectAccessible('[data-lab-section="Kept expansion"]');
+  });
+  test('UIC-CHAT-29.1 keeps a denial reason and its focus as text streams after the call', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    const stream = demo(page, 'approval-stream');
+    const group = stream.locator('.ui-chat-steps');
+    await expect(group).toHaveAttribute('data-expanded', 'true');
+    await stream.getByRole('button', { name: /^Deny/ }).click();
+    const reason = stream.getByRole('textbox');
+    await reason.fill('Do not send private data');
+    await expect(reason).toBeFocused();
+    const next = stream.getByRole('button', { name: 'Next event' });
+    // A virtual click streams the next event without taking focus from the reason.
+    for (const event of [2, 3, 4]) {
+      await next.dispatchEvent('click');
+      await expect(stream).toContainText(`Event ${event} of 4`);
+    }
+    await expect(stream).toContainText('walk to the river.');
+    await expect(reason).toHaveValue('Do not send private data');
+    await expect(reason).toBeFocused();
+    await expect(group).toHaveCount(1);
+    await lab.expectAccessible('[data-lab-section="Approval while streaming"]');
+  });
+});

@@ -1,8 +1,7 @@
 // The Chat lab's first section: one chat with every feature, where a team and a trip planner talk.
 
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
+import { Chat, ChatModelPicker } from '../../src/components/chat/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { useCallbackLog } from './chat-assistant-host.js';
 import { useEverythingChat } from './chat-everything-host.js';

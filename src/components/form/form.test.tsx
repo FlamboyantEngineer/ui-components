@@ -328,41 +328,30 @@ describe('Form', () => {
       expect(screen.getByRole('textbox', { name: 'New name' })).toHaveFocus();
     });
 
-    it('ignores the submit of a table bulk edit inside it', async () => {
+    it('keeps a table cell editor commit inside the grid', async () => {
       const user = userEvent.setup();
       const onSubmit = vi.fn(prevent);
       const onCellsChange = vi.fn();
-      const rows = [
-        { id: 'a', name: 'Apple', origin: 'Oslo' },
-        { id: 'b', name: 'Pear', origin: 'Lima' },
-      ];
       render(
         <PageForm onSubmit={onSubmit}>
           <Table
             aria-label="Items"
-            rows={rows}
+            rows={[{ id: 'a', name: 'Apple', origin: 'Oslo' }]}
             columns={[
               { id: 'name', header: 'Name' },
-              { id: 'origin', header: 'Origin', bulkEdit: { type: 'text' } },
+              { id: 'origin', header: 'Origin', allowsEditing: true },
             ]}
-            selectionMode="multiple"
             onCellsChange={onCellsChange}
           />
         </PageForm>,
       );
-      const check = (name: string) =>
-        screen.getByRole('row', { name }).querySelector('.ui-table__checkbox') as HTMLElement;
-      await user.click(check('Apple'));
-      await user.click(screen.getByRole('button', { name: 'Edit selected' }));
-      // Enter submits the dialog's own form.
-      await user.type(screen.getByRole('textbox', { name: 'Origin' }), 'Rome{Enter}');
-      expect(onSubmit).not.toHaveBeenCalled();
-      expect(screen.getByRole('textbox', { name: 'Title', hidden: true })).not.toHaveAttribute(
-        'aria-invalid',
-      );
-      expect(screen.getByRole('textbox', { name: 'Origin' })).toHaveFocus();
-      await user.click(screen.getByRole('button', { name: 'Apply' }));
-      expect(onCellsChange).toHaveBeenCalledTimes(1);
+      await user.dblClick(screen.getByRole('gridcell', { name: 'Oslo' }));
+      const input = screen.getByRole('textbox', { name: 'Origin' });
+      await user.clear(input);
+      await user.type(input, 'Rome{Enter}');
+      expect(onCellsChange).toHaveBeenCalledWith([
+        { row: { id: 'a', name: 'Apple', origin: 'Oslo' }, columnId: 'origin', value: 'Rome' },
+      ]);
       expect(onSubmit).not.toHaveBeenCalled();
     });
 

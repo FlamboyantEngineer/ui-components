@@ -53,10 +53,9 @@ const columns: TableColumn<Fruit>[] = [
 interface FruitsProps {
   onCellsChange: (edits: readonly TableCellEdit<Fruit>[]) => void;
   disabledKeys?: readonly string[];
-  cellSelection?: 'cell';
 }
 
-function Fruits({ onCellsChange, disabledKeys, cellSelection }: FruitsProps) {
+function Fruits({ onCellsChange, disabledKeys }: FruitsProps) {
   const [rows, setRows] = useState(fruit);
   return (
     <Table
@@ -64,7 +63,6 @@ function Fruits({ onCellsChange, disabledKeys, cellSelection }: FruitsProps) {
       rows={rows}
       columns={columns}
       disabledKeys={disabledKeys}
-      cellSelection={cellSelection}
       onCellsChange={(edits) => {
         onCellsChange(edits);
         setRows((current) =>
@@ -216,7 +214,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
   it('UIC-TABLE-11.4 opens no editor on a disabled row by pointer, keyboard or typing', async () => {
     const user = userEvent.setup();
     const onCellsChange = vi.fn();
-    render(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} cellSelection="cell" />);
+    render(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} />);
     await user.dblClick(cell('30'));
     await user.dblClick(cell('Red'));
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
@@ -227,7 +225,10 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     }
     expect(onCellsChange).not.toHaveBeenCalled();
     cell('60').focus();
-    await user.keyboard('7{Enter}');
+    await user.keyboard('{F2}');
+    const input = screen.getByRole('textbox', { name: 'Weight' });
+    await user.clear(input);
+    await user.type(input, '7{Enter}');
     expect(onCellsChange).toHaveBeenCalledWith([{ row: fruit[1], columnId: 'weight', value: 7 }]);
   });
 

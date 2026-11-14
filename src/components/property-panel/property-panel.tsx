@@ -1,18 +1,23 @@
 'use client';
 
-import { type ReactNode, useContext, useId, useMemo, useState } from 'react';
+import { type ReactNode, useContext, useId, useMemo, useRef, useState } from 'react';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import { DisclosureGroup, DisclosureGroupStateContext } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { FieldScopeContext, useFieldScope } from '../field/field.js';
+import { SearchField } from '../search-field/search-field.js';
+import { TextMatch } from '../text-match/text-match.js';
 import {
+  PropertyScope,
   PropertyScopeContext,
+  type PropertyScopeFilter,
   usePropertyScopeLevel,
   useReportPropertyTally,
-} from '../property-scope/property-scope.js';
-import { TextMatch } from '../text-match/text-match.js';
+} from './property-scope.js';
 
 /** `responsive` stacks row labels over their controls in a narrow panel; `inline` keeps them beside. */
 export type PropertyPanelLabelLayout = 'responsive' | 'inline';
@@ -30,6 +35,18 @@ export interface PropertyPanelProps
   allowsMultipleExpanded?: boolean | undefined;
   /** Content above the body, such as a title or a search box. */
   header?: ReactNode;
+  /** Draws a search input alongside the supplied header content. */
+  searchable?: boolean | undefined;
+  /** The query, controlled. */
+  query?: string | undefined;
+  /** The query to start from, uncontrolled. */
+  defaultQuery?: string | undefined;
+  /** Called as the query changes or clears. */
+  onQueryChange?: ((query: string) => void) | undefined;
+  /** Replaces the default term matching. */
+  filter?: PropertyScopeFilter | undefined;
+  /** Placeholder text in the built-in search input. */
+  searchPlaceholder?: string | undefined;
   /** Where row labels sit. Defaults to `responsive`. */
   labelLayout?: PropertyPanelLabelLayout | undefined;
   /** Disables every field inside, which then refuses changes. */
@@ -58,7 +75,7 @@ export interface PropertyIconGroupProps
   children?: ReactNode;
 }
 
-const panelHooks = createHooks('property-panel', ['header', 'body']);
+const panelHooks = createHooks('property-panel', ['header', 'search', 'body']);
 const groupHooks = createHooks('property-group', ['heading']);
 const iconGroupHooks = createHooks('property-icon-group');
 
@@ -116,6 +133,12 @@ function PanelBody({
  */
 export function PropertyPanel({
   header,
+  searchable = false,
+  query: controlledQuery,
+  defaultQuery,
+  onQueryChange,
+  filter,
+  searchPlaceholder,
   labelLayout = 'responsive',
   isDisabled = false,
   isReadOnly = false,
@@ -128,6 +151,32 @@ export function PropertyPanel({
   ...rest
 }: PropertyPanelProps) {
   const parent = useFieldScope();
+  const strings = useUiStrings();
+  const [query, setQuery] = useControllableState(
+    controlledQuery,
+    defaultQuery ?? '',
+    onQueryChange,
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  const clearQuery = () => {
+    setQuery('');
+    inputRef.current?.focus();
+  };
+  const hasScope =
+    searchable ||
+    controlledQuery !== undefined ||
+    defaultQuery !== undefined ||
+    filter !== undefined;
+  const search = searchable ? (
+    <SearchField
+      className={panelHooks.slotClass('search')}
+      label={rest['aria-label'] ? strings.filterLabel(rest['aria-label']) : strings.search}
+      placeholder={searchPlaceholder}
+      value={query}
+      onChange={setQuery}
+      inputRef={inputRef}
+    />
+  ) : null;
   const scope = useMemo(
     () => ({
       ...parent,
@@ -140,9 +189,22 @@ export function PropertyPanel({
   const data = { labelLayout, disabled: isDisabled, readonly: isReadOnly };
   return (
     <section {...rest} {...panelHooks.root({ className, data })}>
-      {isEmptyNode(header) ? null : <div {...panelHooks.slot('header')}>{header}</div>}
+      {isEmptyNode(header) && !searchable ? null : (
+        <div {...panelHooks.slot('header')}>
+          {header}
+          {search}
+        </div>
+      )}
       <FieldScopeContext value={scope}>
-        <PanelBody expansion={expansion}>{children}</PanelBody>
+        <PanelBody expansion={expansion}>
+          {hasScope ? (
+            <PropertyScope query={query} filter={filter} onClear={clearQuery}>
+              {children}
+            </PropertyScope>
+          ) : (
+            children
+          )}
+        </PanelBody>
       </FieldScopeContext>
     </section>
   );
@@ -193,6 +255,8 @@ export type { PropertyCardProps } from './property-card.js';
 export { PropertyCard } from './property-card.js';
 export type { PropertyInheritance, PropertyRowProps } from './property-row.js';
 export { PropertyRow } from './property-row.js';
+export type { PropertyScopeFilter, PropertyScopeProps } from './property-scope.js';
+export { PropertyScope } from './property-scope.js';
 export type { PropertySectionProps } from './property-section.js';
 export { PropertySection } from './property-section.js';
 export type { PropertyStripCellProps, PropertyStripProps } from './property-strip.js';

@@ -4,12 +4,12 @@ import type {
   ChatCustomPart,
   ChatPart,
   ChatQuestionPart,
+  ChatSource,
   ChatTextToken,
   ChatToolCallPart,
   ChatToolRenderer,
-} from '../../src/components/chat-parts/index.js';
-import type { ChatSource } from '../../src/components/chat-sources/index.js';
-import { kindSamples, tripAttachments } from './chat-attachment-samples.js';
+} from '../../src/components/chat/index.js';
+import { kindSamples, tripAttachments } from './attachment-samples.js';
 import { ForecastCard, recipeArgs, recipeResult } from './chat-tool-call-samples.js';
 import { labRecords } from './reference-samples.js';
 import { requireDefined } from './require-defined.js';

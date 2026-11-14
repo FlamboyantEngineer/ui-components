@@ -27,7 +27,7 @@ Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/re
 
 ### UIC-RELATION-MATRIX-1.4 - Long column labels
 
-`columnLabels` shall publish on the root as `data-column-labels`: `rotated` (the default) asks the stylesheet to turn column labels on their side, `truncated` to cut them. Each column label is a [Truncation Tooltip](TRUNCATION-TOOLTIP.md), which shows a cut label whole while its header is hovered or focused.
+`columnLabels` shall publish on the root as `data-column-labels`: `rotated` (the default) asks the stylesheet to turn column labels on their side, `truncated` to cut them. Each column label is a [Truncation Tooltip](TOOLTIP.md), which shows a cut label whole while its header is hovered or focused.
 
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-header.tsx`, `labs/reference/relation-matrix.css`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `e2e/relation-matrix.spec.ts`

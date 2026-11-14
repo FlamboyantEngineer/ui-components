@@ -26,6 +26,7 @@ describe('VisuallyHidden', () => {
     expect(hidden).toHaveTextContent('Remove Lemon tart');
     expect(screen.getByRole('button', { name: 'Remove Lemon tart' })).toBeInTheDocument();
     expect(hidden).not.toHaveAttribute('data-focus-within');
+    expect(hidden).toHaveAttribute('data-reveal-placement', 'flow');
     expectHooksMatchSpec(container, 'VISUALLY-HIDDEN');
   });
 
@@ -96,6 +97,39 @@ describe('VisuallyHidden', () => {
     const hidden = container.querySelector('.ui-visually-hidden') as HTMLElement;
     expect(isHidden(hidden)).toBe(true);
     expect(hidden).not.toHaveAttribute('data-focus-within');
+  });
+
+  it('UIC-VISUALLY-HIDDEN-2.3 publishes overlay placement without leaking props and preserves focus events', async () => {
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+    const { container } = render(
+      <>
+        <VisuallyHidden
+          isFocusable
+          revealPlacement="overlay"
+          data-reveal-placement="flow"
+          id="overlay-skip"
+          className="caller"
+          onFocus={onFocus}
+          onBlur={onBlur}
+        >
+          <a href="#content">Skip to content</a>
+        </VisuallyHidden>
+        <button type="button">Next</button>
+      </>,
+    );
+    const wrapper = screen.getByRole('link').parentElement;
+    expect(wrapper).toHaveAttribute('data-reveal-placement', 'overlay');
+    expect(wrapper).not.toHaveAttribute('revealPlacement');
+    expect(wrapper).toHaveAttribute('id', 'overlay-skip');
+    expect(wrapper).toHaveClass('caller');
+    await userEvent.tab();
+    expect(wrapper).toHaveAttribute('data-focus-within', 'true');
+    expect(onFocus).toHaveBeenCalledOnce();
+    await userEvent.tab();
+    expect(wrapper).not.toHaveAttribute('data-focus-within');
+    expect(onBlur).toHaveBeenCalledOnce();
+    expectHooksMatchSpec(container, 'VISUALLY-HIDDEN');
   });
 
   it('UIC-VISUALLY-HIDDEN-1.4 renders the hidden text of library components with its hook', () => {

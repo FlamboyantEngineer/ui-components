@@ -8,12 +8,12 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
+import { TextMatch } from '../text-match/text-match.js';
 import {
   matchesPropertyScope,
   PropertyScopeContext,
   useReportPropertyTally,
-} from '../property-scope/property-scope.js';
-import { TextMatch } from '../text-match/text-match.js';
+} from './property-scope.js';
 
 /** The value a row takes from further up when it sets none of its own, and where it comes from. */
 export interface PropertyInheritance {

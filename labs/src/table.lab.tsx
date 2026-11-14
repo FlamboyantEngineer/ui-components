@@ -34,7 +34,7 @@ import {
   ShareWeights,
 } from './table-content-contracts.js';
 import { HeaderFilter, PickerCell } from './table-control-cases.js';
-import { CsvExport, EditHistory, PinnedRows } from './table-data-cases.js';
+import { EditHistory, PinnedRows } from './table-data-cases.js';
 import {
   ControlledLayout,
   ControlledMultipleSort,
@@ -44,7 +44,7 @@ import {
 } from './table-owned-cases.js';
 import { RevealRows } from './table-reveal-cases.js';
 import { RepeatedSelection } from './table-selection-cases.js';
-import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
+import { Grouping } from './table-sheet-cases.js';
 import { VirtualGroupsAndSummary, VirtualMeasuredRows } from './table-virtual-cases.js';
 
 function TrailingActions() {
@@ -586,32 +586,8 @@ mountLab(
       <Grouping />
     </LabSection>
     <LabSection
-      title="Spreadsheet mode"
-      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear. Cancelling a fill leaves the cells unchanged. On a touch screen, only the finger that started a fill or range drag moves it; a second finger resting on a cell changes nothing. In the one-cell table, the Organic switches keep their presses: toggling one selects no cell."
-    >
-      <Spreadsheet />
-    </LabSection>
-    <LabSection
-      title="Small numeric steps"
-      description="Select the first two values and drag the fill handle through the last row. Tiny steps continue in scientific notation; uneven values repeat instead. Large pastes are clipped to the available cells."
-    >
-      <SmallSteps />
-    </LabSection>
-    <LabSection
-      title="Bulk edit"
-      description="Select rows, then set one column across them from the selection bar."
-    >
-      <BulkEdit />
-    </LabSection>
-    <LabSection
-      title="CSV export"
-      description="Export CSV writes the current page, every filtered row in the shown order, or the selected rows, as the drawn columns. The caller-paged table writes Note then Name, reads Loaded rows until it is given every row, and shows the text instead of downloading it. Formula-like notes start with an apostrophe."
-    >
-      <CsvExport />
-    </LabSection>
-    <LabSection
       title="Undo and redo"
-      description="Edit, paste, fill, clear or bulk edit, then Undo or Control+Z on the grid; Shift+Control+Z or Control+Y redoes. A paste undoes as one step. Grow Basil elsewhere, then undo a Basil height edit: the newer height stays. Reload the plants forgets the history. Control+Z inside an open editor stays the editor's."
+      description="Commit a cell edit, then Undo or Control+Z on the grid; Shift+Control+Z or Control+Y redoes. Grow Basil elsewhere, then undo a Basil height edit: the newer height stays. Reload the plants forgets the history. Control+Z inside an open editor stays the editor's."
     >
       <EditHistory />
     </LabSection>

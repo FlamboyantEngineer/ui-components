@@ -14,18 +14,18 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
-import {
-  matchesPropertyScope,
-  PropertyScopeContext,
-  usePropertyScopeLevel,
-  useReportPropertyTally,
-} from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   OverrideMark,
   type PropertyExpansionProps,
   useScopedExpansion,
 } from './property-disclosure.js';
+import {
+  matchesPropertyScope,
+  PropertyScopeContext,
+  usePropertyScopeLevel,
+  useReportPropertyTally,
+} from './property-scope.js';
 
 export interface PropertyCardProps
   extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, PropertyExpansionProps {

@@ -2,8 +2,7 @@
 // deletion, typing, presence and the per-conversation draft.
 
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import { Chat, type ChatMessageData } from '../../src/components/chat/index.js';
 import { usePeopleHost } from './chat-people-host.js';
 import { ana, pairPeople, readerId, textMessage } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';

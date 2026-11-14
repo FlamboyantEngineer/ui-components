@@ -1,6 +1,6 @@
+import { Card } from '../../src/components/card/card.js';
 import type { MentionCandidate } from '../../src/components/comment-composer/index.js';
 import { createCommentMentions } from '../../src/components/comment-composer/rich/index.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
 import { samplePeople } from './people-samples.js';
 
 /** A group and an assistant the reader can mention beside the people. */
@@ -43,11 +43,8 @@ export const sampleMentions = createCommentMentions({
 export function renderSampleCard({ id, name }: { id: string; name: string }) {
   const person = samplePeople.find((candidate) => candidate.id === id);
   return person ? (
-    <UserCard
-      name={name}
-      src={person.src}
-      status={person.status}
-      statusLabel={person.statusLabel}
-    />
+    <Card title={name}>
+      <span>{person.statusLabel}</span>
+    </Card>
   ) : undefined;
 }

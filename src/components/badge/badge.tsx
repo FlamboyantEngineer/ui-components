@@ -8,7 +8,7 @@ import type { UiStrings } from '../../core/strings.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { type BadgeCollapse, useBadgeCollapse } from './badge-collapse.js';
 
@@ -271,3 +271,6 @@ export function Badge(props: BadgeProps) {
   if (isDotBadge(props)) return <DotBadge {...props} />;
   return <LabelBadge {...props} />;
 }
+
+export type { StatusLightProps } from './status-light.js';
+export { StatusLight } from './status-light.js';

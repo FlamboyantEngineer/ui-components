@@ -5,7 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSize, type IconSource, toIconProps } from '../icon/icon.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 
 export interface LabelProps
   extends BaseProps, RefProps<HTMLSpanElement>, Pick<NativeProps<'span'>, 'hidden'> {

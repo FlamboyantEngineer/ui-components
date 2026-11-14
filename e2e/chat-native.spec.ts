@@ -8,24 +8,24 @@ test.describe('Chat native embedded controls', () => {
     await lab.open('chat');
     const demo = page.locator('[data-lab-demo="native-chat"]');
     await demo.scrollIntoViewIfNeeded();
-    await expect(demo.locator('article[id="long-1"]')).toHaveCount(0);
+    await expect(demo.locator('article[data-message-id="long-1"]')).toHaveCount(0);
     await demo.getByRole('button', { name: 'Search this conversation' }).click();
     await demo
       .getByRole('searchbox', { name: 'Search this conversation' })
       .fill('weekend by the sea');
     await demo.getByRole('button', { name: 'Next match' }).click();
-    const first = demo.locator('article[id="long-1"]');
+    const first = demo.locator('article[data-message-id="long-1"]');
     await expect(first).toHaveAttribute('data-highlighted', 'true');
     await demo.getByRole('button', { name: 'Close', exact: true }).click();
     await first.focus();
     await page.keyboard.press('ArrowDown');
-    await expect(demo.locator('article[id="long-2"]')).toBeFocused();
+    await expect(demo.locator('article[data-message-id="long-2"]')).toBeFocused();
     await page.keyboard.press('End');
-    await expect(demo.locator('article[id="native-thinking"]')).toBeFocused();
+    await expect(demo.locator('article[data-message-id="native-thinking"]')).toBeFocused();
     expect(await demo.locator('article').count()).toBeLessThan(40);
   });
 
-  test('UIC-CHAT-1.5 UIC-CHAT-1.7 UIC-CHAT-PARTS-6.1 retains standalone expansion and partially answered questions across a virtual window and polling', async ({
+  test('UIC-CHAT-1.5 UIC-CHAT-1.7 UIC-CHAT-30.1 retains standalone expansion and partially answered questions across a virtual window and polling', async ({
     page,
     lab,
   }) => {
@@ -45,7 +45,7 @@ test.describe('Chat native embedded controls', () => {
       (_, index) => `${index + 1}. <entry> **literal** check ${index + 1}`,
     ).join('\n');
     await expect(row.locator('code')).toHaveText(details);
-    await expect(demo.locator('article[id="native-results"] time')).toHaveCount(0);
+    await expect(demo.locator('article[data-message-id="native-results"] time')).toHaveCount(0);
     await expect(demo.getByRole('button', { name: /^1 new check error/ })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -63,8 +63,8 @@ test.describe('Chat native embedded controls', () => {
     await viewport.evaluate((element) => {
       element.scrollTop = 0;
     });
-    await demo.locator('article[id="long-1"]').focus();
-    await expect(demo.locator('article[id="native-results"]')).toHaveCount(0);
+    await demo.locator('article[data-message-id="long-1"]').focus();
+    await expect(demo.locator('article[data-message-id="native-results"]')).toHaveCount(0);
     expect(await demo.locator('article').count()).toBeLessThan(40);
     const jump = demo.getByRole('button', { name: /Jump to latest/ });
     await expect(async () => {
@@ -149,8 +149,14 @@ test.describe('Chat native embedded controls', () => {
     const handle = demo.getByRole('button', { name: 'Reorder queued message 3' });
     await handle.focus();
     await page.keyboard.press('Enter');
+    const rows = demo.locator('.ui-chat__queue-item');
+    await expect(rows.nth(2)).toHaveAttribute('data-dragging', 'true');
+    // The drop marker appears after React Aria installs the keyboard drag listeners.
+    await expect(rows.nth(1)).toHaveAttribute('data-drop-position', 'before');
     await page.keyboard.press('ArrowUp');
+    await expect(rows.nth(1)).toHaveAttribute('data-drop-position', 'before');
     await page.keyboard.press('Enter');
+    await expect(demo.locator('.ui-chat__queue-item[data-dragging]')).toHaveCount(0);
     await expect(demo.locator('.ui-chat__queue-text').nth(1)).toHaveText('Only in the queue');
     await demo.getByRole('button', { name: 'Actions for queued message 2' }).click();
     await page.getByRole('menuitem', { name: 'Edit queued message 2' }).click();

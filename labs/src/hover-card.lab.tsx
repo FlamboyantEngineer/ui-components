@@ -9,6 +9,7 @@ import {
 import { Link } from '../../src/components/link/link.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { HoverCardCoverageSections } from './hover-card-coverage-cases.js';
+import { HoverCardPreviewCases } from './hover-card-preview-cases.js';
 
 interface City {
   name: string;
@@ -143,6 +144,7 @@ function HintedTrigger() {
 
 mountLab(
   <>
+    <HoverCardPreviewCases />
     <LabSection
       title="Placements and arrow"
       description="The first pointer entry or keyboard focus opens the card on that side after the delay, with or without an arrow. It closes once the pointer and focus leave both. Escape closes a hovered card even while focus stays on the page."

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Sparkline } from '../../src/components/sparkline/sparkline.js';
+import { Sparkline } from '../../src/components/chart/index.js';
 import { LabOutput } from './lab-output.js';
 
 /** How often a sample is taken, in milliseconds. */

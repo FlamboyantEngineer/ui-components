@@ -77,7 +77,7 @@ export interface TimelineProps
   /**
    * The entries of an item's context menu in the chart, or a function of the item that returns
    * them. An item without entries keeps the browser's menu. Pair an Edit entry with
-   * `TimelineItemEditor`.
+   * a host-owned form built from library fields.
    */
   itemMenu?: TimelineItemMenu | undefined;
   /** Called with the key of the entry chosen in an item's menu, and that item. */

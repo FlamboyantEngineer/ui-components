@@ -16,6 +16,7 @@ import { useSyncedScroll } from '../../src/utils/use-synced-scroll.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 import { ShadowRootApp } from './shadow-root-host.js';
+import { TextDiffInlineCases } from './text-diff-inline-cases.js';
 
 const recipe = [
   'Lemon tart',
@@ -301,6 +302,7 @@ function AnchoredLists() {
 
 mountLab(
   <>
+    <TextDiffInlineCases />
     <LabSection
       title="Layouts"
       description="Edited, newly written, cleared and unchanged texts, unified in one column and split side by side. Paired lines mark the words they changed; the header counts added and removed lines and moves between changes (also with n and p)."

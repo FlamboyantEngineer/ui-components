@@ -24,10 +24,8 @@ const boxes: Record<string, string> = {
   'choice-group': '.ui-choice__button',
   'pin-input': '.ui-pin-input__cell',
   'relative-date-field': '.ui-relative-date-field__trigger',
-  'formula-bar': '.ui-formula-bar__reference',
   'zoom-control': '.ui-zoom-control',
   'expression-field': '.ui-expression-field__editor',
-  'snippet-field': '.ui-snippet-field__source',
 };
 
 /** Controls deliberately off the scale by a fixed step: a PIN cell holds one large character. */

@@ -3,10 +3,13 @@
 // at the end), Ctrl+Enter, blank messages carried by selected context or files, and sending the
 // host must accept.
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatAttachmentData } from '../../src/components/chat-attachment/index.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+import type { AttachmentData } from '../../src/components/attachment/index.js';
+import {
+  Chat,
+  type ChatMessageData,
+  ChatModelPicker,
+  type ChatTextToken,
+} from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import {
@@ -98,7 +101,7 @@ function useAcceptingHost(isPlanning: boolean) {
 
 /** The files the reader attached from the menu, which the next accepted message takes. */
 function useLabAttachments() {
-  const [files, setFiles] = useState<readonly ChatAttachmentData[]>([]);
+  const [files, setFiles] = useState<readonly AttachmentData[]>([]);
   return {
     attachments: files,
     onAttach: (added: File[]) =>

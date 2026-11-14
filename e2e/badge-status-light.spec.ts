@@ -1,0 +1,96 @@
+import { expect, matrix, matrixCell, test } from './fixtures.js';
+
+test.describe('Status Light lab', () => {
+  test('UIC-BADGE-5.1 UIC-BADGE-5.3 draws 6, 8 and 10 pixel dots before their labels', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('badge');
+    const cells = matrix(page, 'status-light').locator(
+      'table[data-lab-matrix="tone size"] td[data-lab-cell]',
+    );
+    expect(await cells.count()).toBe(5 * 3);
+    for (const [size, edge] of [
+      ['sm', 6],
+      ['md', 8],
+      ['lg', 10],
+    ] as const) {
+      const light = matrixCell(matrix(page, 'status-light'), `tone=success size=${size}`).locator(
+        `.ui-status-light`,
+      );
+      await expect(light).toHaveText('Running');
+      const dot = await light.locator('.ui-status-light__dot').boundingBox();
+      const label = await light.locator('.ui-status-light__label').boundingBox();
+      expect([dot?.width, dot?.height]).toEqual([edge, edge]);
+      expect(dot?.x ?? 0).toBeLessThan(label?.x ?? 0);
+      // The dot is centred on the label's line.
+      const dotMiddle = (dot?.y ?? 0) + (dot?.height ?? 0) / 2;
+      const labelMiddle = (label?.y ?? 0) + (label?.height ?? 0) / 2;
+      expect(Math.abs(dotMiddle - labelMiddle)).toBeLessThanOrEqual(1);
+    }
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BADGE-5.2 colors each tone', async ({ page, lab }) => {
+    await lab.open('badge');
+    const colors = await Promise.all(
+      ['neutral', 'info', 'success', 'warning', 'danger'].map((tone) =>
+        matrixCell(matrix(page, 'status-light'), `tone=${tone} size=md`)
+          .locator(`.ui-status-light__dot`)
+          .evaluate((node) => getComputedStyle(node).backgroundColor),
+      ),
+    );
+    expect(new Set(colors).size).toBe(5);
+  });
+
+  test('UIC-BADGE-5.4 UIC-BADGE-6.1 labels presence states and names dot-only lights', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('badge');
+    const cell = (status: string, label: string) =>
+      matrixCell(matrix(page, 'status-light'), `status=${status} label=${label}`).locator(
+        `.ui-status-light`,
+      );
+    const defaults = await Promise.all(
+      ['active', 'away', 'busy', 'idle'].map((status) => cell(status, 'default').textContent()),
+    );
+    expect(defaults).toEqual(['Active', 'Away', 'Busy', 'Idle']);
+    await expect(cell('away', 'custom')).toHaveText('Jon Berg, away');
+    const dotOnly = cell('busy', 'dot only');
+    await expect(dotOnly).toHaveRole('img');
+    await expect(dotOnly).toHaveAccessibleName('Jon Berg is busy');
+    await expect(dotOnly.locator('.ui-status-light__label')).toHaveCount(0);
+    const dotColor = (status: string, label: string) =>
+      cell(status, label)
+        .locator('.ui-status-light__dot')
+        .evaluate((node) => getComputedStyle(node).backgroundColor);
+    expect(await dotColor('busy', 'default')).toBe(await dotColor('busy', 'dot only'));
+    expect(await dotColor('active', 'default')).not.toBe(await dotColor('away', 'default'));
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BADGE-5.5 UIC-BADGE-6.2 pulses a pending dot and takes no tab stop', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('badge');
+    const demo = matrix(page, 'status-light').locator('[data-lab-demo="deployment"]');
+    const light = demo.locator('.ui-status-light');
+    const start = demo.getByRole('button', { name: 'Start deployment' });
+    await expect(light).toHaveText('Live');
+    await expect(light).not.toHaveAttribute('data-pending');
+    await start.click();
+    await expect(light).toHaveText('Deploying');
+    await expect(light).toHaveAttribute('data-pending', 'true');
+    await expect(light.locator('.ui-status-light__dot')).toHaveCSS(
+      'animation-name',
+      'ref-status-light-pulse',
+    );
+    // A span with no tab index: Tab passes it by.
+    expect(await light.evaluate((node: HTMLElement) => node.tabIndex)).toBe(-1);
+    await expect(light).not.toHaveAttribute('role');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(light.locator('.ui-status-light__dot')).toHaveCSS('animation-name', 'none');
+  });
+});

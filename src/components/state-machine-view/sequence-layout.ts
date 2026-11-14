@@ -2,11 +2,11 @@ import type { Size } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { drawSequenceRoute, layoutSequenceRoutes, type SequenceRoute } from './sequence-routes.js';
 import type {
+  StateMachineDensity,
+  StateMachineSequenceGeometry,
   StateMachineState,
   StateMachineTransition,
-  StateMachineViewDensity,
-  StateMachineViewSequenceGeometry,
-} from './state-machine-view.js';
+} from './state-machine-model.js';
 
 export interface SequenceMeasurements {
   viewportWidth: number;
@@ -41,9 +41,9 @@ export interface SequenceLayout {
 interface LayoutInput {
   states: readonly StateMachineState[];
   transitions: readonly StateMachineTransition[];
-  density?: StateMachineViewDensity | undefined;
+  density?: StateMachineDensity | undefined;
   size?: Size | undefined;
-  geometry?: StateMachineViewSequenceGeometry | undefined;
+  geometry?: StateMachineSequenceGeometry | undefined;
   measurements: SequenceMeasurements;
 }
 

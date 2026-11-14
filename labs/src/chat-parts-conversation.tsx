@@ -11,10 +11,10 @@ import {
   type ChatToolCallHandlers,
   type ChatToolCallPart,
   type ChatToolRenderer,
-} from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { kindSamples, tripAttachments } from './chat-attachment-samples.js';
+import { kindSamples, tripAttachments } from './attachment-samples.js';
 import {
   bookingCall,
   forecastRenderer,

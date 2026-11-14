@@ -71,3 +71,44 @@
     animation: none;
   }
 }
+
+/* Truncation Tooltip */
+
+.ui-truncation-tooltip {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.ui-truncation-tooltip__panel {
+  white-space: normal;
+}
+
+.ui-truncation-tooltip[data-expanded] {
+  display: inline;
+  overflow: visible;
+  white-space: normal;
+}
+
+.ui-truncation-tooltip__toggle {
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: var(--ref-accent-ink);
+  font: inherit;
+  font-size: var(--ref-font-size-xs);
+  cursor: pointer;
+  margin-inline-start: 4px;
+  vertical-align: bottom;
+}
+
+.ui-truncation-tooltip__toggle[data-hovered] {
+  text-decoration: underline;
+}
+.ui-truncation-tooltip__toggle[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+}

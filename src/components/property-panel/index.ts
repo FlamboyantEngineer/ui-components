@@ -19,4 +19,6 @@ export {
   PropertyRow,
   PropertySection,
 } from './property-panel.js';
+export type { PropertyScopeFilter, PropertyScopeProps } from './property-scope.js';
+export { PropertyScope } from './property-scope.js';
 export { PropertyStrip, PropertyStripCell } from './property-strip.js';

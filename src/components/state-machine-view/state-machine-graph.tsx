@@ -12,16 +12,16 @@ import {
 } from '../diagram-canvas/diagram-canvas.js';
 import { describeState } from './describe-state.js';
 import type {
-  StateMachineSequenceProps,
+  StateMachineModelProps,
+  StateMachineSequenceOptions,
   StateMachineState,
-  StateMachineViewProps,
-} from './state-machine-view.js';
+} from './state-machine-model.js';
 import { hooks } from './state-machine-view-hooks.js';
 
 /** The graph presentation's props: everything but the sequence-only ones. */
-type StateMachineGraphProps = Omit<
-  StateMachineViewProps,
-  'presentation' | keyof StateMachineSequenceProps
+export type StateMachineGraphProps = Omit<
+  StateMachineModelProps,
+  keyof StateMachineSequenceOptions
 >;
 
 const stateWidth = 144;

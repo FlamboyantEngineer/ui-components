@@ -1,15 +1,7 @@
-// Cases of the table lab for row groups, spreadsheet mode and bulk edit.
-
+// Cases of the table lab for row groups.
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { NumberField } from '../../src/components/number-field/index.js';
-import { Switch } from '../../src/components/switch/switch.js';
-import type {
-  TableCellEdit,
-  TableCellRange,
-  TableColumn,
-  TableGroupBy,
-} from '../../src/components/table/index.js';
+import type { TableColumn, TableGroupBy } from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
 import type { Key } from '../../src/core/props.js';
 import { GroupParentIdentity, GroupPeerIdentity } from './table-group-identity-cases.js';
@@ -23,11 +15,6 @@ interface Stock {
   price: number;
   picked: string;
   organic: boolean;
-}
-
-interface Reading {
-  id: string;
-  value: number;
 }
 
 const stock: Stock[] = [
@@ -113,37 +100,6 @@ const stock: Stock[] = [
   },
 ];
 
-const readingColumns: TableColumn<Reading>[] = [
-  { id: 'id', header: 'Reading' },
-  { id: 'value', header: 'Value', allowsEditing: true, renderCell: (row) => String(row.value) },
-];
-
-const price = new Intl.NumberFormat('en', { style: 'currency', currency: 'EUR' });
-
-/** Applies a batch of cell edits to rows, as a caller of `onCellsChange` does. */
-function applyEdits<T extends { id: Key }>(
-  rows: readonly T[],
-  edits: readonly TableCellEdit<T>[],
-): T[] {
-  return rows.map((row) =>
-    edits
-      .filter((edit) => edit.row.id === row.id)
-      .reduce((next, edit) => ({ ...next, [edit.columnId]: edit.value }), row),
-  );
-}
-
-function describeEdits<T extends { id: Key }>(edits: readonly TableCellEdit<T>[]): string {
-  return edits
-    .map((edit) => `${String(edit.row.id)}.${edit.columnId}=${String(edit.value)}`)
-    .join(', ');
-}
-
-function describeRange(range: TableCellRange | null): string {
-  if (!range) return 'none';
-  const { anchor, focus } = range;
-  return `${String(anchor.rowKey)}.${anchor.columnId}:${String(focus.rowKey)}.${focus.columnId}`;
-}
-
 const weightClass: TableGroupBy<Stock> = {
   id: 'weight-class',
   label: 'Weight class',
@@ -156,6 +112,8 @@ const groupings: Readonly<Record<string, readonly TableGroupBy<Stock>[]>> = {
   'Weight class': [weightClass],
   None: [],
 };
+
+const price = new Intl.NumberFormat('en', { style: 'currency', currency: 'EUR' });
 
 const groupedColumns: TableColumn<Stock>[] = [
   { id: 'name', header: 'Name', allowsSorting: true },
@@ -296,182 +254,6 @@ export function Grouping() {
           size="sm"
         />
       </div>
-    </div>
-  );
-}
-
-const sheetColumns: TableColumn<Stock>[] = [
-  { id: 'id', header: 'Code' },
-  { id: 'name', header: 'Name', allowsEditing: true },
-  {
-    id: 'weight',
-    header: 'Weight (g)',
-    align: 'end',
-    allowsEditing: true,
-    validateValue: (value) =>
-      typeof value === 'number' && value >= 0 ? null : 'Enter a weight of 0 or more.',
-  },
-  {
-    id: 'price',
-    header: 'Price',
-    align: 'end',
-    allowsEditing: true,
-    parseValue: (text) => (text.trim() === '' ? null : Number(text)),
-    validateValue: (value) =>
-      value === null || (typeof value === 'number' && Number.isFinite(value))
-        ? null
-        : 'Enter a price.',
-  },
-  { id: 'origin', header: 'Origin', allowsEditing: true },
-];
-
-export function Spreadsheet() {
-  const [rows, setRows] = useState(stock.slice(0, 6));
-  const [range, setRange] = useState<TableCellRange | null>(null);
-  const [last, setLast] = useState('none');
-  const [organic, setOrganic] = useState<ReadonlySet<string>>(new Set());
-  const [ripeness, setRipeness] = useState<Readonly<Record<string, number>>>({});
-  return (
-    <div data-lab="spreadsheet">
-      <Table
-        aria-label="Stock, spreadsheet"
-        rows={rows}
-        columns={sheetColumns}
-        cellSelection="range"
-        selectedRange={range}
-        onSelectedRangeChange={setRange}
-        onCellsChange={(edits) => {
-          setRows((current) => applyEdits(current, edits));
-          setLast(describeEdits(edits));
-        }}
-        size="sm"
-      />
-      <output data-lab-output>{`Range: ${describeRange(range)} · Last change: ${last}`}</output>
-      <h3>One cell at a time</h3>
-      <Table
-        aria-label="Stock, one cell at a time"
-        rows={stock.slice(0, 3)}
-        columns={[
-          ...sheetColumns.slice(0, 3),
-          {
-            id: 'organic',
-            header: 'Organic',
-            renderCell: (row) => (
-              <Switch
-                size="sm"
-                isSelected={organic.has(row.id)}
-                onChange={(isOn) =>
-                  setOrganic((current) => {
-                    const next = new Set(current);
-                    if (isOn) next.add(row.id);
-                    else next.delete(row.id);
-                    return next;
-                  })
-                }
-              >
-                {`Organic ${row.name}`}
-              </Switch>
-            ),
-          },
-          {
-            id: 'ripeness',
-            header: 'Ripeness',
-            renderCell: (row) => (
-              <NumberField
-                display="slider"
-                size="sm"
-                label={`Ripeness ${row.name}`}
-                valueLabel="none"
-                maxValue={10}
-                value={ripeness[row.id] ?? 5}
-                onChange={(value) => setRipeness((current) => ({ ...current, [row.id]: value }))}
-              />
-            ),
-          },
-        ]}
-        cellSelection="cell"
-        defaultSelectedRange={{
-          anchor: { rowKey: 'apple', columnId: 'name' },
-          focus: { rowKey: 'apple', columnId: 'name' },
-        }}
-        size="sm"
-      />
-    </div>
-  );
-}
-
-const bulkColumns: TableColumn<Stock>[] = [
-  { id: 'name', header: 'Name' },
-  {
-    id: 'kind',
-    header: 'Kind',
-    bulkEdit: { type: 'choice', options: ['Fruit', 'Vegetable', 'Herb'] },
-  },
-  { id: 'origin', header: 'Origin', bulkEdit: { type: 'text' } },
-  { id: 'weight', header: 'Weight (g)', align: 'end', bulkEdit: { type: 'number' } },
-  { id: 'picked', header: 'Picked', bulkEdit: { type: 'date' } },
-  {
-    id: 'organic',
-    header: 'Organic',
-    renderCell: (row) => (row.organic ? 'Yes' : 'No'),
-    bulkEdit: { type: 'boolean' },
-  },
-];
-
-export function BulkEdit() {
-  const [rows, setRows] = useState(stock);
-  const [selected, setSelected] = useState<Set<Key> | 'all'>(new Set());
-  const [last, setLast] = useState('none');
-  return (
-    <div data-lab="bulk-edit">
-      <Table
-        aria-label="Stock, bulk edit"
-        rows={rows}
-        columns={bulkColumns}
-        selectionMode="multiple"
-        selectedKeys={selected}
-        onSelectionChange={setSelected}
-        selectionActions={[
-          {
-            verb: 'delete',
-            label: 'Delete selected',
-            onPress: () => {
-              setRows((current) =>
-                current.filter((row) => selected !== 'all' && !selected.has(row.id)),
-              );
-              setSelected(new Set());
-            },
-          },
-        ]}
-        onCellsChange={(edits) => {
-          setRows((current) => applyEdits(current, edits));
-          setLast(describeEdits(edits));
-        }}
-        size="sm"
-      />
-      <output data-lab-output>{`Last change: ${last}`}</output>
-    </div>
-  );
-}
-
-export function SmallSteps() {
-  const [rows, setRows] = useState<Reading[]>([
-    { id: 'r1', value: 1e-7 },
-    { id: 'r2', value: 2e-7 },
-    { id: 'r3', value: 0 },
-    { id: 'r4', value: 0 },
-  ]);
-  return (
-    <div data-lab="small-steps">
-      <Table
-        aria-label="Small steps"
-        rows={rows}
-        columns={readingColumns}
-        cellSelection="range"
-        onCellsChange={(edits) => setRows((current) => applyEdits(current, edits))}
-        size="sm"
-      />
-      <output data-lab-output>{rows.map((row) => row.value).join(', ')}</output>
     </div>
   );
 }

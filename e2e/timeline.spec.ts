@@ -36,174 +36,19 @@ test.describe('Timeline lab', () => {
     await lab.expectAccessible('[data-lab-demo="row-properties"]');
   });
 
-  test('UIC-TIMELINE-1.12 UIC-TIMELINE-2.6 shows, edits and keeps assignees and links task cards', async ({
+  test('UIC-TIMELINE-1.12 UIC-TIMELINE-2.5 reports item menu choices to the host', async ({
     page,
     lab,
   }) => {
     await lab.open('timeline');
     const demo = page.locator('[data-lab-demo="task-menus"]');
-    const timeline = demo.getByRole('group', { name: 'Garden plan' });
-    const sow = timeline.getByRole('button', { name: 'Sow seeds' });
-    await sow.scrollIntoViewIfNeeded();
-    await expect(sow).toHaveAccessibleDescription(/Assigned to Ana Lima and Leo Park/);
-    const avatars = sow.locator('.ui-timeline__assignees');
-    const [bar, group] = await Promise.all([sow.boundingBox(), avatars.boundingBox()]);
-    expect((group?.x ?? 0) + (group?.width ?? 0)).toBeLessThanOrEqual(
-      (bar?.x ?? 0) + (bar?.width ?? 0),
-    );
-    await expect(
-      timeline.getByRole('button', { name: 'Lay gravel' }).locator('.ui-timeline__assignees'),
-    ).toHaveCount(0);
-    // The menu links the task card.
-    await sow.click({ button: 'right' });
-    await expect(page.getByRole('menuitem', { name: 'Open task card' })).toHaveAttribute(
-      'href',
-      '#tasks/sow',
-    );
+    const item = demo.getByRole('button', { name: 'Dig beds' });
+    await item.click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Edit' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit Sow seeds' });
-    await expect(dialog.getByRole('link', { name: 'Open Sow seeds' })).toHaveAttribute(
-      'href',
-      '#tasks/sow',
+    await expect(demo.locator('[data-lab-log="task-menus"]')).toHaveText(
+      'Last action: edit Dig beds',
     );
-    // Reassign: Ana off, Sam on.
-    await dialog.getByRole('button', { name: /Remove Ana Lima/ }).click();
-    const picker = dialog.getByRole('combobox', { name: 'Assignees' });
-    await picker.fill('Sam');
-    await page.getByRole('option', { name: /Sam Ortiz/ }).click();
-    await page.keyboard.press('Escape');
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog).toBeHidden();
-    await expect(sow).toHaveAccessibleDescription(/Assigned to Leo Park and Sam Ortiz/);
-    // A move keeps them.
-    await sow.focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(sow).toHaveAccessibleDescription(/Mar 13, 2026 to Mar 17, 2026/);
-    await expect(sow).toHaveAccessibleDescription(/Assigned to Leo Park and Sam Ortiz/);
-    // The table names them, links the task card and marks the unassigned item.
-    await demo.getByRole('radio', { name: 'Table' }).click();
-    await expect(demo.getByRole('link', { name: 'Sow seeds' })).toHaveAttribute(
-      'href',
-      '#tasks/sow',
-    );
-    await expect(demo.getByRole('row', { name: /Lay gravel/ })).toContainText('Unassigned');
-    await lab.expectAccessible('[data-lab-demo="task-menus"]');
-  });
-
-  test('UIC-TIMELINE-2.6 starts a new draft for each opening, even one during the closing editor exit', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('timeline');
-    // A slow exit keeps the closing editor drawn while the item opens again.
-    await page.addStyleTag({
-      content:
-        '@keyframes lab-leave { to { opacity: 0.99; } } .ui-modal[data-exiting] { animation: lab-leave 3s linear; }',
-    });
-    const demo = page.locator('[data-lab-demo="task-menus"]');
-    const timeline = demo.getByRole('group', { name: 'Garden plan' });
-    const log = demo.locator('[data-lab-log="task-menus"]');
-    const editor = page.locator('.ui-timeline-item-editor');
-    const dig = timeline.getByRole('button', { name: /^Dig/ });
-    /** Opens the item's editor from its menu, without the pointer, so the exiting editor allows it. */
-    const openEditor = async () => {
-      await dig.dispatchEvent('contextmenu', { button: 2 });
-      const menu = page.getByRole('menu', { name: /actions$/ });
-      await expect(menu).toBeVisible();
-      await menu.getByRole('menuitem', { name: 'Edit' }).dispatchEvent('click');
-    };
-    await dig.scrollIntoViewIfNeeded();
-    await openEditor();
-    const name = page.getByRole('dialog', { name: 'Edit Dig beds' }).getByRole('textbox', {
-      name: 'Name',
-    });
-    await name.fill('Cancelled draft');
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
-    await expect(editor).toHaveAttribute('data-exiting', 'true');
-    // Reopened during the exit: the field shows the item, not the cancelled draft.
-    await openEditor();
-    const again = page.getByRole('dialog', { name: 'Edit Dig beds' }).getByRole('textbox', {
-      name: 'Name',
-    });
-    await expect(again).toHaveValue('Dig beds');
-    await again.fill('Dig beds once');
-    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-    await expect(log).toHaveText('Last action: saved Dig beds once');
-    await expect(editor).toHaveAttribute('data-exiting', 'true');
-    // Saved, then reopened during the exit: the new opening saves too.
-    await openEditor();
-    const third = page.getByRole('dialog', { name: 'Edit Dig beds once' }).getByRole('textbox', {
-      name: 'Name',
-    });
-    await expect(third).toHaveValue('Dig beds once');
-    await third.fill('Dig beds twice');
-    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-    await expect(log).toHaveText('Last action: saved Dig beds twice');
-    await expect(timeline.getByRole('button', { name: 'Dig beds twice' })).toBeVisible();
-  });
-
-  test('UIC-TIMELINE-2.5 UIC-TIMELINE-2.6 edits an item from its context menu in a modal editor', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('timeline');
-    const demo = page.locator('[data-lab-demo="task-menus"]');
-    const timeline = demo.getByRole('group', { name: 'Garden plan' });
-    const log = demo.locator('[data-lab-log="task-menus"]');
-    const dig = timeline.getByRole('button', { name: 'Dig beds' });
-    await dig.scrollIntoViewIfNeeded();
-    // A secondary click opens the menu without selecting or moving the item.
-    const box = await dig.boundingBox();
-    await dig.click({ button: 'right' });
-    const menu = page.getByRole('menu', { name: 'Dig beds actions' });
-    await expect(menu).toBeVisible();
-    await expect(menu.getByRole('menuitem')).toHaveText([
-      'Open task card',
-      'Edit',
-      'Mark complete',
-      'Remove',
-    ]);
-    await lab.expectAccessible('.ui-menu-popover');
-    await menu.getByRole('menuitem', { name: 'Edit' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit Dig beds' });
-    await expect(dialog).toBeVisible();
-    await lab.expectAccessible('.ui-timeline-item-editor');
-    const name = dialog.getByRole('textbox', { name: 'Name' });
-    await expect(name).toBeFocused();
-    await name.fill('');
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog).toBeVisible();
-    await expect(name).toHaveAttribute('aria-invalid', 'true');
-    await name.fill('Dig raised beds');
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog).toBeHidden();
-    await expect(log).toHaveText('Last action: saved Dig raised beds');
-    const raised = timeline.getByRole('button', { name: 'Dig raised beds' });
-    await expect(raised).toBeFocused();
-    expect(await raised.boundingBox()).toEqual(box);
-    // From the keyboard; Escape leaves the item as it was.
-    await page.keyboard.press('Shift+F10');
-    await page.getByRole('menuitem', { name: 'Edit' }).click();
-    const again = page.getByRole('dialog', { name: 'Edit Dig raised beds' });
-    await again.getByRole('textbox', { name: 'Name' }).fill('Discarded');
-    // The first Escape gives the field its value back, the second closes the editor.
-    await page.keyboard.press('Escape');
-    await expect(again.getByRole('textbox', { name: 'Name' })).toHaveValue('Dig raised beds');
-    await page.keyboard.press('Escape');
-    await expect(again).toBeHidden();
-    await expect(raised).toBeFocused();
-    await expect(timeline.getByRole('button', { name: 'Discarded' })).toHaveCount(0);
-    // A read-only item only shows its details.
-    await timeline.getByRole('button', { name: 'Lay gravel' }).click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'View details' }).click();
-    const details = page.getByRole('dialog', { name: 'Lay gravel' });
-    await expect(details.getByRole('textbox', { name: 'Name' })).toHaveAttribute('readonly', '');
-    await expect(details.getByRole('button', { name: 'Save' })).toHaveCount(0);
-    await details.getByRole('button', { name: 'Close' }).last().click();
-    await expect(details).toBeHidden();
-    // The table shows the same owned items.
-    await demo.getByRole('radio', { name: 'Table' }).click();
-    await expect(demo.getByRole('rowheader', { name: 'Dig raised beds' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('UIC-TIMELINE-1.1 UIC-TIMELINE-1.3 UIC-TIMELINE-1.5 lays out every zoom level on the scale', async ({

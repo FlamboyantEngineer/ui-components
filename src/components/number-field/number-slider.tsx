@@ -47,6 +47,7 @@ export interface NumberRangeFieldProps
   extends
     Omit<SliderFieldProps<NumberRange>, 'name' | keyof NumberTrackProps<NumberRange>>,
     NumberTrackProps<NumberRange> {
+  valueType?: 'number' | undefined;
   /** Holds a range, a start and an end, instead of a number. */
   range: true;
   /** A start and an end input (`field`, the default), or a track with two thumbs (`slider`). */
@@ -128,6 +129,7 @@ function toEndErrorSources({
  * `minStepsBetweenThumbs` steps apart, typed into two inputs or picked with two thumbs on a track.
  */
 export function NumberRangeField({
+  valueType: _valueType,
   range: _range,
   display = 'field',
   marks = [],
@@ -197,6 +199,7 @@ export function NumberRangeField({
 /** The props of a single number's slider display. */
 export interface NumberSliderFieldProps
   extends Omit<SliderFieldProps<number>, keyof NumberTrackProps<number>>, NumberTrackProps<number> {
+  valueType?: 'number' | undefined;
   /** Holds a range with `true` (`NumberRangeFieldProps`); a single number otherwise. */
   range?: false | undefined;
   /** Draws the number on a track with a thumb. A slider always holds a value: it is never empty. */
@@ -211,6 +214,7 @@ export interface NumberSliderFieldProps
  * key press commits.
  */
 export function NumberSliderField({
+  valueType: _valueType,
   range: _range,
   display: _display,
   marks = [],

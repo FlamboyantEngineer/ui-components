@@ -62,7 +62,7 @@ Verification: `src/components/badge/badge.test.tsx`
 
 ### UIC-BADGE-1.9 - Collapsing to a dot
 
-A label badge whose room, with the badge drawn whole, is narrower than its label's first character (a whole grapheme) followed by an ellipsis, measured in the label's font, shall publish `data-collapsed`, and the reference sheet draws it as a small round chip (8, 10 or 12 pixels by size) with the variant's own fill and border, a status badge's in its tone, with its label visually hidden and still read by assistive technology. It measures again when its label changes, when fonts load and when it, its host or the host's container resizes, and drops `data-collapsed` once the room fits the letter and the ellipsis. This is the default; `collapse="none"` keeps the cut label. While the label is cut, by an ellipsis or by collapsing, resting the pointer on it shows the whole label in a [Truncation Tooltip](TRUNCATION-TOOLTIP.md). Count and dot badges never collapse.
+A label badge whose room, with the badge drawn whole, is narrower than its label's first character (a whole grapheme) followed by an ellipsis, measured in the label's font, shall publish `data-collapsed`, and the reference sheet draws it as a small round chip (8, 10 or 12 pixels by size) with the variant's own fill and border, a status badge's in its tone, with its label visually hidden and still read by assistive technology. It measures again when its label changes, when fonts load and when it, its host or the host's container resizes, and drops `data-collapsed` once the room fits the letter and the ellipsis. This is the default; `collapse="none"` keeps the cut label. While the label is cut, by an ellipsis or by collapsing, resting the pointer on it shows the whole label in a [Truncation Tooltip](TOOLTIP.md). Count and dot badges never collapse.
 
 Implementation: `src/components/badge/badge.tsx`, `src/components/badge/badge-collapse.ts`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -115,10 +115,74 @@ A badge with `variant="dot"` shall render an empty marker that publishes `data-v
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
+## Status Light
+
+`StatusLight` names a status with a colored dot beside a short label, such as a service state (`Running`, `Stopped`) or a person's presence (`Away`). The label carries the meaning; the dot's color repeats it. It reuses the presence vocabulary of [Presence Avatar](AVATAR.md) (`active`, `away`, `busy`, `idle`) so a presence state can show on its own, labelled from the provider's strings. A [Badge](BADGE.md) with the `status` variant is a tinted pill with a dot; its `dot` variant is a bare marker.
+
+## UIC-BADGE-5 - Status light
+
+### UIC-BADGE-5.1 - Parts
+
+`StatusLight` shall render a `ui-status-light` `<span>` holding a decorative `ui-status-light__dot` element (`aria-hidden="true"`) followed by its visible label, the `children`, in a `ui-status-light__label` element.
+
+Implementation: `src/components/badge/status-light.tsx`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-5.2 - Tones
+
+`tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`, so the stylesheet colors the dot.
+
+Implementation: `src/components/badge/status-light.tsx`, `labs/reference/badge.css`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-5.3 - Sizes
+
+`size` shall publish `data-size`: `sm`, `md` (the default) or `lg`. The reference sheet draws 6, 8 and 10 pixel dots beside 12, 13 and 15 pixel text.
+
+Implementation: `src/components/badge/status-light.tsx`, `labs/reference/badge.css`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-5.4 - Presence
+
+`status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the type Avatar, User Identity and User Card take) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colors each presence as the presence avatar's indicator does, over the tone.
+
+Implementation: `src/components/badge/status-light.tsx`, `src/core/strings/common.ts`, `labs/reference/badge.css`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-5.5 - Pending
+
+`isPending` shall publish `data-pending` while the status is still in progress, such as a deployment that runs; the reference sheet pulses the dot unless the reader prefers reduced motion. The label states the progress (`Deploying`). The flag is the same `isPending` that Banner and InlineError take for work in progress, so one pending state drives them all.
+
+Implementation: `src/components/badge/status-light.tsx`, `labs/reference/badge.css`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-5.6 - Hooks and caller attributes
+
+`StatusLight` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to its `<span>` root; caller attributes never replace a hook attribute.
+
+Implementation: `src/components/badge/status-light.tsx`
+Verification: `src/components/badge/status-light.test.tsx`
+
+## UIC-BADGE-6 - Accessibility
+
+### UIC-BADGE-6.1 - Name
+
+A light with a visible label shall be read as that text, with no role of its own. Without a visible label, `aria-label` makes the root an image (`role="img"`) named by it; given with `status`, it also replaces the presence label, so the light shows only its dot. A light with neither is decorative and hidden from assistive technology.
+
+Implementation: `src/components/badge/status-light.tsx`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
+### UIC-BADGE-6.2 - Static output
+
+A status light shall take no tab stop and announce nothing on its own; a host whose status change should be heard places it in its own status region. The color is never the only signal: the label or name states the status.
+
+Implementation: `src/components/badge/status-light.tsx`
+Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`
+
 ## Hooks
 
-| Hook                         | Kind      | Values                                            | Description                                                                 |
-| ---------------------------- | --------- | ------------------------------------------------- | --------------------------------------------------------------------------- |
+| Hook                         | Kind      | Values / Meaning                                  |
+| ---------------------------- | --------- | ------------------------------------------------- |
 | `ui-badge`                   | root      |                                                   | The `<span>`.                                                               |
 | `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                                             |
 | `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).                                   |
@@ -133,3 +197,10 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 | `data-bare`                  | state     | `true`                                            | No pill.                                                                    |
 | `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                                              |
 | `data-collapsed`             | state     | `true`                                            | A label badge too narrow for a letter and an ellipsis, drawn as a dot.      |
+| `ui-status-light`            | root      |                                                   | The `<span>`.                                                               |
+| `ui-status-light__dot`       | slot      |                                                   | The decorative dot.                                                         |
+| `ui-status-light__label`     | slot      |                                                   | The visible label, when there is one.                                       |
+| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | The status's tone.                                                          |
+| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Dot and text size.                                                          |
+| `data-status`                | attribute | `active`, `away`, `busy`, `idle`                  | A presence state, when `status` is set.                                     |
+| `data-pending`               | state     | `true`                                            | The status is still in progress.                                            |

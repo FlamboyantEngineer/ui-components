@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { execFileSync, spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
@@ -131,7 +131,7 @@ describe('client boundaries', { timeout: 60_000 }, () => {
         'serializeRichTextHtml',
         'serializeRichTextText',
       ],
-      'chat-controller': ['isAwaitingReader', 'reduceChatStream'],
+      'chat/controller': ['isAwaitingReader', 'reduceChatStream'],
       'condition-builder': ['createConditionMatcher', 'matchesConditionGroup'],
       'filter-bar': ['createFilterMatcher', 'matchesFilterCondition'],
       'pdf-viewer': ['findBoxAtPoint'],
@@ -140,7 +140,9 @@ describe('client boundaries', { timeout: 60_000 }, () => {
       'zoom-control': ['findNextZoomLevel'],
     };
     for (const [component, names] of Object.entries(helpers)) {
-      const entry = `src/components/${component}/index.ts`;
+      const entry = component.includes('/')
+        ? `src/components/${component}.ts`
+        : `src/components/${component}/index.ts`;
       const source = ts.createSourceFile(entry, read(entry), ts.ScriptTarget.Latest, true);
       for (const name of names) {
         const statement = source.statements.find(
@@ -152,7 +154,7 @@ describe('client boundaries', { timeout: 60_000 }, () => {
         );
         const specifier = statement?.moduleSpecifier;
         if (!specifier || !ts.isStringLiteral(specifier)) throw new Error(`${entry} lacks ${name}`);
-        const module = `src/components/${component}/${specifier.text.replace(/^\.\/|\.js$/g, '')}.ts`;
+        const module = join(dirname(entry), specifier.text.replace(/\.js$/, '.ts'));
         expect(isMarked(module), `${name} from ${module}`).toBe(false);
       }
     }

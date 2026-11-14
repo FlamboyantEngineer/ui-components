@@ -7,7 +7,7 @@ import type { ChatProps } from './chat.js';
 installEditorDom();
 
 describe('Conversation-owned interactive drafts', () => {
-  it('UIC-CHAT-1.5 UIC-CHAT-QUESTION-2.7 retains an in-flight answer and its failure across removal and remount', async () => {
+  it('UIC-CHAT-1.5 UIC-CHAT-32.7 retains an in-flight answer and its failure across removal and remount', async () => {
     let reject: (error: Error) => void = () => undefined;
     const response = new Promise<void>((_resolve, fail) => {
       reject = fail;
@@ -44,7 +44,7 @@ describe('Conversation-owned interactive drafts', () => {
     expect(screen.getByRole('textbox', { name: /Any notes/ })).toHaveValue('Keep this answer');
   });
 
-  it('UIC-CHAT-1.5 UIC-CHAT-TOOL-CALL-4.2 retains a denial draft without stealing focus on remount and resets in another conversation', async () => {
+  it('UIC-CHAT-1.5 UIC-CHAT-42.2 retains a denial draft without stealing focus on remount and resets in another conversation', async () => {
     const options: Partial<ChatProps> = {
       conversationId: 'first',
       onDeny: vi.fn(),
@@ -76,7 +76,7 @@ describe('Conversation-owned interactive drafts', () => {
     expect(screen.getByRole('textbox', { name: /Reason/ })).toHaveValue('');
   });
 
-  it('UIC-CHAT-QUESTION-2.7 ignores an earlier request after settlement and virtual remount begin a new lifetime', async () => {
+  it('UIC-CHAT-32.7 ignores an earlier request after settlement and virtual remount begin a new lifetime', async () => {
     let rejectOld: (error: Error) => void = () => undefined;
     let acceptNew: () => void = () => undefined;
     const oldRequest = new Promise<void>((_resolve, reject) => {

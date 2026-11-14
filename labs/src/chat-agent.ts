@@ -1,10 +1,10 @@
 // A fake streaming trip planner for the Chat lab: each behaviour is a `send` that streams events.
 
 import type {
+  ChatMessageData,
   ChatSendFunction,
   ChatUploadFunction,
-} from '../../src/components/chat-controller/index.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { askTrip, planTrip } from './chat-agent-tasks.js';
 import { nextLabId, readerId } from './chat-samples.js';

@@ -10,9 +10,7 @@ import {
   useState,
 } from 'react';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import { type ChatAttachmentData, ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
-import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
+import { type AttachmentData, AttachmentList } from '../attachment/attachment.js';
 import {
   MessageComposerAttachButton,
   MessageComposerEmojiButton,
@@ -30,6 +28,7 @@ import {
   useChatComposerHandle,
 } from './chat-composer-handle.js';
 import { type ChatComposerHint, useChatComposerHint } from './chat-composer-hint.js';
+import type { ChatQueuedMessage } from './chat-controller.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
   type ChatMessageText,
@@ -38,6 +37,7 @@ import {
   toComposerTokens,
   toMessageText,
 } from './chat-model.js';
+import type { ChatMessageData, ChatTextToken } from './chat-parts.js';
 import { ChatProgressLine, useChatProgress } from './chat-progress.js';
 import { ChatQueue, useChatQueueRemovals } from './chat-queue.js';
 import { type ChatSendOptionsProps, useChatSendOptions } from './chat-send-options.js';
@@ -123,7 +123,7 @@ export interface ChatComposerOptions
    */
   progressIcon?: ReactNode;
   /** The files attached to the next message. */
-  attachments?: readonly ChatAttachmentData[] | undefined;
+  attachments?: readonly AttachmentData[] | undefined;
   /** Removes a file from the next message. */
   onRemoveAttachment?: ((id: string) => void) | undefined;
   /** Uploads a failed file of the next message again. */
@@ -247,7 +247,7 @@ function renderAttachments({ options, state }: ChatComposerProps) {
   if (!options.attachments?.length) return undefined;
   const isEditable = !options.isDisabled;
   return (
-    <ChatAttachmentList
+    <AttachmentList
       attachments={options.attachments}
       onRemove={isEditable ? options.onRemoveAttachment : undefined}
       onRetry={isEditable ? options.onRetryAttachment : undefined}

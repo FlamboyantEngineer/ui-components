@@ -9,7 +9,7 @@ import {
   type MentionKind,
   parseMentions,
 } from '../comment-composer/comment-mentions.js';
-import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
+import { PreviewTrigger } from '../hover-card/hover-card.js';
 import { renderMarkdownComment } from './comment-text-markdown.js';
 
 /** How a comment's text reads: as `plain` text, or as inline Markdown (`markdown-inline`). */
@@ -60,7 +60,7 @@ function MentionChip({
   const card = renderCard?.({ id: segment.id, name: segment.name, kind });
   const chip = <span {...hooks.slot('mention', { kind })}>{segment.name}</span>;
   if (card === undefined || card === null) return chip;
-  return <UserCardTrigger card={card}>{chip}</UserCardTrigger>;
+  return <PreviewTrigger preview={card}>{chip}</PreviewTrigger>;
 }
 
 /**

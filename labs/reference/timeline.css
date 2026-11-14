@@ -321,17 +321,3 @@
 .ui-timeline__table {
   max-height: 24rem;
 }
-
-/* The item editor: a narrow modal panel whose fields stack in one column. */
-.ui-timeline-item-editor .ui-modal__panel {
-  width: min(440px, 100%);
-}
-
-.ui-timeline-item-editor__form {
-  display: grid;
-  gap: 4px;
-}
-
-.ui-timeline-item-editor__link {
-  justify-self: start;
-}

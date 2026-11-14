@@ -64,9 +64,9 @@ Verification: `test/public-types.test.ts`, `test/root-refs.test.tsx`, `test/scri
 
 ### UIC-COMPOSITION-2.6 - Shared vocabulary in props
 
-Props shall name the shared vocabulary of `src/core/props.ts` directly: `ControlSize` for control heights (`Button`, `SegmentedChoice`, `Breadcrumb`, `Combobox` and the components that pass a size on to them), `Tone` for tones (`Badge`, `Banner`, `Modal`, `StatusLight`, `Tag`), and `Density` or a subset of it for spacing. No module exports a type that only renames a core type. Joining controls into one run is the boolean `attached` beside `density`, on [Button Group](BUTTON-GROUP.md) and on a toolbar row's groups ([UIC-LAYOUT-3.10](LAYOUT.md#uic-layout-310---attached-toolbar-groups)), never a density value. A subset with its own meaning, such as an avatar's geometry, keeps its own name.
+Props shall name the shared vocabulary of `src/core/props.ts` directly: `ControlSize` for control heights (`Button`, `SegmentedChoice`, `Breadcrumb`, `Combobox` and the components that pass a size on to them), `Tone` for tones (`Badge`, `Banner`, `Modal`, `StatusLight`, `Tag`), and `Density` or a subset of it for spacing. No module exports a type that only renames a core type. Joining controls into one run is the boolean `attached` beside `density`, on [Button Group](BUTTON.md) and on a toolbar row's groups ([UIC-TOOLBAR-ROW-1.6](TOOLBAR-ROW.md#uic-toolbar-row-16---attached-toolbar-groups)), never a density value. A subset with its own meaning, such as an avatar's geometry, keeps its own name.
 
-Implementation: `src/core/props.ts`, `src/components/button-group/button-group.tsx`, `src/components/layout/toolbar-row.tsx`
+Implementation: `src/core/props.ts`, `src/components/button/button-group.tsx`, `src/components/toolbar-row/toolbar-row.tsx`
 Verification: `test/public-types.test.ts`
 
 ## UIC-COMPOSITION-3 - Slots
@@ -102,3 +102,33 @@ A value a component lets the caller control (`value`/`defaultValue` with `onChan
 
 Implementation: `src/core/controllable-state.ts`
 Verification: `src/core/controllable-state.test.ts`
+
+## UIC-COMPOSITION-6 - Host recipe labs
+
+### UIC-COMPOSITION-6.1 - Copyable collection layouts
+
+The discoverable `composition-collections` lab shall show twelve independent host recipes: grouped activity, before/after values, dismissible updates, revision selection, display choices, saved views, column assignments, permission choices, related constraints, source selection, query submission and collection management. Each starts in its documented state, including duplicate mapping validation and inherited access. Shared reference styles and library layout props supply spacing, alignment and wrapping; recipe-specific stylesheets, inline visual styles and custom layout classes are unnecessary. At compact and wide viewport widths the recipes shall avoid overlapping controls and page overflow; a component may retain its own contained scroller.
+
+Implementation: `labs/composition-collections.html`, `labs/src/composition-collections.lab.tsx`, `labs/src/composition-collections-feeds.tsx`, `labs/src/composition-collections-options.tsx`, `labs/src/composition-collections-views.tsx`, `labs/src/composition-collections-editors.tsx`, `docs/HOST-COMPOSITIONS.md`
+Verification: `e2e/composition-collections.spec.ts`
+
+### UIC-COMPOSITION-6.2 - Host collection interactions
+
+The collection recipes shall keep host state with ordinary library callbacks: dismissing updates reaches an empty collection, bulk permission changes preserve read-only inherited grants, and asynchronous rename failure retains the proposed name and its error until corrected. Creation and selection remain operable through accessible controls. The examples introduce no public domain workflow component.
+
+Implementation: `labs/src/composition-collections-feeds.tsx`, `labs/src/composition-collections-options.tsx`, `labs/src/composition-collections-editors.tsx`
+Verification: `e2e/composition-collections.spec.ts`
+
+### UIC-COMPOSITION-6.3 - Copyable editor layouts
+
+The discoverable `composition-editors` lab shall show six independent host recipes: event drafts, timeline drafts, asset placement, raw source editing, selected-row actions and state visualizations. Each uses library controls with the shared reference stylesheet and layout props, without recipe-specific visual styles. At compact and wide widths controls shall remain usable without overlap or page overflow, while contained component scrollers remain available.
+
+Implementation: `labs/composition-editors.html`, `labs/src/composition-editors.lab.tsx`, `labs/src/composition-editors.tsx`, `labs/src/composition-editors-grid.tsx`, `docs/HOST-COMPOSITIONS.md`
+Verification: `e2e/composition-editors.spec.ts`
+
+### UIC-COMPOSITION-6.4 - Host editor interactions
+
+The editor recipes shall demonstrate host-owned draft validation and commit, selected-row bulk actions with explicitly scoped CSV preview, source apply/cancel, and asynchronous asset selection followed by proportional dimensions and placement. Generic CalendarView, Timeline, AssetPicker, Table, CodeEditor and field interactions remain with the library. Copying a recipe shall not require a public wrapper that combines these host policies.
+
+Implementation: `labs/src/composition-editors.tsx`, `labs/src/composition-editors-grid.tsx`
+Verification: `e2e/composition-editors.spec.ts`

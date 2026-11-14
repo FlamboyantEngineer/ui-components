@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
+import { Card } from '../../src/components/card/card.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -47,7 +47,7 @@ function LateProfile() {
         data-lab-avatar="late"
         onPress={() => setPresses((count) => count + 1)}
         nameTooltip={isLoaded}
-        card={isLoaded ? <UserCard name="Ines Duarte" description="Design" /> : undefined}
+        card={isLoaded ? <Card title="Ines Duarte" description="Design" /> : undefined}
       />{' '}
       <Button size="sm" onPress={() => setStage(isLoaded ? 'none' : 'loading')}>
         {isLoaded ? 'Forget the profile' : 'Load the profile in a second'}
@@ -121,7 +121,11 @@ export function AvatarPresenceCases() {
             status="away"
             statusLabel="Away"
             data-lab-avatar="card"
-            card={<UserCard name="Jon Berg" src={samplePicture} status="away" statusLabel="Away" />}
+            card={
+              <Card title="Jon Berg">
+                <span>Away</span>
+              </Card>
+            }
           />
         </LabSection>
         <LabSection
@@ -150,7 +154,11 @@ export function AvatarPresenceCases() {
               status="busy"
               statusLabel="Busy"
               nameTooltip
-              card={<UserCard name="Lena Ortiz" status="busy" statusLabel="Busy" />}
+              card={
+                <Card title="Lena Ortiz">
+                  <span>Busy</span>
+                </Card>
+              }
               data-lab-avatar="tooltip-card"
             />
           </p>
@@ -166,7 +174,9 @@ export function AvatarPresenceCases() {
             cardTrigger="hover"
             data-lab-avatar="hover-card"
             card={
-              <UserCard name="Sam Okafor" status="idle" statusLabel="Idle" description="Design" />
+              <Card title="Sam Okafor" description="Design">
+                <span>Idle</span>
+              </Card>
             }
           />
         </LabSection>

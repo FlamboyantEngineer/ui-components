@@ -22,6 +22,7 @@ import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartOptionsCases } from './chart-options-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
 import { ChartScatterCases } from './chart-scatter-cases.js';
+import { ChartSparklineCases } from './chart-sparkline-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { requireDefined } from './require-defined.js';
 
@@ -283,6 +284,7 @@ function TypedKeys() {
 
 mountLab(
   <>
+    <ChartSparklineCases />
     <LabSection
       title="Typed identities"
       description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered. A focused or hovered bar keeps its series through the reorder, though its color slot follows the new position."

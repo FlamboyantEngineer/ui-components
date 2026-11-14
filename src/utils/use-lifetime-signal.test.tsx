@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { useLifetimeSignal } from './use-lifetime-signal.js';
 
 describe('useLifetimeSignal', () => {
-  it('UIC-FOLDER-MANAGER-2.5 aborts the signals of operations begun while mounted on unmount', () => {
+  it('UIC-INLINE-EDIT-1.6 aborts the signals of operations begun while mounted on unmount', () => {
     const { result, unmount } = renderHook(() => useLifetimeSignal(), { wrapper: StrictMode });
     const first = result.current();
     const second = result.current();
@@ -15,7 +15,7 @@ describe('useLifetimeSignal', () => {
     expect(second.aborted).toBe(true);
   });
 
-  it('UIC-DECISION-CONTROL-1.4 keeps begin stable across renders', () => {
+  it('UIC-INLINE-EDIT-1.6 keeps begin stable across renders', () => {
     const { result, rerender } = renderHook(() => useLifetimeSignal());
     const begin = result.current;
     rerender();

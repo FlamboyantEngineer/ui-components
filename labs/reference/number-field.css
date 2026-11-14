@@ -511,3 +511,7 @@
   flex: none;
   color: var(--ref-muted);
 }
+
+.ui-number-field[data-value-type='decimal'] .ui-number-field__input {
+  text-align: end;
+}

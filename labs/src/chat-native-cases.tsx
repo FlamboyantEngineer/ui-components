@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatQueuedMessage } from '../../src/components/chat-controller/index.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+import {
+  Chat,
+  type ChatMessageData,
+  ChatModelPicker,
+  type ChatQueuedMessage,
+  type ChatTextToken,
+} from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { LoadingRegion } from '../../src/components/loading-overlay/loading-overlay.js';
 import { nativeMessages, retainChatSnapshot } from './chat-native-samples.js';

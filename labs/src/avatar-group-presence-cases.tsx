@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AvatarGroup } from '../../src/components/avatar-group/avatar-group.js';
 import { Button } from '../../src/components/button/button.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
+import { Card } from '../../src/components/card/card.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 import { samplePeople } from './people-samples.js';
 
@@ -140,7 +140,9 @@ export function AvatarGroupPresenceCases() {
             people={samplePeople.slice(0, 3)}
             data-lab-strip="cards"
             renderCard={(person) => (
-              <UserCard name={person.name} src={person.src} statusLabel={person.statusLabel} />
+              <Card title={person.name}>
+                <span>{person.statusLabel}</span>
+              </Card>
             )}
           />
         </LabSection>
@@ -169,12 +171,9 @@ export function AvatarGroupPresenceCases() {
               cardTrigger="hover"
               data-lab-strip="hover-cards"
               renderCard={(person) => (
-                <UserCard
-                  name={person.name}
-                  src={person.src}
-                  status={person.status}
-                  statusLabel={person.statusLabel}
-                />
+                <Card title={person.name}>
+                  <span>{person.statusLabel}</span>
+                </Card>
               )}
             />
           </p>

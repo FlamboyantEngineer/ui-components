@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ToolbarRow, ToolbarRowSeparator } from '../../src/components/layout/index.js';
 import { Menu, MenuItem, MenuSeparator } from '../../src/components/menu/menu.js';
 import { Separator } from '../../src/components/separator/separator.js';
+import { ToolbarRow, ToolbarRowSeparator } from '../../src/components/toolbar-row/toolbar-row.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const variants = ['solid', 'dashed', 'dotted', 'wiggly'] as const;

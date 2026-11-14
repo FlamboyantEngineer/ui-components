@@ -87,7 +87,7 @@ test.describe('Calendar View day and agenda lab', () => {
     await expect(calendar.getByRole('grid', { name: 'Wednesday, March 18, 2026' })).toBeVisible();
   });
 
-  test('UIC-CALENDAR-VIEW-1.8 UIC-CALENDAR-VIEW-5.2 opens the editor from the agenda and keeps read-only events', async ({
+  test('UIC-CALENDAR-VIEW-1.8 UIC-CALENDAR-VIEW-5.2 reports host actions from the agenda and keeps read-only events', async ({
     page,
     lab,
   }) => {
@@ -98,7 +98,8 @@ test.describe('Calendar View day and agenda lab', () => {
     await expect(calendar.locator('output')).toContainText('Opened locked');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await calendar.getByRole('button', { name: /^Team lunch,/ }).click();
-    await expect(page.getByRole('dialog', { name: 'Edit event' })).toBeVisible();
+    await expect(calendar.locator('output')).toContainText('Opened lunch');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('UIC-CALENDAR-VIEW-1.8 lists empty days and shows the empty state for a quiet week', async ({

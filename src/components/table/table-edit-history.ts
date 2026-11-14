@@ -82,7 +82,7 @@ function stepStack(
 
 /**
  * A bounded history of a table's cell edits. Hand it to the table's `editHistory`: each edit,
- * paste, fill, clear or bulk edit it reports becomes one entry of its changes, by row id and column,
+ * committed edit it reports becomes one entry of its changes, by row id and column,
  * and `undo` and `redo` report the reverse or the same changes through the table's `onCellsChange`.
  * Recording a new entry forgets the undone ones.
  */

@@ -16,7 +16,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
+import { ToolbarRow } from '../toolbar-row/toolbar-row.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -199,7 +199,7 @@ export function PdfViewerToolbar({
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('toolbar')} onKeyDown={onKeyDown}>
-      <ToolbarScroller aria-label={strings.controlsFor(label)}>
+      <ToolbarRow overflow="scroll" justify="start" aria-label={strings.controlsFor(label)}>
         {isEmptyNode(leadingActions) ? null : (
           <div {...hooks.slot('leading-actions')}>{leadingActions}</div>
         )}
@@ -237,7 +237,7 @@ export function PdfViewerToolbar({
         )}
         <PdfViewerCommands isReady={isReady} commands={commands} />
         {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
-      </ToolbarScroller>
+      </ToolbarRow>
     </div>
   );
 }

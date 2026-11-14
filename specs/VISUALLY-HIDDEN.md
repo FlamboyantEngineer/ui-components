@@ -27,7 +27,7 @@ Verification: `src/components/visually-hidden/visually-hidden.test.tsx`
 
 ### UIC-VISUALLY-HIDDEN-1.4 - The library's hidden text
 
-Every library component that renders text only assistive technology perceives, such as a badge's or record label's spoken name, a shortcut's spoken keys or a copy button's status, shall render it through `VisuallyHidden`, so all hidden text carries the `ui-visually-hidden` hook beside the component's own slot. Only `src/components/visually-hidden/` imports the React Aria primitive, which a lint restriction enforces.
+Every library component that renders text only assistive technology perceives, such as a badge's spoken name, a shortcut's spoken keys or a copy button's status, shall render it through `VisuallyHidden`, so all hidden text carries the `ui-visually-hidden` hook beside the component's own slot. Only `src/components/visually-hidden/` imports the React Aria primitive, which a lint restriction enforces.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`, `eslint.config.js`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
@@ -48,9 +48,17 @@ With `isFocusable`, the content shall show (its hiding styles drop) and the root
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
 
+### UIC-VISUALLY-HIDDEN-2.3 - Reveal placement
+
+`revealPlacement` shall default to `flow`, preserving normal-flow focus reveal. With `isFocusable` and `revealPlacement="overlay"`, the reference stylesheet shall reveal the same chip at the viewport's logical start and top, inset 8px above ordinary page content, without moving surrounding layout. Keyboard focus, activation and hiding after blur shall remain unchanged at compact and wide widths in either direction. The component publishes placement through `data-reveal-placement`; it adds no positioning inline styles.
+
+Implementation: `src/components/visually-hidden/visually-hidden.tsx`, `labs/reference/visually-hidden.css`
+Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
+
 ## Hooks
 
-| Hook                 | Kind  | Values | Description                                                    |
-| -------------------- | ----- | ------ | -------------------------------------------------------------- |
-| `ui-visually-hidden` | root  |        | The hidden element: a `<div>`, or the element `as` names.      |
-| `data-focus-within`  | state | `true` | Focusable content is shown while it or a descendant has focus. |
+| Hook                    | Kind      | Values            | Description                                                    |
+| ----------------------- | --------- | ----------------- | -------------------------------------------------------------- |
+| `ui-visually-hidden`    | root      |                   | The hidden element: a `<div>`, or the element `as` names.      |
+| `data-focus-within`     | state     | `true`            | Focusable content is shown while it or a descendant has focus. |
+| `data-reveal-placement` | attribute | `flow`, `overlay` | Where focus-revealed content appears; `flow` by default.       |

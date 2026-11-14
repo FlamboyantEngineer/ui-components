@@ -60,14 +60,6 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
     'label-content-name-mismatch':
       'A segment with a count is named "Open, 3", which holds its visible text "Open 3".',
   },
-  'display-options': {
-    'th-has-data-cells':
-      "A grouped recipe table heads each group with a rowgroup header spanning every column above the group's rows; axe cannot map a spanning rowgroup header to its cells.",
-  },
-  'notification-center': {
-    'label-content-name-mismatch':
-      'A filter segment with a count is named "Unread, 3", which holds its visible text.',
-  },
   'tree-compare': {
     'aria-valid-attr-value': 'The lab nests a tree deeper than six levels on purpose.',
   },
@@ -79,10 +71,6 @@ export const acceptedIncomplete: Readonly<Record<string, Readonly<Record<string,
   },
   board: {
     'aria-required-children': "An empty column's virtualized card grid has no rows.",
-  },
-  'view-switcher': {
-    'th-has-data-cells':
-      'The sample table heads each group with a row-group header, which axe cannot map to cells.',
   },
   'drag-handle': {
     'th-has-data-cells': 'A table emptied by dragging has headers and no data cells.',

@@ -1,10 +1,10 @@
 import { useId, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  type StateMachineDensity,
   StateMachineSequence,
   type StateMachineState,
   type StateMachineTransition,
-  type StateMachineViewDensity,
 } from '../../src/components/state-machine-view/index.js';
 import type { Key } from '../../src/core/props.js';
 
@@ -61,7 +61,7 @@ export function SequenceExamples() {
       <p id={descriptionId}>States follow the supplied order.</p>
       <p>Arrow tips meet the state borders; parallel routes fan around one another.</p>
       <p id={detailsId}>Choose a state to highlight its outgoing transitions.</p>
-      {(['default', 'compact'] as const).map((density: StateMachineViewDensity) => (
+      {(['default', 'compact'] as const).map((density: StateMachineDensity) => (
         <StateMachineSequence
           key={density}
           density={density}

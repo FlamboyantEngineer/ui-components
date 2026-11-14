@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, rows pinned at the top or bottom, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and host edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, rows pinned at the top or bottom, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -558,67 +558,63 @@ Collecting visible rows and group keys shall preserve reading order without call
 Implementation: `src/utils/summarize-numbers.ts`, `src/components/table/table-groups.ts`
 Verification: `src/components/table/table-groups.test.ts`
 
-## UIC-TABLE-14 - Spreadsheet mode
+## UIC-TABLE-14 - Value parsing and text utilities
 
 ### UIC-TABLE-14.1 - Cell selection
 
-`cellSelection` (`none` by default) shall turn on spreadsheet mode over the data cells of the rows a reader sees: `cell` selects the focused cell, and `range` also selects rectangles of cells. A press on a data cell selects and focuses it; with `range`, Shift with a press or with an arrow key (mirrored right to left) extends the selection from its anchor, and dragging over cells extends it to the cell under the pointer. Focus reaching a cell selects it unless it returns to the anchor, and focus reaching a data row moves on to its cell in the selected column, else its first data cell. Presses on data cells select cells, not rows; controls, editable content and focusable elements inside a cell (links, labels, `summary`, form fields, any non-false `contenteditable`, elements with a `tabindex`, and the `button`, `link`, `checkbox`, `radio`, `switch`, `slider`, `spinbutton`, `scrollbar`, `textbox`, `searchbox`, `combobox`, `menuitem`, `menuitemcheckbox`, `menuitemradio`, `option`, `tab` and `treeitem` roles), the library's gesture surfaces that carry no role (a `NumberField` slider track and thumbs and its scrub handle, a `ScrollRegion` overlay track and a `SignaturePad` surface), and presses whose default a handler already prevented, keep their presses: the slider moves, the scrub starts or the track pages, and the cell is not selected or focused. `selectedRange` (controlled, `null` for none) or `defaultSelectedRange` hold the selection as an anchor and a focus (`rowKey`, `columnId`), reported through `onSelectedRangeChange`. Selected cells publish `data-in-range`, `aria-selected="true"` and, on its edges, `data-range-top`, `data-range-bottom`, `data-range-start` and `data-range-end`.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/use-cell-pointer.ts`, `src/utils/is-interactive-target.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`, `src/components/table/use-table-model.ts`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.2 - Copying
 
-Copying while a data cell has focus shall write the selected cells, or the focused cell, to the clipboard as tab-separated text and as an HTML table: values as text, dates in ISO 8601 and nothing or an invalid date as empty text.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.3 - Pasting
 
-Pasting tab-separated text while a data cell has focus shall write it into the selected cells: one value into every selected cell, more values from the top start cell as far as the grid reaches, then select the cells the paste covers. Each text is read by the column's `parseValue` and checked by its `validateValue`; only cells of columns with `allowsEditing` in enabled rows whose value the column accepts and that change are written, and `onCellsChange` receives them in one batch. The table never changes its rows itself.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Pastes shall measure the widest source row without a function-argument limit and clip writes to the grid.
-
-Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/utils/tsv.ts`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.4 - Clearing
 
-Delete or Backspace on a data cell shall write empty text into the selected cells, reported like a paste.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.5 - Filling
 
-In `range` mode, the bottom end cell of a selection holding an editable cell shall draw a fill handle (`ui-table__fill-handle`, hidden from assistive technology). Dragging it down or towards the end, whichever reaches further, marks the cells it would fill with `data-fill-target` and, on release, fills them from the selected cells: each column, or each row, continues an evenly spaced run of numbers by its step and repeats anything else, then the filled cells are selected. Control or Command with D fills the selection down from its first row, and with R towards the end from its first column; on a non-Latin layout, the keys in the D and R keys' places do ([UIC-SHORTCUT-1.8](SHORTCUT.md)). Fills are reported like a paste. Cancelling a fill shall clear its preview without writing cells; extension, release and cancellation follow only the pointer that started it, in the table's own document, so another finger or pen passing over a cell moves neither the fill target nor a range drag's end. A fill or range drag whose table changes before release (spreadsheet mode changes, the rows or drawn columns change, by row id and column id in order, or a fill's source range is replaced) ends there: it clears its preview and writes and selects nothing. A host that re-renders with fresh arrays of the same rows and columns changes neither, so the gesture carries on.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Numeric runs shall be checked within floating-point precision and retain the decimals of scientific-notation values. Tiny uneven values repeat rather than being mistaken for a progression. Reading a source series shall not allocate a filtered numeric copy or spread its precisions into arguments.
-
-Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-data-cell.tsx`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.6 - Typing and moving
 
-In spreadsheet mode, typing a character other than Space on an editable cell of an enabled row shall open its editor holding that character, including a character typed with AltGr, which Windows reports with Control and Alt held; a Control, Alt or Meta chord on a Latin letter or digit stays a shortcut. In the default editor Enter commits and moves focus to the cell below, Tab to the next cell along the row, and Shift with either moves back; at the edge of the rows or cells focus stays on the cell. Without spreadsheet mode Enter returns focus to the cell and Tab leaves the editor as the browser does.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-cell-editor.tsx`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.7 - Reading and checking values
 
-A column's `parseValue(text, row)` shall read typed, pasted and filled text as the cell's value; without it the text stays text, or becomes a number when the cell holds a number and the text reads as one by the default editor's rule (UIC-TABLE-11.2). Its `validateValue(value, row)` returns a message that refuses the value. A refused value in the default editor keeps it open, marks the input `aria-invalid` and `data-invalid`, and shows the message in a `ui-table__editor-message` alert; leaving the editor then drops the text.
+A column's `parseValue(text, row)` shall read typed text as the cell's value; without it the text stays text, or becomes a number when the cell holds a number and the text reads as one by the default editor's rule (UIC-TABLE-11.2). Its `validateValue(value, row)` returns a message that refuses the value. A refused value in the default editor keeps it open, marks the input `aria-invalid` and `data-invalid`, and shows the message in a `ui-table__editor-message` alert; leaving the editor then drops the text.
 
 Implementation: `src/components/table/table-cell-writes.ts`, `src/components/table/table-cell-editor.tsx`
-Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-14.8 - Cell helpers
 
-The table shall select and write cells with small pure functions: a grid of the visible rows and drawn columns locates cells by typed row key and column id, bounds a range from either corner, steps a cell inside the grid and places a cell on the edges of bounds; writes format values as text, read text through the column, keep only accepted changes of editable cells in enabled rows, copy, plan pastes, clears and fills, continue series and pick the direction of a dragged fill.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/table-cell-range.ts`, `src/components/table/table-cell-writes.ts`
-Verification: `src/components/table/table-cell-range.test.ts`, `src/components/table/table-cell-writes.test.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-14.9 - Tab-separated text
 
@@ -627,25 +623,23 @@ Verification: `src/components/table/table-cell-range.test.ts`, `src/components/t
 Implementation: `src/utils/tsv.ts`
 Verification: `src/utils/tsv.test.ts`
 
-## UIC-TABLE-15 - Selection bar and bulk edit
+## UIC-TABLE-15 - Host selection workflows
 
 ### UIC-TABLE-15.1 - Selection bar
 
-In multiple selection, `selectionActions`, or a drawn column with `bulkEdit`, shall draw a selection bar (`ui-table__selection-bar`, an [Action Row](ACTION-ROW.md) selection bar of size `sm`) between the toolbar and the grid while rows are selected: the number of selected rows the table presents (every enabled one for `all`), a button and Escape that clear the selection (neither under `disallowEmptySelection`, which keeps the last selected row), and the caller's actions.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Selection collection shall traverse nested rows once in reading order without constructing a separate descendant list for every parent, and skip traversal for an empty selection.
-
-Implementation: `src/components/table/table-bulk-edit.tsx`, `src/components/table/use-table-selection.ts`, `src/components/table/use-table-model.ts`, `src/components/table/table.tsx`
-Verification: `src/components/table/table-bulk-edit.test.tsx`, `src/components/table/use-table-selection.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-15.2 - Bulk edit
 
-When a drawn column has `bulkEdit`, the selection bar shall end with an `edit` action named by the provider's `editSelected` that opens a dialog (`ui-table__bulk-edit`, a [Modal](MODAL.md)) titled by the provider's `editRows` with the count. It holds a [Select Field](SELECT-FIELD.md) named by the provider's `field` that chooses among those columns, the first by default, and the field of the chosen column's type named by the column: a [Text Field](TEXT-FIELD.md) for `text`, a [Number Field](NUMBER-FIELD.md) for `number`, a date [Date Time Field](DATE-TIME-FIELD.md) for `date` (`YYYY-MM-DD`), a [Boolean Field](BOOLEAN-FIELD.md) for `boolean` and a Select Field of `options` for `choice`. Its `apply` button sets the value in that column of every selected row, skipping values the column's `validateValue` refuses and cells that already hold the value, reports the edits in one `onCellsChange` batch and closes the dialog; each opening starts afresh. The fields sit in a [Form](FORM.md): Apply first checks them as a submit does, so a draft the field cannot read, such as a partly entered date, shows its error and keeps the dialog open without an edit, while an empty field still clears the cells.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/strings/table.ts`
-Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
-## UIC-TABLE-16 - CSV export
+## UIC-TABLE-16 - CSV utilities
 
 ### UIC-TABLE-16.1 - Comma-separated values
 
@@ -656,36 +650,30 @@ Verification: `src/utils/csv.test.ts`
 
 ### UIC-TABLE-16.2 - Table CSV
 
-`formatTableCsv({ rows, columns, delimiter, escapeFormulas })` shall write the rows in order under a header row of the columns' accessible names (`textValue`, else a text header, else the id). Each cell is the column's `getExportText(row)`, else its value (`getValue`, else the row's property) as copied text (UIC-TABLE-14.2): numbers and booleans as `String` writes them whatever the locale, dates in ISO 8601, nothing as empty text. Rendered cell content is never read. Locale formatting is the column's own, through `getExportText`. The rows and columns are read, never changed.
+`formatTableCsv({ rows, columns, delimiter, escapeFormulas })` shall write the rows in order under a header row of the columns' accessible names (`textValue`, else a text header, else the id). Each cell is the column's `getExportText(row)`, else its value (`getValue`, else the row's property) as plain text: numbers and booleans as `String` writes them whatever the locale, dates in ISO 8601, nothing as empty text. Rendered cell content is never read. Locale formatting is the column's own, through `getExportText`. The rows and columns are read, never changed.
 
 Implementation: `src/components/table/table-export.ts`, `src/utils/csv.ts`
 Verification: `src/components/table/table-export.test.ts`
 
 ### UIC-TABLE-16.3 - Export menu
 
-`csvExport` shall draw an export menu (`ui-table__export-menu`, a [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `exportCsv`) at the end of the toolbar, with one item per scope in `scopes`, by default `page` when the table is paginated, `rows`, and `selected` in multiple selection:
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-- `page` (the provider's `exportPage`) writes the current page's rows;
-- `rows` (`exportAllRows`) writes every row the table presents across pages: filtered and ordered as the table shows them;
-- `selected` (`exportSelectedRows`) writes the selected rows the selection bar counts (UIC-TABLE-15.1), in order, and is disabled while none is selected.
-
-Nested rows follow their parent depth first whether or not it is expanded; group header, detail, notice and summary rows are never written. The columns are the drawn ones in their layout order, or those `csvExport.columns` names by id, in its order, hidden ones included; an unknown id is skipped.
-
-Implementation: `src/components/table/table-export-menu.tsx`, `src/components/table/table-export.ts`, `src/components/table/table-toolbar.tsx`, `src/components/table/use-table-grid.ts`, `src/core/strings/table.ts`
-Verification: `src/components/table/table-export-menu.test.tsx`, `src/components/table/table-export.test.ts`, `e2e/table-data.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ### UIC-TABLE-16.4 - Partial rows and the file
 
-When the caller pages the rows (`pagination.rowCount`) or loads them in parts (`onLoadMore`), the table holds only the loaded rows: the `rows` item shall then read `exportLoadedRows` and write those, unless `csvExport.allRows` gives the whole dataset, which the `rows` scope then writes as given, with its child rows, under `exportAllRows`. The menu writes `fileName` as a `text/csv;charset=utf-8` download through `downloadBlob` (UIC-DOWNLOAD-1.1), starting with the UTF-8 byte order mark unless `byteOrderMark` is false, or hands `{ fileName, scope, text }` to `onExport` instead of downloading.
+Withdrawn. Hosts compose data workflows with library controls; Table retains ordinary grid editing and selection. See `TableWorkflowComposition` and `FormulaBarComposition` in `labs/src/composition-editors-grid.tsx`.
 
-Implementation: `src/components/table/table-export-menu.tsx`, `src/utils/download.ts`
-Verification: `src/components/table/table-export-menu.test.tsx`, `e2e/table-data.spec.ts`
+Implementation: `src/components/table/table.tsx`
+Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
 ## UIC-TABLE-17 - Edit history
 
 ### UIC-TABLE-17.1 - Entries
 
-`useTableEditHistory({ limit, resetKey })` shall return a bounded edit history (`TableEditHistory`) for a table's `editHistory`. Each report the table makes of changed cells becomes one entry of `TableCellChange`s (`rowId`, `columnId`, `before`, `after`): a committed edit, and a whole paste, fill, clear or bulk edit. Edits the column refuses never reach a report, and a cell whose value stays the same is left out, so they record nothing. `undo` reports the latest entry's `before` values through `onCellsChange` in one batch and moves it to the redo entries; `redo` reports its `after` values the same way and moves it back. The table never changes its rows itself. `canUndo` and `canRedo` say whether an entry waits, for the host's toolbar buttons. Recording an entry forgets the undone ones.
+`useTableEditHistory({ limit, resetKey })` shall return a bounded edit history (`TableEditHistory`) for a table's `editHistory`. Each report the table makes of changed cells becomes one entry of `TableCellChange`s (`rowId`, `columnId`, `before`, `after`): a committed edit. Edits the column refuses never reach a report, and a cell whose value stays the same is left out, so they record nothing. `undo` reports the latest entry's `before` values through `onCellsChange` in one batch and moves it to the redo entries; `redo` reports its `after` values the same way and moves it back. The table never changes its rows itself. `canUndo` and `canRedo` say whether an entry waits, for the host's toolbar buttons. Recording an entry forgets the undone ones.
 
 Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-data.spec.ts`
@@ -699,7 +687,7 @@ Verification: `src/components/table/table-edit-history.test.tsx`, `e2e/table-dat
 
 ### UIC-TABLE-17.3 - Rebasing on the host's rows
 
-An entry shall find its cells by row id and column id among the table's current rows, nested ones included, whatever their order, page or filter, and apply only the cells whose row is still there and enabled, whose column still takes writes (it allows editing or offers `bulkEdit`, so a bulk edit of a column that offers only that undoes), and that still hold the value the entry left (`after` to undo, `before` to redo), so a change made elsewhere since is never overwritten. The applied part moves to the other side; an entry none of whose cells apply is dropped, and the step moves on to the next one. `limit` (100 by default) keeps the latest entries, the oldest going first, and a change of `resetKey`, such as replacing the dataset, or `clear()` forgets every entry. `canUndo` counts entries, not whether they still apply.
+An entry shall find its cells by row id and column id among the table's current rows, nested ones included, whatever their order, page or filter, and apply only the cells whose row is still there and enabled, whose column still takes writes (it allows editing), and that still hold the value the entry left (`after` to undo, `before` to redo), so a change made elsewhere since is never overwritten. The applied part moves to the other side; an entry none of whose cells apply is dropped, and the step moves on to the next one. `limit` (100 by default) keeps the latest entries, the oldest going first, and a change of `resetKey`, such as replacing the dataset, or `clear()` forgets every entry. `canUndo` counts entries, not whether they still apply.
 
 Implementation: `src/components/table/table-edit-history.ts`, `src/components/table/use-recorded-edits.ts`
 Verification: `src/components/table/table-edit-history.test.tsx`
@@ -717,7 +705,7 @@ Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data
 
 Pinned rows shall stand outside filtering, sorting, paging and grouping: the search box and column filters never hide them, the sort never moves them, they show on every page without counting towards `pageSize` or the page count, and they sit outside every group. A caller that filters or pages `rows` itself keeps the pinned rows in `rows` to show them. A pinned row draws without its child rows and its detail row. The table is empty, and shows its empty notice, only when no row is pinned or presented. Pinned rows count among the presented rows that select all, the summary and the `rows` export read, the `page` export writes them around the page's rows, and an edit history finds them by id.
 
-Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grid.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-export-menu.tsx`
+Implementation: `src/components/table/use-table-rows.ts`, `src/components/table/use-table-grid.ts`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/table-pinned-rows.test.tsx`
 
 ### UIC-TABLE-18.3 - Interaction
@@ -768,7 +756,6 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `ui-table__filter-input`         | slot      |                                 | The search field's input.                                                                                 |
 | `ui-table__filter-clear`         | slot      |                                 | The search field's clear button.                                                                          |
 | `ui-table__columns-menu`         | slot      |                                 | The columns menu's trigger (also `ui-dropdown-menu`).                                                     |
-| `ui-table__export-menu`          | slot      |                                 | The CSV export menu's trigger (also `ui-dropdown-menu`).                                                  |
 | `ui-table__scroll`               | slot      |                                 | React Aria's resizable container; the scroll area.                                                        |
 | `ui-table__grid`                 | slot      |                                 | The grid (`<table>`, or a `div` when virtualized).                                                        |
 | `ui-table__header`               | slot      |                                 | The header row group.                                                                                     |
@@ -787,7 +774,6 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `ui-table__expand-spacer`        | slot      |                                 | Holds the expand button's place on a row without nested rows.                                             |
 | `ui-table__editor`               | slot      |                                 | The default cell editor's input.                                                                          |
 | `ui-table__editor-message`       | slot      |                                 | The default editor's message for a refused value (`role="alert"`).                                        |
-| `ui-table__fill-handle`          | slot      |                                 | The handle at the bottom end corner of the selected cells.                                                |
 | `ui-table__detail-row`           | slot      |                                 | A full-width row holding a row's detail.                                                                  |
 | `ui-table__detail-cell`          | slot      |                                 | The detail row's spanning cell.                                                                           |
 | `ui-table__group-row`            | slot      |                                 | A group header row.                                                                                       |
@@ -809,8 +795,6 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `ui-table__action-row`           | slot      |                                 | The final nonselectable ordinary-content row.                                                             |
 | `ui-table__action-cell`          | slot      |                                 | Its full-width content cell.                                                                              |
 | `ui-table__pagination`           | slot      |                                 | The page navigation under a paginated grid (also `ui-pagination`).                                        |
-| `ui-table__selection-bar`        | slot      |                                 | The bar above the grid while rows are selected (also `ui-action-row`).                                    |
-| `ui-table__bulk-edit`            | slot      |                                 | The bulk edit dialog (also `ui-modal`).                                                                   |
 | `data-size`                      | attribute | `sm`, `md`                      | Row height, on the root.                                                                                  |
 | `data-kind`                      | attribute | `data`, `selection`, `actions`  | What a column header, cell or summary cell holds.                                                         |
 | `data-align`                     | attribute | `start`, `center`, `end`        | A data column's alignment, on its header and cells.                                                       |
@@ -840,12 +824,6 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `data-ungrouped`                 | state     | `true`                          | A group row cell over columns without a group.                                                            |
 | `data-editing`                   | state     | `true`                          | The cell whose editor is open.                                                                            |
 | `data-invalid`                   | state     | `true`                          | The default editor while the column refuses its value.                                                    |
-| `data-in-range`                  | state     | `true`                          | A selected cell in spreadsheet mode.                                                                      |
-| `data-range-top`                 | state     | `true`                          | A selected cell on the top edge of the selection.                                                         |
-| `data-range-bottom`              | state     | `true`                          | A selected cell on the bottom edge of the selection.                                                      |
-| `data-range-start`               | state     | `true`                          | A selected cell on the start edge of the selection.                                                       |
-| `data-range-end`                 | state     | `true`                          | A selected cell on the end edge of the selection.                                                         |
-| `data-fill-target`               | state     | `true`                          | A cell a dragged fill handle would fill.                                                                  |
 | `data-tree-column`               | state     | `true`                          | A cell of the tree column (React Aria).                                                                   |
 | `data-has-child-items`           | state     | `true`                          | A row with nested or detail rows, and its cells (React Aria).                                             |
 | `data-expanded`                  | state     | `true`                          | An expanded row and its cells (React Aria).                                                               |
@@ -867,3 +845,14 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `--ui-table-columns`             | property  |                                 | A static table grid's column tracks, for `grid-template-columns`.                                         |
 | `--ui-table-span`                | property  |                                 | A group header cell's number of columns.                                                                  |
 | `--ui-table-level`               | property  |                                 | A tree column or group header cell's nesting level, from 1.                                               |
+
+Host-owned bulk editing and CSV export use Table selection plus TextField, Button, Stack and Cluster; see `TableWorkflowComposition` in `labs/src/composition-editors-grid.tsx`. Spreadsheet cell engines belong to the host; `formatCsv`, `formatTsv`, `parseTsv`, cell-reference parsing and `formatTableCsv` remain pure reusable utilities.
+
+## UIC-TABLE-20 - Cell references
+
+### UIC-TABLE-20.1 - Reference utilities
+
+`formatCellReference` and `parseCellReference` format and parse A1 coordinates independently of table interaction.
+
+Implementation: `src/utils/cell-reference.ts`
+Verification: `src/utils/cell-reference.test.ts`

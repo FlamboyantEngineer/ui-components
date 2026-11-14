@@ -34,7 +34,7 @@ Verification: `src/components/save-status/save-status.test.tsx`, `src/utils/use-
 
 ### UIC-SAVE-STATUS-1.5 - Truncation
 
-The label shall be a [Truncation Tooltip](TRUNCATION-TOOLTIP.md): when the stylesheet cuts it in a narrow band, the full text shows in a tooltip on hover.
+The label shall be a [Truncation Tooltip](TOOLTIP.md): when the stylesheet cuts it in a narrow band, the full text shows in a tooltip on hover.
 
 Implementation: `src/components/save-status/save-status.tsx`, `labs/reference/save-status.css`
 Verification: `src/components/save-status/save-status.test.tsx`, `e2e/save-status.spec.ts`

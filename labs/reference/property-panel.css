@@ -13,6 +13,7 @@
 
 .ui-property-panel__header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -444,4 +445,24 @@
 .ui-property-row .ui-field__message:empty {
   min-height: 0;
   margin-top: 0;
+}
+
+.ui-property-panel__search {
+  flex: 1 1 12rem;
+  width: auto;
+  min-width: 0;
+}
+/* Property Scope: the filtered parts stack; the status region takes no room while empty. */
+
+.ui-property-scope {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-property-scope__status {
+  padding: 4px 10px;
+}
+
+.ui-property-scope__status:empty {
+  display: none;
 }

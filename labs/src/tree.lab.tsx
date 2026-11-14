@@ -28,7 +28,7 @@ import {
 } from './tree-cases.js';
 import { ModalTree } from './tree-modal-case.js';
 import { CallerFilterTree, RequiredSelectionTree, TallRowsTree } from './tree-option-cases.js';
-import { LockedRenameTree } from './tree-rename-lock.js';
+import { AsyncRenameTree, LockedRenameTree } from './tree-rename-lock.js';
 import { RevealTreeRows } from './tree-reveal-cases.js';
 import { SectionsTree, VirtualSectionsTree } from './tree-sections-cases.js';
 
@@ -617,6 +617,7 @@ mountLab(
       description="Press the lock button, then F2 on Review and type: when the row locks, its field closes without renaming and focus stays in the tree. Unlock to rename it again."
     >
       <LockedRenameTree />
+      <AsyncRenameTree />
     </LabSection>
     <LabSection
       title="Move rules for owners"

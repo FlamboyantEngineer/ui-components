@@ -8,7 +8,6 @@ import { Combobox, type ComboboxItem } from '../../src/components/combobox/combo
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { ExpressionField } from '../../src/components/expression-field/expression-field.js';
-import { FormulaBar } from '../../src/components/formula-bar/formula-bar.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -20,7 +19,6 @@ import {
   SelectField,
   type SelectFieldOption,
 } from '../../src/components/select-field/select-field.js';
-import { SnippetField } from '../../src/components/snippet-field/snippet-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TagsInput } from '../../src/components/tags-input/tags-input.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
@@ -54,10 +52,8 @@ const controls = [
   'choice-group',
   'pin-input',
   'relative-date-field',
-  'formula-bar',
   'zoom-control',
   'expression-field',
-  'snippet-field',
 ] as const;
 
 type Control = (typeof controls)[number];
@@ -236,14 +232,6 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       placeholder={isLong ? undefined : 'Any day'}
     />
   ),
-  'formula-bar': ({ size, isLong }) => (
-    <FormulaBar
-      size={size}
-      aria-label="Formula"
-      cell={{ row: isLong ? 41 : 0, column: isLong ? 27 : 0 }}
-      value={isLong ? '=SUM(A1:A40)*TAX_RATE' : '12'}
-    />
-  ),
   'zoom-control': ({ size, isLong }) => (
     <ZoomControl size={size} aria-label="Zoom" defaultValue={isLong ? 1250 : 100} />
   ),
@@ -253,16 +241,6 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       label="Length"
       labelLayout="control-only"
       defaultValue={isLong ? 'width * height + rate * (width - 2) / 3' : '2 * width'}
-    />
-  ),
-  'snippet-field': ({ size, isLong }) => (
-    <SnippetField
-      size={size}
-      label="Snippet source"
-      labelLayout="control-only"
-      defaultValue={null}
-      placeholder={isLong ? 'samples/a/rather/long/path/to/greet.ts' : 'greet.ts'}
-      loadSnippet={() => Promise.resolve({ ok: false, message: 'Not in this demo.' })}
     />
   ),
 };

@@ -26,7 +26,6 @@ export const calendarViewHooks = createHooks('calendar-view', [
   'spacer',
   'more',
   'more-list',
-  'editor',
   'event-frame',
   'event-start',
   'event-end',

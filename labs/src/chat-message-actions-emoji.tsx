@@ -3,7 +3,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ChatMessageActionsMenu } from '../../src/components/chat-message-actions/chat-message-actions.js';
+import { ChatMessageActionsMenu } from '../../src/components/chat/index.js';
 import { ChatMessage, ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import {
   type CustomEmoji,

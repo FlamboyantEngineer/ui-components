@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  StateMachineGraph,
   type StateMachineState,
   type StateMachineTransition,
-  StateMachineView,
-} from '../../src/components/state-machine-view/state-machine-view.js';
+} from '../../src/components/state-machine-view/index.js';
 import type { Key, Orientation } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { SequenceExamples } from './state-machine-view-sequence.js';
@@ -73,7 +73,7 @@ function Kettle() {
       }}
     >
       {(['outline', 'canvas'] as const).map((view) => (
-        <StateMachineView
+        <StateMachineGraph
           key={view}
           aria-label={`Kettle, starts in ${view}`}
           data-lab-field={`kettle-${view}`}
@@ -108,7 +108,7 @@ function StateSample({
 }) {
   return (
     <div style={{ width: 360 }}>
-      <StateMachineView
+      <StateMachineGraph
         aria-label={`Door, ${state}, ${orientation}`}
         states={doorStates}
         transitions={doorTransitions}
@@ -125,7 +125,7 @@ function Orders() {
   const next = orderTransitions.filter((transition) => transition.from === current);
   return (
     <>
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Order lifecycle"
         data-lab-field="orders"
         states={orderStates}
@@ -157,7 +157,7 @@ function EditableDoor() {
   const [links, setLinks] = useState(doorTransitions);
   return (
     <>
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Door editor"
         data-lab-field="door"
         states={items}

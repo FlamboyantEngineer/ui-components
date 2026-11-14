@@ -167,7 +167,7 @@ Verification: `src/core/overlay-presence.test.tsx`
 
 ### UIC-PROVIDER-8.1 - One clock and time zone
 
-`UiProvider`'s `getNow` and `timeZone` props shall be the clock and the IANA time zone that every component reading now or today uses when it is not given its own: `RelativeTime`, `Attribution`, `RelativeDateField`, `ActivityFeed`, `NotificationList`, `CalendarView`, `Timeline` and `LineChart`. A nested provider without them uses its parent's. Without a provider the clock is the current time and the zone the browser's. `useNow(getNow?)`, `useToday(timeZone?, getNow?)` and `useTimeZone(timeZone?)` read the same sources for host components.
+`UiProvider`'s `getNow` and `timeZone` props shall be the clock and the IANA time zone that every component reading now or today uses when it is not given its own: `RelativeTime`, `Attribution`, `RelativeDateField`, `CalendarView`, `Timeline` and `LineChart`. A nested provider without them uses its parent's. Without a provider the clock is the current time and the zone the browser's. `useNow(getNow?)`, `useToday(timeZone?, getNow?)` and `useTimeZone(timeZone?)` read the same sources for host components.
 
 Implementation: `src/core/clock.ts`, `src/core/provider.tsx`
 Verification: `src/core/clock.test.tsx`

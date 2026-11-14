@@ -1,6 +1,6 @@
 # Property Panel
 
-`PropertyPanel` lays out the labelled settings of one subject, such as the options of a selected shape in an editor's side pane. It is a family: the panel holds collapsible `PropertySection`s (categories), `PropertyGroup`s of rows under an optional heading, collapsible `PropertyCard`s for a group of related settings, and `PropertyRow`s that pair a label with the caller's value or field. `PropertyStrip` with its `PropertyStripCell`s lays out several small controls in one row, and `PropertyIconGroup` names a run of icon buttons. The parts take their content from the caller; a [Property Scope](PROPERTY-SCOPE.md) filters them by a query, and a [Property Filter](PROPERTY-FILTER.md) adds the search box. Records compared in columns belong in a table, and a framed group of content outside a panel is a [Card](CARD.md).
+`PropertyPanel` lays out the labelled settings of one subject, such as the options of a selected shape in an editor's side pane. It is a family: the panel holds collapsible `PropertySection`s (categories), `PropertyGroup`s of rows under an optional heading, collapsible `PropertyCard`s for a group of related settings, and `PropertyRow`s that pair a label with the caller's value or field. `PropertyStrip` with its `PropertyStripCell`s lays out several small controls in one row, and `PropertyIconGroup` names a run of icon buttons. The parts take their content from the caller; `PropertyScope` filters them by a host-owned query, and `searchable` adds a built-in search box to the panel. Records compared in columns belong in a table, and a framed group of content outside a panel is a [Card](CARD.md).
 
 ## UIC-PROPERTY-PANEL-1 - Panel
 
@@ -27,7 +27,7 @@ Verification: `src/components/property-panel/property-panel.test.tsx`
 
 ### UIC-PROPERTY-PANEL-1.4 - Sections opened together
 
-Given `expandedKeys`, `defaultExpandedKeys` or `allowsMultipleExpanded`, the panel shall open and close its sections as a group, with React Aria's `DisclosureGroup` as its body: a section is open while its `id` (a generated key without one) is among the expanded keys, pressing its trigger toggles it there, and `onExpandedChange` reports the new keys. With `allowsMultipleExpanded={false}` opening a section closes the one open before (an accordion); it defaults to `true`, so `expandedKeys` holding every section's `id` opens them all and an empty set closes them all. A section's own `isExpanded`, `defaultExpanded` and `persistKey` then give way to the panel's, while a query still opens matching sections ([UIC-PROPERTY-SCOPE-1.2](PROPERTY-SCOPE.md#uic-property-scope-12---containers)). Cards keep their own state. Without any of these props each section keeps its own state. Giving or removing these props keeps the sections and everything inside them mounted, with their drafts, focus and local state; the panel's uncontrolled keys then start again from `defaultExpandedKeys`.
+Given `expandedKeys`, `defaultExpandedKeys` or `allowsMultipleExpanded`, the panel shall open and close its sections as a group, with React Aria's `DisclosureGroup` as its body: a section is open while its `id` (a generated key without one) is among the expanded keys, pressing its trigger toggles it there, and `onExpandedChange` reports the new keys. With `allowsMultipleExpanded={false}` opening a section closes the one open before (an accordion); it defaults to `true`, so `expandedKeys` holding every section's `id` opens them all and an empty set closes them all. A section's own `isExpanded`, `defaultExpanded` and `persistKey` then give way to the panel's, while a query still opens matching sections ([UIC-PROPERTY-PANEL-4.2](PROPERTY-PANEL.md#uic-property-panel-42---containers)). Cards keep their own state. Without any of these props each section keeps its own state. Giving or removing these props keeps the sections and everything inside them mounted, with their drafts, focus and local state; the panel's uncontrolled keys then start again from `defaultExpandedKeys`.
 
 Implementation: `src/components/property-panel/property-panel.tsx`, `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`
 Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/property-panel.spec.ts`
@@ -52,7 +52,7 @@ Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/pr
 
 A section shall show a count in the trigger (`ui-property-section__count`, a small count `Badge`, which the reference sheet draws as a quiet tinted pill with muted digits, secondary to the title, in panels and filters alike): its `count` when given, zero included, with `countVariant` (`subtle` by default or `solid`) passed to the shared Badge, and otherwise the number of properties inside it when there is at least one. Each row inside counts as one property and each card as one. `meta` follows the count inside the trigger.
 
-Implementation: `src/components/property-panel/property-section.tsx`, `src/components/property-scope/scope-tally.ts`
+Implementation: `src/components/property-panel/property-section.tsx`, `src/components/property-panel/scope-tally.ts`
 Verification: `src/components/property-panel/property-section.test.tsx`
 
 ### UIC-PROPERTY-PANEL-2.3 - Section actions
@@ -92,7 +92,7 @@ Verification: `src/components/property-panel/property-section.test.tsx`, `src/co
 
 ### UIC-PROPERTY-PANEL-2.8 - Revealing a field
 
-Before a [Form](FORM.md) moves focus to a field inside a property panel (a blocked submit, `validate()`, a blocker's or a problem's `focus()`), the containers that hide it shall show it, through the field scope's `reveal` ([UIC-FIELD-3.12](FIELD.md#uic-field-312---revealed-before-focus)): each collapsed section or card around it opens, outermost first, and a row the query hides lifts the query ([UIC-PROPERTY-SCOPE-1.7](PROPERTY-SCOPE.md#uic-property-scope-17---lifting-the-query)). An uncontrolled section or card opens itself and reports it through `onExpandedChange`; a controlled one asks its owner through `onExpandedChange(true)`, and one the panel opens asks the panel, which reports the new keys. A field that is already visible opens nothing. The fields keep their values and validation whether hidden or shown, and a section hidden by its own `hidden` stays hidden.
+Before a [Form](FORM.md) moves focus to a field inside a property panel (a blocked submit, `validate()`, a blocker's or a problem's `focus()`), the containers that hide it shall show it, through the field scope's `reveal` ([UIC-FIELD-3.12](FIELD.md#uic-field-312---revealed-before-focus)): each collapsed section or card around it opens, outermost first, and a row the query hides lifts the query ([UIC-PROPERTY-PANEL-4.7](PROPERTY-PANEL.md#uic-property-panel-47---lifting-the-query)). An uncontrolled section or card opens itself and reports it through `onExpandedChange`; a controlled one asks its owner through `onExpandedChange(true)`, and one the panel opens asks the panel, which reports the new keys. A field that is already visible opens nothing. The fields keep their values and validation whether hidden or shown, and a section hidden by its own `hidden` stays hidden.
 
 Implementation: `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-row.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-form.ts`
 Verification: `src/components/property-panel/property-section.test.tsx`, `e2e/property-panel.spec.ts`
@@ -147,6 +147,87 @@ Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/prop
 
 Implementation: `src/components/property-panel/property-row.tsx`, `labs/reference/property-panel.css`
 Verification: `src/components/property-panel/property-row-inheritance.test.tsx`, `e2e/property-panel.spec.ts`
+
+## UIC-PROPERTY-PANEL-4 - Filtering
+
+### UIC-PROPERTY-PANEL-4.1 - Matching rows
+
+`PropertyScope` shall split its `query` into terms as [Text Match](TEXT-MATCH.md) does (ignoring case and turning `/`, `_` and `-` into spaces). A row shall match while every term occurs in the text of its enclosing section title, group heading and card name, its text label and its `keywords`, taken together. A row that does not match gets the native `hidden` attribute and stays mounted, so a draft in its control survives filtering; a stylesheet that gives the parts a `display` keeps `[hidden]` parts out of layout, as the reference sheet does. An empty or blank query hides nothing.
+
+Implementation: `src/components/property-panel/property-scope.tsx`, `src/components/property-panel/scope-tally.ts`, `src/components/property-panel/property-row.tsx`, `labs/reference/property-panel.css`
+Verification: `src/components/property-panel/property-scope.test.tsx`, `e2e/property-panel-scope.spec.ts`
+
+### UIC-PROPERTY-PANEL-4.2 - Containers
+
+While a query is active, a group and a section shall hide while no row inside matches, and a card while neither its name nor a row inside matches. A section or card that stays visible opens and ignores presses of its trigger; when the query clears, each returns to the open state it had before, whether the user chose it, it was stored or the caller controls it. Counts keep the number of properties inside, matching or not. Until every part mounted inside a container has reported, as in server rendering and the first client render, the container treats its match count as unknown and stays visible, so a preset query never hides a matching row before effects run.
+
+Implementation: `src/components/property-panel/scope-tally.ts`, `src/components/property-panel/property-panel.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-disclosure.tsx`
+Verification: `src/components/property-panel/property-scope.test.tsx`, `e2e/property-panel-scope.spec.ts`
+
+### UIC-PROPERTY-PANEL-4.3 - Marked text
+
+Below a scope, each occurrence of a term shall be marked through `TextMatch` in section titles, group headings, card names, text row labels and any other `TextMatch` label, such as a field's. Marks leave the text and accessible names unchanged.
+
+Implementation: `src/components/property-panel/property-scope.tsx`
+Verification: `src/components/property-panel/property-scope.test.tsx`, `e2e/property-panel-scope.spec.ts`
+
+### UIC-PROPERTY-PANEL-4.4 - No match
+
+The scope shall keep a status region (`role="status"`, `ui-property-scope__status`) after its content. While a query is active and every part has reported that no row matches, the region holds a small `EmptyState` with the provider string `noPropertyMatches` for the trimmed query, followed, when `onClear` is given, by a button named by the provider string `clearFilter` that calls it. Otherwise the region is empty, also in server rendering and the first client render, before the parts have reported.
+
+Implementation: `src/components/property-panel/property-scope.tsx`, `src/core/strings.ts`
+Verification: `src/components/property-panel/property-scope.test.tsx`, `e2e/property-panel-scope.spec.ts`
+
+### UIC-PROPERTY-PANEL-4.5 - Hooks and caller attributes
+
+`PropertyScope` shall carry the hooks below on a `<div>` around its content, append the caller's `className`, and forward `id` and caller `data-*` attributes to it.
+
+Implementation: `src/components/property-panel/property-scope.tsx`
+Verification: `src/components/property-panel/property-scope.test.tsx`
+
+### UIC-PROPERTY-PANEL-4.6 - Custom matching
+
+With `filter`, a row shall match while `filter(text, query)` returns true, where `text` joins the texts [UIC-PROPERTY-PANEL-4.1](#uic-property-panel-41---matching-rows) names with single spaces and `query` is the query as typed, in place of holding every term; a card's name is matched the same way. Any nonblank query is then active, also one such as `/`, `_` or `-` that holds no terms, for rows, cards, containers and the no-match message alike; a blank query still filters nothing, and marks still show the query's terms.
+
+Implementation: `src/components/property-panel/property-scope.tsx`, `src/components/property-panel/scope-tally.ts`
+Verification: `src/components/property-panel/property-scope.test.tsx`, `e2e/property-panel-scope.spec.ts`
+
+### UIC-PROPERTY-PANEL-4.7 - Lifting the query
+
+When a field in a row the query hides is about to take focus ([UIC-PROPERTY-PANEL-2.8](PROPERTY-PANEL.md#uic-property-panel-28---revealing-a-field)), the scope shall lift the query: nothing filters and no text is marked until the query changes, and `onClear`, when given, is called so the host can empty its search box. A panel with built-in search empties its own query.
+
+Implementation: `src/components/property-panel/property-scope.tsx`, `src/components/property-panel/scope-tally.ts`, `src/components/property-panel/property-row.tsx`
+Verification: `src/components/property-panel/property-section.test.tsx`
+
+## UIC-PROPERTY-PANEL-5 - Contract
+
+### UIC-PROPERTY-PANEL-5.1 - Panel and search box
+
+`PropertyPanel` with `searchable` shall keep any supplied `header` content and add a [Search Field](SEARCH-FIELD.md) (`ui-property-panel__search`) named by the provider string `filterLabel` from that label (`Filter <label>` in lower case), with the `searchPlaceholder` in it. A panel named through `aria-labelledby` uses the provider string `search` for the input. The shared reference stylesheet wraps header content and search at narrow widths. Typing filters the panel's children by the query as a `PropertyScope` does.
+
+Implementation: `src/components/property-panel/property-panel.tsx`, `src/core/strings.ts`
+Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e2e/property-panel-search.spec.ts`
+
+### UIC-PROPERTY-PANEL-5.2 - Clearing
+
+While the query is not empty the search field's clear button shall follow the input; pressing it, or Escape in the input, empties the query and leaves focus in the input. The no-match message's clear button empties the query and moves focus to the input, so focus never falls to the page when the message goes away.
+
+Implementation: `src/components/property-panel/property-panel.tsx`
+Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e2e/property-panel-search.spec.ts`
+
+### UIC-PROPERTY-PANEL-5.3 - Hooks and caller attributes
+
+The panel's root shall carry `ui-property-panel`, append the caller's `className`, and take `id`, caller `data-*` attributes and `labelLayout` as a `PropertyPanel` does.
+
+Implementation: `src/components/property-panel/property-panel.tsx`
+Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e2e/property-panel-search.spec.ts`
+
+### UIC-PROPERTY-PANEL-5.4 - Controlled query and matching
+
+`query` with `onQueryChange` shall control the search box's query, so a host can restore or link to a search, and `defaultQuery` start an uncontrolled one; `onQueryChange` reports every change, typing and clearing alike. A supplied `query` or `defaultQuery` also filters without drawing a search box when `searchable` is false. An unconfigured panel inherits any enclosing `PropertyScope` rather than replacing it. `filter` shall pass to the scope ([UIC-PROPERTY-PANEL-4.6](PROPERTY-PANEL.md#uic-property-panel-46---custom-matching)).
+
+Implementation: `src/components/property-panel/property-panel.tsx`
+Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e2e/property-panel-search.spec.ts`
 
 ## Hooks
 
@@ -208,3 +289,6 @@ Verification: `src/components/property-panel/property-row-inheritance.test.tsx`,
 | `data-pressed`                      | state     | `true`                  | On a trigger: being pressed (React Aria).                                                   |
 | `data-focused`                      | state     | `true`                  | On a trigger: focused (React Aria).                                                         |
 | `data-focus-visible`                | state     | `true`                  | On a trigger: keyboard focus (React Aria).                                                  |
+| `ui-property-panel__search`         | slot      |                         | The optional built-in search field, alongside header content.                               |
+| `ui-property-scope`                 | root      |                         | The div around query-filtered content.                                                      |
+| `ui-property-scope__status`         | slot      |                         | The no-match status region.                                                                 |

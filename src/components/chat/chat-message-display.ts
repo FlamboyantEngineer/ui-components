@@ -1,12 +1,12 @@
 'use client';
 
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import type {
   ChatMessageOrigin,
   ChatMessageTimePlacement,
   ChatMessageVariant,
 } from '../chat-transcript/chat-transcript.js';
+import type { ChatMessageData } from './chat-parts.js';
 
 /** How a chat draws its messages: with or without avatars, author names, times and backgrounds. */
 export interface ChatMessageDisplayOptions {

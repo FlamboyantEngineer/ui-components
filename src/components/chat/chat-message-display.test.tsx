@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { article, assistantPeople, message, renderChat } from '../../../test/chat-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
-import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
+import type { ChatMessageData, ChatPart } from './chat-parts.js';
 
 installEditorDom();
 

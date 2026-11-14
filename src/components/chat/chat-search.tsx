@@ -3,12 +3,11 @@
 import { type RefObject, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { SearchGlyph } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
-import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { Button } from '../button/button.js';
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import { FindBar } from '../find-bar/find-bar.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import { findMessageMatches } from './chat-model.js';
+import type { ChatMessageData } from './chat-parts.js';
 
 /** The search within a conversation: its query, the matching messages and the current one. */
 interface ChatSearchModel {
@@ -31,7 +30,11 @@ interface ChatSearchModel {
 
 /** Moves focus to the current match's message, else back to the toggle, once the bar closes. */
 function focusAfterClose(highlightedId: string | undefined, toggle: HTMLButtonElement | null) {
-  const message = highlightedId ? getElementByIdFrom(toggle, highlightedId) : null;
+  const messages = toggle?.closest('.ui-chat')?.querySelectorAll<HTMLElement>('.ui-chat-message');
+  const message =
+    highlightedId && messages
+      ? [...messages].find((element) => element.getAttribute('data-message-id') === highlightedId)
+      : undefined;
   (message ?? toggle)?.focus();
 }
 

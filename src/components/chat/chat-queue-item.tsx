@@ -9,10 +9,10 @@ import {
 } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { armElementDrag } from '../../utils/pointer-drag.js';
+import { AttachmentList } from '../attachment/attachment.js';
 import { Button } from '../button/button.js';
-import { ChatAttachmentList } from '../chat-attachment/chat-attachment.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
+import type { ChatQueuedMessage } from './chat-controller.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import { chatProgressDelay } from './chat-progress.js';
 import { type ChatQueueReorder, useQueueRowDrag } from './chat-queue-reorder.js';
@@ -133,7 +133,7 @@ export function ChatQueueItem(props: ChatQueueItemProps) {
         </span>
       ) : null}
       {entry.attachments?.length ? (
-        <ChatAttachmentList
+        <AttachmentList
           attachments={entry.attachments}
           className={hooks.slotClass('queue-attachments')}
         />

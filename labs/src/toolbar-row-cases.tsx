@@ -1,13 +1,13 @@
 // Cases of the layout lab for toolbar rows: overflow, pending rows and attached groups.
 import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Stack } from '../../src/components/layout/layout.js';
 import {
   ToolbarRow,
   ToolbarRowGroup,
   type ToolbarRowOverflow,
   ToolbarRowSeparator,
-} from '../../src/components/layout/index.js';
-import { Stack } from '../../src/components/layout/layout.js';
+} from '../../src/components/toolbar-row/index.js';
 import {
   CopyGlyph,
   DeleteGlyph,
@@ -31,16 +31,19 @@ function KitchenTools({
   name,
   overflow,
   showEdgeFades = true,
+  showScrollButtons = true,
 }: {
   name: string;
   overflow: ToolbarRowOverflow;
   showEdgeFades?: boolean;
+  showScrollButtons?: boolean;
 }) {
   return (
     <ToolbarRow
       aria-label={name}
       overflow={overflow}
       showEdgeFades={showEdgeFades}
+      showScrollButtons={showScrollButtons}
       justify="start"
       space="xs"
     >
@@ -195,5 +198,49 @@ export function PresentationChanges() {
         </ToolbarRow>
       </div>
     </div>
+  );
+}
+
+/** Paging buttons are optional; focus still reveals tools in the scrolling strip. */
+export function ToolbarScrollButtons() {
+  return (
+    <StateMatrix
+      axes={{ buttons: ['off', 'on'] }}
+      render={({ buttons }) => (
+        <div style={frameStyle(240)}>
+          <KitchenTools
+            name={`Recipe tools, buttons ${buttons}`}
+            overflow="scroll"
+            showScrollButtons={buttons === 'on'}
+          />
+        </div>
+      )}
+    />
+  );
+}
+
+/** Fitting controls keep their requested alignment; overflow always leaves the first tool reachable. */
+export function ToolbarAlignment() {
+  return (
+    <StateMatrix
+      axes={{ justify: ['start', 'center', 'end'], width: ['fit', 'overflow'] }}
+      render={({ justify, width }) => (
+        <div style={frameStyle(width === 'fit' ? 520 : 180)}>
+          <ToolbarRow
+            overflow="scroll"
+            justify={justify}
+            aria-label={`Alignment tools, ${justify}, ${width}`}
+          >
+            {['First tool', 'Second tool', 'Third tool', 'Fourth tool', 'Last tool'].map(
+              (label) => (
+                <Button key={label} size="sm">
+                  {label}
+                </Button>
+              ),
+            )}
+          </ToolbarRow>
+        </div>
+      )}
+    />
   );
 }

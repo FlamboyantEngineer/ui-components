@@ -2,11 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
-import {
-  type ChatSendFunction,
-  useChatController,
-} from '../../src/components/chat-controller/index.js';
+import { Chat, type ChatSendFunction, useChatController } from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';

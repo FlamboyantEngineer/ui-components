@@ -3,8 +3,11 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatCustomPart, ChatMessageData } from '../../src/components/chat-parts/index.js';
+import {
+  Chat,
+  type ChatCustomPart,
+  type ChatMessageData,
+} from '../../src/components/chat/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { assistantPeople, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';

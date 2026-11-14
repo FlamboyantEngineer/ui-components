@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { UserCard } from '../user-card/user-card.js';
+import { Card } from '../card/card.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { Avatar } from './avatar.js';
 
@@ -95,11 +95,20 @@ describe('Avatar corner badge', () => {
     expectHooksMatchSpec(container, 'USER-IDENTITY');
   });
 
-  it('UIC-USER-CARD-1.1 passes the badge to its identity row', () => {
+  it('UIC-AVATAR-4.2 UIC-USER-IDENTITY-1.8 preserves an identity badge inside host Card content', () => {
     render(
-      <UserCard name="Maria Santos" badge={flag} badgeLabel="France" badgePlacement="top-start" />,
+      <Card title="Person details">
+        <UserIdentity
+          name="Maria Santos"
+          badge={flag}
+          badgeLabel="France"
+          badgePlacement="top-start"
+        />
+      </Card>,
     );
-    const card = screen.getByRole('dialog', { name: 'Maria Santos' });
+    const card = screen.getByRole('region', { name: 'Person details' });
+    expect(card).toBeVisible();
+    expect(card.querySelector('.ui-avatar__badge')).toBeVisible();
     expect(card.querySelector('.ui-avatar__badge')).toHaveAttribute('data-placement', 'top-start');
     expect(within(card).getByRole('img', { name: 'France' })).toBeInTheDocument();
   });

@@ -4,7 +4,7 @@ import type {
   ChatMessageData,
   ChatParticipant,
   ChatTextToken,
-} from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 
 export const readerId = 'sam';
 export const plannerId = 'planner';

@@ -4,7 +4,6 @@ import { SegmentedChoice } from '../../src/components/segmented-choice/segmented
 import {
   Timeline,
   type TimelineItem,
-  TimelineItemEditor,
   type TimelinePerson,
   type TimelineRow,
   type TimelineView,
@@ -89,18 +88,15 @@ function applyEdit(items: readonly TimelineItem[], edit: Partial<TimelineItem> &
 }
 
 /**
- * Items with context menus: Edit opens the item editor, whose Save the owner applies by id, and
+ * Items with context menus: the host receives Edit, Complete and Remove requests, and
  * the chart and the table show the same owned items.
  */
 export function TaskEditingDemo() {
   const [items, setItems] = useState(gardenItems);
   const [view, setView] = useState<TimelineView>('chart');
-  const [editingId, setEditingId] = useState<Key | null>(null);
   const [lastAction, setLastAction] = useState('None yet');
-  const editing = items.find((item) => item.id === editingId) ?? null;
   const onAction = (key: Key, item: TimelineItem) => {
     setLastAction(`${String(key)} ${item.label}`);
-    if (key === 'edit') setEditingId(item.id);
     if (key === 'complete') {
       setItems((current) => applyEdit(current, { id: item.id, progress: 1 }));
     }
@@ -129,15 +125,6 @@ export function TaskEditingDemo() {
         itemMenu={itemMenu}
         onItemMenuAction={onAction}
         onItemChange={(change) => setItems((current) => applyEdit(current, change))}
-      />
-      <TimelineItemEditor
-        item={editing}
-        assignablePeople={people}
-        onSave={(edit) => {
-          setItems((current) => applyEdit(current, edit));
-          setLastAction(`saved ${edit.label}`);
-        }}
-        onClose={() => setEditingId(null)}
       />
       <p data-lab-log="task-menus">Last action: {lastAction}</p>
     </div>

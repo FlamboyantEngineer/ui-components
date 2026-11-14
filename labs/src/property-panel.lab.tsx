@@ -1,7 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
-import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -26,6 +25,8 @@ import {
 import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { PropertyPanelHostCases } from './property-panel-host-cases.js';
+import { PropertyPanelScopeSections } from './property-panel-scope.js';
+import { PropertyPanelSearchSections } from './property-panel-search.js';
 import { TextSetting } from './property-text-setting.js';
 
 const layouts = ['responsive', 'inline'] as const;
@@ -245,7 +246,7 @@ function RevealingForm() {
           setSent(true);
         }}
       >
-        <PropertyFilter aria-label="Page setup" defaultQuery="Copies">
+        <PropertyPanel searchable aria-label="Page setup" defaultQuery="Copies">
           <PropertySection title="Page" defaultExpanded={false}>
             <PropertyRow label="Title">
               <TextField label="Title" labelLayout="control-only" name="title" isRequired />
@@ -262,7 +263,7 @@ function RevealingForm() {
               />
             </PropertyRow>
           </PropertySection>
-        </PropertyFilter>
+        </PropertyPanel>
         <Button type="submit" size="sm">
           Save
         </Button>
@@ -409,5 +410,7 @@ mountLab(
       />
     </LabSection>
     <PropertyPanelHostCases />
+    <PropertyPanelSearchSections />
+    <PropertyPanelScopeSections />
   </>,
 );

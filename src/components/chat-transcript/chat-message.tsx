@@ -1,25 +1,23 @@
 'use client';
 
-import { type ReactNode, type RefObject, useId, useRef, useState } from 'react';
+import { type ReactNode, type RefObject, useRef, useState } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { useFocusWithin, useHover } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
-import { type AvatarIdentity, type AvatarProps, getDisplayName } from '../avatar/avatar.js';
+import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 import { AnchoredTooltip } from '../tooltip/tooltip.js';
+import { useMessageIdentity } from './chat-message-identity.js';
 import {
   ChatMessageAvatar,
   ChatMessageBody,
   ChatMessageHeader,
   chatMessageHooks as hooks,
-  useAbsoluteTime,
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
-import { useTranscriptMessage } from './transcript-context.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -263,14 +261,9 @@ export function ChatMessage({
   className,
   ...rest
 }: ChatMessageProps) {
-  const strings = useUiStrings();
   const { isHovered, isFocusWithin, interactionProps } = useMessageInteraction();
-  const labelId = useId();
   const bodyRef = useRef<HTMLDivElement>(null);
-  const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
-  const error = isDeleted ? undefined : rest.error;
-  const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status, error });
-  const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time));
+  const identity = useMessageIdentity({ ...rest, author, time, origin, status, isDeleted });
   const display = resolveDisplay({
     ...{ author, groupPosition, variant, time },
     ...{ showAvatar, showAuthorName, timePlacement },
@@ -289,16 +282,17 @@ export function ChatMessage({
   };
   return (
     <article
-      {...mergeProps(own, interactionProps, transcript)}
+      {...mergeProps(own, interactionProps, identity.transcript)}
+      id={identity.domId}
       {...hooks.root({ className, data })}
       aria-busy={status === 'streaming' || undefined}
-      aria-labelledby={label ? labelId : undefined}
+      aria-labelledby={identity.label ? identity.labelId : undefined}
     >
-      <MessageLabel id={labelId} label={label} />
+      <MessageLabel id={identity.labelId} label={identity.label} />
       {display.avatar ? <ChatMessageAvatar author={display.avatar} /> : null}
       <div ref={bodyRef} {...hooks.slot('body')}>
         <ChatMessageHeader
-          authorName={display.showsName ? authorName : undefined}
+          authorName={display.showsName ? identity.authorName : undefined}
           time={display.headerTime}
           getNow={getNow}
         />

@@ -8,7 +8,7 @@ import {
   type ChatToolCallApproval,
   type ChatToolCallProps,
   type ChatToolCallStatus,
-} from '../src/components/chat-tool-call/chat-tool-call.js';
+} from '../src/components/chat/chat-tool-call.js';
 
 /** A call that asks to delete a file, without its status and approval. */
 export const toolCallBase = {

@@ -88,11 +88,10 @@ test.describe('Calendar View dragging', () => {
     // The release of the drag is not a click: no editor.
     await expect(editor(page)).toHaveCount(0);
 
-    // A click without dragging opens the editor.
+    // A click without dragging reports a host action.
     await eventNamed(page, 'Standup').click();
-    await expect(editor(page).getByRole('textbox', { name: 'Title' })).toHaveValue('Standup');
-    await editor(page).getByRole('button', { name: 'Cancel' }).click();
-    await expect(editor(page)).toBeHidden();
+    await expect(output(page)).toHaveText('Opened standup');
+    await expect(editor(page)).toHaveCount(0);
   });
 
   test('UIC-CALENDAR-VIEW-6.2 abandons a drag on Escape and drags a bar end by days', async ({
@@ -117,8 +116,7 @@ test.describe('Calendar View dragging', () => {
     // The abandoned drag leaves no mark that would swallow the next key press.
     await eventNamed(page, 'Deadline').focus();
     await page.keyboard.press('Enter');
-    await expect(editor(page)).toBeVisible();
-    await page.keyboard.press('Escape');
+    await expect(output(page)).toHaveText('Opened deadline');
     await expect(editor(page)).toHaveCount(0);
 
     const end = grid.getByRole('button', { name: 'Change end of Offsite' });

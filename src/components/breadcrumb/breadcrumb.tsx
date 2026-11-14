@@ -26,7 +26,7 @@ import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { renderLinkElement } from '../link/link.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { breadcrumbHooks as hooks } from './breadcrumb-hooks.js';
 import {
   type CrumbOverflow,

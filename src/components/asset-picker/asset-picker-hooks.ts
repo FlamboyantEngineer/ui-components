@@ -7,10 +7,5 @@ export const assetPickerHooks = createHooks('asset-picker', [
   'item',
   'thumbnail',
   'name',
-  'details',
-  'alt',
-  'size',
-  'constrain',
-  'align',
   'actions',
 ]);

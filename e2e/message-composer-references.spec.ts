@@ -23,10 +23,7 @@ test.describe('Message Composer references', () => {
     await expect(chips(page).first().getByRole('link')).toHaveAttribute('href', '#trip-4');
     await references(page).getByRole('textbox').press('End');
     await insertReference(page, 'NOTE-9');
-    await expect(chips(page).last().locator('.ui-record-label')).toHaveAttribute(
-      'data-unavailable',
-      'missing',
-    );
+    await expect(chips(page).last()).toHaveText('Missing item');
     await page.keyboard.press('Enter');
     const sent = page.locator('[data-lab-sent="1"]');
     await expect(sent.locator('.ui-chat-parts__token[data-kind="reference"]')).toHaveCount(3);

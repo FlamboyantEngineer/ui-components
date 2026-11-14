@@ -201,6 +201,17 @@ The rename shall act on the row the owner draws now, found by its key among the 
 Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/tree-rename-eligibility.test.tsx`, `e2e/tree.spec.ts`
 
+### UIC-TREE-7.3 - Async rename feedback
+
+When `onRename` returns a promise, the name field shall remain mounted, read-only and busy until
+it settles. Further submissions shall not start another request. Success closes the field and
+returns focus to its row if the field still held it. Rejection shows the error through InlineError,
+marks and describes the invalid field, retains its draft and focus, and allows Enter to retry.
+A revoked edit or unmounted tree shall ignore an older request's completion. A virtualized tree uses the host's `rowHeight`; hosts reserve enough height for an inline draft and feedback.
+
+Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/use-tree-rename-request.ts`
+Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree-rename-async.spec.ts`
+
 ## UIC-TREE-8 - Category sections
 
 ### UIC-TREE-8.1 - Sections under heading rows
@@ -252,6 +263,7 @@ Verification: `src/components/tree/tree-reveal.test.tsx`, `e2e/tree-reveal.spec.
 | `ui-tree__label`          | slot      |                                             | The row label.                                                                 |
 | `ui-tree__new-mark`       | slot      |                                             | The glyph after a new row's label.                                             |
 | `ui-tree__rename-input`   | slot      |                                             | The name field of a row being renamed, inside its label.                       |
+| `ui-tree__rename-error`   | slot      |                                             | The failed rename's inline feedback.                                           |
 | `ui-tree__meta`           | slot      |                                             | Secondary text after the label.                                                |
 | `ui-tree__load-error`     | slot      |                                             | Why the row's children failed to load, with a retry (also `ui-inline-error`).  |
 | `ui-tree__actions`        | slot      |                                             | The row's trailing controls.                                                   |
@@ -268,6 +280,7 @@ Verification: `src/components/tree/tree-reveal.test.tsx`, `e2e/tree-reveal.spec.
 | `data-virtualized`        | state     | `true`                                      | Only the rows in view render.                                                  |
 | `data-reordering`         | state     | `true`                                      | The tree reorders its rows now (`reorder` is set).                             |
 | `data-sectioned`          | state     | `true`                                      | Top-level rows are grouped in category sections (`getSection` is set).         |
+| `data-invalid`            | state     | `true`                                      | The inline rename was refused (React Aria Input).                              |
 | `data-pending`            | state     | `true`                                      | Items are loading.                                                             |
 | `data-current`            | state     | `true`                                      | The current row.                                                               |
 | `data-new`                | state     | `true`                                      | A row the owner marks as new.                                                  |

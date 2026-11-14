@@ -37,12 +37,6 @@ function renderPicker(props: Partial<Parameters<typeof AssetPicker>[0]> = {}) {
   return { ...view, onSelect, search };
 }
 
-function requireAsset(id: string): AssetPickerItem {
-  const asset = assets.find((each) => each.id === id);
-  if (!asset) throw new Error(`No asset ${id}`);
-  return asset;
-}
-
 const grid = () => screen.getByRole('grid', { name: 'Images' });
 
 describe('AssetPicker', () => {
@@ -70,74 +64,18 @@ describe('AssetPicker', () => {
     expect(await within(grid()).findByText('Search is unavailable.')).toBeVisible();
   });
 
-  it('UIC-ASSET-PICKER-1.2 places the chosen asset and inserts it with its placement', async () => {
+  it('UIC-ASSET-PICKER-1.2 returns the chosen asset without placement policy', async () => {
     const user = userEvent.setup();
     const { onSelect, container } = renderPicker();
     const insert = screen.getByRole('button', { name: 'Insert' });
     expect(insert).toBeDisabled();
     await user.click(await within(grid()).findByRole('row', { name: 'Loaf' }));
-    expect(screen.getByRole('textbox', { name: 'Alternative text' })).toHaveValue('A round loaf');
-    const width = screen.getByRole('textbox', { name: 'Width' });
-    expect(width).toHaveValue('800');
-    await user.clear(width);
-    await user.type(width, '400');
-    await user.tab();
-    expect(screen.getByRole('textbox', { name: 'Height' })).toHaveValue('300');
-    await user.click(screen.getByRole('radio', { name: 'Center' }));
     await user.click(insert);
-    expect(onSelect).toHaveBeenCalledWith(assets[0], {
-      alt: 'A round loaf',
-      width: 400,
-      height: 300,
-      align: 'center',
-      constrain: true,
-    });
+    expect(onSelect).toHaveBeenCalledWith(assets[0]);
+    expect(screen.queryByRole('textbox', { name: 'Alternative text' })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'ASSET-PICKER', {
-      slots: [
-        'search',
-        'results',
-        'item',
-        'thumbnail',
-        'name',
-        'details',
-        'alt',
-        'size',
-        'constrain',
-        'align',
-        'actions',
-      ],
+      slots: ['search', 'results', 'item', 'thumbnail', 'name', 'actions'],
     });
-  });
-
-  it('UIC-ASSET-PICKER-1.2 lets width and height change apart once proportions are off', async () => {
-    const user = userEvent.setup();
-    renderPicker({ defaultAlign: 'end' });
-    await user.click(await within(grid()).findByRole('row', { name: 'Loaf' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Keep proportions' }));
-    const height = screen.getByRole('textbox', { name: 'Height' });
-    await user.clear(height);
-    await user.type(height, '100');
-    await user.tab();
-    expect(screen.getByRole('textbox', { name: 'Width' })).toHaveValue('800');
-    expect(screen.getByRole('radio', { name: 'End' })).toBeChecked();
-  });
-
-  it('UIC-ASSET-PICKER-1.2 never derives a side below one pixel for a very wide asset', async () => {
-    const user = userEvent.setup();
-    const banner = {
-      ...requireAsset('loaf'),
-      id: 'banner',
-      name: 'Banner',
-      width: 2000,
-      height: 10,
-    };
-    renderPicker({ search: () => Promise.resolve([banner]) });
-    await user.click(await within(grid()).findByRole('row', { name: 'Banner' }));
-    const width = screen.getByRole('textbox', { name: 'Width' });
-    await user.clear(width);
-    await user.type(width, '50');
-    await user.tab();
-    expect(screen.getByRole('textbox', { name: 'Height' })).toHaveValue('1');
   });
 
   it('UIC-ASSET-PICKER-1.1 searches again with a new search function', async () => {
@@ -173,16 +111,6 @@ describe('AssetPicker', () => {
     expect(second).toHaveBeenCalledWith('', expect.any(AbortSignal));
     await user.type(screen.getByRole('searchbox', { name: 'Search images' }), 'rol');
     expect(await within(grid()).findByRole('row', { name: 'Rolls' })).toBeVisible();
-  });
-
-  it('UIC-ASSET-PICKER-1.2 starts the placement again for another asset', async () => {
-    const user = userEvent.setup();
-    renderPicker();
-    await user.click(await within(grid()).findByRole('row', { name: 'Loaf' }));
-    await user.type(screen.getByRole('textbox', { name: 'Alternative text' }), ' on a board');
-    await user.click(within(grid()).getByRole('row', { name: 'Rolls' }));
-    expect(screen.getByRole('textbox', { name: 'Alternative text' })).toHaveValue('');
-    expect(screen.getByRole('textbox', { name: 'Width' })).toHaveValue('');
   });
 
   it('UIC-ASSET-PICKER-1.3 offers Cancel only with onCancel', async () => {

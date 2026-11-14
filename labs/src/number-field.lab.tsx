@@ -15,6 +15,7 @@ import {
   NumberFieldUnitsSection,
   NumberFieldUnitTypeSection,
 } from './number-field-displays.js';
+import { NumberFieldExactSections } from './number-field-exact.js';
 import { NumberFieldPresetsSection } from './number-field-presets.js';
 import { NumberFieldSliderSections } from './number-field-slider.js';
 import { Radices } from './number-radices.js';
@@ -295,6 +296,7 @@ mountLab(
     <NumberFieldUnitsSection />
     <NumberFieldUnitTypeSection />
     <NumberFieldSliderSections />
+    <NumberFieldExactSections />
     <LabSection title="Lock during a scrub" description="A lock ends the current pointer gesture.">
       <LockedScrub />
     </LabSection>

@@ -1,6 +1,6 @@
 # Modal
 
-`Modal` is a blocking dialog: a task or decision the reader finishes or cancels before returning to the page beneath. It has a title, an optional description, a body and a footer whose built-in action bar holds Cancel, an optional secondary action and the primary action. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog` and `Heading`, which provide the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration. The same dialog can also float over the page without blocking it, or open as a popover against its trigger (React Aria `Popover`). Imperative callers open modals through [Modal Controller](MODAL-CONTROLLER.md); yes-or-no decisions use [Confirm Dialog](MODAL.md).
+`Modal` is a blocking dialog: a task or decision the reader finishes or cancels before returning to the page beneath. It has a title, an optional description, a body and a footer whose built-in action bar holds Cancel, an optional secondary action and the primary action. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog` and `Heading`, which provide the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration. The same dialog can also float over the page without blocking it, or open as a popover against its trigger (React Aria `Popover`). Imperative callers open modals through [Modal Controller](MODAL.md); yes-or-no decisions use [Confirm Dialog](MODAL.md).
 
 ## UIC-MODAL-1 - Overlay
 
@@ -359,36 +359,110 @@ The Modal confirmation helper shall carry the hooks below on top of the modal's,
 Implementation: `src/components/modal/modal-confirm.tsx`
 Verification: `src/components/modal/modal-confirm.test.tsx`
 
+## Modal Controller
+
+`createModalController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `ModalHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Modal](MODAL.md), or any modal the caller draws. [Confirm Dialog](MODAL.md#uic-modal-22---imperative-confirmation) builds awaitable helpers on it: `confirm` for a yes-or-no answer, `alert` for an acknowledgement and `prompt` for a line of text.
+
+## UIC-MODAL-24 - Controller
+
+### UIC-MODAL-24.1 - Instances
+
+`createModalController` shall return a new, independent controller each time. Controllers share no state, and the library creates none at module load.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`
+
+### UIC-MODAL-24.2 - Opening
+
+`open(options)` shall add a modal above every open one and return its handle, with an `id` unique within the controller and `isOpen` true. With modal options, the entry renders a `Modal` with those props and `content` as its body; `content` given as a function receives the handle. With `render`, the entry calls it with `isOpen`, `onOpenChange`, `close` and the handle, and renders what it returns, so a caller can open a modal of its own (for example a [Confirm Dialog](MODAL.md)).
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-24.3 - Closing and results
+
+`handle.close(value)` shall close the modal and settle `handle.result` with `value`. Dismissing the modal (Escape, an outside press, Cancel, the close button) shall close it and settle the result with `undefined`. The result settles exactly once: later calls to `close` do nothing. `closeAll()` dismisses every open modal, topmost first.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-24.4 - Updates
+
+`handle.update(options)` shall merge the options into the open modal, which re-renders with them (a new title, footer state, content or `render`). It does nothing after the modal closes.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-24.5 - Subscription
+
+`getSnapshot()` shall return the open modals oldest first, as a new array after every change and the same array otherwise, and `subscribe(listener)` shall call the listener after every change until the returned function unsubscribes it, so a host can render the list with `useSyncExternalStore`.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`
+
+## UIC-MODAL-25 - Host
+
+### UIC-MODAL-25.1 - Rendering
+
+`ModalHost` shall render every open modal of its controller, oldest first. Modals opened before it mounts shall appear when it mounts, in opening order, and closed modals shall leave.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-controller.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-25.2 - Stacking and focus
+
+The most recently opened modal shall stack on top and alone respond to Escape and outside presses, while the modals beneath stay mounted with their state. Each blocking modal publishes its place among the open blocking modals of its document in `data-stack-index` on its overlay (0 for the lowest, in opening order, kept while it leaves), as drawers do ([DRAWER.md](DRAWER.md)), so the stylesheet dims the page once: a modal over another takes the weaker scrim (`--ref-scrim-weak`). Closing the topmost shall return focus into the modal beneath it, and closing the last shall return focus to the element focused when it opened.
+
+Implementation: `src/components/modal/modal-controller.tsx`, `src/components/modal/modal.tsx`, `src/components/modal/modal-stack.ts`, `labs/reference/modal.css`
+Verification: `src/components/modal/modal-controller.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-25.3 - Another controller
+
+Given another controller, `ModalHost` shall drop the modals it showed and show the new controller's afresh, including the one-at-a-time mounting of UIC-MODAL-25.1: modal IDs are unique within a controller only, so a modal of the new controller never takes the draft, pending action, error or focus of the old controller's modal with the same ID, and the old controller's later actions and updates change nothing shown. Updates from the same controller keep each modal's state.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-host-replace.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+### UIC-MODAL-25.4 - Closing with an exit
+
+A modal the controller closes (by its handle, Cancel, Escape, an outside press, an action's `close` or `closeAll`) shall leave the controller's list and settle its `result` at once, while `ModalHost` keeps it on the page, closed, until its exit ends: the `Modal` runs its exit and calls the entry's `onExitComplete` once, and focus returns as when a `Modal` closes. A host unmounted while the modal is open tears it down without an exit or `onExitComplete`. A modal drawn by `render` leaves the page as soon as it closes.
+
+Implementation: `src/components/modal/modal-controller.tsx`
+Verification: `src/components/modal/modal-host-exit.test.tsx`, `e2e/modal-modal-controller.spec.ts`
+
+## Markup
+
+`ModalHost` renders no element of its own: each open modal carries the hooks of [Modal](MODAL.md), or of the modal its `render` draws.
+
 ## Hooks
 
-| Hook                       | Kind      | Values                                            | Description                                                               |
-| -------------------------- | --------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `ui-modal`                 | root      |                                                   | The overlay covering the viewport, or an anchored dialog's popover.       |
-| `ui-modal__panel`          | slot      |                                                   | The box holding the dialog.                                               |
-| `ui-modal__dialog`         | slot      |                                                   | The `role="dialog"` element.                                              |
-| `ui-modal__header`         | slot      |                                                   | The header row.                                                           |
-| `ui-modal__heading`        | slot      |                                                   | Groups the title and description.                                         |
-| `ui-modal__title`          | slot      |                                                   | The `<h2>` title.                                                         |
-| `ui-modal__description`    | slot      |                                                   | The description under the title.                                          |
-| `ui-modal__header-actions` | slot      |                                                   | Caller content at the end of the header.                                  |
-| `ui-modal__close`          | slot      |                                                   | The header close button (also `ui-button`).                               |
-| `ui-modal__body`           | slot      |                                                   | The body.                                                                 |
-| `ui-modal__footer`         | slot      |                                                   | The footer.                                                               |
-| `ui-modal__footer-content` | slot      |                                                   | Caller content at the start of the footer.                                |
-| `ui-modal__message`        | slot      |                                                   | The footer status or error message.                                       |
-| `ui-modal__actions`        | slot      |                                                   | The action bar.                                                           |
-| `ui-modal__cancel`         | slot      |                                                   | The Cancel button (also `ui-button`).                                     |
-| `ui-modal__secondary`      | slot      |                                                   | The secondary action (also `ui-button`).                                  |
-| `ui-modal__primary`        | slot      |                                                   | The primary action (also `ui-button`).                                    |
-| `data-layer`               | attribute | `modal`, `dropdown`                               | The overlay layer (`dropdown` when anchored); z-index set inline.         |
-| `data-tone`                | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On the overlay, emphasis; on the message, `danger` for an error.          |
-| `data-size`                | attribute | `sm`, `md`, `lg`, `xl`, `full`                    | Dialog width.                                                             |
-| `data-body-layout`         | attribute | `block`, `column`                                 | Body layout.                                                              |
-| `data-entering`            | state     | `true`                                            | On the overlay and panel while an entry animation runs (React Aria).      |
-| `data-exiting`             | state     | `true`                                            | On the overlay and panel while an exit animation runs (React Aria).       |
-| `data-non-modal`           | state     | `true`                                            | On the overlay of a dialog that does not block the page.                  |
-| `data-stack-index`         | state     | `0`, `1`, …                                       | On a blocking dialog's overlay, its place among open ones, from 0.        |
-| `data-placement`           | state     | `top`, `bottom`, `left`, `right`, `center`        | On an anchored dialog, the side of the trigger it opened on (React Aria). |
-| `data-trigger`             | state     | `DialogTrigger`                                   | On an anchored dialog, what opened it (React Aria).                       |
-
-| `ui-modal__confirmation-icon` | slot | | The decorative icon leading the title (also `ui-icon`). |
+| Hook                          | Kind      | Values / Meaning                                  |
+| ----------------------------- | --------- | ------------------------------------------------- |
+| `ui-modal`                    | root      |                                                   | The overlay covering the viewport, or an anchored dialog's popover.       |
+| `ui-modal__panel`             | slot      |                                                   | The box holding the dialog.                                               |
+| `ui-modal__dialog`            | slot      |                                                   | The `role="dialog"` element.                                              |
+| `ui-modal__header`            | slot      |                                                   | The header row.                                                           |
+| `ui-modal__heading`           | slot      |                                                   | Groups the title and description.                                         |
+| `ui-modal__title`             | slot      |                                                   | The `<h2>` title.                                                         |
+| `ui-modal__description`       | slot      |                                                   | The description under the title.                                          |
+| `ui-modal__header-actions`    | slot      |                                                   | Caller content at the end of the header.                                  |
+| `ui-modal__close`             | slot      |                                                   | The header close button (also `ui-button`).                               |
+| `ui-modal__body`              | slot      |                                                   | The body.                                                                 |
+| `ui-modal__footer`            | slot      |                                                   | The footer.                                                               |
+| `ui-modal__footer-content`    | slot      |                                                   | Caller content at the start of the footer.                                |
+| `ui-modal__message`           | slot      |                                                   | The footer status or error message.                                       |
+| `ui-modal__actions`           | slot      |                                                   | The action bar.                                                           |
+| `ui-modal__cancel`            | slot      |                                                   | The Cancel button (also `ui-button`).                                     |
+| `ui-modal__secondary`         | slot      |                                                   | The secondary action (also `ui-button`).                                  |
+| `ui-modal__primary`           | slot      |                                                   | The primary action (also `ui-button`).                                    |
+| `data-layer`                  | attribute | `modal`, `dropdown`                               | The overlay layer (`dropdown` when anchored); z-index set inline.         |
+| `data-tone`                   | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On the overlay, emphasis; on the message, `danger` for an error.          |
+| `data-size`                   | attribute | `sm`, `md`, `lg`, `xl`, `full`                    | Dialog width.                                                             |
+| `data-body-layout`            | attribute | `block`, `column`                                 | Body layout.                                                              |
+| `data-entering`               | state     | `true`                                            | On the overlay and panel while an entry animation runs (React Aria).      |
+| `data-exiting`                | state     | `true`                                            | On the overlay and panel while an exit animation runs (React Aria).       |
+| `data-non-modal`              | state     | `true`                                            | On the overlay of a dialog that does not block the page.                  |
+| `data-stack-index`            | state     | `0`, `1`, …                                       | On a blocking dialog's overlay, its place among open ones, from 0.        |
+| `data-placement`              | state     | `top`, `bottom`, `left`, `right`, `center`        | On an anchored dialog, the side of the trigger it opened on (React Aria). |
+| `data-trigger`                | state     | `DialogTrigger`                                   | On an anchored dialog, what opened it (React Aria).                       |
+| `ui-modal__confirmation-icon` | slot      |                                                   | The decorative icon leading the title (also `ui-icon`).                   |

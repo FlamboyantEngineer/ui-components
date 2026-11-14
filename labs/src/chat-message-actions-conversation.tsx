@@ -4,7 +4,7 @@ import {
   ChatMessageActionsMenu,
   type ChatMessageCommandProps,
   type ChatMessageMenuIcons,
-} from '../../src/components/chat-message-actions/chat-message-actions.js';
+} from '../../src/components/chat/index.js';
 import {
   ChatMessage,
   ChatTranscript,

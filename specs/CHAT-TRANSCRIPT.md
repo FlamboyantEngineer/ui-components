@@ -75,10 +75,10 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/co
 
 ### UIC-CHAT-TRANSCRIPT-2.3 - Hooks and caller attributes
 
-`ChatMessage` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to its root.
+`ChatMessage` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to its root. A `ChatMessage` without an explicit caller DOM `id` generates its own stable DOM id. This generated id never replaces its transcript child-key identity. Within a transcript, `data-message-id` publishes the logical identity used by read, quote, focus and scroll operations; an explicit caller `id` still names the DOM element and supplies its explicit transcript alias.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`
-Verification: `src/components/chat-transcript/chat-transcript.test.tsx`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-identity.ts`
+Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/components/chat/chat-instance-identity.test.tsx`
 
 ### UIC-CHAT-TRANSCRIPT-2.4 - Name and id
 
@@ -143,7 +143,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 `reactions` (usually a [Reaction Bar](REACTION-BAR.md)) shall render in `ui-chat-message__reactions` after the error and before the actions, and `readers` (usually `ChatReadReceipts`, [UIC-CHAT-TRANSCRIPT-5.5](#uic-chat-transcript-55---read-receipts)) in `ui-chat-message__readers`, last in the body. Each slot renders only with content. The reference stylesheet sets the reactions at the bottom end of every message, sent or received, under the content and the footer and clear of the actions, wrapping onto more lines when the message is narrow; right under the content, a summary reaction bar ([UIC-REACTION-BAR-1.7](REACTION-BAR.md#uic-reaction-bar-17---summary)) overlaps the bubble's bottom edge at its end, and under a footer or an error it keeps clear of them; the readers sit at the end of sent messages only.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`
-Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `e2e/chat-message-actions.spec.ts`
+Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `e2e/chat-chat-message-actions.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.13 - Avatar, name, time and background
 
@@ -201,7 +201,7 @@ Verification: `src/components/chat-transcript/transcript-announcer.test.tsx`, `s
 Each child is found by its `id` prop, else its React key, else its position (fragments are flattened into their children); that key is the message id the transcript's props and callbacks use (`highlightedMessageId`, `firstUnreadId`, `onRead`), except that a message registering its own `id` (its DOM id), such as a `ChatMessage` inside a wrapper component, is known by that id once it has mounted. A `ChatMessage` inside a transcript registers through context its `id`, its author's display name, origin and status (with an optional plain-text summary to announce) and the element holding its content, and takes from it the props for its `<article>`: the roving `tabindex`, `aria-posinset`, `aria-setsize` and `data-highlighted`. Outside a transcript a `ChatMessage` takes none of them. The transcript tells messages from the parts between them: `ChatDateSeparator`, `ChatUnreadDivider` and `ChatTypingIndicator` children are parts by their component, known before they ever mount, and any other child is a part once it has mounted without registering, so the unread count, `aria-posinset`, `aria-setsize` and Home count no separator a virtualized transcript has not mounted yet. A message keeps its key and id while it is unmounted, as a virtualized history unmounts it, until the conversation starts over (no message survives a change). The transcript then forgets every message that is not mounted, so a key or id an earlier conversation used means only what the current one makes it: a reused key can be a separator, and a reused id names the current message. Starting over also clears the older-history request, the read and paging reports and their pending timers, so the new conversation asks for its older messages and reports what is read on its own. A new `conversationId` names the conversation explicitly and starts the transcript over even when the new messages reuse ids, separators or dates: every state the transcript keeps (its place, focus, measurements, paging, read state and timers) starts again, and nothing reports for the previous conversation. Updates within one conversation keep it.
 
 Implementation: `src/components/chat-transcript/transcript-context.ts`, `src/components/chat-transcript/transcript-registry.ts`, `src/components/chat-transcript/transcript-runtime.ts`, `src/components/chat-transcript/transcript-items.ts`, `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-transcript.tsx`
-Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `src/components/chat-transcript/transcript-items.test.ts`, `src/components/chat-transcript/transcript-virtual.test.tsx`, `src/components/chat-transcript/transcript-history.test.tsx`, `src/components/chat-transcript/transcript-conversation-reset.test.tsx`, `src/components/chat-transcript/transcript-conversation.test.tsx`, `src/components/chat/chat-conversation-switch.test.tsx`, `e2e/chat-transcript.spec.ts`
+Verification: `src/components/chat-transcript/transcript-keyboard.test.tsx`, `src/components/chat-transcript/transcript-items.test.ts`, `src/components/chat-transcript/transcript-virtual.test.tsx`, `src/components/chat-transcript/transcript-history.test.tsx`, `src/components/chat-transcript/transcript-conversation-reset.test.tsx`, `src/components/chat-transcript/transcript-conversation.test.tsx`, `src/components/chat/chat-conversation-switch.test.tsx`, `e2e/chat-transcript.spec.ts`, `src/components/chat/chat-instance-identity.test.tsx`
 
 ## UIC-CHAT-TRANSCRIPT-4 - History and unread
 
@@ -272,7 +272,7 @@ Verification: `src/components/chat-transcript/chat-unread-divider.test.tsx`, `e2
 
 ### UIC-CHAT-TRANSCRIPT-5.4 - Typing indicator
 
-`ChatTypingIndicator` shall render a `ui-chat-typing-indicator` with `role="status"`, so changes are announced politely. It says who is typing through the provider string `chatTyping` of their display names (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are typing…`). An assistant thinking shows inside its reply instead ([Chat Activity](CHAT-ACTIVITY.md) `ChatStatusLine`). The text sits in `ui-chat-typing-indicator__text` after `ui-chat-typing-indicator__dots`, a decorative element holding three `ui-chat-typing-indicator__dot` elements for a stylesheet to animate. With nobody typing it stays mounted, empty, and publishes `data-empty`, so the next change is announced.
+`ChatTypingIndicator` shall render a `ui-chat-typing-indicator` with `role="status"`, so changes are announced politely. It says who is typing through the provider string `chatTyping` of their display names (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are typing…`). An assistant thinking shows inside its reply instead ([Chat Activity](CHAT.md) `ChatStatusLine`). The text sits in `ui-chat-typing-indicator__text` after `ui-chat-typing-indicator__dots`, a decorative element holding three `ui-chat-typing-indicator__dot` elements for a stylesheet to animate. With nobody typing it stays mounted, empty, and publishes `data-empty`, so the next change is announced.
 
 Implementation: `src/components/chat-transcript/chat-typing-indicator.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-typing-indicator.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -378,3 +378,4 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-typing-indicator__text`  | slot      |                                                  | Who is typing, in words.                                                                        |
 | `ui-chat-read-receipts`           | root      |                                                  | The readers of a message (also `ui-avatar-group`).                                              |
 | `data-delivery-presentation`      | attribute | `label`, `fade`                                  | Message delivery presentation.                                                                  |
+| `data-message-id`                 | attribute |                                                  | Logical message identity inside a transcript, independent of generated DOM id.                  |

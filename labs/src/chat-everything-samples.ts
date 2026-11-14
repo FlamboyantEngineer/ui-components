@@ -1,9 +1,9 @@
 // A team and its trip planner for the Chat lab's everything-at-once conversation: three days of
 // messages before today's, two older pages, and the planner's commands.
 
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import type { ChatMessageData } from '../../src/components/chat/index.js';
+import { tripAttachments } from './attachment-samples.js';
 import type { AgentBehaviour } from './chat-agent.js';
-import { tripAttachments } from './chat-attachment-samples.js';
 import type { LabReplier } from './chat-people-host.js';
 import {
   ana,

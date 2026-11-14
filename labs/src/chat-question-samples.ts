@@ -1,9 +1,6 @@
 // Questions a code helper asks while setting up a small notes app, and a recipe planner's.
 
-import type {
-  ChatQuestionAnswer,
-  ChatQuestionItem,
-} from '../../src/components/chat-question/chat-question.js';
+import type { ChatQuestionAnswer, ChatQuestionItem } from '../../src/components/chat/index.js';
 
 export const databaseQuestion: ChatQuestionItem = {
   id: 'database',

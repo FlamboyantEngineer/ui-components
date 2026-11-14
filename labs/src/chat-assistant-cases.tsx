@@ -2,10 +2,12 @@
 // useChatController, and short chats to keep typing in while a reply streams.
 
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import { useChatController } from '../../src/components/chat-controller/index.js';
-import { ChatList } from '../../src/components/chat-list/index.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import {
+  Chat,
+  ChatList,
+  type ChatMessageData,
+  useChatController,
+} from '../../src/components/chat/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
 import { AgentConversation, useConversationRows } from './chat-agent-app.js';

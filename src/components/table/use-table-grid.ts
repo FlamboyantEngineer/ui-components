@@ -8,8 +8,6 @@ import type { CollectionDragAndDropOptions } from '../../utils/use-reorder-drag-
 import type { TableProps } from './table.js';
 import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
 import type { TableBodyProps, TableStatus } from './table-body.js';
-import type { TableSelectionBarProps } from './table-bulk-edit.js';
-import { resolveExportMenu, type TableExportMenuProps } from './table-export-menu.js';
 import { listVisibleRows } from './table-groups.js';
 import { pickAriaProps, type TableAriaProps } from './table-props.js';
 import { resolveGroupReorder } from './table-reorder-groups.js';
@@ -22,7 +20,7 @@ import { useColumnWidths } from './use-column-widths.js';
 import { type TablePinOffsets, usePinnedOffsets } from './use-pinned-offsets.js';
 import { useRecordedEdits } from './use-recorded-edits.js';
 import { useTableGrouping } from './use-table-grouping.js';
-import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
+import { useRowModel } from './use-table-model.js';
 import { type TableReorder, useTableReorder } from './use-table-reorder.js';
 import { type TableRowsView, useTableRows } from './use-table-rows.js';
 import { useTableSelection } from './use-table-selection.js';
@@ -55,10 +53,6 @@ export interface TableGrid<T> {
   onPinOffsets: (offsets: TablePinOffsets) => void;
   onRowAction: ((key: Key) => void) | undefined;
   body: TableBodyProps<T>;
-  /** The export menu above the grid, when the table exports. */
-  exportMenu: TableExportMenuProps<T> | null;
-  /** The selection bar above the grid, when the table draws one. */
-  selectionBar: TableSelectionBarProps<T> | null;
   /** Handlers for the table root from every feature in use. */
   rootProps: object;
 }
@@ -169,7 +163,6 @@ function mergeRootProps<T extends TableRow>(
     sort: TableRowsView<T>['sort'];
     columnReorder: ColumnReorder;
     editingProps: object;
-    cellsProps: object;
     historyProps: object;
   },
 ): object {
@@ -180,7 +173,6 @@ function mergeRootProps<T extends TableRow>(
     parts.sort.isMultiple ? parts.sort.rootProps : {},
     hasColumnMoves ? parts.columnReorder.rootProps : {},
     hasEditing ? parts.editingProps : {},
-    parts.cellsProps,
     parts.historyProps,
   );
 }
@@ -200,7 +192,7 @@ function createBody<T extends TableRow>(
 }
 
 /**
- * Editing and spreadsheet mode over the visible rows and drawn columns, reporting through the
+ * Cell editing over the visible rows and drawn columns, reporting through the
  * callbacks the edit history records.
  */
 function useEditingParts<T extends TableRow>(
@@ -209,19 +201,17 @@ function useEditingParts<T extends TableRow>(
 ) {
   const recorded = useRecordedEdits({ ...options, isRowDisabled: parts.isRowDisabled });
   const edited = { ...options, onCellsChange: recorded.onCellsChange };
-  const cells = useCellsView(edited, parts);
   const editing = useCellEditing({
     ...edited,
     columns: parts.structure.columns,
     rows: parts.rows,
-    typeToEdit: cells.view !== null,
   });
-  return { edited, cells, editing, historyProps: recorded.rootProps };
+  return { editing, historyProps: recorded.rootProps };
 }
 
 /**
  * Derives everything the grid renders: the rows of the current page under their groups, the drawn
- * columns and their layout, the notice, selection, reordering, editing, spreadsheet mode, pinned
+ * columns and their layout, the notice, selection, reordering, editing, pinned
  * offsets and the root's handlers.
  */
 export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): TableGrid<T> {
@@ -238,7 +228,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
   const body = useBodyNodes(grouped, view);
   const visibleRows = useVisibleRows<T>(body);
-  const { edited, cells, editing, historyProps } = useEditingParts(options, {
+  const { editing, historyProps } = useEditingParts(options, {
     rows: visibleRows,
     structure,
     isRowDisabled,
@@ -268,7 +258,6 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
       report: rowPins.report,
     },
     editing,
-    cells: cells.view,
   });
   return {
     ariaProps: {
@@ -291,14 +280,11 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     onPinOffsets: pinned.report,
     onRowAction: createTableRowAction(keyIndex, onRowAction),
     body: createBody(options, { nodes: body.nodes, model, status, message }),
-    exportMenu: resolveExportMenu(options, { view, selection, drawn: structure.columns }),
-    selectionBar: resolveSelectionBar(edited, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,
       sort: view.sort,
       columnReorder,
       editingProps: editing.rootProps,
-      cellsProps: cells.rootProps,
       historyProps,
     }),
   };

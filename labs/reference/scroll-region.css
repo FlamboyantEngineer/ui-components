@@ -301,3 +301,42 @@
     animation: none;
   }
 }
+
+/*
+ * Scroll Overview: a custom scrollbar beside a container whose native scrollbar the host hides.
+ * The markers paint the track; the thumb lies over them, translucent, so the marks under it show.
+ */
+.ui-scroll-overview {
+  flex: 0 0 10px;
+  box-sizing: border-box;
+  width: 10px;
+  border-radius: var(--ref-radius-full);
+  background-color: color-mix(in srgb, var(--ref-text) var(--ref-tint), transparent);
+  background-image: var(--ui-scroll-overview-image);
+}
+
+.ui-scroll-overview[data-interactive] {
+  cursor: pointer;
+}
+
+.ui-scroll-overview[data-empty] {
+  background-image: none;
+}
+
+.ui-scroll-overview__thumb {
+  inset-inline: 1px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--ref-text) 35%, transparent);
+  border-radius: var(--ref-radius-full);
+  background: color-mix(in srgb, var(--ref-text) 18%, transparent);
+  cursor: default;
+  touch-action: none;
+}
+
+.ui-scroll-overview__thumb:hover {
+  background: color-mix(in srgb, var(--ref-text) 28%, transparent);
+}
+
+.ui-scroll-overview__thumb[hidden] {
+  display: none;
+}

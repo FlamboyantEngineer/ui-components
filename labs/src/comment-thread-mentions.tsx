@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ChatParts } from '../../src/components/chat-parts/index.js';
+import { ChatParts } from '../../src/components/chat/index.js';
 import type { CommentTextSegment } from '../../src/components/comment-composer/index.js';
 import {
   CommentText,

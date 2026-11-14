@@ -1,14 +1,16 @@
 // Sample records for the reference chips of the composer, Chat Parts and Chat labs: trip plans and
 // notes the host looks up by their opaque ids, one of them missing and one restricted.
-import type { MessageComposerMenuItem } from '../../src/components/message-composer/index.js';
 import type {
-  RecordLabelPresentation,
-  RecordLabelReference,
-  RecordLabelResolver,
-} from '../../src/components/record-label/index.js';
+  MessageComposerMenuItem,
+  MessageReferenceData,
+  MessageReferencePresentation,
+  MessageReferenceResolver,
+} from '../../src/components/message-composer/index.js';
 import { CalendarGlyph, FileGlyph, LinkGlyph } from '../../src/core/glyphs.js';
 
-interface LabRecord extends RecordLabelPresentation {
+interface LabRecord extends MessageReferencePresentation {
+  unavailable?: 'missing' | 'restricted';
+  type?: string;
   id: string;
   label: string;
   recordType: string;
@@ -49,11 +51,20 @@ export const labRecords: readonly LabRecord[] = [
 ];
 
 /** The host's lookup: a record's current presentation by its id, never from the token's label. */
-export const getLabReference: RecordLabelResolver = (reference: RecordLabelReference) => {
+export const getLabReference: MessageReferenceResolver = (reference: MessageReferenceData) => {
   const record = labRecords.find((entry) => entry.id === reference.id);
-  if (!record) return { unavailable: 'missing' };
-  const { id: _id, label: _label, recordType: _type, ...presentation } = record;
-  return presentation;
+  if (!record) return { label: 'Missing item' };
+  if (record.unavailable)
+    return { label: record.unavailable === 'missing' ? 'Missing item' : 'Restricted item' };
+  const {
+    id: _id,
+    label: _label,
+    recordType: _scope,
+    type,
+    unavailable: _unavailable,
+    ...presentation
+  } = record;
+  return { ...presentation, description: type };
 };
 
 /** Menu items that insert each sample record as a reference chip. */

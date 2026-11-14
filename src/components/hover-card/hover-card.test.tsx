@@ -136,7 +136,7 @@ describe('HoverCard', () => {
     expect(trigger()).toHaveAttribute('aria-expanded', 'true');
     expect(trigger()).toHaveAttribute('aria-describedby', expect.stringContaining(dialog.id));
     expectHooksMatchSpec(document.body, 'HOVER-CARD', {
-      slots: 'all',
+      slots: ['ui-hover-card__arrow'],
       callerAttributes: ['data-lab'],
     });
 

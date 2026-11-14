@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
+import type { ChatMessageData } from '../../src/components/chat/index.js';
 import { renderChat } from '../../test/chat-fixtures.js';
 import { installEditorDom } from '../../test/rich-text-fixtures.js';
 import {

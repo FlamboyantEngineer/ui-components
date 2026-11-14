@@ -12,10 +12,10 @@ import {
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
-import { ChatModelPicker } from '../chat-model-picker/chat-model-picker.js';
 import { MessageComposerMenuButton } from '../message-composer/index.js';
 import { Modal } from '../modal/modal.js';
+import type { ChatQueuedMessage } from './chat-controller.js';
+import { ChatModelPicker } from './chat-model-picker.js';
 
 installEditorDom();
 
@@ -415,8 +415,8 @@ describe('Chat composer', () => {
     });
     const lists = container.querySelectorAll('.ui-chat__queue-attachments');
     expect(lists).toHaveLength(2);
-    expect(lists[0]).toHaveClass('ui-chat-attachment-list');
-    expect(lists[0]?.querySelectorAll('.ui-chat-attachment[data-kind="image"]')).toHaveLength(1);
+    expect(lists[0]).toHaveClass('ui-attachment-list');
+    expect(lists[0]?.querySelectorAll('.ui-attachment[data-kind="image"]')).toHaveLength(1);
     expect(container.querySelectorAll('.ui-chat__queue-text')).toHaveLength(1);
     await user.click(screen.getByRole('button', { name: 'Actions for queued message 1' }));
     await user.click(screen.getByRole('menuitem', { name: 'Edit queued message 1' }));

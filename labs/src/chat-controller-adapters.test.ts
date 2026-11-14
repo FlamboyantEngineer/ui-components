@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import type { ChatStreamEvent } from '../../src/components/chat-controller/chat-controller.js';
+import type { ChatStreamEvent } from '../../src/components/chat/index.js';
 import { renderController, settle } from '../../test/chat-controller-fixtures.js';
 import {
   type AgUiEvent,
@@ -20,7 +20,7 @@ async function collect(events: AsyncIterable<ChatStreamEvent>) {
 }
 
 describe('Stream adapter examples', () => {
-  it('UIC-CHAT-CONTROLLER-5.2 maps an AG-UI-style stream onto the events', async () => {
+  it('UIC-CHAT-15.2 maps an AG-UI-style stream onto the events', async () => {
     const events = await collect(
       fromAgUi(
         emit<AgUiEvent>([
@@ -57,7 +57,7 @@ describe('Stream adapter examples', () => {
     ]);
   });
 
-  it('UIC-CHAT-CONTROLLER-5.2 maps an AI SDK-style UI message stream onto the events', async () => {
+  it('UIC-CHAT-15.2 maps an AI SDK-style UI message stream onto the events', async () => {
     const events = await collect(
       fromUiMessageStream(
         emit<UiMessageChunk>([
@@ -98,7 +98,7 @@ describe('Stream adapter examples', () => {
     ]);
   });
 
-  it('UIC-CHAT-CONTROLLER-5.2 streams an adapted reply through the controller', async () => {
+  it('UIC-CHAT-15.2 streams an adapted reply through the controller', async () => {
     const { result } = renderController({
       send: () =>
         fromUiMessageStream(

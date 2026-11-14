@@ -9,7 +9,7 @@ import type { Key } from '../../core/props.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { MenuAnchor } from '../context-menu/context-menu.js';
-import type { StateMachineContextMenuEvent } from './state-machine-view.js';
+import type { StateMachineContextMenuEvent } from './state-machine-model.js';
 
 /** The parts of a keyboard event a request reads, from React or from React Aria. */
 interface MenuKeyEvent {

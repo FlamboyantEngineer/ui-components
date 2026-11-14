@@ -2,10 +2,10 @@
 // list, so a new module is one line here.
 
 export { analysisStrings } from './analysis.js';
+export { attachmentStrings } from './attachment.js';
 export { chatStrings } from './chat.js';
 export { chatActionsStrings } from './chat-actions.js';
 export { chatActivityStrings } from './chat-activity.js';
-export { chatAttachmentStrings } from './chat-attachment.js';
 export { chatControllerStrings } from './chat-controller.js';
 export { chatListStrings } from './chat-list.js';
 export { chatMessageStrings } from './chat-message.js';

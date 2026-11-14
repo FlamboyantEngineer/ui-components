@@ -93,7 +93,6 @@ function useHistoryApplier<T extends TableRow>(options: RecordedEditsOptions<T>)
     const edits = changes.flatMap((change) => {
       const row = latest.current.rowsById.get(change.rowId);
       const column = columns.find((candidate) => candidate.id === change.columnId);
-      // A bulk edit writes columns that only offer `bulkEdit`, so undoing it must write them too.
       if (!row || !column || !acceptsCellWrites(column) || isRowDisabled(row)) return [];
       const expected = isUndo ? change.after : change.before;
       if (!isSameCellValue(getCellValue(row, column), expected)) return [];

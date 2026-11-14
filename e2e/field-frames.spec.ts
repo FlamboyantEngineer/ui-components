@@ -21,7 +21,6 @@ const frames: { lab: string; frame: string; focus?: string }[] = [
   { lab: 'code-editor', frame: ".ui-code-editor[data-variant='surface']", focus: 'textarea' },
   { lab: 'message-composer', frame: '.ui-message-composer', focus: '[contenteditable], textarea' },
   { lab: 'find-bar', frame: '.ui-find-bar__replacement' },
-  { lab: 'formula-bar', frame: '.ui-formula-bar__reference' },
   { lab: 'signature-pad', frame: '.ui-signature-pad__input' },
   { lab: 'property-panel', frame: '.ui-property-strip-cell > input' },
   { lab: 'table', frame: '.ui-table__filter' },

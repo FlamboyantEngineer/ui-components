@@ -148,8 +148,8 @@ export interface TreeProps<T extends TreeItemData>
   filterText?: string | undefined;
   /** Whether a text value matches `filterText`. Defaults to holding each of its terms. */
   filter?: ((textValue: string, filterText: string) => boolean) | undefined;
-  /** Renames a row from the name field that F2 opens in it. */
-  onRename?: ((item: T, name: string) => void) | undefined;
+  /** Renames a row from its F2 field; a promise keeps the draft pending and a rejection shows its error. */
+  onRename?: ((item: T, name: string) => unknown) | undefined;
   /** Whether F2 may rename a row. Defaults to every row. */
   canRename?: ((item: T) => boolean) | undefined;
   /** Sees each keydown in a row before the tree does; return `true` to claim the key. */

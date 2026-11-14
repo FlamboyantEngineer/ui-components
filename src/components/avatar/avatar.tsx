@@ -10,9 +10,9 @@ import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { type ImageLoading, useImageLoading } from '../../utils/use-image-loading.js';
+import type { PreviewTriggerType } from '../hover-card/hover-card.js';
 import { toImageProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
-import type { UserCardTriggerType } from '../user-card-trigger/user-card-trigger.js';
 import { resolveAvatarColor } from './avatar-color.js';
 import { AvatarRoot } from './avatar-root.js';
 
@@ -91,7 +91,7 @@ export interface AvatarProps
   /** A person card opened by this avatar. */
   card?: ReactNode;
   /** Defaults to press; hover also opens on keyboard focus. */
-  cardTrigger?: UserCardTriggerType | undefined;
+  cardTrigger?: PreviewTriggerType | undefined;
   /** Shows the accessible name in a tooltip, also reachable with the keyboard. */
   nameTooltip?: boolean | undefined;
   /** Defaults to `md`. */
@@ -289,6 +289,7 @@ export function Avatar(props: AvatarProps) {
         },
       })}
       imageLabel={decorative ? undefined : accessibleName}
+      previewLabel={identity.name}
       onPress={onPress}
       card={card}
       cardTrigger={cardTrigger}

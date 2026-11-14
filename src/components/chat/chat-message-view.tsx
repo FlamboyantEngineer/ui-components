@@ -4,12 +4,6 @@ import { memo, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
 import { readOwn } from '../../utils/read-own.js';
-import { ChatStatusLine } from '../chat-activity/chat-activity.js';
-import {
-  ChatMessageActionsMenu,
-  type ChatMessageMenuIcons,
-} from '../chat-message-actions/chat-message-actions.js';
-import { type ChatMessageData, ChatParts, type ChatPartsProps } from '../chat-parts/chat-parts.js';
 import {
   ChatMessage,
   type ChatMessageGroupPosition,
@@ -18,8 +12,10 @@ import {
   ChatReadReceipts,
 } from '../chat-transcript/chat-transcript.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
+import { ChatStatusLine } from './chat-activity.js';
 import { type ChatCommandContext, toMessageCommands } from './chat-commands.js';
 import { chatHooks as hooks } from './chat-hooks.js';
+import { ChatMessageActionsMenu, type ChatMessageMenuIcons } from './chat-message-actions.js';
 import {
   type ChatMessageDisplayOptions,
   showsStreamingCaret,
@@ -35,6 +31,7 @@ import {
   toMessageOrigin,
   toThinkingActivity,
 } from './chat-model.js';
+import { type ChatMessageData, ChatParts, type ChatPartsProps } from './chat-parts.js';
 
 /** The `ChatParts` options a chat passes to every message unchanged. */
 export type ChatPartOptions = Pick<
@@ -183,7 +180,6 @@ export const ChatMessageView = memo(function ChatMessageView({
     >
       {(actions) => (
         <ChatMessage
-          id={id}
           origin={origin}
           author={participant ? toMessageAuthor(participant) : undefined}
           showAvatar={display.showAvatars}

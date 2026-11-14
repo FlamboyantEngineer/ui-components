@@ -36,18 +36,6 @@ interface RedlineStrings {
   redlineAccept: string;
   /** Rejects one change. */
   redlineReject: string;
-  /** Names a formula bar. */
-  formulaBar: string;
-  /** Names the formula bar's box holding the active cell's reference. */
-  formulaCellReference: string;
-  /** Names the formula bar's input holding the active cell's content. */
-  formulaCellContent: string;
-  /** Says that a typed reference names no cell of the grid. */
-  formulaInvalidReference: (text: string) => string;
-  /** Describes the formula bar's content without its buttons: the keys that confirm and cancel. */
-  formulaKeysHint: string;
-  /** Names the formula bar's fₓ button, which lists functions to insert. */
-  formulaFunctions: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -65,5 +53,4 @@ export const redlineStrings = defineStrings<RedlineStrings>({
   redlineBlockType: (type, level) => ({ type: toSelectKey(type), level: level ?? 0 }),
   redlineRow: (change, blockType) => ({ change: toSelectKey(change), blockType }),
   redlineTypeChange: (oldType, newType) => ({ oldType, newType }),
-  formulaInvalidReference: (text) => ({ text }),
 });

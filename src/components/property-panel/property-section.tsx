@@ -16,11 +16,6 @@ import { Badge, type BadgeCountVariant } from '../badge/badge.js';
 import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { FieldScopeContext, useRevealScope } from '../field/field.js';
-import {
-  PropertyScopeContext,
-  usePropertyScopeLevel,
-  useReportPropertyTally,
-} from '../property-scope/property-scope.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
@@ -28,6 +23,11 @@ import {
   type PropertyExpansionProps,
   useSectionExpansion,
 } from './property-disclosure.js';
+import {
+  PropertyScopeContext,
+  usePropertyScopeLevel,
+  useReportPropertyTally,
+} from './property-scope.js';
 
 export interface PropertySectionProps
   extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, PropertyExpansionProps {

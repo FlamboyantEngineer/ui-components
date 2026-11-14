@@ -56,7 +56,92 @@
     },
     "./reference.css": "./labs/build/reference.css",
     "./fonts.css": "./labs/build/fonts.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./chat/activity": {
+      "types": "./dist/components/chat/activity.d.ts",
+      "import": "./dist/components/chat/activity.js",
+      "default": "./dist/components/chat/activity.js"
+    },
+    "./chat/controller": {
+      "types": "./dist/components/chat/controller.d.ts",
+      "import": "./dist/components/chat/controller.js",
+      "default": "./dist/components/chat/controller.js"
+    },
+    "./chat/list": {
+      "types": "./dist/components/chat/list.d.ts",
+      "import": "./dist/components/chat/list.js",
+      "default": "./dist/components/chat/list.js"
+    },
+    "./chat/message-actions": {
+      "types": "./dist/components/chat/message-actions.d.ts",
+      "import": "./dist/components/chat/message-actions.js",
+      "default": "./dist/components/chat/message-actions.js"
+    },
+    "./chat/model-picker": {
+      "types": "./dist/components/chat/model-picker.d.ts",
+      "import": "./dist/components/chat/model-picker.js",
+      "default": "./dist/components/chat/model-picker.js"
+    },
+    "./chat/parts": {
+      "types": "./dist/components/chat/parts.d.ts",
+      "import": "./dist/components/chat/parts.js",
+      "default": "./dist/components/chat/parts.js"
+    },
+    "./chat/question": {
+      "types": "./dist/components/chat/question.d.ts",
+      "import": "./dist/components/chat/question.js",
+      "default": "./dist/components/chat/question.js"
+    },
+    "./chat/sources": {
+      "types": "./dist/components/chat/sources.d.ts",
+      "import": "./dist/components/chat/sources.js",
+      "default": "./dist/components/chat/sources.js"
+    },
+    "./chat/tool-call": {
+      "types": "./dist/components/chat/tool-call.d.ts",
+      "import": "./dist/components/chat/tool-call.js",
+      "default": "./dist/components/chat/tool-call.js"
+    },
+    "./button/group": {
+      "types": "./dist/components/button/group.d.ts",
+      "import": "./dist/components/button/group.js",
+      "default": "./dist/components/button/group.js"
+    },
+    "./badge/status-light": {
+      "types": "./dist/components/badge/status-light.d.ts",
+      "import": "./dist/components/badge/status-light.js",
+      "default": "./dist/components/badge/status-light.js"
+    },
+    "./chart/sparkline": {
+      "types": "./dist/components/chart/sparkline.d.ts",
+      "import": "./dist/components/chart/sparkline.js",
+      "default": "./dist/components/chart/sparkline.js"
+    },
+    "./text-diff/inline": {
+      "types": "./dist/components/text-diff/inline.d.ts",
+      "import": "./dist/components/text-diff/inline.js",
+      "default": "./dist/components/text-diff/inline.js"
+    },
+    "./modal/controller": {
+      "types": "./dist/components/modal/controller.d.ts",
+      "import": "./dist/components/modal/controller.js",
+      "default": "./dist/components/modal/controller.js"
+    },
+    "./tooltip/truncation": {
+      "types": "./dist/components/tooltip/truncation.d.ts",
+      "import": "./dist/components/tooltip/truncation.js",
+      "default": "./dist/components/tooltip/truncation.js"
+    },
+    "./scroll-region/overview": {
+      "types": "./dist/components/scroll-region/overview.d.ts",
+      "import": "./dist/components/scroll-region/overview.js",
+      "default": "./dist/components/scroll-region/overview.js"
+    },
+    "./hover-card/preview": {
+      "types": "./dist/components/hover-card/preview.d.ts",
+      "import": "./dist/components/hover-card/preview.js",
+      "default": "./dist/components/hover-card/preview.js"
+    }
   },
   "bin": {
     "ui-components-labs": "bin/serve-labs.mjs"

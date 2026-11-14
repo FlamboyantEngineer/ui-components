@@ -1,6 +1,6 @@
 # Diff
 
-`diffLines` and `diffWords` compare two texts, and `diffSequences` two arrays of items, and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](INLINE-TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries. `mergeThreeWay` builds on the sequence diff to merge two texts that changed a common base.
+`diffLines` and `diffWords` compare two texts, and `diffSequences` two arrays of items, and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries. `mergeThreeWay` builds on the sequence diff to merge two texts that changed a common base.
 
 ## UIC-DIFF-1 - Line diff
 

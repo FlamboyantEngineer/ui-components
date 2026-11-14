@@ -33,6 +33,7 @@ interface TranscriptMessageProps {
   'aria-posinset'?: number | undefined;
   'aria-setsize'?: number | undefined;
   'data-highlighted'?: 'true' | undefined;
+  'data-message-id'?: string | undefined;
 }
 
 /** The transcript's registry, for the messages inside it. */
@@ -124,6 +125,7 @@ export function useTranscriptMessage({
   return {
     ref,
     tabIndex,
+    'data-message-id': id ?? key ?? undefined,
     'aria-posinset': position,
     'aria-setsize': position === undefined ? undefined : setSize,
     'data-highlighted': isHighlighted ? 'true' : undefined,

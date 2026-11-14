@@ -36,16 +36,17 @@ function Rating({ stars }: { stars: number }) {
   );
 }
 
-function SkipLink() {
+function SkipLink({ overlay = false }: { overlay?: boolean }) {
+  const target = overlay ? 'lab-overlay-recipes' : 'lab-recipes';
   return (
-    <div data-lab-demo="skip">
+    <div data-lab-demo={overlay ? 'skip-overlay' : 'skip'}>
       <Button size="sm">Recipe menu</Button>
-      <VisuallyHidden isFocusable>
-        <Link href="#lab-recipes" isStandalone>
+      <VisuallyHidden isFocusable revealPlacement={overlay ? 'overlay' : 'flow'}>
+        <Link href={`#${target}`} isStandalone>
           Skip to recipes
         </Link>
       </VisuallyHidden>
-      <nav aria-label="Categories">
+      <nav aria-label={overlay ? 'Overlay categories' : 'Categories'}>
         <ul>
           {categories.map((category) => (
             <li key={category}>
@@ -56,8 +57,8 @@ function SkipLink() {
           ))}
         </ul>
       </nav>
-      <section id="lab-recipes" tabIndex={-1} aria-labelledby="lab-recipes-heading">
-        <h3 id="lab-recipes-heading">Recipes</h3>
+      <section id={target} tabIndex={-1} aria-labelledby={`${target}-heading`}>
+        <h3 id={`${target}-heading`}>{overlay ? 'Overlay recipes' : 'Recipes'}</h3>
         <p>Seasonal recipes, newest first.</p>
       </section>
     </div>
@@ -124,6 +125,12 @@ mountLab(
       description="Focus the menu button and press Tab: the skip link shows while focused, and Enter moves past the category links to the recipes."
     >
       <SkipLink />
+    </LabSection>
+    <LabSection
+      title="Overlay skip link"
+      description="The focus-revealed chip floats at the viewport's logical start without moving surrounding content."
+    >
+      <SkipLink overlay />
     </LabSection>
   </>,
 );

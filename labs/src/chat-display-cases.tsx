@@ -1,10 +1,12 @@
 // The Chat lab's message display: avatars, author names, time placements and message backgrounds.
 
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import { useChatController } from '../../src/components/chat-controller/index.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
-import type { ChatSource } from '../../src/components/chat-sources/index.js';
+import {
+  Chat,
+  type ChatMessageData,
+  type ChatSource,
+  useChatController,
+} from '../../src/components/chat/index.js';
 import type { ChatMessageTimePlacement } from '../../src/components/chat-transcript/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';

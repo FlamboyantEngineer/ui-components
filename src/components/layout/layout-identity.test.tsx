@@ -3,10 +3,14 @@ import { userEvent } from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Orientation } from '../../core/props.js';
+import {
+  ToolbarRow,
+  ToolbarRowGroup,
+  type ToolbarRowOverflow,
+} from '../toolbar-row/toolbar-row.js';
 import { Cluster, Stack } from './layout.js';
-import { ToolbarRow, ToolbarRowGroup, type ToolbarRowOverflow } from './toolbar-row.js';
 
-// Presentation options never remount the children (UIC-LAYOUT-2.7, UIC-LAYOUT-3.8).
+// Presentation options never remount the children (UIC-LAYOUT-2.7, UIC-TOOLBAR-ROW-1.4).
 
 /** A draft field that counts its mounts. */
 function Draft({ label, onMount }: { label: string; onMount: () => void }) {
@@ -49,7 +53,7 @@ describe('Layout child identity', () => {
     },
   );
 
-  it('UIC-LAYOUT-3.8 keeps the controls of a ToolbarRow across overflow modes and orientations', async () => {
+  it('UIC-TOOLBAR-ROW-1.4 keeps the controls of a ToolbarRow across overflow modes and orientations', async () => {
     const user = userEvent.setup();
     const onMount = vi.fn();
     const tree = (overflow: ToolbarRowOverflow, orientation: Orientation, groups: string[]) => (

@@ -34,9 +34,9 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-1.5 - Hint
 
-The hint shall render as a [Truncation Tooltip](TRUNCATION-TOOLTIP.md) in the `ui-loading-card__hint` slot, so a hint the stylesheet cuts keeps its full text in a tooltip.
+The hint shall render as a [Truncation Tooltip](TOOLTIP.md) in the `ui-loading-card__hint` slot, so a hint the stylesheet cuts keeps its full text in a tooltip.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/components/truncation-tooltip/truncation-tooltip.tsx`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/components/tooltip/truncation-tooltip.tsx`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ## UIC-LOADING-OVERLAY-2 - Overlay

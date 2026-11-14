@@ -5,7 +5,7 @@ import {
   type AvatarSize,
 } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
+import { Card } from '../../src/components/card/card.js';
 import { AvatarBadgeCases } from './avatar-badge-cases.js';
 import { AvatarColorCases } from './avatar-color-cases.js';
 import { AvatarPresenceCases } from './avatar-presence-cases.js';
@@ -192,7 +192,7 @@ mountLab(
               shape={shape}
               variant={variant}
               size="lg"
-              card={<UserCard name="Design team" description="Six people" />}
+              card={<Card title="Design team" description="Six people" />}
             />
           )}
         />

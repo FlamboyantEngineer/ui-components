@@ -2,13 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 // The field labs that show the field base's behaviours on their own field.
-const LABS = [
-  'expression-field',
-  'period-field',
-  'rating-field',
-  'snippet-field',
-  'time-zone-field',
-];
+const LABS = ['expression-field', 'period-field', 'rating-field', 'time-zone-field'];
 
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="behaviour-${name}"]`);
 

@@ -40,5 +40,5 @@ Toolbar Scroller, Toolbar Row and Tabs shall draw the edge controls of their scr
 
 The reference sheets draw the toolbar strips' buttons as discreet chevrons: no border at rest, a soft fill and full-strength glyph on hover or press, and the button's own focus ring. Toolbar fades are on by default (`showEdgeFades={false}` leaves them out); with one, the chevron has no fill at rest and the fade lies above the strip's tools and under its button, its inner half solid canvas behind the chevron. Without one, the chevron at rest takes the canvas, so the tools it covers do not show through.
 
-Implementation: `src/components/toolbar-scroller/scroll-strip.tsx`, `src/components/button/scroll-strip-button.tsx`, `src/components/toolbar-scroller/use-toolbar-scroll.ts`, `src/utils/is-overflowing.ts`, `labs/reference/layout.css`, `labs/reference/toolbar-scroller.css`
-Verification: `src/components/toolbar-scroller/scroll-strip.test.tsx`, `e2e/layout.spec.ts`
+Implementation: `src/components/toolbar-row/scroll-strip.tsx`, `src/components/button/scroll-strip-button.tsx`, `src/components/toolbar-row/use-toolbar-scroll.ts`, `src/utils/is-overflowing.ts`, `labs/reference/layout.css`, `labs/reference/toolbar-row.css`
+Verification: `src/components/toolbar-row/scroll-strip.test.tsx`, `e2e/layout.spec.ts`

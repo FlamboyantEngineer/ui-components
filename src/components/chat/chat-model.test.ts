@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ana, helper, message, people, reader } from '../../../test/chat-fixtures.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import {
   findLastOwnText,
   findMessageMatches,
@@ -20,6 +19,7 @@ import {
   toMessageText,
   toThinkingActivity,
 } from './chat-model.js';
+import type { ChatMessageData, ChatTextToken } from './chat-parts.js';
 
 const index = indexParticipants([...people, helper]);
 

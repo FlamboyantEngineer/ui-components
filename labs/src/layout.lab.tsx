@@ -7,9 +7,6 @@ import {
   type GridItemOffset,
   type GridItemSpan,
   InlineContents,
-  ToolbarRow,
-  ToolbarRowGroup,
-  ToolbarRowSeparator,
 } from '../../src/components/layout/index.js';
 import {
   Cluster,
@@ -23,6 +20,11 @@ import {
   StatusBar,
   View,
 } from '../../src/components/layout/layout.js';
+import {
+  ToolbarRow,
+  ToolbarRowGroup,
+  ToolbarRowSeparator,
+} from '../../src/components/toolbar-row/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import {
   AttachedGroups,

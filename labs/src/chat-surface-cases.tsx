@@ -1,7 +1,6 @@
 // The Chat lab's surfaces: the chat is inline, so a host places it in a drawer, a popover or a tab.
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
-import { useChatController } from '../../src/components/chat-controller/index.js';
+import { Chat, useChatController } from '../../src/components/chat/index.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
 import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';

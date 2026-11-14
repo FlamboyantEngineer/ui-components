@@ -12,6 +12,7 @@ import {
 import { mergeProps } from '../../src/utils/merge-props.js';
 import { ButtonActionCases } from './button-action-cases.js';
 import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
+import { ButtonGroupCases } from './button-group-cases.js';
 import { ButtonHostCases } from './button-host-cases.js';
 import { ButtonIconCases } from './button-icon-cases.js';
 import { ButtonTriggerCases } from './button-trigger-cases.js';
@@ -96,6 +97,7 @@ const linkEndIcons: Record<string, IconSource> = {
 
 mountLab(
   <>
+    <ButtonGroupCases />
     <div data-lab-family="button-main">
       <LabSection title="Variants and sizes">
         <StateMatrix

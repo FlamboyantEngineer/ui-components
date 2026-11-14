@@ -1,6 +1,6 @@
 // Timing helpers for the Chat lab's fake agent: pauses that Stop interrupts, and streamed text.
 
-import type { ChatStreamEvent } from '../../src/components/chat-controller/index.js';
+import type { ChatStreamEvent } from '../../src/components/chat/index.js';
 
 const pause = Number(new URLSearchParams(window.location.search).get('pause'));
 

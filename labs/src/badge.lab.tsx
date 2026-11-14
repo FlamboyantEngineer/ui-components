@@ -11,6 +11,7 @@ import {
 import type { Tone } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { formatCount, normalizeCount } from '../../src/utils/index.js';
+import { BadgeStatusLightCases } from './badge-status-light-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabHelperCalls } from './lab-helper-calls.js';
 
@@ -97,6 +98,7 @@ function ZeroDemo() {
 
 mountLab(
   <>
+    <BadgeStatusLightCases />
     <LabSection
       title="Variants, tones and sizes"
       description="Subtle pills, solid tokens and status dots in every tone and size."

@@ -1,10 +1,10 @@
 // Fake streaming agents for the controller lab: each is a `send` that streams library events.
 
 import type {
+  ChatMessageData,
   ChatSendFunction,
   ChatStreamEvent,
-} from '../../src/components/chat-controller/chat-controller.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
+} from '../../src/components/chat/index.js';
 import { sleep } from './chat-agent-stream.js';
 import { agUiSend, aiSdkSend } from './chat-controller-adapters.js';
 

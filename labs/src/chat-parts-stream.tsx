@@ -4,12 +4,12 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
 import {
   type ChatMessageData,
   type ChatPart,
   ChatParts,
-} from '../../src/components/chat-parts/index.js';
+  ChatStatusLine,
+} from '../../src/components/chat/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { bookingCall, tripSources } from './chat-parts-samples.js';
@@ -62,7 +62,7 @@ const searchAt = (isDone: boolean): ChatPart => ({
   durationMs: isDone ? 1600 : undefined,
 });
 
-/** The answer so far; it opens with a mention, which streams as a pill (UIC-CHAT-PARTS-2.4). */
+/** The answer so far; it opens with a mention, which streams as a pill (UIC-CHAT-26.4). */
 const answerAt = (count: number, isDone = false): ChatPart => ({
   type: 'text',
   id: 'answer',

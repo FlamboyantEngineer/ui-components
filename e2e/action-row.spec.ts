@@ -2,7 +2,7 @@ import { requireDefined } from '../src/utils/require-defined.js';
 import { expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Action Row lab', () => {
-  test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 draws custom actions, then verbs in their fixed order', async ({
+  test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 draws actions in caller order', async ({
     page,
     lab,
   }) => {
@@ -11,16 +11,16 @@ test.describe('Action Row lab', () => {
       .locator('[data-lab-case="order"] .ui-action-row__action')
       .evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label')));
     expect(names).toEqual([
-      'Help',
-      'Search',
-      'Add',
-      'Refresh',
-      'More',
-      'Edit',
-      'Delete',
-      'Save',
-      'Cancel',
       'Close',
+      'Cancel',
+      'Save',
+      'Delete',
+      'Edit',
+      'Help',
+      'More',
+      'Refresh',
+      'Add',
+      'Search',
     ]);
   });
 
@@ -260,17 +260,6 @@ test.describe('Action Row lab', () => {
     await demo.getByLabel('Cherry').check();
     await lab.expectAccessible();
   });
-});
-
-test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 shows the exported helpers in a host-side snippet', async ({
-  page,
-  lab,
-}) => {
-  await lab.open('action-row');
-  const call = (text: string) => page.locator(`[data-lab-call=${JSON.stringify(text)}]`);
-  await expect(
-    call("orderActions([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])"),
-  ).toHaveText('add, edit, delete');
 });
 
 test('UIC-ACTION-ROW-2.1 keeps a lead-only row and drops a row with neither actions nor lead', async ({

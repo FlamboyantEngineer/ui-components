@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import {
+  type StateMachineDensity,
+  StateMachineSequence,
   type StateMachineState,
   type StateMachineTransition,
-  StateMachineView,
-  type StateMachineViewDensity,
 } from '../../src/components/state-machine-view/index.js';
 import type { Key, Size } from '../../src/core/props.js';
 import { StateMatrix } from './chrome/index.js';
 
 const sizes: readonly Size[] = ['xs', 'sm', 'md', 'lg', 'xl'];
-const densities: readonly StateMachineViewDensity[] = ['default', 'compact'];
+const densities: readonly StateMachineDensity[] = ['default', 'compact'];
 const states: StateMachineState[] = [
   { id: 'draft', label: 'Draft', count: 2 },
   { id: 'review', label: 'Review', notificationCount: 3 },
@@ -21,13 +21,12 @@ const transitions: StateMachineTransition[] = [
   { id: 'return', from: 'complete', to: 'draft', label: 'Return' },
 ];
 
-function SequenceSize({ size, density }: { size: Size; density: StateMachineViewDensity }) {
+function SequenceSize({ size, density }: { size: Size; density: StateMachineDensity }) {
   const [selectedKey, setSelectedKey] = useState<Key | null>('draft');
   const [selectedTransitionKey, setSelectedTransitionKey] = useState<Key | null>(null);
   return (
     <div style={{ width: 544, maxWidth: '100%', minWidth: 0 }}>
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         size={size}
         density={density}
         aria-label={`Sequence ${size} ${density}`}

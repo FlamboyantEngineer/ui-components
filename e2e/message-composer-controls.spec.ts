@@ -4,7 +4,7 @@ import { expect, test } from './fixtures.js';
 const composer = (page: Page, name: string) => page.locator(`[data-lab-composer="${name}"]`);
 
 test.describe('Message Composer controls', () => {
-  test('UIC-MESSAGE-COMPOSER-6.4 UIC-MESSAGE-COMPOSER-7.1 UIC-MESSAGE-COMPOSER-8.1 UIC-CHAT-MODEL-PICKER-1.5 shows labels in a wide row and icons alone in a narrow one', async ({
+  test('UIC-MESSAGE-COMPOSER-6.4 UIC-MESSAGE-COMPOSER-7.1 UIC-MESSAGE-COMPOSER-8.1 UIC-CHAT-22.5 shows labels in a wide row and icons alone in a narrow one', async ({
     page,
     lab,
   }) => {

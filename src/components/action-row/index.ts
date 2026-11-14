@@ -1,11 +1,8 @@
 export type {
   ActionRowAction,
-  ActionRowCustomAction,
   ActionRowFocusTarget,
+  ActionRowLeadOverflow,
   ActionRowOverflow,
   ActionRowProps,
-  ActionRowVerbAction,
-  ActionVerb,
 } from './action-row.js';
 export { ActionRow } from './action-row.js';
-export { actionVerbs, orderActions } from './action-verbs.js';

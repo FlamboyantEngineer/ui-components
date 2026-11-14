@@ -5,10 +5,10 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
-import type { ChatParticipant } from '../chat-parts/chat-parts.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { chatHeaderHooks as hooks } from './chat-hooks.js';
 import { toMessageAuthor } from './chat-model.js';
+import type { ChatParticipant } from './chat-parts.js';
 
 export interface ChatHeaderProps extends RefProps<HTMLDivElement>, BaseProps {
   /** The conversation's name, drawn as a heading. */

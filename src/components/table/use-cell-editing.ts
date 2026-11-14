@@ -12,7 +12,6 @@ import {
 } from 'react';
 import type { Key } from '../../core/props.js';
 import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
-import { isAltGraphText } from '../../utils/is-alt-graph-text.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { isInteractiveTarget } from '../../utils/is-interactive-target.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
@@ -30,21 +29,15 @@ export interface TableCellEdit<T> {
 interface TableEditingCell {
   rowKey: string;
   columnId: string;
-  /** The character typed on the cell that opened its editor, which replaces the cell's text. */
-  text?: string | undefined;
 }
-
-/** Where focus moves after a commit: to the cell below or above, or the next cell along the row. */
-export type CellMove = 'down' | 'up' | 'start' | 'end';
 
 export interface CellEditing<T> {
   /** The cell being edited, if any. */
   editing: TableEditingCell | null;
   /**
-   * Ends editing and reports the value; focus returns to the cell, or moves to the next cell in
-   * the direction of `move`, unless it moved elsewhere.
+   * Ends editing and reports the value; focus returns to the cell unless it moved elsewhere.
    */
-  commit: (edit: TableCellEdit<T>, move?: CellMove) => void;
+  commit: (edit: TableCellEdit<T>) => void;
   /** Ends editing without a change; focus returns to the cell. */
   cancel: () => void;
   /** Ends editing because focus left the editor, leaving focus where it went. */
@@ -67,25 +60,13 @@ interface CellEditingOptions<T> {
   onCellsChange?: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   /** The ids of disabled rows, whose cells never open an editor or report an edit. */
   disabledKeys?: Iterable<Key> | undefined;
-  /** Spreadsheet mode: typing a character on an editable cell opens its editor with it. */
-  typeToEdit: boolean;
 }
 
 interface Refocus {
   cell: TableEditingCell;
-  move: CellMove | undefined;
 }
 
 const editKeys = new Set(['F2', 'Enter']);
-
-/**
- * Whether a key press types a character, other than Space, which keeps selecting rows: a plain or
- * Shift press, or AltGr typing, which Windows reports with Control and Alt held.
- */
-function isTypedCharacter(event: KeyboardEvent<HTMLElement>): boolean {
-  if (event.key.length !== 1 || event.key === ' ') return false;
-  return isAltGraphText(event.nativeEvent) || (!event.ctrlKey && !event.metaKey && !event.altKey);
-}
 
 /** The editable body cell of the table whose root is `root` that holds `target`. */
 function findEditableCell<T>(
@@ -112,26 +93,6 @@ function findCellElement(root: HTMLElement, cell: TableEditingCell): HTMLElement
     (candidate): candidate is HTMLElement =>
       isHTMLElement(candidate) && candidate.dataset['column'] === cell.columnId,
   );
-}
-
-/** The data cell next to `element` in the direction of `move`: rows in document order, cells along the row. */
-function findAdjacentCell(
-  root: HTMLElement,
-  element: HTMLElement,
-  move: CellMove,
-): HTMLElement | undefined {
-  const isData = (candidate: Element): candidate is HTMLElement =>
-    isHTMLElement(candidate) && candidate.dataset['kind'] === 'data';
-  const step = move === 'down' || move === 'end' ? 1 : -1;
-  if (move === 'start' || move === 'end') {
-    const cells = [...(element.parentElement?.children ?? [])].filter(isData);
-    return cells[cells.indexOf(element) + step];
-  }
-  const rows = [...root.querySelectorAll('.ui-table__body .ui-table__row')];
-  const row = rows[rows.indexOf(element.closest('[role="row"]') as Element) + step];
-  return [...(row?.children ?? [])]
-    .filter(isData)
-    .find((cell) => cell.dataset['column'] === element.dataset['column']);
 }
 
 /** Whether `editing` is the cell of `row` in the column `columnId`. */
@@ -164,7 +125,7 @@ function findFocusTarget(root: HTMLElement, cell: TableEditingCell): HTMLElement
   );
 }
 
-/** After an editor closes, focuses its cell or the next one, unless focus moved elsewhere. */
+/** After an editor closes, focuses its cell, unless focus moved elsewhere. */
 function useRefocus(rootRef: RefObject<HTMLElement | null>, refocusRef: RefObject<Refocus | null>) {
   useLayoutEffect(() => {
     const target = refocusRef.current;
@@ -173,12 +134,7 @@ function useRefocus(rootRef: RefObject<HTMLElement | null>, refocusRef: RefObjec
       target && rootRef.current ? findFocusTarget(rootRef.current, target.cell) : undefined;
     // Focus is still in the closing editor, or fell to the page with it; elsewhere it moved on.
     if (element && (isFocusLost(element) || containsFocus(element))) {
-      const isCell = element.dataset['column'] === target?.cell.columnId;
-      const next =
-        isCell && target?.move && rootRef.current
-          ? findAdjacentCell(rootRef.current, element, target.move)
-          : undefined;
-      (next ?? element).focus();
+      element.focus();
     }
   });
 }
@@ -216,7 +172,6 @@ export function useCellEditing<T extends TableRow>({
   rows,
   onCellsChange,
   disabledKeys,
-  typeToEdit,
 }: CellEditingOptions<T>): CellEditing<T> {
   const [editing, setEditing] = useState<TableEditingCell | null>(null);
   const disabledRowKeys = useMemo(
@@ -236,30 +191,27 @@ export function useCellEditing<T extends TableRow>({
   if (editing && !isStillEditable(editing)) setEditing(null);
   useLayoutEffect(() => {
     if (editing !== null || open.current === null) return;
-    refocus.current = { cell: open.current, move: undefined };
+    refocus.current = { cell: open.current };
     open.current = null;
   }, [editing]);
   useRefocus(root, refocus);
 
-  const end = useCallback((restoreFocus: boolean, move?: CellMove): boolean => {
+  const end = useCallback((restoreFocus: boolean): boolean => {
     const cell = open.current;
     open.current = null;
-    refocus.current = restoreFocus && cell ? { cell, move } : null;
+    refocus.current = restoreFocus && cell ? { cell } : null;
     setEditing(null);
     return cell !== null;
   }, []);
-  // A commit restores focus and may move it; a release, such as a blur, leaves focus where it went.
+  // A commit restores focus; a release, such as a blur, leaves focus where it went.
   const finish = useCallback(
-    (edit: TableCellEdit<T>, restoreFocus: boolean, move?: CellMove) => {
-      if (end(restoreFocus, move) && !disabled.current.has(toCollectionKey(edit.row.id)))
+    (edit: TableCellEdit<T>, restoreFocus: boolean) => {
+      if (end(restoreFocus) && !disabled.current.has(toCollectionKey(edit.row.id)))
         latest.current?.([edit]);
     },
     [end, latest, disabled],
   );
-  const commit = useCallback(
-    (edit: TableCellEdit<T>, move?: CellMove) => finish(edit, true, move),
-    [finish],
-  );
+  const commit = useCallback((edit: TableCellEdit<T>) => finish(edit, true), [finish]);
   const release = useCallback((edit: TableCellEdit<T>) => finish(edit, false), [finish]);
   const cancel = useCallback(() => {
     end(true);
@@ -268,13 +220,12 @@ export function useCellEditing<T extends TableRow>({
     end(false);
   }, [end]);
 
-  const start = (event: KeyboardEvent<HTMLElement> | MouseEvent<HTMLElement>, text?: string) => {
+  const start = (event: KeyboardEvent<HTMLElement> | MouseEvent<HTMLElement>) => {
     const cell = findEditableCell(event.target, event.currentTarget, columns);
     if (!cell || open.current || disabledRowKeys.has(cell.rowKey)) return;
-    const opened = text === undefined ? cell : { ...cell, text };
     root.current = event.currentTarget;
-    open.current = opened;
-    setEditing(opened);
+    open.current = cell;
+    setEditing(cell);
     event.preventDefault();
     event.stopPropagation();
   };
@@ -292,7 +243,6 @@ export function useCellEditing<T extends TableRow>({
           isElement(event.target) && event.target.classList.contains('ui-table__cell');
         if (!isOnCell) return;
         if (editKeys.has(event.key)) start(event);
-        else if (typeToEdit && isTypedCharacter(event)) start(event, event.key);
       },
       // A double click on a control inside the cell, such as an expand button or a link, is the control's.
       onDoubleClickCapture: (event) => {

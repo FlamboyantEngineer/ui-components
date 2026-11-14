@@ -93,7 +93,9 @@ describe('Tooltip', () => {
     expect(container.contains(panel)).toBe(false);
     expect(panel?.querySelector('.ui-tooltip__content')).toHaveTextContent('Save changes');
     expect(panel?.querySelector('a, button, input, [tabindex]')).toBeNull();
-    expectHooksMatchSpec(document.body, 'TOOLTIP', { slots: 'all' });
+    expectHooksMatchSpec(document.body, 'TOOLTIP', {
+      slots: ['ui-tooltip__arrow', 'ui-tooltip__content'],
+    });
   });
 
   it('UIC-TOOLTIP-1.2 opens at once on keyboard focus and honours a custom delay', async () => {

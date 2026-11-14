@@ -3,13 +3,14 @@
 // useChatController; any other goes to the team, who receive it, read it and answer.
 
 import { useState } from 'react';
-import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
+import type { AttachmentData } from '../../src/components/attachment/attachment.js';
 import {
   type ChatControllerProps,
+  type ChatMessageData,
   type ChatSendFunction,
+  type ChatTextToken,
   useChatController,
-} from '../../src/components/chat-controller/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 import { agents, fakeUpload, withModelNote } from './chat-agent.js';
 import { createReplyHandlers, useLabModelChoice } from './chat-assistant-host.js';
 import {
@@ -42,7 +43,7 @@ const sendToPlanner: ChatSendFunction = (messages, context) => {
 };
 
 /** The files the composer has uploaded, taken out of it for a message to the team. */
-function takeUploads(props: ChatControllerProps): ChatAttachmentData[] {
+function takeUploads(props: ChatControllerProps): AttachmentData[] {
   const uploaded = props.attachments.filter((entry) => entry.status === 'complete');
   for (const entry of uploaded) props.onRemoveAttachment?.(entry.id);
   return uploaded.map(({ status: _status, progress: _progress, ...file }) => file);

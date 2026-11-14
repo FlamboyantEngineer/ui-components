@@ -3,13 +3,10 @@
 import { type KeyboardEvent, type ReactNode, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import type {
-  ModalController,
-  ModalEntryRenderProps,
-} from '../modal-controller/modal-controller.js';
 import { TextField } from '../text-field/text-field.js';
 import { Modal, type ModalProps } from './modal.js';
 import { type ConfirmOptions, ModalConfirmation } from './modal-confirm.js';
+import type { ModalController, ModalEntryRenderProps } from './modal-controller.js';
 
 /** Options of `alert`: a confirm dialog whose one action acknowledges it. */
 export type AlertOptions = Omit<
