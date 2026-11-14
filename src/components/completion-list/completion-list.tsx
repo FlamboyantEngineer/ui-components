@@ -55,6 +55,11 @@ export interface CompletionListProps extends RefProps<HTMLElement>, BaseProps, A
   onShownChange?: ((isShown: boolean) => void) | undefined;
   /** The element the list opens against, such as the editor's frame or a caret marker it places. */
   anchorRef: RefObject<Element | null>;
+  /**
+   * The box in the viewport the list opens against instead of the anchor's, such as the caret's
+   * in an editor that places no marker; null keeps it where it is.
+   */
+  getTargetRect?: (() => DOMRect | null) | undefined;
   items: readonly CompletionListItem[];
   /** The active option, which the editor names in `aria-activedescendant`. */
   activeKey: Key | null;
@@ -220,6 +225,7 @@ export function CompletionList(props: CompletionListProps) {
         }}
         isNonModal
         triggerRef={anchorRef}
+        {...(props.getTargetRect ? { getTargetRect: props.getTargetRect } : {})}
         placement="bottom start"
         shouldUpdatePosition={shouldUpdatePosition}
         offset={DEFAULT_POINT_OFFSET}

@@ -295,16 +295,13 @@
   gap: 8px;
 }
 
+/* The selection toolbar is a floating toolbar; it stays within the window on one row. */
 .ui-selection-toolbar {
-  padding: 2px 4px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-raised);
-  box-shadow: var(--ref-shadow);
+  max-width: calc(100vw - 24px);
 }
 
 .ui-selection-toolbar__row {
-  gap: 2px;
+  flex-wrap: nowrap;
 }
 
 /* The slash menu: a completion list with the insert menu's own hook. */

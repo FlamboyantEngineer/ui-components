@@ -76,6 +76,7 @@ export * from './components/file-field/index.js';
 export * from './components/file-upload/index.js';
 export * from './components/filter-bar/index.js';
 export * from './components/find-bar/index.js';
+export * from './components/floating-toolbar/index.js';
 export * from './components/focus-scope/index.js';
 export * from './components/folder-manager/index.js';
 export * from './components/form/index.js';

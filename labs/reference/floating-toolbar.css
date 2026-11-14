@@ -1,0 +1,13 @@
+/* Floating Toolbar: a raised strip of controls over the box it floats against. */
+
+.ui-floating-toolbar {
+  padding: 2px 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-floating-toolbar__row {
+  gap: 2px;
+}

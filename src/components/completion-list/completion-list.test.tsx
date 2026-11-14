@@ -113,6 +113,13 @@ describe('CompletionList', () => {
     });
   });
 
+  it('UIC-COMPLETION-LIST-1.1 opens against the box getTargetRect gives', async () => {
+    const getTargetRect = vi.fn(() => new DOMRect(120, 40, 1, 16));
+    render(<Harness getTargetRect={getTargetRect} />);
+    expect(await screen.findByRole('listbox', { name: 'Suggestions' })).toBeInTheDocument();
+    expect(getTargetRect).toHaveBeenCalled();
+  });
+
   it('UIC-COMPLETION-LIST-1.1 stays closed while closed or with nothing to show', () => {
     const { rerender } = render(<Harness isOpen={false} />);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
