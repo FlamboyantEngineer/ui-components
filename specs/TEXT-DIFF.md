@@ -1,6 +1,6 @@
 # Text Diff
 
-`TextDiff` shows the difference between two texts line by line: unified in one column, or split with the old text beside the new one. Changed lines carry their word changes, both sides carry line numbers, long unchanged runs fold behind buttons that show them, and the caller can draw widgets (comments, notes) under any line. A header counts the lines added and removed and moves between changes. It builds on the line and word diffs of [Diff](DIFF.md), on [Scroll Region](SCROLL-REGION.md) panes and, in the split layout, on [Synced Scroll](SYNCED-SCROLL.md). [Inline Text Diff](INLINE-TEXT-DIFF.md) is the inline counterpart for one value.
+`TextDiff` shows the difference between two texts line by line: unified in one column, or split with the old text beside the new one. Changed lines carry their word changes, both sides carry line numbers, long unchanged runs fold behind buttons that show them, and the caller can draw widgets (comments, notes) under any line. A header counts the lines added and removed and moves between changes. It builds on the line and word diffs of [Diff](DIFF.md), on [Scroll Region](SCROLL-REGION.md) panes and, in the split layout, on [Synced Scroll](SYNCED-SCROLL.md). [Inline Text Diff](TEXT-DIFF.md) is the inline counterpart for one value.
 
 ## UIC-TEXT-DIFF-1 - Lines
 
@@ -101,31 +101,92 @@ Verification: `src/components/text-diff/text-diff.test.tsx`, `e2e/text-diff.spec
 Implementation: `src/components/text-diff/text-diff.tsx`
 Verification: `src/components/text-diff/text-diff.test.tsx`
 
+## Inline Text Diff
+
+`InlineTextDiff` shows a change to a text value inline: the unchanged context as plain text, the removed run and the added run, in reading order and in the flow of the text around it. `createInlineTextDiffExcerpt` builds its segments for one contiguous change, and `createInlineWordDiff` for every changed run of words ([Diff](DIFF.md)). It is read-only output with no states.
+
+## UIC-TEXT-DIFF-4 - Segments
+
+### UIC-TEXT-DIFF-4.1 - One contiguous change
+
+`splitTextDiff(before, after)` shall split two values around their one contiguous change, comparing code points: the longest common prefix, the removed middle of `before`, the added middle of `after`, and the longest common suffix that does not overlap the prefix.
+
+Implementation: `src/components/text-diff/inline-word-diff.ts`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`, `e2e/text-diff-inline-text-diff.spec.ts`
+
+### UIC-TEXT-DIFF-4.2 - Bounded excerpt
+
+`createInlineTextDiffExcerpt(before, after)` shall return `text`, `removed`, `added` and `text` segments in that order, leaving out empty ones, so a first value is one added run and a cleared value one removed run. Context keeps at most 24 characters on each side (the characters nearest the change) and each run at most 100, a cut marked with `…`; `context` and `run` options change the limits. A limit of 0 keeps none of that text and adds no `…`, so `context: 0` shows the change alone.
+
+Implementation: `src/components/text-diff/inline-word-diff.ts`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`, `e2e/text-diff-inline-text-diff.spec.ts`
+
+### UIC-TEXT-DIFF-4.3 - Word changes
+
+`createInlineWordDiff(before, after)` shall return a segment for each hunk of `diffWords(before, after)` (UIC-DIFF-2), in order and uncut: equal text as `text`, deleted text as `removed` and inserted text as `added`, so a value edited in several places shows each change in place, its removed run before its added run.
+
+Implementation: `src/components/text-diff/inline-word-diff.ts`, `src/utils/diff.ts`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`, `e2e/text-diff-inline-text-diff.spec.ts`
+
+## UIC-TEXT-DIFF-5 - Rendering
+
+### UIC-TEXT-DIFF-5.1 - Semantic runs
+
+`InlineTextDiff` shall render a `<span>` root holding its `segments` in order: a removed run as a native `<del>` in the `ui-inline-text-diff__removed` slot, an added run as a native `<ins>` in the `ui-inline-text-diff__added` slot and unchanged context as plain text. The change is in the markup, not only in a color, and the diff has no role or accessible name of its own.
+
+Implementation: `src/components/text-diff/inline-text-diff.tsx`, `labs/reference/text-diff.css`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`, `e2e/text-diff-inline-text-diff.spec.ts`
+
+### UIC-TEXT-DIFF-5.2 - Text only
+
+Every segment shall render as text: markup inside a value shows as its characters and never becomes an element.
+
+Implementation: `src/components/text-diff/inline-text-diff.tsx`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`
+
+### UIC-TEXT-DIFF-5.3 - Hooks and caller attributes
+
+`InlineTextDiff` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+
+Implementation: `src/components/text-diff/inline-text-diff.tsx`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`
+
+### UIC-TEXT-DIFF-5.4 - Final view
+
+`view="final"` shall show the text after the change without marking it: no `<del>` or `<ins>`, removed text left out. It shows `finalText` when given, else the unchanged and added segments joined in order, which is the whole final text only for uncut segments such as `createInlineWordDiff`'s; an excerpt from `createInlineTextDiffExcerpt` cuts its context, so a host passes the full value as `finalText` with one. Whitespace and line breaks are kept as characters (the reference sheet keeps them with `white-space: pre-wrap`). `view="changes"`, the default, shows the runs as UIC-TEXT-DIFF-5.1 says. The root publishes the view in `data-view`; the host supplies the control that switches it.
+
+Implementation: `src/components/text-diff/inline-text-diff.tsx`, `labs/reference/text-diff.css`
+Verification: `src/components/text-diff/inline-text-diff.test.tsx`, `e2e/text-diff-inline-text-diff.spec.ts`
+
 ## Hooks
 
-| Hook                       | Kind      | Values                          | Description                                                                         |
-| -------------------------- | --------- | ------------------------------- | ----------------------------------------------------------------------------------- |
-| `ui-text-diff`             | root      |                                 | The `role="group"` element holding the header and the panes.                        |
-| `ui-text-diff__header`     | slot      |                                 | The summary and the navigation.                                                     |
-| `ui-text-diff__summary`    | slot      |                                 | The added and removed counts.                                                       |
-| `ui-text-diff__count`      | slot      |                                 | One count, `+n` or `−n`.                                                            |
-| `ui-text-diff__navigation` | slot      |                                 | The previous and next change buttons.                                               |
-| `ui-text-diff__previous`   | slot      |                                 | The previous change button (also `ui-button`).                                      |
-| `ui-text-diff__next`       | slot      |                                 | The next change button (also `ui-button`).                                          |
-| `ui-text-diff__panes`      | slot      |                                 | The two panes of the split layout.                                                  |
-| `ui-text-diff__pane`       | slot      |                                 | A scrolling pane (also `ui-scroll-region`).                                         |
-| `ui-text-diff__table`      | slot      |                                 | A pane's `<table>` of rows.                                                         |
-| `ui-text-diff__line`       | slot      |                                 | A line's row.                                                                       |
-| `ui-text-diff__filler`     | slot      |                                 | An empty row padding the shorter side of a split change.                            |
-| `ui-text-diff__number`     | slot      |                                 | A line number cell.                                                                 |
-| `ui-text-diff__marker`     | slot      |                                 | The cell with the `+` or `−` mark and the row's hidden description.                 |
-| `ui-text-diff__content`    | slot      |                                 | The cell with the line's text.                                                      |
-| `ui-text-diff__text`       | slot      |                                 | The line's text: `<ins>`, `<del>` or `<span>`.                                      |
-| `ui-text-diff__word`       | slot      |                                 | A run of words a paired line changed.                                               |
-| `ui-text-diff__fold`       | slot      |                                 | The row standing for folded unchanged lines.                                        |
-| `ui-text-diff__expand`     | slot      |                                 | The button that shows folded lines (also `ui-button`).                              |
-| `ui-text-diff__widget`     | slot      |                                 | The row of a line widget.                                                           |
-| `data-layout`              | attribute | `unified`, `split`              | On the root: one column or two panes.                                               |
-| `data-side`                | state     | `old`, `new`, `both`            | On a pane (`old`, `new` or `both`) or a number cell (`old`, `new`): the side shown. |
-| `data-change`              | state     | `added`, `removed`, `unchanged` | On a line row (`added`, `removed`, `unchanged`) or a count (`added`, `removed`).    |
-| `data-current`             | state     | `true`                          | On the rows of the change the reader moved to.                                      |
+| Hook                           | Kind      | Values / Meaning                |
+| ------------------------------ | --------- | ------------------------------- |
+| `ui-text-diff`                 | root      |                                 | The `role="group"` element holding the header and the panes.                        |
+| `ui-text-diff__header`         | slot      |                                 | The summary and the navigation.                                                     |
+| `ui-text-diff__summary`        | slot      |                                 | The added and removed counts.                                                       |
+| `ui-text-diff__count`          | slot      |                                 | One count, `+n` or `−n`.                                                            |
+| `ui-text-diff__navigation`     | slot      |                                 | The previous and next change buttons.                                               |
+| `ui-text-diff__previous`       | slot      |                                 | The previous change button (also `ui-button`).                                      |
+| `ui-text-diff__next`           | slot      |                                 | The next change button (also `ui-button`).                                          |
+| `ui-text-diff__panes`          | slot      |                                 | The two panes of the split layout.                                                  |
+| `ui-text-diff__pane`           | slot      |                                 | A scrolling pane (also `ui-scroll-region`).                                         |
+| `ui-text-diff__table`          | slot      |                                 | A pane's `<table>` of rows.                                                         |
+| `ui-text-diff__line`           | slot      |                                 | A line's row.                                                                       |
+| `ui-text-diff__filler`         | slot      |                                 | An empty row padding the shorter side of a split change.                            |
+| `ui-text-diff__number`         | slot      |                                 | A line number cell.                                                                 |
+| `ui-text-diff__marker`         | slot      |                                 | The cell with the `+` or `−` mark and the row's hidden description.                 |
+| `ui-text-diff__content`        | slot      |                                 | The cell with the line's text.                                                      |
+| `ui-text-diff__text`           | slot      |                                 | The line's text: `<ins>`, `<del>` or `<span>`.                                      |
+| `ui-text-diff__word`           | slot      |                                 | A run of words a paired line changed.                                               |
+| `ui-text-diff__fold`           | slot      |                                 | The row standing for folded unchanged lines.                                        |
+| `ui-text-diff__expand`         | slot      |                                 | The button that shows folded lines (also `ui-button`).                              |
+| `ui-text-diff__widget`         | slot      |                                 | The row of a line widget.                                                           |
+| `data-layout`                  | attribute | `unified`, `split`              | On the root: one column or two panes.                                               |
+| `data-side`                    | state     | `old`, `new`, `both`            | On a pane (`old`, `new` or `both`) or a number cell (`old`, `new`): the side shown. |
+| `data-change`                  | state     | `added`, `removed`, `unchanged` | On a line row (`added`, `removed`, `unchanged`) or a count (`added`, `removed`).    |
+| `data-current`                 | state     | `true`                          | On the rows of the change the reader moved to.                                      |
+| `ui-inline-text-diff`          | root      |                                 | The `<span>` holding the runs.                                                      |
+| `data-view`                    | attribute | `changes`, `final`              | What the diff shows.                                                                |
+| `ui-inline-text-diff__removed` | slot      |                                 | The removed run's `<del>`.                                                          |
+| `ui-inline-text-diff__added`   | slot      |                                 | The added run's `<ins>`.                                                            |

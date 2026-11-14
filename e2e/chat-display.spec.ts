@@ -15,8 +15,8 @@ test.describe('Chat message display', () => {
   }) => {
     await lab.open('chat');
     const demo = display(page);
-    const question = demo.locator('article[id="display-1"]');
-    const reply = demo.locator('article[id="display-2"]');
+    const question = demo.locator('article[data-message-id="display-1"]');
+    const reply = demo.locator('article[data-message-id="display-2"]');
     const replyTime = reply.locator('.ui-chat-message__footer .ui-chat-message__time');
     await expect(demo.locator('.ui-chat-message__avatar')).toHaveCount(0);
     await expect(demo.locator('.ui-chat-message__author')).toHaveCount(0);
@@ -25,12 +25,14 @@ test.describe('Chat message display', () => {
     await expect(replyTime).toHaveCSS('opacity', '0');
     await expect(replyFooter).toHaveAttribute('data-time-only', 'true');
     expect((await replyFooter.boundingBox())?.height).toBe(0);
-    const toolCalls = demo.locator('article[id="display-4"]');
+    const toolCalls = demo.locator('article[data-message-id="display-4"]');
     await expect(toolCalls.locator('.ui-chat-message__content')).toBeVisible();
     await expect(toolCalls.locator('.ui-chat-message__time')).toHaveCount(0);
     // A written reply with sources keeps its one time; an entry of sources alone shows none.
-    await expect(demo.locator('article[id="display-5"] .ui-chat-message__time')).toHaveCount(1);
-    const sourcesOnly = demo.locator('article[id="display-6"]');
+    await expect(
+      demo.locator('article[data-message-id="display-5"] .ui-chat-message__time'),
+    ).toHaveCount(1);
+    const sourcesOnly = demo.locator('article[data-message-id="display-6"]');
     await sourcesOnly.locator('.ui-chat-message__content').hover();
     await expect(sourcesOnly.locator('.ui-chat-message__time')).toHaveCount(0);
     await reply.locator('.ui-chat-message__content').hover();
@@ -71,8 +73,8 @@ test.describe('Chat message display', () => {
   }) => {
     await lab.open('chat');
     const demo = display(page);
-    const reply = demo.locator('article[id="display-2"]');
-    const toolCalls = demo.locator('article[id="display-4"]');
+    const reply = demo.locator('article[data-message-id="display-2"]');
+    const toolCalls = demo.locator('article[data-message-id="display-4"]');
     await demo
       .getByRole('radiogroup', { name: 'Times without written text' })
       .getByText('Beside the name')
@@ -167,9 +169,9 @@ test.describe('Plain reply width', () => {
             matrixCell(section, `width=${width} avatar=${avatar} steps=${steps}`);
           for (const steps of ['collapsed', 'expanded', 'long output']) {
             const feed = await box(cell(steps).locator('.ui-chat-transcript__feed'));
-            const reply = cell(steps).locator('article[id="reply"]');
+            const reply = cell(steps).locator('article[data-message-id="reply"]');
             const body = await box(reply.locator('.ui-chat-message__body'));
-            const sent = await box(cell(steps).locator('article[id="ask"]'));
+            const sent = await box(cell(steps).locator('article[data-message-id="ask"]'));
             expect(body.x + body.width).toBeCloseTo(feed.x + feed.width, 0);
             expect(sent.x + sent.width).toBeCloseTo(feed.x + feed.width, 0);
             expect(sent.width).toBeLessThan(feed.width);
@@ -178,7 +180,7 @@ test.describe('Plain reply width', () => {
             if (avatar === 'hidden') expect(body.x).toBeCloseTo(feed.x, 0);
           }
 
-          const collapsed = cell('collapsed').locator('article[id="reply"]');
+          const collapsed = cell('collapsed').locator('article[data-message-id="reply"]');
           const trigger = collapsed.getByRole('button', { name: /Read a file, ran a command/ });
           const text = collapsed.getByText('The map builds.');
           const lineHeight = (await box(text)).height;
@@ -208,7 +210,9 @@ test.describe('Plain reply width', () => {
             (viewport) => viewport.scrollWidth - viewport.clientWidth,
           );
           expect(overflow).toBeGreaterThan(0);
-          const message = await box(cell('long output').locator('article[id="reply"]'));
+          const message = await box(
+            cell('long output').locator('article[data-message-id="reply"]'),
+          );
           const feed = await box(cell('long output').locator('.ui-chat-transcript__feed'));
           expect(message.width).toBeCloseTo(feed.width, 0);
         }

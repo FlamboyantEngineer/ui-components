@@ -98,7 +98,7 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 `ToolbarRowSeparator` and `MenuSeparator` shall render a `Separator`, so they carry `ui-separator`, `data-orientation` and `data-variant` beside their own hooks (`ui-toolbar-row__separator`, `ui-menu-separator`) and keep their roles, orientation and props. A stylesheet styles their own hooks over the generic separator; the reference sheet keeps its generic separator rules at zero specificity for that reason.
 
-Implementation: `src/components/separator/separator.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/menu/menu-item.tsx`, `labs/reference/separator.css`
+Implementation: `src/components/separator/separator.tsx`, `src/components/toolbar-row/toolbar-row.tsx`, `src/components/menu/menu-item.tsx`, `labs/reference/separator.css`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`
 
 ## Hooks

@@ -1,5 +1,4 @@
-import { ChatSteps } from '../../src/components/chat-activity/index.js';
-import { ChatToolCall } from '../../src/components/chat-tool-call/index.js';
+import { ChatSteps, ChatToolCall } from '../../src/components/chat/index.js';
 import { ChatMessage, ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import { at, getNow, helper, maria } from './chat-transcript-message-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';

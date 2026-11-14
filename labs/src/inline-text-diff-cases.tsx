@@ -1,13 +1,13 @@
 // Inline Text Diff cases for the excerpt's context and run limits and the final view's text sources.
 
 import { useState } from 'react';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   createInlineTextDiffExcerpt,
   createInlineWordDiff,
+  InlineTextDiff,
   type TextDiffExcerptOptions,
-} from '../../src/components/inline-text-diff/index.js';
-import { InlineTextDiff } from '../../src/components/inline-text-diff/inline-text-diff.js';
-import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+} from '../../src/components/text-diff/index.js';
 import { LabSection } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 

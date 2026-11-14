@@ -72,7 +72,7 @@ Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/se
 With `iconOnly="auto"`, and every option with an icon, the group shall show its labels while they fit and fold to icon-only segments (UIC-SEGMENTED-CHOICE-1.7, with `data-icon-only`) once its labels need more width than its parent gives it: the group's content width, plus what each label cut short by an ellipsis lacks, against the parent's width inside its padding. It shows its labels again once the parent gives back the width they needed, so the presentation does not flip back and forth at one width. It measures after every render and, at most once a frame, when the group or its parent resizes or fonts load. With an option lacking an icon, `auto` keeps the labels. Folding and unfolding keep each segment element, with its focus and selection.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/use-icon-fallback.ts`
-Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/list-filter.spec.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/composition-workflows.spec.ts`
 
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 

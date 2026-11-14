@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import {
   type TableCellEdit,
   type TableColumn,
-  type TableExportFile,
   type TablePinnedRows,
   useTableEditHistory,
 } from '../../src/components/table/index.js';
@@ -29,66 +27,9 @@ const plants: Plant[] = [
   { id: 'sage', name: 'Sage', family: 'Mint', height: 70, note: '-Grey leaves' },
 ];
 
-const plantColumns: TableColumn<Plant>[] = [
-  { id: 'name', header: 'Name', allowsSorting: true },
-  { id: 'family', header: 'Family', allowsSorting: true, allowsHiding: true },
-  {
-    id: 'height',
-    header: 'Height (cm)',
-    align: 'end',
-    allowsSorting: true,
-    allowsHiding: true,
-    getExportText: (row) => `${row.height} cm`,
-  },
-  { id: 'note', header: 'Note', allowsHiding: true },
-];
-
-/**
- * CSV export: the menu writes the current page, every filtered row or the selection. The first
- * table downloads its file; the second shows the text it would write.
- */
-export function CsvExport() {
-  const [file, setFile] = useState<TableExportFile | null>(null);
-  const [givesAll, setGivesAll] = useState(false);
-  return (
-    <div data-lab="csv-export">
-      <section data-lab-demo="csv-download">
-        <Table
-          aria-label="Plants to download"
-          rows={plants}
-          columns={plantColumns}
-          filterable
-          selectionMode="multiple"
-          pagination={{ pageSize: 4 }}
-          csvExport={{ fileName: 'plants.csv' }}
-        />
-      </section>
-      <section data-lab-demo="csv-preview">
-        <Checkbox isSelected={givesAll} onChange={setGivesAll}>
-          Give every row
-        </Checkbox>
-        <Table
-          aria-label="Plants, caller paged"
-          rows={plants.slice(0, 3)}
-          columns={plantColumns}
-          pagination={{ pageSize: 3, rowCount: plants.length }}
-          csvExport={{
-            fileName: 'plants.csv',
-            columns: ['note', 'name'],
-            allRows: givesAll ? plants : undefined,
-            onExport: setFile,
-          }}
-        />
-        <LabOutput name="csv-scope">{file?.scope ?? 'none'}</LabOutput>
-        <pre data-lab-output="csv-text">{file?.text ?? ''}</pre>
-      </section>
-    </div>
-  );
-}
-
 const editableColumns: TableColumn<Plant>[] = [
   { id: 'name', header: 'Name', allowsEditing: true, allowsSorting: true },
-  { id: 'family', header: 'Family', allowsEditing: true, bulkEdit: { type: 'text' } },
+  { id: 'family', header: 'Family', allowsEditing: true },
   {
     id: 'height',
     header: 'Height (cm)',
@@ -96,7 +37,6 @@ const editableColumns: TableColumn<Plant>[] = [
     allowsEditing: true,
     allowsSorting: true,
     validateValue: (value) => (typeof value === 'number' && value > 0 ? null : 'Above zero'),
-    bulkEdit: { type: 'number' },
   },
 ];
 
@@ -109,7 +49,7 @@ function applyEdits(rows: readonly Plant[], edits: readonly TableCellEdit<Plant>
 }
 
 /**
- * Undo and redo: edits, pastes, fills, clears and bulk edits each undo as one step, from the
+ * Undo and redo: cell edits each undo as one step, from the
  * buttons or Control+Z on the grid. A height changed elsewhere is never overwritten.
  */
 export function EditHistory() {
@@ -150,7 +90,6 @@ export function EditHistory() {
         aria-label="Plants with undo"
         rows={rows}
         columns={editableColumns}
-        cellSelection="range"
         selectionMode="multiple"
         editHistory={history}
         onCellsChange={apply}

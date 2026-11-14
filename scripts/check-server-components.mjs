@@ -56,7 +56,7 @@ export default function Page() {
 const SUBPATH_PAGE = `import { Button } from '${manifest.name}/button';
 import { PlusGlyph, UiProvider } from '${manifest.name}/core';
 import { Disclosure } from '${manifest.name}/disclosure';
-import { splitTextDiff } from '${manifest.name}/inline-text-diff';
+import { splitTextDiff } from '${manifest.name}/text-diff/inline';
 
 export default function Page() {
   const diff = splitTextDiff('old text', 'new text');
@@ -144,7 +144,7 @@ const HELPERS_PAGE = `import { resolveAvatarColor } from '${manifest.name}/avata
 import { cycleCheckState } from '${manifest.name}/checkbox';
 import { createConditionMatcher } from '${manifest.name}/condition-builder';
 import { createFilterMatcher } from '${manifest.name}/filter-bar';
-import { reduceChatStream } from '${manifest.name}/chat-controller';
+import { reduceChatStream } from '${manifest.name}/chat/controller';
 import { findBoxAtPoint } from '${manifest.name}/pdf-viewer';
 import { keepThumbsApart } from '${manifest.name}/number-field';
 import { findNextZoomLevel } from '${manifest.name}/zoom-control';

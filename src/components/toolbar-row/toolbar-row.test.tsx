@@ -1,0 +1,294 @@
+import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
+import { ToolbarRow, ToolbarRowGroup, ToolbarRowSeparator } from './toolbar-row.js';
+
+/** The row around a toolbar or group: the root that carries the row's hooks. */
+const rowOf = (element: Element) => requireDefined(element.closest('.ui-toolbar-row'));
+
+describe('ToolbarRow', () => {
+  it('UIC-TOOLBAR-ROW-1.1 renders a toolbar with arrow-key focus, a group or no role, and a variant', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <>
+        <button type="button">Before</button>
+        <ToolbarRow aria-label="Fruit actions">
+          <button type="button">Peel</button>
+          <button type="button">Slice</button>
+        </ToolbarRow>
+      </>,
+    );
+    const toolbar = screen.getByRole('toolbar', { name: 'Fruit actions' });
+    expect(toolbar).toHaveClass('ui-toolbar-row__strip');
+    expect(rowOf(toolbar)).toHaveAttribute('data-variant', 'plain');
+    expect(rowOf(toolbar)).toHaveAttribute('data-orientation', 'horizontal');
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW');
+
+    await user.click(screen.getByRole('button', { name: 'Peel' }));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Slice' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('button', { name: 'Peel' })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+
+    rerender(
+      <ToolbarRow role="group" variant="surface" aria-label="Fruit actions">
+        <button type="button">Peel</button>
+      </ToolbarRow>,
+    );
+    const group = screen.getByRole('group', { name: 'Fruit actions' });
+    expect(rowOf(group)).toHaveAttribute('data-variant', 'surface');
+    expect(rowOf(group)).toHaveAttribute('data-orientation', 'horizontal');
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW');
+
+    rerender(<ToolbarRow role="none">Text</ToolbarRow>);
+    expect(container.firstElementChild).not.toHaveAttribute('role');
+    expect(container.querySelector('.ui-toolbar-row__strip')).not.toHaveAttribute('role');
+  });
+
+  it('UIC-TOOLBAR-ROW-1.2 stacks a vertical row and moves toolbar focus with Up and Down', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <ToolbarRow aria-label="Tools" orientation="vertical">
+        <button type="button">Peel</button>
+        <button type="button">Slice</button>
+      </ToolbarRow>,
+    );
+    const toolbar = screen.getByRole('toolbar', { name: 'Tools' });
+    expect(rowOf(toolbar)).toHaveAttribute('data-orientation', 'vertical');
+    expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
+    await user.click(screen.getByRole('button', { name: 'Peel' }));
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('button', { name: 'Slice' })).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('button', { name: 'Peel' })).toHaveFocus();
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW');
+
+    for (const role of ['group', 'none'] as const) {
+      rerender(
+        <ToolbarRow role={role} orientation="vertical" aria-label="Tools">
+          <button type="button">Peel</button>
+        </ToolbarRow>,
+      );
+      expect(container.firstElementChild).toHaveAttribute('data-orientation', 'vertical');
+    }
+  });
+
+  it('UIC-TOOLBAR-ROW-1.3 groups controls and separates them across the row', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <ToolbarRow aria-label="Editing">
+        <ToolbarRowGroup aria-label="Clipboard" data-owner="kitchen">
+          <button type="button">Cut</button>
+          <button type="button">Copy</button>
+        </ToolbarRowGroup>
+        <ToolbarRowSeparator data-owner="kitchen" />
+        <ToolbarRowGroup aria-label="History" className="caller">
+          <button type="button">Undo</button>
+        </ToolbarRowGroup>
+      </ToolbarRow>,
+    );
+    const clipboard = screen.getByRole('group', { name: 'Clipboard' });
+    expect(clipboard).toHaveClass('ui-toolbar-row__group');
+    expect(clipboard).toHaveAttribute('data-orientation', 'horizontal');
+    expect(clipboard).toHaveAttribute('data-owner', 'kitchen');
+    expect(screen.getByRole('group', { name: 'History' })).toHaveClass('caller');
+    const separator = screen.getByRole('separator');
+    expect(separator).toHaveClass('ui-toolbar-row__separator');
+    expect(separator).toHaveAttribute('aria-orientation', 'vertical');
+    expect(separator).toHaveAttribute('data-orientation', 'vertical');
+    expect(separator).toHaveAttribute('data-owner', 'kitchen');
+    expect(separator).not.toHaveAttribute('tabindex');
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW', {
+      slots: ['strip', 'group', 'separator'],
+      callerAttributes: ['data-owner'],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Undo' })).toHaveFocus();
+
+    rerender(
+      <ToolbarRow aria-label="Editing" orientation="vertical">
+        <ToolbarRowGroup aria-label="Clipboard">
+          <button type="button">Cut</button>
+        </ToolbarRowGroup>
+        <ToolbarRowSeparator />
+      </ToolbarRow>,
+    );
+    expect(screen.getByRole('group', { name: 'Clipboard' })).toHaveAttribute(
+      'data-orientation',
+      'vertical',
+    );
+    const rule = requireDefined(container.querySelector('.ui-toolbar-row__separator'));
+    expect(rule.tagName).toBe('HR');
+    expect(rule).toHaveAttribute('data-orientation', 'horizontal');
+  });
+
+  it('UIC-TOOLBAR-ROW-1.4 draws no scrolling row fades with showEdgeFades={false}', () => {
+    const { container } = render(
+      <ToolbarRow aria-label="Kitchen" overflow="scroll" showEdgeFades={false}>
+        <button type="button">Peel</button>
+      </ToolbarRow>,
+    );
+    expect(container.querySelector('.ui-toolbar-row__fade')).toBeNull();
+    expect(container.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(2);
+  });
+
+  it('UIC-TOOLBAR-ROW-1.4 omits paging buttons independently of fades without remounting tools', async () => {
+    const user = userEvent.setup();
+    const row = (showScrollButtons: boolean) => (
+      <ToolbarRow aria-label="Tools" overflow="scroll" showScrollButtons={showScrollButtons}>
+        <button type="button">Edit</button>
+      </ToolbarRow>
+    );
+    const { container, rerender } = render(row(false));
+    const tool = screen.getByRole('button', { name: 'Edit' });
+    await user.click(tool);
+    expect(container.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(0);
+    expect(container.querySelectorAll('.ui-toolbar-row__fade')).toHaveLength(2);
+    rerender(row(true));
+    expect(screen.getByRole('button', { name: 'Edit' })).toBe(tool);
+    expect(tool).toHaveFocus();
+    expect(container.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(2);
+  });
+
+  it('UIC-TOOLBAR-ROW-1.4 wraps the row and its groups, scrolls it, or keeps one row', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <ToolbarRow aria-label="Kitchen">
+        <ToolbarRowGroup aria-label="Knives">
+          <button type="button">Peel</button>
+        </ToolbarRowGroup>
+      </ToolbarRow>,
+    );
+    const row = rowOf(screen.getByRole('toolbar', { name: 'Kitchen' }));
+    expect(row).toHaveAttribute('data-overflow', 'wrap');
+    expect(row).toHaveAttribute('data-wrap', 'wrap');
+    expect(row.querySelector('.ui-toolbar-row__scroll-button')).toBeNull();
+    expect(screen.getByRole('group', { name: 'Knives' })).toHaveAttribute('data-wrap', 'wrap');
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW', { slots: ['strip', 'group'] });
+
+    rerender(
+      <ToolbarRow aria-label="Kitchen" overflow="scroll" data-owner="kitchen" showEdgeFades>
+        <ToolbarRowGroup aria-label="Knives">
+          <button type="button">Peel</button>
+          <button type="button">Slice</button>
+        </ToolbarRowGroup>
+        <button type="button">Juice</button>
+      </ToolbarRow>,
+    );
+    const root = requireDefined(container.querySelector('.ui-toolbar-row'));
+    expect(root).toHaveAttribute('data-overflow', 'scroll');
+    expect(root).toHaveAttribute('data-wrap', 'nowrap');
+    expect(root).toHaveAttribute('data-owner', 'kitchen');
+    expect(root).not.toHaveAttribute('role');
+    expect(root).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('toolbar', { name: 'Kitchen' }).parentElement).toBe(root);
+    expect(root.querySelectorAll('.ui-toolbar-row__fade')).toHaveLength(2);
+    expect(root.querySelectorAll('.ui-toolbar-row__scroll-button')).toHaveLength(2);
+    expect(screen.getByRole('group', { name: 'Knives' })).toHaveAttribute('data-wrap', 'nowrap');
+    await user.click(screen.getByRole('button', { name: 'Slice' }));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Juice' })).toHaveFocus();
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW', {
+      slots: ['strip', 'group', 'fade', 'scroll-button'],
+      callerAttributes: ['data-owner'],
+    });
+
+    rerender(
+      <ToolbarRow aria-label="Kitchen" overflow="none">
+        <button type="button">Peel</button>
+      </ToolbarRow>,
+    );
+    expect(root).toHaveAttribute('data-overflow', 'none');
+    expect(root).toHaveAttribute('data-wrap', 'nowrap');
+
+    rerender(
+      <ToolbarRow aria-label="Kitchen" overflow="scroll" orientation="vertical">
+        <button type="button">Peel</button>
+      </ToolbarRow>,
+    );
+    expect(root).toHaveAttribute('data-overflow', 'none');
+    expect(root.querySelector('.ui-toolbar-row__scroll-button')).toBeNull();
+  });
+
+  it('UIC-TOOLBAR-ROW-1.5 keeps a pending row in place with inert controls', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const { container, rerender } = render(
+      <ToolbarRow aria-label="Editing" isPending>
+        <button type="button" onClick={onPress}>
+          Bold
+        </button>
+      </ToolbarRow>,
+    );
+    const row = requireDefined(container.querySelector('.ui-toolbar-row'));
+    expect(row).toHaveAttribute('data-pending', 'true');
+    expect(row).toHaveAttribute('inert');
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW');
+
+    rerender(
+      <ToolbarRow aria-label="Editing" isPending overflow="scroll">
+        <button type="button">Bold</button>
+      </ToolbarRow>,
+    );
+    expect(container.querySelector('.ui-toolbar-row')).toHaveAttribute('inert');
+
+    rerender(
+      <ToolbarRow aria-label="Editing">
+        <button type="button" onClick={onPress}>
+          Bold
+        </button>
+      </ToolbarRow>,
+    );
+    const toolbar = rowOf(screen.getByRole('toolbar', { name: 'Editing' }));
+    expect(toolbar).not.toHaveAttribute('data-pending');
+    expect(toolbar).not.toHaveAttribute('inert');
+    await user.click(screen.getByRole('button', { name: 'Bold' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TOOLBAR-ROW-1.6 joins the controls of an attached group', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ToolbarRow aria-label="Text">
+        <ToolbarRowGroup aria-label="Alignment" attached>
+          <button type="button">Left</button>
+          <button type="button">Centre</button>
+        </ToolbarRowGroup>
+        <ToolbarRowGroup aria-label="History">
+          <button type="button">Undo</button>
+        </ToolbarRowGroup>
+      </ToolbarRow>,
+    );
+    expect(screen.getByRole('group', { name: 'Alignment' })).toHaveAttribute(
+      'data-attached',
+      'true',
+    );
+    expect(screen.getByRole('group', { name: 'History' })).not.toHaveAttribute('data-attached');
+    expect(screen.getByRole('group', { name: 'History' })).not.toHaveAttribute('data-density');
+    await user.click(screen.getByRole('button', { name: 'Left' }));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Centre' })).toHaveFocus();
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW', { slots: ['strip', 'group'] });
+  });
+});
+
+describe('ToolbarRow refs', () => {
+  it('UIC-TOOLBAR-ROW-1.1 UIC-COMPOSITION-2.5 hands ref the root and stripRef the strip', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const stripRef = { current: null as HTMLDivElement | null };
+    const { container } = render(
+      <ToolbarRow ref={ref} stripRef={stripRef} aria-label="Format">
+        <button type="button">Bold</button>
+      </ToolbarRow>,
+    );
+    expect(ref.current).toBe(container.querySelector('.ui-toolbar-row'));
+    expect(stripRef.current).toBe(screen.getByRole('toolbar', { name: 'Format' }));
+    expect(stripRef.current).toHaveClass('ui-toolbar-row__strip');
+  });
+});

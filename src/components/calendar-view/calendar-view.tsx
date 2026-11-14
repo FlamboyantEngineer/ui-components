@@ -102,17 +102,17 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
    * target. Defaults to 30.
    */
   minEventMinutes?: number | undefined;
-  /** Called with the key of the event the reader presses, before an editable event opens its editor. */
+  /** Called with the key of the event the reader presses, so the host can open an editor. */
   onEventAction?: ((key: Key) => void) | undefined;
   /**
-   * Called with an event the reader changed and the event as it was, such as from the event
-   * editor. The host owns the events: the calendar shows the change once `events` holds it. Without
+   * Called with an event changed by dragging or resizing and the event as it was. The host owns
+   * the events: the calendar shows the change once `events` holds it. Without
    * it, or for an event marked `isReadOnly`, the reader cannot change events.
    */
   onEventChange?: ((next: CalendarViewEvent, previous: CalendarViewEvent) => void) | undefined;
   /**
    * The entries of each event's context menu, or a function of the event that returns them:
-   * `'edit'` for the built-in Edit, which opens the event editor while the event is editable, and
+   * `'edit'` for the built-in Edit, which requests host editing while the event is editable, and
    * any menu entry. No entry leaves the browser's menu. Defaults to `['edit']`.
    */
   eventMenu?:
@@ -126,7 +126,7 @@ export interface CalendarViewProps extends BaseProps, RefProps<HTMLDivElement> {
    */
   eventDragMode?: CalendarEventDragMode | undefined;
   /**
-   * Whether the reader may make a change to an event: `edit` it in the editor, `move` it, or
+   * Whether the reader may make a change to an event: request host `edit`, `move` it, or
    * `resize` it by its start or end edge. Asked only while `onEventChange` is given, for events not marked
    * `isReadOnly`. Defaults to allowing every change.
    */
@@ -375,13 +375,12 @@ function CalendarContent(
   const days = getPeriodDays(period, focused, format.locale);
   const onMove = (direction: -1 | 0 | 1) =>
     onFocusedChange(direction === 0 ? getToday() : shiftPeriod(focused, period, direction));
-  const changes = useEventChanges(props, { placed, gridRef: grid.ref });
+  const changes = useEventChanges(props, { placed });
   const day = { focused, today, format, renderDay };
   const event = {
     format,
     onEventAction,
     menu: changes.menu,
-    register: changes.register,
     handles: changes.handles,
   };
   const shared = { events: changes.drawn, titleId, day, event };
@@ -414,7 +413,6 @@ function CalendarContent(
           renderEmptyState={props.renderEmptyState}
         />
       ) : null}
-      {changes.editor}
     </>
   );
 }

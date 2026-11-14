@@ -11,8 +11,8 @@ import {
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { ChatModelPicker } from '../chat-model-picker/chat-model-picker.js';
 import type { ChatProps } from './chat.js';
+import { ChatModelPicker } from './chat-model-picker.js';
 
 installEditorDom();
 

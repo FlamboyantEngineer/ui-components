@@ -2,8 +2,13 @@
 // through the composer handle, skipping records the draft holds, in a new chat and after a reply.
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat, type ChatComposerHandle, type ChatDraft } from '../../src/components/chat/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+import {
+  Chat,
+  type ChatComposerHandle,
+  type ChatDraft,
+  type ChatMessageData,
+  type ChatTextToken,
+} from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';

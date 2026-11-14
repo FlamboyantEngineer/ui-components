@@ -163,7 +163,6 @@ describe('Table', { timeout: 15_000 }, () => {
         rows={fruit}
         columns={[{ id: 'name', header: 'Name', renderCell }, ...columns.slice(1)]}
         selectionMode="multiple"
-        cellSelection="range"
       />,
     );
     await user.click(screen.getByRole('rowheader', { name: 'Apple' }));

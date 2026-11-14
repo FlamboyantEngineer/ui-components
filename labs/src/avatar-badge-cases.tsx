@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
-import { UserCard } from '../../src/components/user-card/user-card.js';
+import { Card } from '../../src/components/card/card.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { StarGlyph } from '../../src/core/glyphs.js';
 import { Glyph } from '../../src/core/provider.js';
@@ -36,7 +36,7 @@ function BadgeTrigger() {
         {...badges.flag}
         size="lg"
         data-lab-avatar="badge-trigger"
-        card={<UserCard name="Lena Ortiz" description="Field team" {...badges.flag} />}
+        card={<Card title="Lena Ortiz" description="Field team" />}
         onPress={() => setPresses((count) => count + 1)}
       />
       <p>

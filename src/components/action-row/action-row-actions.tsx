@@ -1,13 +1,11 @@
 'use client';
 
-import { type KeyboardEvent, type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { pickDataAttributes } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
 import { Toolbar } from '../../primitives/index.js';
-import { isComposingKey } from '../../utils/is-composing-key.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
 import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
@@ -22,8 +20,8 @@ import {
   type MenuSize,
   MenuTrigger,
 } from '../menu/menu.js';
+import { type ActionRowAction, toActionKey } from './action-row-action.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
-import { type ActionRowAction, toActionContent, toActionKey } from './action-verbs.js';
 import { type ActionPress, useActionPending } from './use-action-pending.js';
 
 interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
@@ -84,9 +82,8 @@ function ActionRowMenu({
   );
 }
 
-/** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
-function toCustomButtonProps(action: ActionRowAction): Partial<ButtonProps> {
-  if (action.verb !== 'custom') return {};
+/** An action's ref and toggle state, which report `aria-pressed` either way once set. */
+function toActionButtonProps(action: ActionRowAction): Partial<ButtonProps> {
   if (action.isSelected === undefined) return { ref: action.ref };
   return { ref: action.ref, isSelected: action.isSelected, 'aria-pressed': action.isSelected };
 }
@@ -100,13 +97,13 @@ function ActionRowButton({
   press: ActionPress;
   size: ControlSize;
 }) {
-  const { icon, label, pendingLabel } = toActionContent(action, useUiStrings());
+  const { icon, label, pendingLabel } = action;
   const hasMenu = Boolean(action.items?.length);
   const button = (
     <Button
       {...pickDataAttributes(action)}
-      {...hooks.slot('action', { verb: action.verb })}
-      {...toCustomButtonProps(action)}
+      {...hooks.slot('action')}
+      {...toActionButtonProps(action)}
       {...toPressProps(action, press, hasMenu)}
       icon={icon}
       label={label}
@@ -154,8 +151,8 @@ function bindMenuEntries(entries: readonly MenuEntry[], action: ActionRowAction)
 }
 
 /** A hidden action as an overflow menu entry: a press, or a submenu of its own menu. */
-function toMenuEntry({ action, key, press }: KeyedAction, strings: UiStrings): MenuItemEntry {
-  const { icon, label } = toActionContent(action, strings);
+function toMenuEntry({ action, key, press }: KeyedAction): MenuItemEntry {
+  const { icon, label } = action;
   const entry = {
     id: key,
     label,
@@ -184,7 +181,7 @@ function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: Co
         size={size}
         placement="bottom end"
         label={strings.moreItems(keyed.length)}
-        items={keyed.map((entry) => toMenuEntry(entry, strings))}
+        items={keyed.map((entry) => toMenuEntry(entry))}
       />
     </div>
   );
@@ -243,17 +240,4 @@ export function ActionRowActions({
       {children}
     </div>
   );
-}
-
-/**
- * Escape clears a selection, unless something inside the row handled it or an input method
- * composition owns it (the Escape that cancels a candidate).
- */
-export function createClearKey(onClear: (() => void) | undefined) {
-  return (event: KeyboardEvent<HTMLElement>) => {
-    if (!onClear || event.key !== 'Escape' || event.defaultPrevented) return;
-    if (isComposingKey(event.nativeEvent)) return;
-    event.preventDefault();
-    onClear();
-  };
 }

@@ -392,7 +392,7 @@
  * nested control never inherits a parent's step. Fields, comboboxes, search boxes and formula bars
  * default to md; a zoom control to sm.
  */
-:is(.ui-field, .ui-combobox, .ui-combobox__popover, .ui-search-field, .ui-formula-bar) {
+:is(.ui-field, .ui-combobox, .ui-combobox__popover, .ui-search-field) {
   --ref-control-height: var(--ref-control-height-md);
 }
 
@@ -405,7 +405,6 @@
   .ui-combobox,
   .ui-combobox__popover,
   .ui-search-field,
-  .ui-formula-bar,
   .ui-zoom-control
 )[data-size='xs'] {
   --ref-control-height: var(--ref-control-height-xs);
@@ -416,7 +415,6 @@
   .ui-combobox,
   .ui-combobox__popover,
   .ui-search-field,
-  .ui-formula-bar,
   .ui-zoom-control
 )[data-size='sm'] {
   --ref-control-height: var(--ref-control-height-sm);
@@ -427,7 +425,6 @@
   .ui-combobox,
   .ui-combobox__popover,
   .ui-search-field,
-  .ui-formula-bar,
   .ui-zoom-control
 )[data-size='md'] {
   --ref-control-height: var(--ref-control-height-md);
@@ -438,7 +435,6 @@
   .ui-combobox,
   .ui-combobox__popover,
   .ui-search-field,
-  .ui-formula-bar,
   .ui-zoom-control
 )[data-size='lg'] {
   --ref-control-height: var(--ref-control-height-lg);

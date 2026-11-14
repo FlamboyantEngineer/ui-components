@@ -51,7 +51,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 `multiline={false}` shall keep the source on one line, for a query or an expression: the text area has one row, reports `aria-multiline="false"` and never wraps (`data-wrap="off"` whatever `wrap` says), the root publishes `data-single-line`, Enter inserts no line break and reaches the caller's `onKeyDown` (after an open completion list has taken it), and line breaks typed or pasted into the text reach `onChange` as spaces. Multiple lines are the default.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/code-editor/use-code-keys.ts`, `labs/reference/code-editor.css`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/query-field.spec.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ### UIC-CODE-EDITOR-1.8 - Resizing
 

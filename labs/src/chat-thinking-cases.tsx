@@ -1,8 +1,7 @@
 // The Chat lab's thinking states: a reply that streams says what the assistant is thinking or
 // doing, inside the reply, until its text streams in.
 
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
+import { Chat, type ChatMessageData, type ChatPart } from '../../src/components/chat/index.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { sparkle } from './chat-thinking-styles.js';
 import { LabSection, StateMatrix } from './chrome/index.js';

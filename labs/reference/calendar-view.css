@@ -268,11 +268,6 @@
   border-inline-start-color: var(--ref-tone);
 }
 
-/* The event editor's fields take the dialog's width. */
-.ui-calendar-view__editor .ui-modal__body > * {
-  inline-size: 100%;
-}
-
 /* An event with start or end edges: its button fills a frame that carries the event's place. */
 .ui-calendar-view__event-frame {
   position: relative;

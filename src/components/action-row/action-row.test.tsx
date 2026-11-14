@@ -1,19 +1,25 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, Profiler, useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import {
+  CloseGlyph as ActionCloseGlyph,
+  DeleteGlyph as ActionDeleteGlyph,
   DeleteGlyph,
+  EditGlyph as ActionEditGlyph,
   ExpandGlyph,
   HelpGlyph,
   InfoGlyph,
+  MoreGlyph as ActionMoreGlyph,
+  PlusGlyph as ActionPlusGlyph,
+  RefreshGlyph as ActionRefreshGlyph,
+  SaveGlyph as ActionSaveGlyph,
   SortAscendingGlyph,
   UploadGlyph,
 } from '../../core/glyphs.js';
-import { UiProvider } from '../../core/provider.js';
-import { ActionRow, type ActionRowAction, actionVerbs, orderActions } from './action-row.js';
+import { ActionRow, type ActionRowAction } from './action-row.js';
 
 const noop = () => undefined;
 
@@ -22,48 +28,43 @@ function buttons(container: HTMLElement) {
 }
 
 describe('ActionRow', () => {
-  it('UIC-ACTION-ROW-1.1 draws each standard verb with its glyph and provider label', () => {
-    const verbs = Object.keys(actionVerbs) as Array<keyof typeof actionVerbs>;
+  it('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 renders caller labels and icons in the given order', () => {
     const { container } = render(
-      <ActionRow actions={verbs.map((verb) => ({ verb, onPress: noop }))} />,
+      <ActionRow
+        actions={[
+          { id: 'later', label: 'Later', icon: DeleteGlyph },
+          { id: 'first', label: 'First' },
+        ]}
+      />,
     );
-    expect(
-      buttons(container).map((button) => [
-        button.dataset.verb,
-        button.getAttribute('aria-label'),
-        button.querySelector('[data-glyph]')?.getAttribute('data-glyph'),
-      ]),
-    ).toEqual([
-      ['add', 'Add', 'plus'],
-      ['refresh', 'Refresh', 'refresh'],
-      ['more', 'More', 'more'],
-      ['edit', 'Edit', 'edit'],
-      ['delete', 'Delete', 'delete'],
-      ['save', 'Save', 'save'],
-      ['cancel', 'Cancel', 'close'],
-      ['close', 'Close', 'close'],
+    expect(screen.getAllByRole('button')).toEqual([
+      screen.getByRole('button', { name: 'Later' }),
+      screen.getByRole('button', { name: 'First' }),
     ]);
     expectHooksMatchSpec(container, 'ACTION-ROW', { slots: ['actions', 'action'] });
   });
-
-  it('UIC-ACTION-ROW-1.1 lets an action name its subject and follows provider strings', () => {
-    const { rerender } = render(
-      <ActionRow actions={[{ verb: 'add', label: 'Add comment', onPress: noop }]} />,
-    );
-    const add = screen.getByRole('button', { name: 'Add comment' });
-    expect(add.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'plus');
-    rerender(
-      <UiProvider messages={{ edit: 'Modifier' }}>
-        <ActionRow actions={[{ verb: 'edit', onPress: noop }]} />
-      </UiProvider>,
-    );
-    expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
-  });
-
-  it('UIC-ACTION-ROW-1.1 rejects a verb outside the list at compile time', () => {
-    // @ts-expect-error A verb outside the standard set has no glyph, label or place.
-    const unknown: ActionRowAction = { verb: 'publish', onPress: noop };
-    expect(unknown.verb).toBe('publish');
+  it('UIC-ACTION-ROW-3.1 returns focus when the host unmounts a focused row', async () => {
+    const user = userEvent.setup();
+    function Example() {
+      const targetRef = useRef<HTMLButtonElement>(null);
+      const [visible, setVisible] = useState(true);
+      return (
+        <>
+          <button ref={targetRef} type="button">
+            Collection
+          </button>
+          {visible ? (
+            <ActionRow
+              finalFocus={targetRef}
+              actions={[{ id: 'clear', label: 'Clear', onPress: () => setVisible(false) }]}
+            />
+          ) : null}
+        </>
+      );
+    }
+    render(<Example />);
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Collection' })).toHaveFocus());
   });
 
   it('UIC-ACTION-ROW-1.2 draws custom actions as toggles with their own icon and label', async () => {
@@ -73,7 +74,6 @@ describe('ActionRow', () => {
       <ActionRow
         actions={[
           {
-            verb: 'custom',
             id: 'full',
             icon: ExpandGlyph,
             label: 'Full screen',
@@ -81,14 +81,13 @@ describe('ActionRow', () => {
             onPress,
           },
           {
-            verb: 'custom',
             id: 'pin',
             icon: <svg role="img" aria-label="Pin glyph" />,
             label: 'Pin',
             isSelected: false,
             ref,
           },
-          { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help' },
+          { id: 'help', icon: HelpGlyph, label: 'Help' },
         ]}
       />,
     );
@@ -115,15 +114,14 @@ describe('ActionRow', () => {
     render(
       <ActionRow
         actions={[
-          { verb: 'custom', id: 'schedule', label: 'Schedule', onPress, isSelected: false },
+          { id: 'schedule', label: 'Schedule', onPress, isSelected: false },
           {
-            verb: 'custom',
             id: 'more',
             label: 'More',
             items: [{ id: 'archive', label: 'Archive' }],
             onAction: noop,
           },
-          { verb: 'custom', id: 'wait', label: 'Wait', isPending: true },
+          { id: 'wait', label: 'Wait', isPending: true },
         ]}
       />,
     );
@@ -146,24 +144,22 @@ describe('ActionRow', () => {
     const onFirst = vi.fn();
     const onSecond = vi.fn();
     const first: ActionRowAction = {
-      verb: 'custom',
       id: 'first',
       icon: InfoGlyph,
       label: 'First',
       onPress: onFirst,
     };
     const second: ActionRowAction = {
-      verb: 'custom',
       id: 'second',
       icon: HelpGlyph,
       label: 'Second',
       onPress: onSecond,
     };
-    const zero: ActionRowAction = { verb: 'custom', id: 0, icon: UploadGlyph, label: 'Zero' };
+    const zero: ActionRowAction = { id: 0, icon: UploadGlyph, label: 'Zero' };
     // Two actions of one verb, told apart by their ids.
     const deletes: ActionRowAction[] = [
-      { verb: 'delete', id: 'delete-row', label: 'Delete row' },
-      { verb: 'delete', id: 'delete-column', label: 'Delete column' },
+      { icon: ActionDeleteGlyph, id: 'delete-row', label: 'Delete row' },
+      { icon: ActionDeleteGlyph, id: 'delete-column', label: 'Delete column' },
     ];
     const { rerender } = render(<ActionRow actions={[first, second, ...deletes]} />);
     const secondButton = screen.getByRole('button', { name: 'Second' });
@@ -206,9 +202,9 @@ describe('ActionRow', () => {
         <ActionRow
           overflow="menu"
           actions={[
-            { verb: 'add', onPress: noop },
-            { verb: 'delete', onPress: noop },
-            { verb: 'edit', onPress: noop },
+            { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+            { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
+            { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
           ]}
         />
       </Profiler>
@@ -236,15 +232,21 @@ describe('ActionRow', () => {
       return this.classList.contains('ui-action-row__actions') ? 70 : 0;
     });
     const actions: ActionRowAction[] = [
-      { verb: 'add', onPress: noop },
-      { verb: 'delete', onPress: noop },
+      { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+      { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
     ];
     try {
       const { rerender } = render(<ActionRow overflow="menu" actions={actions} />);
       screen.getByRole('button', { name: 'Delete' }).focus();
       // A third action leaves room for one action and the menu button.
       rerender(
-        <ActionRow overflow="menu" actions={[...actions, { verb: 'edit', onPress: noop }]} />,
+        <ActionRow
+          overflow="menu"
+          actions={[
+            { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
+            ...actions,
+          ]}
+        />,
       );
       expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: /^\d+ more/ })).toHaveFocus();
@@ -266,8 +268,8 @@ describe('ActionRow', () => {
       return this.classList.contains('ui-action-row__actions') ? 70 : 0;
     });
     const actions: ActionRowAction[] = [
-      { verb: 'add', onPress: noop },
-      { verb: 'delete', onPress: noop },
+      { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+      { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
     ];
     const tree = (shown: ActionRowAction[]) => (
       <ShadowHost name="page">
@@ -277,73 +279,27 @@ describe('ActionRow', () => {
     try {
       const { rerender } = render(tree(actions));
       inShadow('page').getByRole('button', { name: 'Delete' }).focus();
-      rerender(tree([...actions, { verb: 'edit', onPress: noop }]));
+      rerender(
+        tree([{ id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop }, ...actions]),
+      );
       expect(deepActive()).toBe(inShadow('page').getByRole('button', { name: /^\d+ more/ }));
     } finally {
       vi.restoreAllMocks();
     }
   });
 
-  it('UIC-ACTION-ROW-1.3 draws custom actions in their order, then the verbs in a fixed order', () => {
-    const actions: ActionRowAction[] = [
-      { verb: 'cancel', id: 'cancel', onPress: noop },
-      { verb: 'custom', id: 'second-custom', icon: InfoGlyph, label: 'History', onPress: noop },
-      { verb: 'save', id: 'save', onPress: noop },
-      { verb: 'edit', id: 'edit', onPress: noop },
-      {
-        verb: 'custom',
-        id: 'first-custom',
-        icon: ExpandGlyph,
-        label: 'Full screen',
-        onPress: noop,
-      },
-      { verb: 'add', id: 'add', onPress: noop },
-      { verb: 'refresh', id: 'refresh', onPress: noop },
-      { verb: 'close', id: 'close', onPress: noop },
-      { verb: 'delete', id: 'delete', onPress: noop },
-      { verb: 'more', id: 'more', onPress: noop },
-    ];
-    const expected = [
-      'second-custom',
-      'first-custom',
-      'add',
-      'refresh',
-      'more',
-      'edit',
-      'delete',
-      'save',
-      'cancel',
-      'close',
-    ];
-    const { container } = render(<ActionRow actions={actions} />);
-    expect(buttons(container).map((button) => button.getAttribute('aria-label'))).toEqual([
-      'History',
-      'Full screen',
-      'Add',
-      'Refresh',
-      'More',
-      'Edit',
-      'Delete',
-      'Save',
-      'Cancel',
-      'Close',
-    ]);
-    expect(orderActions(actions).map((action) => action.id)).toEqual(expected);
-  });
-
   it('UIC-ACTION-ROW-1.4 shows the tooltip on keyboard focus without changing the name', async () => {
     render(
       <ActionRow
         actions={[
-          { verb: 'refresh', onPress: noop },
           {
-            verb: 'custom',
             id: 'full-screen',
             icon: ExpandGlyph,
             label: 'Full screen',
             tooltip: 'Full screen (F)',
             onPress: noop,
           },
+          { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop },
         ]}
       />,
     );
@@ -370,17 +326,31 @@ describe('ActionRow', () => {
     const { container } = render(
       <ActionRow
         actions={[
-          { verb: 'add', id: 'add', isDisabled: true, 'aria-controls': 'list', onPress },
           {
-            verb: 'edit',
+            label: 'Add',
+            icon: ActionPlusGlyph,
+            id: 'add',
+            isDisabled: true,
+            'aria-controls': 'list',
+            onPress,
+          },
+          {
+            label: 'Edit',
+            icon: ActionEditGlyph,
             id: 'edit',
             isDisabled: true,
             tooltip: 'Only the owner can edit this',
             onPress,
           },
-          { verb: 'save', id: 'save', isPending: true, onPress },
           {
-            verb: 'custom',
+            label: 'Save',
+            icon: ActionSaveGlyph,
+            pendingLabel: 'Saving',
+            id: 'save',
+            isPending: true,
+            onPress,
+          },
+          {
             id: 'details',
             icon: InfoGlyph,
             label: 'Details',
@@ -406,7 +376,6 @@ describe('ActionRow', () => {
     expect(byId('Details')).toHaveAttribute('aria-expanded', 'false');
     expect(byId('Details')).toHaveAttribute('aria-haspopup', 'dialog');
     expect(byId('Details')).toHaveAttribute('data-section', 'details');
-    expect(byId('Details')).toHaveAttribute('data-verb', 'custom');
     await userEvent.click(byId('Edit') as HTMLButtonElement);
     await userEvent.click(byId('Save') as HTMLButtonElement);
     expect(onPress).not.toHaveBeenCalled();
@@ -437,8 +406,8 @@ describe('ActionRow', () => {
     );
     const onRefresh = vi.fn();
     const actions: ActionRowAction[] = [
-      { verb: 'refresh', onPress: onRefresh },
-      { verb: 'save', onPress: onSave },
+      { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: onRefresh },
+      { id: 'save', label: 'Save', icon: ActionSaveGlyph, pendingLabel: 'Saving', onPress: onSave },
     ];
     try {
       const { rerender } = render(<ActionRow actions={actions} />);
@@ -488,7 +457,20 @@ describe('ActionRow', () => {
     const failure = new Error('Offline');
     const onError = vi.fn();
     const onSave = vi.fn(() => Promise.reject(failure));
-    render(<ActionRow actions={[{ verb: 'save', onPress: onSave, onError }]} />);
+    render(
+      <ActionRow
+        actions={[
+          {
+            id: 'save',
+            label: 'Save',
+            icon: ActionSaveGlyph,
+            pendingLabel: 'Saving',
+            onPress: onSave,
+            onError,
+          },
+        ]}
+      />,
+    );
     const save = screen.getByRole('button', { name: /^Save/ });
     await user.click(save);
     await waitFor(() => expect(onError).toHaveBeenCalledWith(failure));
@@ -507,7 +489,6 @@ describe('ActionRow', () => {
         size="xs"
         actions={[
           {
-            verb: 'more',
             id: 'more',
             label: 'More actions',
             onPress,
@@ -574,7 +555,6 @@ describe('ActionRow', () => {
       <ActionRow
         actions={[
           {
-            verb: 'custom',
             id: 'sort',
             icon: SortAscendingGlyph,
             label: 'Sort',
@@ -583,13 +563,18 @@ describe('ActionRow', () => {
             'aria-haspopup': 'dialog',
             items: [{ id: 'name', label: 'By name' }],
           },
-          { verb: 'more', id: 'more', isDisabled: true, items: [{ id: 'x', label: 'Export' }] },
+          {
+            id: 'more',
+            label: 'More',
+            icon: ActionMoreGlyph,
+            isDisabled: true,
+            items: [{ id: 'x', label: 'Export' }],
+          },
         ]}
       />,
     );
     await user.tab();
     const sort = screen.getByRole('button', { name: 'Sort' });
-    expect(sort).toHaveAttribute('data-verb', 'custom');
     expect(sort).toHaveAttribute('aria-expanded', 'false');
     expect(sort).toHaveAttribute('aria-haspopup', 'true');
     expect(screen.getByRole('tooltip')).toHaveTextContent('Sort the list');
@@ -598,7 +583,11 @@ describe('ActionRow', () => {
     await user.click(more);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
-    rerender(<ActionRow actions={[{ verb: 'more', id: 'more', items: [], onPress }]} />);
+    rerender(
+      <ActionRow
+        actions={[{ label: 'More', icon: ActionMoreGlyph, id: 'more', items: [], onPress }]}
+      />,
+    );
     const plain = screen.getByRole('button', { name: 'More' });
     expect(plain).not.toHaveAttribute('aria-haspopup');
     await user.click(plain);
@@ -610,7 +599,7 @@ describe('ActionRow', () => {
     const user = userEvent.setup();
     const onPress = vi.fn();
     const row = (items: ActionRowAction['items']) => (
-      <ActionRow actions={[{ verb: 'more', id: 'more', items, onPress }]} />
+      <ActionRow actions={[{ label: 'More', icon: ActionMoreGlyph, id: 'more', items, onPress }]} />
     );
     const { rerender } = render(row([]));
     await user.tab();
@@ -633,7 +622,10 @@ describe('ActionRow', () => {
 
   it('UIC-ACTION-ROW-2.1 puts lead content before the actions and renders nothing when empty', () => {
     const { container, rerender } = render(
-      <ActionRow lead={<span>Inbox</span>} actions={[{ verb: 'refresh', onPress: noop }]} />,
+      <ActionRow
+        lead={<span>Inbox</span>}
+        actions={[{ id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop }]}
+      />,
     );
     const root = container.firstElementChild as HTMLElement;
     expect(Array.from(root.children, (child) => child.className)).toEqual([
@@ -647,7 +639,12 @@ describe('ActionRow', () => {
     expect(container.querySelector('.ui-action-row__actions')).toBeNull();
     expect(container.querySelector('.ui-action-row__lead')).toHaveTextContent('Working');
 
-    rerender(<ActionRow lead="" actions={[{ verb: 'refresh', onPress: noop }]} />);
+    rerender(
+      <ActionRow
+        lead=""
+        actions={[{ id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop }]}
+      />,
+    );
     expect(container.querySelector('.ui-action-row__lead')).toBeNull();
 
     rerender(<ActionRow actions={[]} />);
@@ -656,10 +653,37 @@ describe('ActionRow', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('UIC-ACTION-ROW-2.1 switches lead overflow without losing its draft or focus', async () => {
+    const user = userEvent.setup();
+    const row = (leadOverflow: 'truncate' | 'scroll') => (
+      <ActionRow
+        leadOverflow={leadOverflow}
+        lead={<input aria-label="Filter text" />}
+        actions={[{ id: 'refresh', label: 'Refresh' }]}
+      />
+    );
+    const { container, rerender } = render(row('truncate'));
+    const input = screen.getByRole('textbox', { name: 'Filter text' });
+    await user.type(input, 'Long label');
+    expect(container.querySelector('.ui-action-row')).toHaveAttribute(
+      'data-lead-overflow',
+      'truncate',
+    );
+    rerender(row('scroll'));
+    expect(container.querySelector('.ui-action-row')).toHaveAttribute(
+      'data-lead-overflow',
+      'scroll',
+    );
+    expect(screen.getByRole('textbox', { name: 'Filter text' })).toBe(input);
+    expect(input).toHaveValue('Long label');
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Refresh' })).toBeEnabled();
+  });
+
   it('UIC-ACTION-ROW-2.2 sizes every action and publishes the size', () => {
     const actions: ActionRowAction[] = [
-      { verb: 'add', onPress: noop },
-      { verb: 'edit', onPress: noop },
+      { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+      { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
     ];
     const { container, rerender } = render(<ActionRow actions={actions} />);
     const root = container.firstElementChild;
@@ -674,7 +698,7 @@ describe('ActionRow', () => {
   it('UIC-ACTION-ROW-2.3 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
       <ActionRow
-        actions={[{ verb: 'add', onPress: noop }]}
+        actions={[{ id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop }]}
         className="caller"
         id="row"
         data-testid="probe"
@@ -698,9 +722,9 @@ describe('ActionRow', () => {
           toolbar
           aria-label="Note actions"
           actions={[
-            { verb: 'edit', onPress: noop },
-            { verb: 'delete', onPress: noop },
-            { verb: 'close', onPress: noop },
+            { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
+            { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
+            { id: 'close', label: 'Close', icon: ActionCloseGlyph, onPress: noop },
           ]}
         />
         <button type="button">After</button>
@@ -739,11 +763,23 @@ describe('ActionRow', () => {
         <ActionRow
           overflow="menu"
           actions={[
-            { verb: 'add', onPress: noop },
-            { verb: 'edit', onPress: onEdit },
-            { verb: 'refresh', onPress: noop },
-            { verb: 'more', onAction, items: [{ id: 'rename', label: 'Rename' }] },
-            { verb: 'delete', isDisabled: true, onPress: noop },
+            { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+            { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop },
+            {
+              id: 'more',
+              label: 'More',
+              icon: ActionMoreGlyph,
+              onAction,
+              items: [{ id: 'rename', label: 'Rename' }],
+            },
+            { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: onEdit },
+            {
+              id: 'delete',
+              label: 'Delete',
+              icon: ActionDeleteGlyph,
+              isDisabled: true,
+              onPress: noop,
+            },
           ]}
         />,
       );
@@ -799,7 +835,6 @@ describe('ActionRow', () => {
     const onOwnItem = vi.fn();
     const actions: ActionRowAction[] = [
       {
-        verb: 'custom',
         id: 'first',
         icon: InfoGlyph,
         label: 'First',
@@ -807,7 +842,6 @@ describe('ActionRow', () => {
         items: [{ id: 'open', label: 'Open first' }],
       },
       {
-        verb: 'custom',
         id: 'second',
         icon: HelpGlyph,
         label: 'Second',
@@ -854,90 +888,5 @@ describe('ActionRow', () => {
     } finally {
       vi.restoreAllMocks();
     }
-  });
-
-  it('UIC-ACTION-ROW-3.1 shows the selected count with a clear button while there is a selection', async () => {
-    const onClearSelection = vi.fn();
-    const { container, rerender } = render(
-      <ActionRow
-        selectedCount={3}
-        onClearSelection={onClearSelection}
-        actions={[{ verb: 'delete', onPress: noop }]}
-      />,
-    );
-    const row = container.querySelector('.ui-action-row') as HTMLElement;
-    expect(row).toHaveAttribute('data-selection', 'true');
-    expect(screen.getByRole('status')).toHaveTextContent('3 selected');
-    expect(screen.getByRole('status')).toHaveClass('ui-action-row__count');
-    const clear = screen.getByRole('button', { name: 'Clear selection' });
-    expect(clear).toHaveClass('ui-action-row__clear');
-    expectHooksMatchSpec(container, 'ACTION-ROW', {
-      slots: ['selection', 'clear', 'count', 'actions', 'action'],
-    });
-    await userEvent.click(clear);
-    expect(onClearSelection).toHaveBeenCalledTimes(1);
-    screen.getByRole('button', { name: 'Delete' }).focus();
-    await userEvent.keyboard('{Escape}');
-    expect(onClearSelection).toHaveBeenCalledTimes(2);
-    rerender(
-      <ActionRow
-        selectedCount={0}
-        onClearSelection={onClearSelection}
-        actions={[{ verb: 'delete', onPress: noop }]}
-      />,
-    );
-    expect(container.querySelector('.ui-action-row')).toBeNull();
-  });
-
-  it('UIC-ACTION-ROW-3.1 moves focus to finalFocus when the cleared selection bar leaves', async () => {
-    const user = userEvent.setup();
-    function Collection() {
-      const [count, setCount] = useState(2);
-      const listRef = useRef<HTMLUListElement>(null);
-      return (
-        <>
-          <ActionRow
-            selectedCount={count}
-            onClearSelection={() => setCount(0)}
-            finalFocus={listRef}
-            actions={[{ verb: 'delete', onPress: noop }]}
-          />
-          <ul ref={listRef} tabIndex={-1} aria-label="Items" />
-        </>
-      );
-    }
-    render(<Collection />);
-    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByRole('list', { name: 'Items' })).toHaveFocus();
-  });
-
-  it('UIC-ACTION-ROW-3.1 leaves an Escape that an input method composition owns to the input method', async () => {
-    const user = userEvent.setup();
-    const onClearSelection = vi.fn();
-    render(
-      <ActionRow
-        selectedCount={2}
-        onClearSelection={onClearSelection}
-        lead={<input aria-label="Rename" />}
-        actions={[{ verb: 'delete', onPress: noop }]}
-      />,
-    );
-    const input = screen.getByRole('textbox', { name: 'Rename' });
-    await user.click(input);
-    // Input methods have no user-event support: the composition events are dispatched directly.
-    fireEvent.compositionStart(input);
-    fireEvent.compositionUpdate(input, { data: 'か' });
-    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
-    fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
-    // eslint-disable-next-line testing-library/prefer-user-event -- the key code 229 some browsers report as a composition ends
-    fireEvent.keyDown(input, { key: 'Escape', keyCode: 229 });
-    fireEvent.compositionEnd(input, { data: '' });
-    expect(onClearSelection).not.toHaveBeenCalled();
-    expect(input).toHaveFocus();
-    expect(screen.getByRole('status')).toHaveTextContent('2 selected');
-
-    await user.keyboard('{Escape}');
-    expect(onClearSelection).toHaveBeenCalledTimes(1);
   });
 });

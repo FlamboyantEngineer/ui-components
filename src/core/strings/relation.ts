@@ -1,5 +1,5 @@
 import { defineStrings } from '../message-format.js';
-/** Strings of relation matrices, permission matrices and relation columns. */
+/** Strings of relation matrices and relation columns. */
 interface RelationStrings {
   /** Names the column of row headers in a relation matrix, shown in its corner. */
   relationItems: string;
@@ -15,14 +15,6 @@ interface RelationStrings {
   relationItemActions: (item: string) => string;
   /** Inserts an item beside a relation matrix row or column, on the side named. */
   insertRelationItem: (side: 'above' | 'below' | 'left' | 'right') => string;
-  /** Names the column of permissions in a permission matrix. */
-  permissions: string;
-  /** Names a permission matrix checkbox by its permission, its role and whether it is inherited. */
-  permissionGrant: (permission: string, role: string, isInherited: boolean) => string;
-  /** Names a permission matrix group toggle by its group and its role. */
-  permissionGroupGrant: (group: string, role: string) => string;
-  /** Marks a role whose permissions cannot be changed. */
-  readOnlyRole: string;
   /** Names the column of the item a relation walk starts from. */
   relationItem: string;
   /** Names a column of the items upstream of an item. */
@@ -45,8 +37,6 @@ export const relationStrings = defineStrings<RelationStrings>({
   relationCellActions: (row, column) => ({ row, column }),
   relationItemActions: (item) => ({ item }),
   insertRelationItem: (side) => ({ side }),
-  permissionGrant: (permission, role, isInherited) => ({ permission, role, isInherited }),
-  permissionGroupGrant: (group, role) => ({ group, role }),
   upstreamOf: (item) => ({ item }),
   downstreamOf: (item) => ({ item }),
   relatedCount: (count, direction) => ({ count, direction }),

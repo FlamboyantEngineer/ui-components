@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Board, type BoardColumn } from '../../src/components/board/board.js';
 import { applyBoardMove, applyColumnMove } from '../../src/components/board/index.js';
-import type { TableCellRange, TableCellValue } from '../../src/components/table/index.js';
+import type { TableCellValue } from '../../src/components/table/index.js';
 import { Table } from '../../src/components/table/table.js';
 import type { Key, Selection } from '../../src/core/props.js';
 
@@ -55,7 +55,6 @@ const typedRows: TypedRow[] = [
 export function TypedTable() {
   const [rows, setRows] = useState(typedRows);
   const [selected, setSelected] = useState<Selection>(new Set());
-  const [range, setRange] = useState<TableCellRange | null>(null);
   return (
     <div data-lab-demo="typed-table">
       <Table
@@ -73,8 +72,6 @@ export function TypedTable() {
         selectionMode="multiple"
         selectedKeys={selected}
         onSelectionChange={setSelected}
-        cellSelection="range"
-        onSelectedRangeChange={setRange}
         renderRowDetail={(row) => `Details for ${row.name}`}
         onCellsChange={(edits) =>
           setRows((current) =>
@@ -88,7 +85,6 @@ export function TypedTable() {
       <p data-lab-output="typed-selection">
         Selected: {selected === 'all' ? 'all' : JSON.stringify([...selected])}
       </p>
-      <p data-lab-output="typed-range">Range: {JSON.stringify(range)}</p>
     </div>
   );
 }

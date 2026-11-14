@@ -5,10 +5,11 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
+  StateMachineGraph,
+  StateMachineSequence,
+  type StateMachineSequenceProps,
   type StateMachineState,
-  StateMachineView,
-  type StateMachineViewProps,
-} from './state-machine-view.js';
+} from './index.js';
 
 const states: StateMachineState[] = [
   { id: 'draft', label: 'Draft', status: 'complete', tone: 'success', description: 'Done.' },
@@ -16,15 +17,9 @@ const states: StateMachineState[] = [
   { id: 'approved', label: 'Approved', status: 'error', tone: 'danger', notificationCount: 12 },
 ];
 
-function Sequence(props: Partial<StateMachineViewProps>) {
+function Sequence(props: Partial<StateMachineSequenceProps>) {
   return (
-    <StateMachineView
-      presentation="sequence"
-      aria-label="Lifecycle"
-      states={states}
-      transitions={[]}
-      {...props}
-    />
+    <StateMachineSequence aria-label="Lifecycle" states={states} transitions={[]} {...props} />
   );
 }
 
@@ -34,7 +29,7 @@ function getCount(name: string) {
     .querySelector<HTMLElement>('.ui-state-machine-view__count');
 }
 
-describe('StateMachineView sequence statuses and counts', () => {
+describe('StateMachineSequence sequence statuses and counts', () => {
   it('UIC-STATE-MACHINE-VIEW-6.1 publishes host statuses apart from machine state and selection', () => {
     const { container } = render(
       <Sequence
@@ -65,7 +60,7 @@ describe('StateMachineView sequence statuses and counts', () => {
 
   it('UIC-STATE-MACHINE-VIEW-6.1 reads the host description in the graph and its outline too', () => {
     const { unmount } = render(
-      <StateMachineView aria-label="Graph" states={states} transitions={[]} />,
+      <StateMachineGraph aria-label="Graph" states={states} transitions={[]} />,
     );
     const draft = screen.getByRole('group', { name: 'Draft' });
     expect(draft).toHaveAccessibleDescription(expect.stringContaining('Initial state. Done.'));
@@ -75,7 +70,7 @@ describe('StateMachineView sequence statuses and counts', () => {
     );
     unmount();
     render(
-      <StateMachineView
+      <StateMachineGraph
         aria-label="Graph"
         states={states}
         transitions={[]}
@@ -128,7 +123,7 @@ describe('StateMachineView sequence statuses and counts', () => {
   });
 });
 
-describe('StateMachineView sequence tooltips', () => {
+describe('StateMachineSequence sequence tooltips', () => {
   it('UIC-STATE-MACHINE-VIEW-6.3 reads state and transition hints once, with unique ids per instance', async () => {
     const user = userEvent.setup();
     const props = {
@@ -190,7 +185,7 @@ describe('StateMachineView sequence tooltips', () => {
   });
 });
 
-describe('StateMachineView empty sequence', () => {
+describe('StateMachineSequence empty sequence', () => {
   it('UIC-STATE-MACHINE-VIEW-6.4 shows a focusable note that anchors background requests', async () => {
     const user = userEvent.setup();
     const onBackgroundContextMenu = vi.fn();

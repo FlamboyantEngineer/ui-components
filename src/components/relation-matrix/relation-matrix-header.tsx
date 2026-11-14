@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatCount } from '../../utils/count.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { MatrixPosition } from './matrix-navigation.js';
 import type { MatrixColumnTracks } from './matrix-window.js';

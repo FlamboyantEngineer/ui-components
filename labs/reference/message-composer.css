@@ -256,3 +256,30 @@
 .ui-message-composer__completions {
   min-width: min(var(--ui-trigger-width), 360px);
 }
+
+/* Neutral inline message references also work outside an editor. */
+.ui-message-reference {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  max-inline-size: 100%;
+  gap: 0.25em;
+  padding: 0.125em 0.375em;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  vertical-align: baseline;
+}
+
+.ui-message-reference__content {
+  min-inline-size: 0;
+}
+.ui-message-reference__description {
+  color: var(--ref-muted);
+}
+.ui-message-reference__remove {
+  flex: none;
+}
+.ui-message-reference__preview {
+  max-inline-size: min(24rem, calc(100vw - 2rem));
+}

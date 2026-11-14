@@ -3,8 +3,7 @@
 // them.
 
 import { useState } from 'react';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+import { Chat, type ChatMessageData, type ChatTextToken } from '../../src/components/chat/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';

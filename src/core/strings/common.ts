@@ -91,8 +91,6 @@ interface CommonStrings {
   opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
   selectedCount: (count: number) => string;
-  /** Clears a collection's selection. */
-  clearSelection: string;
   /** Names a button that opens a menu of the places beside one, from its name. */
   placesBeside: (name: string) => string;
   /** Names a button that removes a listed item, from the item's name. */
@@ -132,8 +130,6 @@ interface CommonStrings {
   rangeSeparator: string;
   /** The punctuation that follows a label before its value (`:`). */
   labelColon: string;
-  /** Two counts of one summary shown together (`3 of 5 columns mapped · 1 not imported`). */
-  countsSummary: (first: string, second: string) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
   /** A segmented progress bar's visible value (`1/7 · 14%`), from its formatted parts. */
@@ -164,18 +160,6 @@ interface CommonStrings {
   linkSides: (group: 'all' | 'vertical' | 'horizontal' | 'block' | 'inline') => string;
   /** The action that signs, in a signature dialog. */
   sign: string;
-  /** Says who signs, from the signer's user name. */
-  signingAs: (userName: string) => string;
-  /** Names the meaning a signature gives its signer's assent: approval, review, authorship. */
-  signatureMeaning: string;
-  /** States the one meaning a signature can give (`Meaning of signature: Approval`). */
-  signatureMeaningIs: (meaning: string) => string;
-  /** Names the field for the reason of a signature. */
-  signatureReason: string;
-  /** Names the field for a signer's drawn or typed signature. */
-  signature: string;
-  /** Names the field for a user name. */
-  userName: string;
   /** Titles the question asked before leaving unsaved changes. */
   unsavedChanges: string;
   /** Asks to save unsaved changes before leaving. */
@@ -186,12 +170,6 @@ interface CommonStrings {
   discard: string;
   /** Keeps the reader where they are, with their changes. */
   stay: string;
-  /** The link that moves focus past an application frame's bars to its main content. */
-  skipToMainContent: string;
-  /** Names a side or bottom panel of an application frame. */
-  appFramePanel: (panel: 'start' | 'end' | 'bottom') => string;
-  /** Names a strip of tools. */
-  tools: string;
   /** Names a group of actions. */
   actions: string;
   /** The button that collapses a navigation rail to icons, or expands it again. */
@@ -262,7 +240,6 @@ export const commonStrings = defineStrings<CommonStrings>({
   countOrMore: (count) => ({ count }),
   overflowCount: (count) => ({ count }),
   valueRange: (start, end) => ({ start, end }),
-  countsSummary: (first, second) => ({ first, second }),
   stepOfTotal: (current, total) => ({ current, total }),
   segmentCount: (progress) => ({ ...progress }),
   segmentProgress: (progress) => ({ ...progress, hasCurrent: progress.current !== undefined }),
@@ -272,9 +249,6 @@ export const commonStrings = defineStrings<CommonStrings>({
   boxSide: (side) => ({ side }),
   logicalBoxSide: (side) => ({ side: toSelectKey(side) }),
   linkSides: (group) => ({ group }),
-  signingAs: (userName) => ({ userName }),
-  signatureMeaningIs: (meaning) => ({ meaning }),
-  appFramePanel: (panel) => ({ panel }),
   toggleNavigation: (isCollapsed) => ({ isCollapsed }),
   stepStatus: (status) => ({ status }),
 });

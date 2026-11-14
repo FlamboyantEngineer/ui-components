@@ -1,10 +1,7 @@
 // Examples, not exports: map an AG-UI-style event stream and an AI SDK-style UI message stream
 // onto the controller's events in a few lines each.
 
-import type {
-  ChatSendFunction,
-  ChatStreamEvent,
-} from '../../src/components/chat-controller/chat-controller.js';
+import type { ChatSendFunction, ChatStreamEvent } from '../../src/components/chat/index.js';
 
 /** The AG-UI-style events the example maps (a subset of that protocol). */
 export type AgUiEvent =

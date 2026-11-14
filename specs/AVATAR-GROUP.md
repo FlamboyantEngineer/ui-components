@@ -96,7 +96,7 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 
 ### UIC-AVATAR-GROUP-11.7 - Name tooltips and hover cards
 
-`nameTooltip` and `cardTrigger` shall reach every visible person's presence avatar, so each shows its name in a tooltip ([UIC-AVATAR-11.7](AVATAR.md#uic-avatar-27---name-tooltip)) and opens the card `renderCard` returns on hover and focus ([UIC-AVATAR-11.8](AVATAR.md#uic-avatar-28---card-on-hover)).
+`nameTooltip` and `cardTrigger` shall reach every visible person's presence avatar, so each shows its name in a tooltip ([UIC-AVATAR-11.7](AVATAR.md#uic-avatar-117---name-tooltip)) and opens the card `renderCard` returns on hover and focus ([UIC-AVATAR-11.8](AVATAR.md#uic-avatar-118---card-on-hover)).
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`, `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e/avatar-group-presence.spec.ts`

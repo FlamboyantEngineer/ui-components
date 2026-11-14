@@ -10,7 +10,7 @@ test.describe('Chat lab host controls', () => {
     lab,
   }) => {
     await lab.open('chat');
-    const answer = host(page).locator('article[id="host-answer"]');
+    const answer = host(page).locator('article[data-message-id="host-answer"]');
     await answer.hover();
     await answer.getByRole('button', { name: 'Quote', exact: true }).click();
     const banner = host(page).locator('.ui-chat__banner');

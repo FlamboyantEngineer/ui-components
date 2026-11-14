@@ -1,5 +1,4 @@
 // Shared fixtures for the dock panel's unit tests.
-
 import { act, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { vi } from 'vitest';
@@ -8,7 +7,12 @@ import {
   DockPanelPane,
   type DockPanelProps,
 } from '../src/components/dock-panel/dock-panel.js';
-import { FolderGlyph, LockGlyph, UsersGlyph } from '../src/core/glyphs.js';
+import {
+  FolderGlyph,
+  LockGlyph,
+  PlusGlyph as ActionPlusGlyph,
+  UsersGlyph,
+} from '../src/core/glyphs.js';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 export const addFile = vi.fn();
@@ -21,7 +25,7 @@ export function Panel(props: Partial<DockPanelProps>) {
         id="files"
         label="Files"
         icon={FolderGlyph}
-        actions={[{ verb: 'add', onPress: addFile }]}
+        actions={[{ id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: addFile }]}
         footer="Three files"
       >
         <input aria-label="File filter" />

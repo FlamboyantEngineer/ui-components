@@ -299,3 +299,7 @@
   height: 100%;
   padding-block: 0 2px;
 }
+
+.ui-tree__rename-error {
+  white-space: normal;
+}

@@ -1,9 +1,6 @@
 // Neutral models and reasoning efforts for the Chat Model Picker and Chat labs.
 
-import type {
-  ChatEffortOption,
-  ChatModelOption,
-} from '../../src/components/chat-model-picker/index.js';
+import type { ChatEffortOption, ChatModelOption } from '../../src/components/chat/index.js';
 
 export const labEfforts: ChatEffortOption[] = [
   { id: 'low', label: 'Low', description: 'Fastest replies' },

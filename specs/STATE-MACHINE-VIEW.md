@@ -1,28 +1,28 @@
 # State Machine View
 
-`StateMachineView` defaults to a graph presentation on a [Diagram Canvas](DIAGRAM-CANVAS.md): its states as nodes laid out automatically in layers from the initial state, its transitions as labelled edges, a marker on the initial state, final states marked, and the current state highlighted. It is read only by default; in edit mode the reader moves and removes states and adds and removes transitions, and each change reaches the caller as plain data. States and transitions are plain data (`{ id, label, isFinal?, x?, y? }`, `{ id, from, to, label? }`). The layout is `layoutLayeredGraph`, a pure function in the library. A control that moves one record to its next state belongs in a [Transition Menu](TRANSITION-MENU.md), and the history of a record's states in a [State Timeline](STATE-TIMELINE.md).
+`StateMachineGraph` renders a graph on a [Diagram Canvas](DIAGRAM-CANVAS.md): its states as nodes laid out automatically in layers from the initial state, its transitions as labelled edges, a marker on the initial state, final states marked, and the current state highlighted. It is read only by default; in edit mode the reader moves and removes states and adds and removes transitions, and each change reaches the caller as plain data. States and transitions are plain data (`{ id, label, isFinal?, x?, y? }`, `{ id, from, to, label? }`). The layout is `layoutLayeredGraph`, a pure function in the library. Hosts compose menus and dialogs to change a state and ordered lists to display its history.
 
 ## UIC-STATE-MACHINE-VIEW-1 - Diagram
 
 ### UIC-STATE-MACHINE-VIEW-1.1 - States and transitions
 
-`StateMachineView` shall render a `DiagramCanvas` (also `ui-state-machine-view`) named by `aria-label`, `aria-labelledby` or the provider's `stateMachine` string, with a node of 144 by 44 pixels for each state and an edge, labelled with the transition's `label`, for each transition, routed as curves, without a minimap. Each node holds a `ui-state-machine-view__state` element showing the state's label in `ui-state-machine-view__state-label`. The canvas's outline view lists the same states and transitions; `defaultView` chooses the view shown at first.
+`StateMachineGraph` shall render a `DiagramCanvas` (also `ui-state-machine-view`) named by `aria-label`, `aria-labelledby` or the provider's `stateMachine` string, with a node of 144 by 44 pixels for each state and an edge, labelled with the transition's `label`, for each transition, routed as curves, without a minimap. Each node holds a `ui-state-machine-view__state` element showing the state's label in `ui-state-machine-view__state-label`. The canvas's outline view lists the same states and transitions; `defaultView` chooses the view shown at first.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/core/strings/diagram.ts`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/core/strings/diagram.ts`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-1.2 - Initial, final and current states
 
 The initial state (`initialKey`, by default the first state) shall carry `data-initial` and an initial marker (`ui-state-machine-view__initial-marker`, hidden from assistive technology); a state with `isFinal` carries `data-final`; the state `currentKey` names carries `data-current`. Each node's description reads the provider's `stateMachineCurrent`, `stateMachineInitial` and `stateMachineFinal` strings as they apply, then the state's own `description`, before its transitions; the outline view shows and reads the same status on each state's entry, without its transitions, which the outline lists. A state's `status` and `tone` are published on its `ui-state-machine-view__state` element as `data-status` and `data-tone` in both presentations, so a status the sequence shows keeps an accessible equivalent when the reader switches views.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-1.3 - Hooks and caller attributes
 
-`StateMachineView` shall carry the hooks below beside the canvas's, publish `orientation` in `data-orientation`, append the caller's `className` and forward its `id`, `ref` and `data-*` attributes to the root.
+`StateMachineGraph` shall carry the hooks below beside the canvas's, publish `orientation` in `data-orientation`, append the caller's `className` and forward its `id`, `ref` and `data-*` attributes to the root.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `labs/reference/state-machine-view.css`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `labs/reference/state-machine-view.css`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 
 ## UIC-STATE-MACHINE-VIEW-2 - Layout
@@ -40,7 +40,7 @@ Verification: `src/utils/layered-layout.test.ts`
 
 The view shall place the states with `layoutLayeredGraph`, starting from the initial state, in its `orientation`, with 112 pixels between layers for the transition labels; a state that carries `x` and `y` keeps that position.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 
 ## UIC-STATE-MACHINE-VIEW-3 - Editing
@@ -49,21 +49,21 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 
 Without `isEditing` the reader shall select, pan, zoom and move between states but change nothing: states have no ports and do not move.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 
 ### UIC-STATE-MACHINE-VIEW-3.2 - Edit mode
 
 With `isEditing`, moving states (by pointer or keyboard) shall call `onStatesChange` with every state carrying the position it is drawn at; removing states calls `onStatesChange` with the states left and `onTransitionsChange` with the transitions left; each state has one port, named by the provider's `stateMachineAddTransition` string, on its right side (bottom when vertical), and connecting it to a state calls `onTransitionAdd({ from, to })` for the caller to add the transition.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-3.3 - Distinct ids
 
 A state and a transition may share an id, and ids of different types (`1` and `'1'`) are different ids: the view shall give the canvas node and edge ids namespaced by kind and typed identity, so selecting, moving or removing a state never touches a transition that shares its id, removing a state removes only the selected entities and the transitions that start or end at a removed state, and every callback reports the caller's own ids.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-graph.tsx`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-graph.tsx`
 Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `e2e/state-machine-view.spec.ts`
 
 ## UIC-STATE-MACHINE-VIEW-4 - Sequence presentation
@@ -72,11 +72,11 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`, `
 
 The sequence root shall preserve caller `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-details` naming and description relationships.
 
-With `presentation="sequence"`, the view shall place states in caller array order on one horizontal row, including when there are no transitions. Connectivity and the current state shall not determine state placement. The existing graph presentation remains the default (`presentation="graph"`), including its outline and editing. Sequence mode is always horizontal and read only: graph position overrides, `orientation`, `defaultView` and editing callbacks do not apply. Initial/current state, cycles and hiding transitions do not change horizontal placement or caller reading order. Empty sequences reserve only a small empty viewport; a single state is a rectangle. Numeric and text keys remain distinct in states, transitions, selection and callbacks, and instances share no ids or measurements.
+`StateMachineSequence` shall place states in caller array order on one horizontal row, including when there are no transitions. Connectivity and the current state shall not determine state placement. `StateMachineGraph` owns its separate canvas, outline and editing API. The sequence is horizontal and read only; graph position overrides and editing props are outside its API. Initial/current state, cycles and hiding transitions do not change horizontal placement or caller reading order. Empty sequences reserve only a small empty viewport; a single state is a rectangle. Numeric and text keys remain distinct in states, transitions, selection and callbacks, and instances share no ids or measurements.
 
 At the default `size="md"`, `density="default"` has minimum state width/height 144/44 CSS pixels; `compact` uses 112/32. Other sizes follow UIC-STATE-MACHINE-VIEW-4.6. Measured state content can increase these sizes. Equal-width states fill the available viewport when it is wider than their minimum row; otherwise the row scrolls. State buttons expose first/last hooks for a host to draw a leading notch and trailing chevron, square first leading and terminal trailing edges, or a single rectangle. Host styles provide the shape, borders, colors and current/selected treatments.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.2 - Forward and reverse lanes
@@ -87,14 +87,14 @@ Same-state loops use forward lanes above the row, with separate source and targe
 
 `sequenceGeometry` optionally supplies finite nonnegative CSS-pixel distances: `lanePitch` (26), `stateGap` (0), `rowSpacer` (15) and `cornerRadius` (10). Invalid distances use the defaults. The lane pitch grows when label height needs more clearance. `rowSpacer` is the clear distance from the row to the nearest label reservation. Each orthogonal route uses the same radius at both bends, capped by its horizontal/vertical clearance and `cornerRadius`. SVG coordinates, dimensions and viewBox use measured CSS pixels without scaling. Arrowheads are open strokes; colors and stroke styles belong to the host.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.3 - Inert connectors and focusable labels
 
 In the sequence presentation, connector paths and route wrappers shall be decorative and inert, with no pointer hit target or focus. Each nonblank named transition label alone shall be an independent focusable button, with its `label` as accessible name. Labels follow caller transition order, independent of line stacking. Activation and context menu requests follow UIC-STATE-MACHINE-VIEW-5. `getTransitionTooltip(transition)` supplies a label-only tooltip on hover/focus, following UIC-STATE-MACHINE-VIEW-6.3. `renderTransitionLabel(transition)` may replace the visible content with non-interactive content while preserving the accessible name. Unnamed transitions retain their connector without a control.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`, `src/components/state-machine-view/sequence-routes.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-paint.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.4 - Selection and highlighting
@@ -115,7 +115,7 @@ Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`
 
 ### UIC-STATE-MACHINE-VIEW-4.6 - Sequence sizes
 
-The sequence presentation shall accept `size` from the shared `Size` vocabulary (`xs`, `sm`, `md`, `lg`, `xl`), defaulting to `md`, and publish the resolved value as `data-size` on its root. Size and density are independent. The graph presentation ignores `size`. The following minimum state width/height pairs are CSS pixels, before intrinsic content measurements:
+The sequence presentation shall accept `size` from the shared `Size` vocabulary (`xs`, `sm`, `md`, `lg`, `xl`), defaulting to `md`, and publish the resolved value as `data-size` on its root. Size and density are independent. Size belongs to StateMachineSequence; StateMachineGraph props exclude it. The following minimum state width/height pairs are CSS pixels, before intrinsic content measurements:
 
 | Size | Default density | Compact density |
 | ---- | --------------- | --------------- |
@@ -127,12 +127,12 @@ The sequence presentation shall accept `size` from the shared `Size` vocabulary 
 
 Measurements can increase either dimension to fit state content, adornments and counts. Changing size shall remeasure state and transition content, preserving the shared coordinate space and boundary attachments, without resetting selection or focus. The reference stylesheet scales state and transition typography and state padding with size; host styles own those visual choices. Empty sequences retain their focusable note at every size.
 
-Implementation: `src/components/state-machine-view/state-machine-view.tsx`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`
+Implementation: `src/components/state-machine-view/state-machine-model.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`, `src/components/state-machine-view/sequence-layout.ts`
 Verification: `src/components/state-machine-view/sequence-presentation.test.tsx`, `src/components/state-machine-view/sequence-layout.test.ts`, `e2e/state-machine-view-sizes.spec.ts`
 
 ### UIC-STATE-MACHINE-VIEW-4.7 - Standalone sequence entry
 
-`StateMachineSequence` and `StateMachineSequenceViewProps` shall be exported from the component entry and the package root. The component shall render the same sequence as `StateMachineView` with `presentation="sequence"`, taking the same props except `presentation`. Importing only this entry shall allow a tree-shaking bundler to omit the graph canvas and its graph editing controls.
+`StateMachineSequence` and `StateMachineSequenceProps` shall be exported from the component entry and the package root. The component shall render the ordered sequence independently of the graph API, accepting shared states, transitions, initial/current keys and sequence interaction props. Importing only this entry shall allow a tree-shaking bundler to omit the graph canvas and its graph editing controls.
 
 Implementation: `src/components/state-machine-view/index.ts`, `src/components/state-machine-view/state-machine-sequence.tsx`
 Verification: `test/state-machine-sequence-entry.test.ts`, `e2e/state-machine-view-sequence.spec.ts`, `e2e/state-machine-view-sequence-interaction.spec.ts`

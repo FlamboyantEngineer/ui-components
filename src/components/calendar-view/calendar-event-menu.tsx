@@ -1,6 +1,6 @@
 'use client';
 
-// An event's context menu: the built-in Edit, which opens the event editor, and the host's own
+// An event's context menu: the built-in Edit, which requests host editing, and the host's own
 // entries (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5).
 
 import { type KeyboardEvent, type Ref, useEffect, useRef } from 'react';
@@ -15,7 +15,7 @@ import { Menu, type MenuEntry } from '../menu/menu.js';
 import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 
-/** The built-in event action: open the event editor. */
+/** The built-in event action: request host editing. */
 export type CalendarEventAction = 'edit';
 
 /** Icons for the event menu's built-in actions, by action; Edit has none by default. */
@@ -34,8 +34,6 @@ export interface CalendarEventMenuContext {
   icons: CalendarEventMenuIcons | undefined;
   /** Whether the host lets the reader change the event. */
   isEditable: (event: CalendarViewEvent) => boolean;
-  /** Opens the editor on the event. */
-  edit: (event: CalendarViewEvent) => void;
 }
 
 /** A React Aria keyboard event, which stops propagating unless asked not to. */
@@ -49,7 +47,7 @@ function readEntries(menu: CalendarEventMenuContext, event: CalendarViewEvent) {
  * An event's context menu, on the event's own button: a secondary click or long touch opens it at
  * the pointer, the Context Menu key or Shift+F10 below the event. Edit shows only while the event is
  * editable; the host's entries always. With no entry left the browser's menu stays. The host hears
- * every chosen entry, Edit included, after the editor opened.
+ * every chosen entry, Edit included, through the host callback.
  */
 export function useEventMenu(
   event: CalendarViewEvent,
@@ -88,7 +86,6 @@ export function useEventMenu(
       <Menu
         items={entries}
         onAction={(key) => {
-          if (key === 'edit') menu?.edit(event);
           menu?.onAction?.(key, event);
         }}
       />

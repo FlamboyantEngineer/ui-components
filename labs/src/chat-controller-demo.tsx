@@ -1,18 +1,18 @@
 // The controller driving a fake streaming agent, with its event log beside the conversation.
 
 import { useState } from 'react';
+import { AttachmentList } from '../../src/components/attachment/attachment.js';
 import { Button } from '../../src/components/button/button.js';
-import { ChatStatusLine } from '../../src/components/chat-activity/index.js';
-import { ChatAttachmentList } from '../../src/components/chat-attachment/chat-attachment.js';
 import {
+  type ChatMessageData,
   type ChatQueuedMessage,
   type ChatSendFunction,
+  ChatStatusLine,
   type ChatStreamEvent,
   type ChatUploadFunction,
   isAwaitingReader,
   useChatController,
-} from '../../src/components/chat-controller/chat-controller.js';
-import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
+} from '../../src/components/chat/index.js';
 import { ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Cluster, Grid, Stack } from '../../src/components/layout/layout.js';
@@ -203,7 +203,7 @@ export function ChatControllerDemo() {
             allowsEmptySubmit={hasUploaded}
             onSubmit={(text) => props.onSend(text)}
             attachments={
-              <ChatAttachmentList
+              <AttachmentList
                 attachments={props.attachments}
                 onRemove={props.onRemoveAttachment}
                 onRetry={props.onRetryAttachment}

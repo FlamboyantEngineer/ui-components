@@ -1,6 +1,6 @@
 # Hover Card
 
-`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card Trigger](USER-CARD-TRIGGER.md#uic-user-card-trigger-13---opening-on-hover-and-focus) opens its hover cards through it.
+`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card Trigger](HOVER-CARD.md#uic-preview-trigger-13---opening-on-hover-and-focus) opens its hover cards through it.
 
 ## UIC-HOVER-CARD-1 - Opening and closing
 
@@ -59,18 +59,73 @@ Verification: `src/components/hover-card/hover-card.test.tsx`
 
 ### UIC-HOVER-CARD-3.1 - Preview triggers in tags
 
-A `HoverCardTrigger` inside a `Tag` shall let its ordinary button open the card on hover and keyboard focus without acting as the tag's remove button, and Escape closes the preview. The tag's own remove button keeps its action; a group without `onRemove` offers no removal and ignores Delete. Tab from that trigger moves into the open card's first control, and without one leaves through ordinary navigation, the tag's row not taking the focus back. A `UserCardTrigger` with `trigger="hover"` composes the same way.
+A `HoverCardTrigger` inside a `Tag` shall let its ordinary button open the card on hover and keyboard focus without acting as the tag's remove button, and Escape closes the preview. The tag's own remove button keeps its action; a group without `onRemove` offers no removal and ignores Delete. Tab from that trigger moves into the open card's first control, and without one leaves through ordinary navigation, the tag's row not taking the focus back. A `PreviewTrigger` with `trigger="hover"` composes the same way.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
-Verification: `src/components/hover-card/hover-card-tag.test.tsx`, `src/components/user-card/user-card-preview-focus.test.tsx`
+Verification: `src/components/hover-card/hover-card-tag.test.tsx`
+
+## Preview Trigger
+
+`PreviewTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card, usually a [User Card](USER-CARD.md), in a popover, on press or on hover and focus. [Presence Avatar](AVATAR.md), [Presence Strip](AVATAR-GROUP.md) and [Attribution](ATTRIBUTION.md) open cards through it. It imports no card or identity code itself, so a component that only wraps content in it, such as `Avatar`, does not load `UserCard`.
+
+## UIC-HOVER-CARD-4 - Trigger
+
+### UIC-HOVER-CARD-4.1 - Wrapping content
+
+`PreviewTrigger` shall render its children inside a button, the `ui-preview-trigger` root while it has a card, named by that content, with `aria-expanded` reporting whether the card is open. It takes the press handlers (`onPress` runs as well as opening the card) and `isDisabled`, appends the caller's `className`, forwards caller `data-*` attributes and `id`, and publishes `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled` states. The reference stylesheet sets a trigger holding only text inline on the surrounding sentence's baseline, wrapping with it, and keeps triggers holding an avatar or an identity row as centred inline boxes.
+
+Implementation: `src/components/hover-card/preview-trigger.tsx`, `labs/reference/hover-card.css`
+Verification: `src/components/hover-card/preview-trigger.test.tsx`, `src/components/hover-card/hover-card-tag.test.tsx`, `e2e/hover-card-preview-trigger.spec.ts`
+
+### UIC-HOVER-CARD-4.2 - Opening and dismissing
+
+A click, Enter or Space on the trigger shall open its `card` in a popover in the `ui-preview-trigger__popover` slot, placed below the trigger and flipped or shifted to stay in the viewport, on the `dropdown` overlay layer (the [Popover](POPOVER.md#uic-popover-15---layering-and-transitions)'s floating panel), with focus moved into the card. Escape and a press outside shall close it and return focus to the trigger.
+
+Implementation: `src/components/hover-card/preview-trigger.tsx`, `src/components/popover/popover.tsx`
+Verification: `src/components/hover-card/preview-trigger.test.tsx`, `e2e/hover-card-preview-trigger.spec.ts`
+
+### UIC-HOVER-CARD-4.3 - Opening on hover and focus
+
+With `trigger="hover"`, the trigger shall open the card in a [Hover Card](HOVER-CARD.md) (React Aria `PreviewTrigger`), whose element also carries `ui-hover-card`: the card opens `delay` milliseconds (600 by default) after the pointer rests on the trigger or keyboard focus reaches it, or on a long press, without moving focus; the popover publishes `data-trigger="PreviewTrigger"`. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Tab from the trigger moves into the open card. The card stays open while the pointer travels between the trigger and the card, and closes `closeDelay` milliseconds (200 by default) after the pointer and focus have left both, or on Escape, keeping or returning focus to the trigger. An otherwise unhandled Escape also closes a hovered card while focus remains elsewhere on the page, without moving that focus, following the Hover Card's Escape ownership and composition guards. Pressing the trigger runs `onPress` and does not toggle the card. A disabled trigger opens nothing.
+
+Implementation: `src/components/hover-card/preview-trigger.tsx`, `src/components/hover-card/preview-opening.ts`, `src/components/hover-card/hover-card.tsx`, `src/utils/use-pointer-entry.tsx`, `src/utils/use-preview-escape.ts`
+Verification: `src/components/hover-card/preview-trigger.test.tsx`, `e2e/hover-card-preview-trigger.spec.ts`
+
+### UIC-HOVER-CARD-4.4 - Controlled open state
+
+`isOpen` with `onOpenChange` shall control whether the card is open, and `defaultOpen` shall open it at first when uncontrolled, in either trigger mode. `onOpenChange` reports each change the reader asks for, such as a press, Escape or the hover delays running out. A card open when the trigger turns disabled, in either mode, closes through `onOpenChange(false)`, once, focus leaving it as on a dismiss, and stays closed when the trigger is enabled again; a controlled card is drawn closed while disabled.
+
+Implementation: `src/components/hover-card/preview-trigger.tsx`, `src/utils/use-close-when-locked.ts`
+Verification: `src/components/hover-card/preview-trigger.test.tsx`, `src/components/hover-card/preview-trigger-locking.test.tsx`, `e2e/hover-card-preview-trigger.spec.ts`
+
+### UIC-HOVER-CARD-4.5 - Without a card
+
+Without `card` (`undefined`, `null` or `false`), `PreviewTrigger` shall be a plain button that runs `onPress`, with no `ui-preview-trigger` class, `aria-haspopup` or `aria-expanded`. A card that arrives or leaves later, or a change of `trigger`, keeps the same button element and its focus.
+
+Implementation: `src/components/hover-card/preview-trigger.tsx`
+Verification: `src/components/hover-card/preview-trigger.test.tsx`
+
+`PreviewTrigger` accepts arbitrary `preview` content. It owns the named dialog and focus behavior: press previews take focus through React Aria Dialog; hover previews retain focus on the trigger. `previewLabel` overrides the dialog name, which otherwise comes from the trigger. Actions can call `usePreviewOwner()?.dismiss(event.target)` before host policy.
 
 ## Hooks
 
-| Hook                   | Kind  | Values                           | Description                                                |
-| ---------------------- | ----- | -------------------------------- | ---------------------------------------------------------- |
-| `ui-hover-card`        | root  |                                  | The card (React Aria `Popover`), portalled.                |
-| `ui-hover-card__arrow` | slot  |                                  | The arrow pointing at the trigger.                         |
-| `data-placement`       | state | `top`, `bottom`, `left`, `right` | The resolved side, on the card and the arrow (React Aria). |
-| `data-trigger`         | state | `PreviewTrigger`                 | What opened the card (React Aria).                         |
-| `data-entering`        | state | `true`                           | While the card opens (React Aria).                         |
-| `data-exiting`         | state | `true`                           | While the card closes (React Aria).                        |
+| Hook                          | Kind  | Values / Meaning                  |
+| ----------------------------- | ----- | --------------------------------- |
+| `ui-hover-card`               | root  |                                   | The card (React Aria `Popover`), portalled.                |
+| `ui-hover-card__arrow`        | slot  |                                   | The arrow pointing at the trigger.                         |
+| `data-placement`              | state | `top`, `bottom`, `left`, `right`  | The resolved side, on the card and the arrow (React Aria). |
+| `data-trigger`                | state | `PreviewTrigger`                  | What opened the card (React Aria).                         |
+| `data-entering`               | state | `true`                            | While the card opens (React Aria).                         |
+| `data-exiting`                | state | `true`                            | While the card closes (React Aria).                        |
+| `ui-preview-trigger`          | root  |                                   | The trigger button around the caller's content.            |
+| `ui-preview-trigger__content` | slot  | Named dialog content              |
+| `ui-preview-trigger__popover` | slot  |                                   | The open card's popover (also `ui-hover-card` on hover).   |
+| `data-hovered`                | state | `true`                            | Pointer over the trigger (React Aria).                     |
+| `data-pressed`                | state | `true`                            | The trigger is being pressed (React Aria).                 |
+| `data-focused`                | state | `true`                            | The trigger has focus (React Aria).                        |
+| `data-focus-visible`          | state | `true`                            | The trigger has keyboard focus (React Aria).               |
+| `data-disabled`               | state | `true`                            | A disabled trigger (React Aria).                           |
+| `data-placement`              | state | `top`, `bottom`, `left`, `right`  | The popover's resolved side (React Aria).                  |
+| `data-trigger`                | state | `DialogTrigger`, `PreviewTrigger` | Which React Aria trigger opened the popover.               |
+| `data-entering`               | state | `true`                            | The popover is opening (React Aria).                       |
+| `data-exiting`                | state | `true`                            | The popover is closing (React Aria).                       |

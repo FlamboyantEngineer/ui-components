@@ -6,7 +6,7 @@ import {
   type ChatPart,
   ChatParts,
   type ChatQuestionPart,
-} from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { searchCall, tripQuestion } from './chat-parts-samples.js';
 import { StateMatrix } from './chrome/index.js';

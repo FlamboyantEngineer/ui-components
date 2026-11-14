@@ -3,10 +3,10 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
+import { Card } from '../card/card.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
-import { UserCard } from '../user-card/user-card.js';
-import { UserCardTrigger } from '../user-card-trigger/user-card-trigger.js';
 import { HoverCard, HoverCardTrigger } from './hover-card.js';
+import { PreviewTrigger } from './preview-trigger.js';
 
 describe.each([
   { removable: true, identity: false },
@@ -14,7 +14,7 @@ describe.each([
   { removable: true, identity: true },
   { removable: false, identity: true },
 ])('Preview in tags with removal $removable and identity $identity', ({ removable, identity }) => {
-  it('UIC-HOVER-CARD-3.1 UIC-USER-CARD-TRIGGER-1.3 preserves preview interaction independently of tag removal', async () => {
+  it('UIC-HOVER-CARD-3.1 UIC-HOVER-CARD-4.3 preserves preview interaction independently of tag removal', async () => {
     const user = userEvent.setup();
     const onRemove = vi.fn();
     const { container } = render(
@@ -23,14 +23,15 @@ describe.each([
         <TagGroup aria-label="Labels" onRemove={removable ? onRemove : undefined}>
           <Tag id="alpha" textValue="Alpha">
             {identity ? (
-              <UserCardTrigger
+              <PreviewTrigger
                 trigger="hover"
                 delay={0}
                 closeDelay={0}
-                card={<UserCard name="Alpha" aria-label="About Alpha" />}
+                previewLabel="About Alpha"
+                preview={<Card title="Alpha" />}
               >
                 Alpha
-              </UserCardTrigger>
+              </PreviewTrigger>
             ) : (
               <HoverCardTrigger delay={0} closeDelay={0}>
                 <Button>Alpha</Button>

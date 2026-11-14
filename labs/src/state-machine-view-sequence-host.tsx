@@ -4,10 +4,10 @@ import { ContextMenu, useMenuController } from '../../src/components/context-men
 import { Menu, type MenuEntry } from '../../src/components/menu/menu.js';
 import {
   type StateMachineContextMenuEvent,
+  StateMachineSequence,
   type StateMachineState,
   type StateMachineTooltipPlacement,
   type StateMachineTransition,
-  StateMachineView,
 } from '../../src/components/state-machine-view/index.js';
 import type { Key } from '../../src/core/props.js';
 
@@ -115,8 +115,7 @@ export function SequenceHostExamples() {
           Tooltips {placement === 'top' ? 'below' : 'above'}
         </Button>
       </p>
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         density="compact"
         aria-label="Host sequence"
         states={states}
@@ -157,8 +156,7 @@ export function SequenceHostExamples() {
       <output data-lab-output="sequence-host-log">{log.length ? log.join(' | ') : 'None'}</output>
       <p>Narrow toolbar chrome, with hints below the row:</p>
       <div style={{ width: 280, maxWidth: '100%' }}>
-        <StateMachineView
-          presentation="sequence"
+        <StateMachineSequence
           density="compact"
           aria-label="Toolbar sequence"
           states={statusStates}
@@ -169,8 +167,7 @@ export function SequenceHostExamples() {
         />
       </div>
       <p>Read-only empty sequence:</p>
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         aria-label="Read-only empty sequence"
         states={[]}
         transitions={[]}

@@ -1,6 +1,6 @@
 # Scales
 
-`createLinearScale`, `createTimeScale` and `createBandScale` map data values to positions, such as pixels along an axis, and make the ticks an axis labels. [Sparkline](SPARKLINE.md) draws with a linear scale; charts and time-based views build on them. They are pure functions with no dependency on the page, so a host can use them for its own drawings.
+`createLinearScale`, `createTimeScale` and `createBandScale` map data values to positions, such as pixels along an axis, and make the ticks an axis labels. [Sparkline](CHART.md) draws with a linear scale; charts and time-based views build on them. They are pure functions with no dependency on the page, so a host can use them for its own drawings.
 
 The linear and time scales return a scale whose `map` turns a value into a position, whose `invert` turns a position back into a value, whose `ticks` lists `{ value, position, label }` marks, and whose `format` writes a value as a tick label. The band scale maps categories to the bands of a bar chart and ticks the middle of each band.
 
@@ -11,7 +11,7 @@ The linear and time scales return a scale whose `map` turns a value into a posit
 `createLinearScale({ domain, range })` shall map a value to a position in proportion: the first end of the domain to the first end of the range and the second to the second, so reversed ends flip the scale (a vertical axis whose values grow upward). Finite endpoints shall keep mapping correctly when their difference overflows. Values beyond the domain extrapolate unless `clamp` is set, which keeps positions inside the range. `invert` maps a position back to its value, also clamped when `clamp` is set. The scale exposes its `domain` and `range`.
 
 Implementation: `src/utils/linear-scale.ts`
-Verification: `src/utils/linear-scale.test.ts`, `e2e/sparkline.spec.ts`
+Verification: `src/utils/linear-scale.test.ts`, `e2e/chart-sparkline.spec.ts`
 
 ### UIC-SCALES-1.2 - Truthful edges
 
@@ -62,14 +62,14 @@ Verification: `src/utils/time-scale.test.ts`
 `ticks({ unit })` shall return the starts of the calendar days, weeks, months, quarters (January, April, July, October) or years that fall inside the domain, as `YYYY-MM-DD` dates in increasing order, each positioned at midnight in the scale's time zone, so ticks stay on calendar boundaries across daylight saving changes. Weeks start on the first day of the week of `locale`. Tick generation shall stop at the supported calendar limit without repeating dates or emitting a clamped date between unit boundaries. `ticks({ unit: 'hour' })` and `ticks({ unit: 'minute' })` return the whole hours or minutes inside the domain instead, as ISO 8601 date-times in UTC.
 
 Implementation: `src/utils/time-scale.ts`
-Verification: `src/utils/time-scale.test.ts`, `e2e/sparkline.spec.ts`
+Verification: `src/utils/time-scale.test.ts`, `e2e/chart-sparkline.spec.ts`
 
 ### UIC-SCALES-2.4 - Choosing a unit
 
 Without `unit`, `ticks` shall use the smallest of day, week, month, quarter and year whose actual calendar boundaries inside the domain number at most `count` (8 by default). When even years are too many, it ticks every n years, at multiples of n, with n the smallest step that fits. A domain with a date-time at either end that holds fewer than three day boundaries ticks the clock instead: the smallest of 1, 5, 15 and 30 minutes and 1, 2, 3, 6 and 12 hours whose ticks number at most `count`, at multiples of the step on the clock of the scale's time zone (every 15 minutes from the hour, every 6 hours from midnight), as ISO 8601 date-times in UTC. A domain of dates alone keeps calendar ticks.
 
 Implementation: `src/utils/time-scale.ts`
-Verification: `src/utils/time-scale.test.ts`, `src/components/chart/line-geometry.test.ts`, `e2e/sparkline.spec.ts`
+Verification: `src/utils/time-scale.test.ts`, `src/components/chart/line-geometry.test.ts`, `e2e/chart-sparkline.spec.ts`
 
 ### UIC-SCALES-2.5 - Labels
 

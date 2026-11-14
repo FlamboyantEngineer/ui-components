@@ -3,7 +3,6 @@ import type { Key } from '../../core/props.js';
 import { getCollator } from '../../utils/intl-format.js';
 import { isDate } from '../../utils/is-date.js';
 import type { TableColumnSizing } from './column-sizing.js';
-import type { TableBulkEdit } from './table-bulk-edit.js';
 import type { TableColumnFilter } from './table-filters.js';
 import type { TableAggregate } from './table-groups.js';
 
@@ -72,14 +71,12 @@ export interface TableColumn<T> extends TableColumnSizing {
   /** A cell's editor, instead of the default text input. */
   renderEditor?: ((row: T, editor: TableCellEditor) => ReactNode) | undefined;
   /**
-   * Reads typed, pasted or filled text as the cell's value. Defaults to the text, or a number when
+   * Reads typed text as the cell's value. Defaults to the text, or a number when
    * the cell holds a number and the text reads as one.
    */
   parseValue?: ((text: string, row: T) => TableCellValue) | undefined;
   /** Checks a new value of the cell: a message refuses it, null or nothing accepts it. */
   validateValue?: ((value: TableCellValue, row: T) => string | null | undefined) | undefined;
-  /** Lists the column in the bulk edit of selected rows, which sets it with a field of this type. */
-  bulkEdit?: TableBulkEdit | undefined;
   /** The column's cell in group header rows, from the group's rows. */
   aggregate?: TableAggregate<T> | undefined;
   /** A cell's text in a CSV export. Defaults to its value as text, dates in ISO 8601. */
@@ -113,11 +110,10 @@ function isCellValue(value: unknown): value is TableCellValue {
 }
 
 /**
- * Whether the table writes to a column's cells: through its editor and cell writes
- * (`allowsEditing`) or through the selection bar's bulk edit (`bulkEdit`).
+ * Whether the table writes to a column's cells: through its editor (`allowsEditing`).
  */
 export function acceptsCellWrites<T>(column: TableColumn<T>): boolean {
-  return column.allowsEditing === true || column.bulkEdit !== undefined;
+  return column.allowsEditing === true;
 }
 
 /** Whether a cell value reads as text: a string or a number. */

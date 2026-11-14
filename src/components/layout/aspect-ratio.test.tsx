@@ -20,7 +20,7 @@ describe('AspectRatio', () => {
     expectHooksMatchSpec(container, 'LAYOUT', { callerAttributes: ['data-owner'] });
   });
 
-  it('UIC-LAYOUT-3.5 publishes the ratio, square by default', () => {
+  it('UIC-LAYOUT-3.4 publishes the ratio, square by default', () => {
     const { container, rerender } = render(<AspectRatio />);
     expect(container.firstElementChild).toHaveAttribute('data-ratio', '1-1');
     const ratios: AspectRatioValue[] = ['4-3', '3-2', '16-9', '21-9', '3-4', '2-3', '9-16'];

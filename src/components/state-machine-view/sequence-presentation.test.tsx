@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import {
+  StateMachineSequence,
   type StateMachineState,
   type StateMachineTransition,
-  StateMachineView,
-} from './state-machine-view.js';
+} from './index.js';
 
 const states: StateMachineState[] = [
   { id: 'alpha', label: 'Alpha' },
@@ -24,7 +24,7 @@ const transitions: StateMachineTransition[] = [
   { id: 'return', from: 'gamma', to: 'alpha', label: 'Return' },
 ];
 
-const sequencePresentation = { presentation: 'sequence' } as const;
+const sequencePresentation = {};
 
 function getStatePosition(name: string, scope: HTMLElement = document.body) {
   return requireDefined(
@@ -43,10 +43,10 @@ function readStatePosition(name: string) {
   };
 }
 
-describe('StateMachineView sequence presentation', () => {
+describe('StateMachineSequence sequence presentation', () => {
   it('UIC-STATE-MACHINE-VIEW-4.1 keeps disconnected states in caller order on one row', () => {
     render(
-      <StateMachineView
+      <StateMachineSequence
         {...sequencePresentation}
         states={states}
         transitions={[]}
@@ -69,7 +69,11 @@ describe('StateMachineView sequence presentation', () => {
     'UIC-STATE-MACHINE-VIEW-4.2 places the $direction transition label outside the state row',
     ({ label, direction }) => {
       render(
-        <StateMachineView {...sequencePresentation} states={states} transitions={transitions} />,
+        <StateMachineSequence
+          {...sequencePresentation}
+          states={states}
+          transitions={transitions}
+        />,
       );
       const row = readStatePosition('Alpha');
       const labelY = parseFloat(screen.getByText(label).style.top);
@@ -81,14 +85,14 @@ describe('StateMachineView sequence presentation', () => {
 
   it('UIC-STATE-MACHINE-VIEW-4.3 keeps connector paths inert', () => {
     const { container } = render(
-      <StateMachineView {...sequencePresentation} states={states} transitions={transitions} />,
+      <StateMachineSequence {...sequencePresentation} states={states} transitions={transitions} />,
     );
     expect(container.querySelectorAll('.ui-diagram-canvas__edge-hit')).toHaveLength(0);
   });
 
   it('UIC-STATE-MACHINE-VIEW-4.3 exposes each named transition label as a focusable control', () => {
     render(
-      <StateMachineView {...sequencePresentation} states={states} transitions={transitions} />,
+      <StateMachineSequence {...sequencePresentation} states={states} transitions={transitions} />,
     );
 
     for (const name of ['Advance', 'Finish', 'Return']) {
@@ -99,15 +103,14 @@ describe('StateMachineView sequence presentation', () => {
   });
 });
 
-describe('StateMachineView sequence interactions', () => {
+describe('StateMachineSequence sequence interactions', () => {
   it('UIC-STATE-MACHINE-VIEW-4.1 preserves accessible root naming, description and details relationships', () => {
     render(
       <>
         <h2 id="sequence-name">Ordered states</h2>
         <p id="sequence-description">States follow the supplied order.</p>
         <p id="sequence-details">Choose a state to highlight its outgoing transitions.</p>
-        <StateMachineView
-          presentation="sequence"
+        <StateMachineSequence
           states={states}
           transitions={transitions}
           aria-labelledby="sequence-name"
@@ -127,8 +130,7 @@ describe('StateMachineView sequence interactions', () => {
   it('UIC-STATE-MACHINE-VIEW-4.1 UIC-STATE-MACHINE-VIEW-4.4 exposes hooks, status, density and root attributes', () => {
     const ref = createRef<HTMLDivElement>();
     const { container } = render(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         density="compact"
         states={states}
         transitions={transitions}
@@ -165,8 +167,7 @@ describe('StateMachineView sequence interactions', () => {
     const onTransitionAction = vi.fn();
     const onTransitionContextMenu = vi.fn();
     render(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={[
           { id: 1, label: 'Number' },
           { id: '1', label: 'Text' },
@@ -216,8 +217,7 @@ describe('StateMachineView sequence interactions', () => {
 
   it('UIC-STATE-MACHINE-VIEW-4.3 retains unnamed connectors without creating unnamed buttons', () => {
     const { container } = render(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={states}
         transitions={[
           { id: 'blank', from: 'alpha', to: 'blue' },
@@ -235,8 +235,7 @@ describe('StateMachineView sequence interactions', () => {
 
   it('UIC-STATE-MACHINE-VIEW-4.4 stacks highlighted lines above ordinary lines, with every label above lines', () => {
     const { container, rerender } = render(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={states}
         transitions={transitions}
         selectedKey="alpha"
@@ -250,8 +249,7 @@ describe('StateMachineView sequence interactions', () => {
       .map((route) => route.querySelector('path')?.getAttribute('d'))
       .sort();
     rerender(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={states}
         transitions={transitions}
         selectedKey="blue"
@@ -269,8 +267,7 @@ describe('StateMachineView sequence interactions', () => {
 
   it('UIC-STATE-MACHINE-VIEW-4.1 UIC-STATE-MACHINE-VIEW-4.5 hydrates deterministic geometry and isolates instances', async () => {
     const machine = (
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={states}
         transitions={transitions}
         aria-label="Server sequence"
@@ -286,8 +283,7 @@ describe('StateMachineView sequence interactions', () => {
     });
     expect(getStatePosition('Blue', host)).toHaveAttribute('style', before);
     render(
-      <StateMachineView
-        presentation="sequence"
+      <StateMachineSequence
         states={states.slice(0, 1)}
         transitions={[]}
         aria-label="Other sequence"
@@ -305,28 +301,20 @@ it.each(['xs', 'sm', 'md', 'lg', 'xl'] as const)(
   'UIC-STATE-MACHINE-VIEW-4.6 publishes %s and changes size without resetting selection or focus',
   (size) => {
     const props = { ...sequencePresentation, states, transitions, selectedKey: 'blue' };
-    const { rerender } = render(<StateMachineView {...props} size="xs" />);
+    const { rerender } = render(<StateMachineSequence {...props} size="xs" />);
     const selected = screen.getByRole('button', { name: 'Blue' });
     act(() => selected.focus());
-    rerender(<StateMachineView {...props} size={size} />);
+    rerender(<StateMachineSequence {...props} size={size} />);
     const root = screen.getByRole('group', { name: 'State machine' });
     expect(root).toHaveAttribute('data-size', size);
     expect(selected).toHaveAttribute('aria-pressed', 'true');
     expect(selected).toHaveFocus();
     expectHooksMatchSpec(root, 'STATE-MACHINE-VIEW');
-    rerender(<StateMachineView {...props} size={size} states={[]} transitions={[]} />);
+    rerender(<StateMachineSequence {...props} size={size} states={[]} transitions={[]} />);
     expect(root).toHaveAttribute('data-size', size);
     expect(screen.getByRole('note')).toHaveAttribute('tabindex', '0');
   },
 );
-
-it('UIC-STATE-MACHINE-VIEW-4.6 keeps sequence size out of the graph presentation', () => {
-  render(<StateMachineView states={states} transitions={transitions} size="xl" />);
-  const root = screen.getByRole('group', { name: 'State machine' });
-  expect(root).toHaveAttribute('data-presentation', 'graph');
-  expect(root).not.toHaveAttribute('data-size');
-  expect(root).not.toHaveAttribute('size');
-});
 
 it('UIC-STATE-MACHINE-VIEW-4.5 observes viewport/content changes and releases observations on unmount', () => {
   const observers: { callback: ResizeObserverCallback; disconnect: ReturnType<typeof vi.fn> }[] =
@@ -342,7 +330,7 @@ it('UIC-STATE-MACHINE-VIEW-4.5 observes viewport/content changes and releases ob
   vi.stubGlobal('ResizeObserver', Observer);
   try {
     const { container, unmount } = render(
-      <StateMachineView presentation="sequence" states={states} transitions={transitions} />,
+      <StateMachineSequence states={states} transitions={transitions} />,
     );
     const viewport = requireDefined(
       container.querySelector<HTMLElement>('.ui-state-machine-view__viewport'),

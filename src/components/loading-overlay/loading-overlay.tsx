@@ -17,7 +17,7 @@ import {
   resolveProgressRange,
   toProgressRatio,
 } from '../progress-bar/progress-bar.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { useBlockedFocus } from './use-blocked-focus.js';
 
 /** Measured progress for the card's bar. Without it, or when indeterminate, the bar has no level. */

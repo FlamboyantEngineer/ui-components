@@ -34,7 +34,11 @@ function heightOf(element: Element): number {
   const sizes = current();
   const inline = element instanceof HTMLElement ? element.style.height : '';
   if (inline) return Number.parseFloat(inline) || 0;
-  if (element.tagName === 'ARTICLE') return sizes.heights.get(element.id) ?? sizes.messageHeight;
+  if (element.tagName === 'ARTICLE')
+    return (
+      sizes.heights.get(element.getAttribute('data-message-id') ?? element.id) ??
+      sizes.messageHeight
+    );
   if (element.classList.contains(VIEWPORT)) return sizes.viewportHeight;
   if (element.classList.contains('ui-chat-transcript__history')) return sizes.historyHeight;
   if (element.children.length === 0) return element.textContent ? sizes.textHeight : 0;

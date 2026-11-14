@@ -58,6 +58,10 @@ import { PlusGlyph } from '@flamboyantengineer/ui-components/core';
 
 Icons accept imported components or rendered elements. Built-in glyph components honor `UiProvider` overrides; icons from other libraries can be passed directly.
 
+Related controls share a component family. Import focused chat modules from `/chat/activity`, `/chat/controller`, `/chat/list`, `/chat/message-actions`, `/chat/model-picker`, `/chat/parts`, `/chat/question`, `/chat/sources` and `/chat/tool-call`. These modules do not require the rich editor peers; the full `/chat` component does. `/chat-transcript` and `/message-composer` remain independently usable. File previews and upload feedback use `Attachment` and `AttachmentList` from `/attachment`; arbitrary press or hover previews use `PreviewTrigger` from `/hover-card/preview`.
+
+Other focused family entries are `/button/group`, `/badge/status-light`, `/chart/sparkline`, `/text-diff/inline`, `/modal/controller`, `/tooltip/truncation` and `/scroll-region/overview`. The sparkline entry loads its small SVG renderer independently of the chart engine; scroll overview accepts an external `scrollRef` and keeps its draggable thumb.
+
 Then style the hooks in the host stylesheet:
 
 ```css

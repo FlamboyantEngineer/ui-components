@@ -3,12 +3,8 @@
 // older history.
 
 import { useEffect, useRef, useState } from 'react';
-import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
-import type {
-  ChatMessageData,
-  ChatPart,
-  ChatTextToken,
-} from '../../src/components/chat-parts/index.js';
+import type { AttachmentData } from '../../src/components/attachment/attachment.js';
+import type { ChatMessageData, ChatPart, ChatTextToken } from '../../src/components/chat/index.js';
 import type { ReactionEntry } from '../../src/components/reaction-bar/index.js';
 import { nextLabId, nowIso, reader, sentMessage } from './chat-samples.js';
 
@@ -33,7 +29,7 @@ interface PeopleMessage {
   text: string;
   tokens?: readonly ChatTextToken[] | undefined;
   replyTo?: string | undefined;
-  attachments?: readonly ChatAttachmentData[] | undefined;
+  attachments?: readonly AttachmentData[] | undefined;
 }
 
 /** The reactions with the reader's reaction to `emoji` added or taken back. */

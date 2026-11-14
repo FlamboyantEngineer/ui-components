@@ -1,6 +1,6 @@
 // Sample questions an agent asks while helping to set up a small app.
 
-import type { ChatQuestionItem } from '../src/components/chat-question/chat-question.js';
+import type { ChatQuestionItem } from '../src/components/chat/chat-question.js';
 
 export const databaseQuestion: ChatQuestionItem = {
   id: 'database',

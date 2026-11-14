@@ -1,0 +1,312 @@
+import type { Page } from '@playwright/test';
+import { expect, matrix, matrixCell, test } from './fixtures.js';
+const section = (page: Page, title: string) =>
+  matrix(page, 'chat-activity').locator(`[data-lab-section="${title}"]`);
+const sim = (page: Page, part: string) =>
+  matrix(page, 'chat-activity').locator(`[data-lab-sim="${part}"]`);
+test.describe('Chat Activity lab', () => {
+  test('UIC-CHAT-7.1 UIC-CHAT-7.2 UIC-CHAT-7.3 UIC-CHAT-7.4 UIC-CHAT-7.5 draws reasoning in every state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const streaming = matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=streaming');
+    const thinking = streaming.getByRole('button', { name: 'Thinking…' });
+    await expect(thinking).toHaveAttribute('aria-expanded', 'true');
+    await expect(streaming.locator('.ui-chat-reasoning__spinner')).toBeVisible();
+    const panel = streaming.getByRole('group', { name: 'Thinking…' });
+    await expect(panel).toHaveAttribute('aria-busy', 'true');
+    await expect(panel.locator('strong')).toHaveText('Porto');
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'format=plain state=streaming').getByRole('group', {
+        name: 'Thinking…',
+      }),
+    ).toContainText('**Porto**');
+    const complete = matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=complete');
+    await expect(complete.getByRole('button', { name: 'Thought for 4 s' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await expect(complete.locator('.ui-chat-reasoning__panel')).toBeHidden();
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=no-duration').getByRole(
+        'button',
+        {
+          name: 'Thought for a moment',
+        },
+      ),
+    ).toBeVisible();
+    const opened = matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=reader-opened');
+    await expect(opened.getByRole('button', { name: 'Thought for 1 min 5 s' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(opened.getByRole('group')).toBeVisible();
+    const closed = matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=reader-closed');
+    await expect(closed.getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await expect(closed.locator('.ui-chat-reasoning__spinner')).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Reasoning"]');
+  });
+  test('UIC-CHAT-8.1 UIC-CHAT-8.2 UIC-CHAT-8.3 UIC-CHAT-8.4 draws steps in every state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const running = matrixCell(matrix(page, 'chat-activity'), 'state=running');
+    await expect(running.locator('.ui-chat-steps')).toHaveAttribute('data-running', 'true');
+    const working = running.getByRole('button', { name: 'Working…' });
+    await expect(working).toHaveAttribute('aria-expanded', 'true');
+    await expect(running.getByRole('group', { name: 'Working…' })).toContainText(
+      'Searched trains to Porto',
+    );
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'state=reader-closed').getByRole('button', {
+        name: 'Working…',
+      }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'state=finished').getByRole('button', {
+        name: 'Ran a search, read a file',
+      }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'state=reader-opened').getByRole('button', {
+        name: 'Ran a search, read a file',
+      }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'state=one-step').getByRole('button', {
+        name: 'Ran a search',
+      }),
+    ).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Steps"]');
+  });
+  test('UIC-CHAT-9.1 UIC-CHAT-9.2 UIC-CHAT-9.3 draws a plan in every step status', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const titled = matrixCell(matrix(page, 'chat-activity'), 'title=titled');
+    const list = titled.getByRole('list', { name: 'Saturday in Porto' });
+    await expect(list).toHaveAccessibleDescription('1 of 5 done');
+    await expect(list.getByRole('listitem')).toHaveText([
+      'Find trains to Porto Done',
+      'Check the timetable In progress',
+      'Compare the fares Pending',
+      'Reserve the tile museum Failed',
+      'Find a café near the station Skipped',
+    ]);
+    await expect(list.getByRole('listitem').nth(1)).toHaveAttribute('aria-current', 'step');
+    await expect(list.locator('.ui-chat-plan__spinner')).toHaveCount(1);
+    await expect(list.locator('.ui-chat-plan__glyph')).toHaveCount(4);
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'title=untitled').getByRole('list', {
+        name: 'Plan',
+      }),
+    ).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Plan"]');
+  });
+  test('UIC-CHAT-10.1 UIC-CHAT-10.2 shows the status line only while running', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const running = matrixCell(matrix(page, 'chat-activity'), 'running=running content=text');
+    await expect(running.locator('.ui-chat-status-line__text')).toHaveText(
+      'Searching trains to Porto…',
+    );
+    await expect(running.getByRole('status')).toHaveText('Searching trains to Porto…');
+    const thinking = matrixCell(matrix(page, 'chat-activity'), 'running=running content=thinking');
+    await expect(thinking.locator('.ui-chat-status-line__text')).toHaveText('Thinking…');
+    await expect(thinking.locator('.ui-chat-status-line__text')).toHaveCSS(
+      'animation-name',
+      /shimmer/,
+    );
+    const icon = matrixCell(matrix(page, 'chat-activity'), 'running=running content=icon');
+    await expect(icon.locator('.ui-chat-status-line__icon .ui-icon')).toBeVisible();
+    await expect(icon.locator('.ui-chat-status-line__spinner')).toHaveCount(0);
+    const writing = matrixCell(matrix(page, 'chat-activity'), 'running=running content=writing');
+    await expect(writing.locator('.ui-chat-status-line')).toHaveAttribute(
+      'data-activity',
+      'writing',
+    );
+    await expect(writing.locator('.ui-chat-status-line__spinner')).toBeVisible();
+    await expect(writing.locator('.ui-chat-status-line__text')).toHaveCount(0);
+    await expect(writing.getByRole('status')).toHaveText('');
+    await expect(running.locator('.ui-chat-status-line')).toHaveAttribute(
+      'data-activity',
+      'thinking',
+    );
+    for (const content of ['text', 'thinking', 'icon', 'writing']) {
+      await expect(
+        matrixCell(matrix(page, 'chat-activity'), `running=stopped content=${content}`).locator(
+          '.ui-chat-status-line',
+        ),
+      ).toHaveCount(0);
+    }
+    await lab.expectAccessible('[data-lab-section="Status line"]');
+  });
+  test('UIC-CHAT-7.5 UIC-CHAT-8.4 expands and collapses by keyboard', async ({ page, lab }) => {
+    await lab.open('chat-activity');
+    const reasoning = matrixCell(matrix(page, 'chat-activity'), 'format=markdown state=complete');
+    const trigger = reasoning.getByRole('button', { name: 'Thought for 4 s' });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(reasoning.getByRole('group', { name: 'Thought for 4 s' })).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    const steps = matrixCell(matrix(page, 'chat-activity'), 'state=running');
+    const working = steps.getByRole('button', { name: 'Working…' });
+    await working.focus();
+    await page.keyboard.press('Enter');
+    await expect(working).toHaveAttribute('aria-expanded', 'false');
+    // The panel looks hidden once its height transition reaches zero, but React Aria hides it only
+    // after the transition finishes; a Tab in between lands in the panel and is lost when it hides.
+    await expect(steps.locator('.ui-chat-steps__panel')).toHaveAttribute('hidden', 'until-found');
+    await page.keyboard.press('Tab');
+    await expect(
+      matrixCell(matrix(page, 'chat-activity'), 'state=reader-closed').getByRole('button'),
+    ).toBeFocused();
+  });
+  test('UIC-CHAT-7.5 follows a controlled state', async ({ page, lab }) => {
+    await lab.open('chat-activity');
+    const demo = matrix(page, 'chat-activity').locator('[data-lab-demo="controlled"]');
+    const trigger = demo.getByRole('button', { name: 'Thought for 4 s' });
+    const toggle = section(page, 'Controlled reasoning').getByRole('switch', {
+      name: 'Show the reasoning',
+    });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(toggle).toBeChecked();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).not.toBeChecked();
+  });
+  test('UIC-CHAT-7.2 UIC-CHAT-7.5 UIC-CHAT-8.2 UIC-CHAT-8.4 opens running parts on request and keeps the reader’s choice', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const demo = matrix(page, 'chat-activity').locator('[data-lab-demo="manual"]');
+    const trigger = (part: string, opens: string) =>
+      matrixCell(demo, `part=${part} opens=${opens}`).getByRole('button');
+    await expect(trigger('reasoning', 'automatically')).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger('steps', 'automatically')).toHaveAttribute('aria-expanded', 'true');
+    const reasoning = trigger('reasoning', 'on request');
+    const steps = trigger('steps', 'on request');
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'false');
+    await expect(reasoning).toHaveAccessibleName('Thinking…');
+    await expect(steps).toHaveAttribute('aria-expanded', 'false');
+    await expect(steps).toHaveAccessibleName('Working…');
+    await reasoning.click();
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'true');
+    await lab.expectAccessible('[data-lab-demo="manual"]');
+    await demo.getByRole('switch', { name: 'Running' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger('reasoning', 'automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger('steps', 'automatically')).toHaveAttribute('aria-expanded', 'false');
+    await expect(reasoning).toHaveAttribute('aria-expanded', 'true');
+    await expect(reasoning).toHaveAccessibleName('Thought for 4 s');
+    await expect(steps).toHaveAttribute('aria-expanded', 'false');
+  });
+  test('UIC-CHAT-8.4 follows a controlled group of steps through the end of the run', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-activity');
+    const demo = matrix(page, 'chat-activity').locator('[data-lab-demo="controlled-steps"]');
+    const trigger = demo.locator('.ui-chat-steps').getByRole('button');
+    const toggle = demo.getByRole('switch', { name: 'Show the steps' });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await demo.getByRole('switch', { name: 'Still running' }).focus();
+    await page.keyboard.press('Space');
+    await expect(trigger).not.toHaveAccessibleName('Working…');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await trigger.click();
+    await expect(demo.locator('[data-lab-output="requested"]')).toHaveText('false');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).not.toBeChecked();
+  });
+  test('UIC-CHAT-7.2 UIC-CHAT-8.2 UIC-CHAT-8.3 UIC-CHAT-9.4 UIC-CHAT-10.2 streams a reply and collapses it when the run ends', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-activity');
+    await page.getByRole('button', { name: 'Run the reply' }).click();
+    const steps = sim(page, 'steps');
+    const group = steps.getByRole('button', { name: 'Working…' });
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(sim(page, 'reasoning').getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(sim(page, 'status').getByRole('status')).toHaveText('Thinking about the trip…');
+    await lab.expectAccessible('[data-lab-section="Streaming reply"]');
+    await page.clock.runFor(2400);
+    await expect(
+      sim(page, 'reasoning').getByRole('button', { name: 'Thought for 2 s' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    await expect(steps.getByRole('button', { name: 'Working…' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(sim(page, 'status').locator('.ui-chat-status-line__text')).toHaveText(
+      'Searching trains to Porto…',
+    );
+    await page.clock.runFor(1200);
+    await expect(sim(page, 'plan').getByRole('status')).toHaveText(
+      'Find trains to Porto: done, Check the timetable: in progress',
+    );
+    await page.clock.runFor(3200);
+    const summary = steps.getByRole('button', { name: 'Ran a search, read a file, used a tool' });
+    await expect(summary).toHaveAttribute('aria-expanded', 'false');
+    await expect(sim(page, 'status')).toHaveCount(0);
+    await expect(sim(page, 'plan').locator('.ui-chat-plan__progress')).toHaveText('4 of 4 done');
+    await expect(sim(page, 'message')).toContainText('Take the 8:05 from Lisbon');
+    await lab.expectAccessible('[data-lab-section="Streaming reply"]');
+  });
+  test('UIC-CHAT-8.4 keeps the reader’s choice over the end of the run', async ({ page, lab }) => {
+    await page.clock.install();
+    await lab.open('chat-activity');
+    const run = page.getByRole('button', { name: /^Run/ });
+    await run.click();
+    await page.clock.runFor(2400);
+    const trigger = sim(page, 'steps').locator('.ui-chat-steps__trigger');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.clock.runFor(4400);
+    await expect(trigger).toHaveAccessibleName('Ran a search, read a file, used a tool');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await run.click();
+    await page.clock.runFor(1200);
+    await sim(page, 'steps').locator('.ui-chat-steps__trigger').click();
+    await expect(sim(page, 'steps').locator('.ui-chat-steps__trigger')).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await page.clock.runFor(6000);
+    await expect(sim(page, 'steps').locator('.ui-chat-steps__trigger')).toHaveAccessibleName(
+      'Ran a search, read a file, used a tool',
+    );
+    await expect(sim(page, 'steps').locator('.ui-chat-steps__trigger')).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+  test('UIC-CHAT-7.1 UIC-CHAT-8.1 UIC-CHAT-9.1 UIC-CHAT-10.1 passes axe', async ({ lab }) => {
+    await lab.open('chat-activity');
+    await lab.expectAccessible();
+  });
+});

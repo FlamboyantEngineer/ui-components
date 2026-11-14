@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { I18nProvider } from '../../primitives/index.js';
-import { PropertyScope } from '../property-scope/property-scope.js';
+import { PropertyScope } from '../property-panel/property-panel.js';
 import {
   type BoxSide,
   type FourSideField,

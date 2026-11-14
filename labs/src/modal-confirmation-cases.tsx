@@ -1,11 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
+import { createModalController, ModalHost } from '../../src/components/modal/index.js';
 import { alert, confirm, Modal, ModalTrigger, prompt } from '../../src/components/modal/modal.js';
-import {
-  createModalController,
-  ModalHost,
-} from '../../src/components/modal-controller/modal-controller.js';
 import { ErrorGlyph, InfoGlyph, SuccessGlyph, WarningGlyph } from '../../src/core/glyphs.js';
 import type { Tone } from '../../src/core/props.js';
 import { LabSection, StateMatrix } from './chrome/index.js';

@@ -1,8 +1,8 @@
 import { isThenable } from '../../utils/is-thenable.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { isSameMessage } from '../message-composer/composer-message.js';
 import type { RichMessageComposerProps } from '../message-composer/rich/rich-message-composer.js';
 import type { ChatComposerProps } from './chat-composer.js';
+import type { ChatQueuedMessage } from './chat-controller.js';
 import { toDisplayTokens } from './chat-model.js';
 import type { ChatProgress, ChatProgressAction } from './chat-progress.js';
 

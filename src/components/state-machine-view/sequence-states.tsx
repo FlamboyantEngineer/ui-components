@@ -17,10 +17,11 @@ import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { describeState, getStateCount, notificationCountMax } from './describe-state.js';
 import { getContextMenuRequestHandlers, isKeyboardContextMenu } from './sequence-interaction.js';
 import type { SequenceLayout } from './sequence-layout.js';
-import type { StateMachineState, StateMachineViewProps } from './state-machine-view.js';
+import type { StateMachineState } from './state-machine-model.js';
+import type { StateMachineSequenceProps } from './state-machine-sequence.js';
 import { hooks } from './state-machine-view-hooks.js';
 
-type SequenceViewProps = Omit<StateMachineViewProps, 'presentation'>;
+type SequenceViewProps = StateMachineSequenceProps;
 
 interface SequenceStatesProps {
   props: SequenceViewProps;

@@ -6,6 +6,7 @@ import { RedoGlyph, RefreshGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
 import { TooltipTimingSections } from './tooltip-timing-cases.js';
+import { TooltipTruncationCases } from './tooltip-truncation-cases.js';
 
 const variants: TooltipVariant[] = ['default', 'info'];
 const placements = ['top', 'bottom', 'start', 'end'] as const;
@@ -59,6 +60,7 @@ function EscapeOwnerHint() {
 
 mountLab(
   <>
+    <TooltipTruncationCases />
     <LabSection
       title="Escape ownership"
       description="Closing a hint leaves the same Escape available to its owning surface."

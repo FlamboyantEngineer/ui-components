@@ -1,17 +1,16 @@
 'use client';
 
-import { type ReactNode, useRef } from 'react';
-import type { AriaLabellingProps } from '../../core/events.js';
-import { CloseGlyph } from '../../core/glyphs.js';
+import { type FocusEvent, type ReactNode, useRef } from 'react';
+import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { type FocusTarget, useFocusReturn } from '../../utils/focus-target.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getOwnerWindow } from '../../utils/owner-window.js';
+import { measureInScroller } from '../../utils/scroll-geometry.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { Button } from '../button/button.js';
-import { ActionRowActions, createClearKey } from './action-row-actions.js';
+import type { ActionRowAction } from './action-row-action.js';
+import { ActionRowActions } from './action-row-actions.js';
 import { actionRowHooks as hooks } from './action-row-hooks.js';
-import { type ActionRowAction, orderActions } from './action-verbs.js';
 
 /** An element, by ref or by a function that returns it, that focus moves to. */
 export type ActionRowFocusTarget = FocusTarget;
@@ -19,15 +18,21 @@ export type ActionRowFocusTarget = FocusTarget;
 /** `visible` keeps every action in the row; `menu` collapses those that do not fit into a menu. */
 export type ActionRowOverflow = 'visible' | 'menu';
 
+/** How lead content uses its space: truncated, or an intrinsic-width horizontal scroller. */
+export type ActionRowLeadOverflow = 'truncate' | 'scroll';
+
 export interface ActionRowProps
   extends
     RefProps<HTMLDivElement>,
     Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>,
+    KeyboardEventProps,
     BaseProps {
-  /** The actions, drawn as icon buttons: custom actions in their order, then the verbs in theirs. */
+  /** The actions in the order to render them. */
   actions: readonly ActionRowAction[];
   /** Content at the start of the row, before the actions (a title, a filter, a status line). */
   lead?: ReactNode;
+  /** Lead content uses the remaining width and scrolls horizontally with `scroll`. Defaults to truncate. */
+  leadOverflow?: ActionRowLeadOverflow | undefined;
   /** Size of every action button. Defaults to `md`. */
   size?: ControlSize | undefined;
   /**
@@ -37,59 +42,31 @@ export interface ActionRowProps
   toolbar?: boolean | undefined;
   /** What happens to actions that do not fit. Defaults to `visible`. */
   overflow?: ActionRowOverflow | undefined;
-  /**
-   * Makes the row a selection bar for a collection: it shows this count with a clear button, and
-   * renders only while the count is above zero.
-   */
-  selectedCount?: number | undefined;
-  /** Clears the selection: the clear button and Escape inside the row call it. */
-  onClearSelection?: (() => void) | undefined;
-  /**
-   * Where focus goes when the selection bar leaves (its count reaches zero) while it holds focus,
-   * as after its clear button or Escape; usually the collection the bar acts on.
-   */
+  /** Where focus goes when the row unmounts while it holds focus. */
   finalFocus?: ActionRowFocusTarget | undefined;
 }
 
-/** The selected count and the button that clears the selection. */
-function SelectionStatus({
-  count,
-  onClear,
-}: {
-  count: number;
-  onClear?: (() => void) | undefined;
-}) {
-  const strings = useUiStrings();
-  return (
-    <div {...hooks.slot('selection')}>
-      {onClear ? (
-        <Button
-          {...hooks.slot('clear')}
-          icon={CloseGlyph}
-          label={strings.clearSelection}
-          tooltip={strings.clearSelection}
-          size="sm"
-          onPress={onClear}
-        />
-      ) : null}
-      <span {...hooks.slot('count')} role="status">
-        {strings.selectedCount(count)}
-      </span>
-    </div>
-  );
+/** Caller-ordered actions with stable identity, asynchronous pending state and optional overflow. */
+export function ActionRow(props: ActionRowProps) {
+  const { actions, lead } = props;
+  if (actions.length === 0 && isEmptyNode(lead)) return null;
+  return <ActionRowBar {...props} />;
 }
 
-/**
- * A row of icon-button actions described as data: standard verbs with fixed glyphs, labels and
- * places, and custom actions, each with a tooltip. It can be one toolbar, collapse actions into a
- * menu and serve as a collection's selection bar. Renders nothing without actions or lead content.
- */
-export function ActionRow(props: ActionRowProps) {
-  const { selectedCount, actions, lead } = props;
-  const isSelection = selectedCount !== undefined;
-  if (isSelection && selectedCount <= 0) return null;
-  if (actions.length === 0 && isEmptyNode(lead) && !isSelection) return null;
-  return <ActionRowBar {...props} />;
+/** Reveals focused lead controls without scrolling the page; oversized controls keep their trailing end visible. */
+function revealLeadFocus(event: FocusEvent<HTMLDivElement>) {
+  const scroller = event.currentTarget;
+  if (event.target === scroller || !scroller.contains(event.target)) return;
+  const box = measureInScroller(event.target, scroller);
+  const left = scroller.scrollLeft;
+  const right = left + scroller.clientWidth;
+  let delta = 0;
+  if (box.width > scroller.clientWidth) {
+    const rtl = getOwnerWindow(scroller).getComputedStyle(scroller).direction === 'rtl';
+    delta = rtl ? box.left - left : box.left + box.width - right;
+  } else if (box.left < left) delta = box.left - left;
+  else if (box.left + box.width > right) delta = box.left + box.width - right;
+  if (delta !== 0) scroller.scrollLeft += delta;
 }
 
 /** The row ActionRow draws, which hands focus to `finalFocus` when it leaves holding focus. */
@@ -99,8 +76,7 @@ function ActionRowBar({
   size = 'md',
   toolbar = false,
   overflow = 'visible',
-  selectedCount,
-  onClearSelection,
+  leadOverflow = 'truncate',
   finalFocus,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -108,7 +84,6 @@ function ActionRowBar({
   ref,
   ...rest
 }: ActionRowProps) {
-  const isSelection = selectedCount !== undefined;
   const containerRef = useRef<HTMLDivElement>(null);
   const rootRef = useMergedRefs(ref, containerRef);
   useFocusReturn({ containerRef, finalFocus });
@@ -116,14 +91,19 @@ function ActionRowBar({
     <div
       {...rest}
       ref={rootRef}
-      {...hooks.root({ className, props: rest, data: { size, overflow, selection: isSelection } })}
-      onKeyDown={isSelection ? createClearKey(onClearSelection) : undefined}
+      {...hooks.root({ className, props: rest, data: { size, overflow, leadOverflow } })}
     >
-      {isSelection ? <SelectionStatus count={selectedCount} onClear={onClearSelection} /> : null}
-      {isEmptyNode(lead) ? null : <div {...hooks.slot('lead')}>{lead}</div>}
+      {isEmptyNode(lead) ? null : (
+        <div
+          {...hooks.slot('lead')}
+          onFocus={leadOverflow === 'scroll' ? revealLeadFocus : undefined}
+        >
+          {lead}
+        </div>
+      )}
       {actions.length > 0 ? (
         <ActionRowActions
-          actions={orderActions(actions)}
+          actions={actions}
           size={size}
           isToolbar={toolbar}
           isCollapsing={overflow === 'menu'}
@@ -135,10 +115,4 @@ function ActionRowBar({
   );
 }
 
-export type {
-  ActionRowAction,
-  ActionRowCustomAction,
-  ActionRowVerbAction,
-  ActionVerb,
-} from './action-verbs.js';
-export { actionVerbs, orderActions } from './action-verbs.js';
+export type { ActionRowAction } from './action-row-action.js';

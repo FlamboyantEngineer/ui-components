@@ -1,12 +1,6 @@
 export type { TableColumnSize, TableColumnWidths } from './column-sizing.js';
 export type { TableProps, TableRowAttributes, TableSize } from './table.js';
 export { Table } from './table.js';
-export type { TableBulkEdit } from './table-bulk-edit.js';
-export type {
-  TableCellPosition,
-  TableCellRange,
-  TableCellSelectionMode,
-} from './table-cell-range.js';
 export type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
 export type {
   TableCellChange,
@@ -14,12 +8,7 @@ export type {
   TableEditHistoryOptions,
 } from './table-edit-history.js';
 export { useTableEditHistory } from './table-edit-history.js';
-export type {
-  TableCsvExport,
-  TableCsvSource,
-  TableExportFile,
-  TableExportScope,
-} from './table-export.js';
+export type { TableCsvSource } from './table-export.js';
 export { formatTableCsv } from './table-export.js';
 export type {
   TableColumnFilter,
@@ -46,7 +35,6 @@ export type { TableRowsSort, TableSort } from './table-sort.js';
 export { sortTableRows } from './table-sort.js';
 export type { TableChildRows, TableRowPin } from './table-tree.js';
 export type { TableCellEdit } from './use-cell-editing.js';
-export type { TableSpreadsheetProps } from './use-cell-selection.js';
 export type { TableGroupingProps } from './use-table-expansion.js';
 export type { TableDragTrigger, TableReorderOptions } from './use-table-reorder.js';
 export type { TablePagination, TablePinnedRows } from './use-table-rows.js';

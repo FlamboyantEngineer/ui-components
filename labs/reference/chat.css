@@ -137,15 +137,15 @@
   padding-block: 2px;
 }
 
-.ui-chat__queue-attachments .ui-chat-attachment[data-display='thumbnail'] {
+.ui-chat__queue-attachments .ui-attachment[data-display='thumbnail'] {
   width: 56px;
 }
 
-.ui-chat__queue-attachments .ui-chat-attachment__thumbnail {
+.ui-chat__queue-attachments .ui-attachment__thumbnail {
   height: 40px;
 }
 
-.ui-chat__queue-attachments .ui-chat-attachment__download {
+.ui-chat__queue-attachments .ui-attachment__download {
   display: none;
 }
 
@@ -246,4 +246,1451 @@
   flex: none;
   align-items: center;
   gap: 4px;
+}
+
+/* Chat Activity */
+
+/* Reasoning and groups of steps: a quiet trigger line, and a panel ruled at its inline start. */
+.ui-chat-reasoning,
+.ui-chat-steps {
+  min-width: 0;
+  color: var(--ref-text);
+}
+
+.ui-chat-reasoning__trigger,
+.ui-chat-steps__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--ref-control-height-xs);
+  margin-inline-start: -6px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: var(--ref-muted);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-chat-reasoning__trigger[data-hovered],
+.ui-chat-steps__trigger[data-hovered] {
+  background: var(--ref-hover);
+  color: var(--ref-text);
+}
+
+.ui-chat-reasoning__trigger[data-pressed],
+.ui-chat-steps__trigger[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-chat-reasoning__trigger[data-focus-visible],
+.ui-chat-steps__trigger[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-chat-reasoning__indicator,
+.ui-chat-steps__indicator {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.ui-chat-reasoning__label,
+.ui-chat-steps__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* React Aria sets the panel's measured height while it opens and closes, then auto or 0px. */
+.ui-chat-reasoning__panel,
+.ui-chat-steps__panel {
+  height: var(--disclosure-panel-height);
+  margin-inline-start: 6px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--ref-border);
+  overflow: hidden;
+  transition: height var(--ref-duration) ease;
+}
+
+.ui-chat-reasoning__panel::before,
+.ui-chat-reasoning__panel::after,
+.ui-chat-steps__panel::before,
+.ui-chat-steps__panel::after {
+  content: '';
+  display: block;
+  height: 4px;
+}
+
+.ui-chat-reasoning__text {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-reasoning[data-format='plain'] .ui-chat-reasoning__text {
+  white-space: pre-wrap;
+}
+
+.ui-chat-reasoning__text > :first-child {
+  margin-top: 0;
+}
+
+.ui-chat-reasoning__text > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-chat-steps__panel {
+  display: grid;
+  gap: 2px;
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+/* A group reads as one quiet line: its first kind's glyph, the summary, then a chevron that shows
+   on hover and while open. */
+.ui-chat-steps__glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ui-chat-steps__indicator {
+  order: 1;
+  opacity: 0;
+  transition: opacity var(--ref-duration) ease;
+}
+
+.ui-chat-steps__trigger[data-hovered] > .ui-chat-steps__indicator,
+.ui-chat-steps__trigger[data-focus-visible] > .ui-chat-steps__indicator,
+.ui-chat-steps[data-expanded] > .ui-chat-steps__trigger > .ui-chat-steps__indicator {
+  opacity: 1;
+}
+
+/* Plan: a checklist whose glyphs carry the status color. */
+.ui-chat-plan {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size);
+}
+
+.ui-chat-plan__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.ui-chat-plan__title {
+  font-weight: var(--ref-font-weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-plan__progress {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-plan__list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-chat-plan__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-chat-plan__glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-plan__spinner {
+  --ref-spinner-size: var(--ref-icon-size-md);
+  margin: 1px;
+  color: var(--ref-accent);
+}
+
+.ui-chat-plan__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-plan__step[data-status='done'] .ui-chat-plan__glyph {
+  color: var(--ref-success);
+}
+
+.ui-chat-plan__step[data-status='failed'] .ui-chat-plan__glyph {
+  color: var(--ref-danger);
+}
+
+.ui-chat-plan__step[data-status='in-progress'] .ui-chat-plan__label {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-plan__step[data-status='pending'] .ui-chat-plan__label,
+.ui-chat-plan__step[data-status='skipped'] .ui-chat-plan__label {
+  color: var(--ref-muted);
+}
+
+.ui-chat-plan__step[data-status='skipped'] .ui-chat-plan__label {
+  text-decoration: line-through;
+}
+
+/* Status line: one muted line after a turning ring or the host's icon, which pulses; while the
+   assistant writes, the ring or icon alone. */
+.ui-chat-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-status-line__icon {
+  display: inline-flex;
+  flex: none;
+  animation: ref-chat-status-pulse var(--ref-duration-loop) ease-in-out infinite alternate;
+}
+
+.ui-chat-status-line__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Work in progress reads as a brighter band of color sweeping across muted text: the status line,
+   streaming reasoning and a running group of steps. It holds still for reduced motion and forced
+   colors: the status line muted, the labels in the text color. */
+.ui-chat-status-line__text,
+.ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
+.ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
+  background: linear-gradient(
+      90deg,
+      var(--ref-muted) 0%,
+      var(--ref-muted) 35%,
+      var(--ref-text) 50%,
+      var(--ref-muted) 65%,
+      var(--ref-muted) 100%
+    )
+    0 0 / 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: ref-chat-status-shimmer calc(var(--ref-duration-loop) * 2) linear infinite;
+}
+
+@keyframes ref-chat-status-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes ref-chat-status-pulse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .ui-chat-status-line__text,
+  .ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
+  .ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
+    background: none;
+    color: var(--ref-text);
+    animation: none;
+  }
+
+  .ui-chat-status-line__text {
+    color: inherit;
+  }
+
+  .ui-chat-status-line__icon {
+    animation: none;
+  }
+}
+
+/*
+ * Chat List. A sidebar of single-line rows: a New chat row, a muted heading, the rows and a Load
+ * more row. Each row is a grid: the icon or avatar, the title, its marks, activity and time, and,
+ * when given, the last message and unread count on a second line.
+ */
+
+.ui-chat-list {
+  display: grid;
+  /* One column no wider than the list, so the header and rows shrink rather than overflow it. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  box-sizing: border-box;
+  height: 100%;
+  padding: 8px;
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.4 var(--ref-font);
+}
+
+.ui-chat-list__header {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.ui-chat-list__header > .ui-chat-list__search {
+  width: auto;
+  min-width: 0;
+}
+
+.ui-chat-list__new.ui-button {
+  justify-content: start;
+  gap: 10px;
+  height: 36px;
+  padding: 0 9px;
+  border-radius: var(--ref-radius-lg);
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-list__body {
+  /* Row stacking context: rows start at the top and the Load more row follows the last one. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.ui-chat-list__heading {
+  padding: 4px 10px 6px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-chat-list__list {
+  display: grid;
+  gap: 1px;
+  outline: none;
+}
+
+.ui-chat-list__list[data-focus-visible] {
+  border-radius: var(--ref-radius-lg);
+  box-shadow: var(--ref-focus-inset);
+}
+
+.ui-chat-list__conversation {
+  display: grid;
+  /* No column gap: each part after the title keeps its own space, so absent parts leave none. */
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+  grid-template-areas:
+    'avatar title muted status activity time'
+    'avatar preview preview preview preview unread';
+  align-items: center;
+  min-height: 34px;
+  padding: 2px 10px;
+  border-radius: var(--ref-radius-lg);
+  box-sizing: border-box;
+  outline: none;
+  cursor: default;
+}
+
+/* A row without a last message keeps its unread count on its one line. */
+.ui-chat-list__conversation:not(:has(.ui-chat-list__preview)) {
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto auto;
+  grid-template-areas: 'avatar title muted status activity time unread';
+}
+
+.ui-chat-list__conversation:is([data-hovered], [data-pressed], [data-menu-open]) {
+  background: var(--ref-hover);
+}
+
+/* Between hover and pressed, so muted text on the selected row keeps its contrast. */
+.ui-chat-list__conversation[data-selected] {
+  background: color-mix(in srgb, var(--ref-hover), var(--ref-pressed));
+}
+
+.ui-chat-list__conversation[data-focus-visible] {
+  box-shadow: var(--ref-focus-inset);
+}
+
+/*
+ * With the edge fades (on by default), while more can load, the last rows fade toward the Load
+ * more row: a veil of the canvas over each, so the rows keep their own colors underneath.
+ */
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(-n + 2) {
+  position: relative;
+}
+
+.ui-chat-list[data-has-more][data-edge-fades]
+  .ui-chat-list__conversation:nth-last-child(-n + 2)::after {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ref-canvas) var(--ref-chat-list-veil), transparent);
+  content: '';
+  pointer-events: none;
+}
+
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(2) {
+  --ref-chat-list-veil: 20%;
+}
+
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(1) {
+  --ref-chat-list-veil: 38%;
+}
+
+.ui-chat-list__avatar {
+  display: inline-flex;
+  grid-area: avatar;
+  margin-inline-end: 10px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__title {
+  grid-area: title;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-list__conversation[data-unread] .ui-chat-list__title {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-list__muted,
+.ui-chat-list__status,
+.ui-chat-list__time,
+.ui-chat-list__unread {
+  margin-inline-start: 8px;
+}
+
+.ui-chat-list__time {
+  grid-area: time;
+  justify-self: end;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}
+
+.ui-chat-list__preview {
+  grid-area: preview;
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-list__conversation[data-unread]:not([data-muted]) .ui-chat-list__preview {
+  color: var(--ref-text);
+}
+
+.ui-chat-list__muted {
+  grid-area: muted;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__status {
+  grid-area: status;
+  color: var(--ref-muted);
+  opacity: 0.8;
+}
+
+/* Someone in the conversation is typing or working: three dots that pulse in turn. */
+.ui-chat-list__activity {
+  display: inline-flex;
+  grid-area: activity;
+  gap: 3px;
+  margin-inline-start: 10px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__activity-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--ref-radius-full);
+  background: currentcolor;
+  animation: ref-chat-list-activity var(--ref-duration-loop) ease-in-out infinite;
+}
+
+.ui-chat-list__activity-dot:nth-child(2) {
+  animation-delay: calc(var(--ref-duration-loop) / 6);
+}
+
+.ui-chat-list__activity-dot:nth-child(3) {
+  animation-delay: calc(var(--ref-duration-loop) / 3);
+}
+
+@keyframes ref-chat-list-activity {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-list__activity-dot {
+    animation: none;
+  }
+}
+
+.ui-chat-list__unread {
+  grid-area: unread;
+  justify-self: end;
+}
+
+.ui-chat-list__conversation[data-muted] .ui-chat-list__unread {
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__load-more.ui-button {
+  justify-content: start;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: var(--ref-radius-lg);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size);
+  font-weight: normal;
+}
+
+.ui-chat-list__empty {
+  display: block;
+  padding: 16px 10px;
+  color: var(--ref-muted);
+}
+
+.ui-chat-list__empty p {
+  margin: 0;
+}
+
+/* A placeholder row takes a real row's place: the same height, start and gap as the row it stands for. */
+.ui-chat-list__skeleton {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 34px;
+  padding: 2px 10px;
+  box-sizing: border-box;
+}
+
+.ui-chat-list__skeleton-start.ui-skeleton {
+  grid-column: 1;
+  width: 18px;
+  height: 18px;
+  margin-inline-end: 10px;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat-list__skeleton-start.ui-skeleton[data-shape='circle'] {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.ui-chat-list__skeleton-text {
+  grid-column: 2;
+  display: grid;
+}
+
+/* Titles of different lengths, so the placeholders read as a list rather than a block. */
+.ui-chat-list__skeleton .ui-skeleton-text__line {
+  width: 72%;
+}
+
+.ui-chat-list__skeleton:nth-child(3n + 2) .ui-skeleton-text__line {
+  width: 54%;
+}
+
+.ui-chat-list__skeleton:nth-child(3n + 3) .ui-skeleton-text__line {
+  width: 84%;
+}
+
+.ui-chat-list__skeleton:nth-child(4n + 4) .ui-skeleton-text__line {
+  width: 62%;
+}
+
+/* With an avatar, the second line is a shorter last message under the title. */
+.ui-chat-list__skeleton .ui-skeleton-text__line:nth-child(2) {
+  width: 88%;
+  height: 0.65em;
+  margin-block: 0.2em 0.3em;
+}
+
+.ui-chat-list__skeleton .ui-skeleton-text__line:first-child:not(:only-child) {
+  width: 46%;
+}
+
+/* While the next page loads, the row reads Loading and its spinner sits at the row's end, out of the text's way. */
+.ui-chat-list__load-more.ui-button[data-pending] > :not(.ui-button__spinner) {
+  opacity: 1;
+}
+
+.ui-chat-list__load-more .ui-button__spinner {
+  --ref-spinner-size: var(--ref-icon-size-md);
+  inset: 0 10px 0 auto;
+}
+
+/* Chat Message Actions. The copy status stays visually hidden; a check mark takes the success color. */
+
+.ui-chat-message-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transition: opacity var(--ref-duration-fast) ease-out;
+}
+
+/* Inside a message the bar shows on hover and focus, and stays while one of its overlays is open. */
+.ui-chat-message:not(:hover, :focus-within) .ui-chat-message-actions:not([data-open]) {
+  opacity: 0;
+}
+
+.ui-chat-message-actions__copy,
+.ui-chat-message-actions__rating,
+.ui-chat-message-actions__reply,
+.ui-chat-message-actions__react,
+.ui-chat-message-actions__edit,
+.ui-chat-message-actions__delete {
+  color: var(--ref-muted);
+}
+
+.ui-chat-message-actions__rating[data-selected] {
+  color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-chat-message-actions[data-copied] .ui-chat-message-actions__copy {
+  color: var(--ref-success);
+}
+
+.ui-chat-message-actions__status {
+  white-space: nowrap;
+}
+
+.ui-chat-message-actions__feedback {
+  width: min(300px, calc(100vw - 24px));
+}
+
+.ui-chat-message-actions__feedback .ui-popover__body {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-chat-message-actions__reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-chat-message-actions__reason {
+  border-radius: var(--ref-radius-full);
+}
+
+.ui-chat-message-actions__reason[data-selected] {
+  border-color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-chat-message-actions__comment {
+  width: 100%;
+}
+
+.ui-chat-message-actions__feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-message-actions__emoji-popover .ui-emoji-picker {
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-chat-message-actions__emoji-popover[data-entering] {
+  animation: ref-fade var(--ref-duration-fast) ease-out;
+}
+
+.ui-chat-message-actions__emoji-popover[data-exiting] {
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-message-actions {
+    transition: none;
+  }
+}
+
+/* Chat Model Picker */
+
+.ui-chat-model-picker {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-chat-model-picker__model {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-model-picker__effort {
+  color: var(--ref-muted);
+}
+
+.ui-chat-model-picker__menu {
+  width: min(280px, calc(100vw - 18px));
+}
+
+/* Descriptions line up with the labels, after the selection check. */
+.ui-chat-model-picker__menu .ui-menu-item__description {
+  padding-inline-start: 24px;
+}
+
+/* Chat Parts */
+
+/* A message's parts, stacked; plain text keeps its breaks through <br>, so spaces collapse. */
+.ui-chat-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  white-space: normal;
+}
+
+.ui-chat-parts__text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-parts__text[data-format='plain'] {
+  line-height: 1.5;
+}
+
+/* A mention or command: a pill tinted from the text it sits in, so it reads on any bubble. */
+.ui-chat-parts__token {
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
+  font-weight: var(--ref-font-weight-medium);
+  box-decoration-break: clone;
+}
+
+.ui-chat-parts__token[data-kind='command'] {
+  background: color-mix(in srgb, var(--ref-category-2) var(--ref-tint), transparent);
+  font-family: var(--ref-mono);
+}
+
+/* A record reference: the record chip draws itself, so the token adds nothing around it. */
+.ui-chat-parts__token[data-kind='reference'] {
+  padding: 0;
+  background: none;
+  font-weight: inherit;
+}
+
+.ui-chat-parts__diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-chat-parts__diff-title {
+  color: var(--ref-muted);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Chat Question: a card of questions. The options sit in a column with their descriptions under
+ * the labels, and the preview of the focused or chosen option sits beside them, or below them on
+ * a narrow card. The question tabs and the counter lead a pending card; the actions close it,
+ * after the error of a refused request.
+ */
+
+.ui-chat-question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  max-width: 640px;
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: var(--ref-font-size-md) / 1.45 var(--ref-font);
+}
+
+/* Focus lands on the card only by script, once it settles; it needs no ring. */
+.ui-chat-question:focus {
+  outline: none;
+}
+
+.ui-chat-question[data-status='dismissed'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  color: var(--ref-muted);
+}
+
+/*
+ * The tabs, then the counter at the end of their row, then the shown question across the card;
+ * both classes, so it wins over the tabs' own layout, which comes later.
+ */
+.ui-chat-question__tabs.ui-tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 8px;
+}
+
+.ui-chat-question__panel {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.ui-chat-question__progress {
+  padding-bottom: 6px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* With the style mark, an answered question's tab takes the success color instead of a check. */
+.ui-chat-question[data-answered-mark='style'] .ui-chat-question__tab[data-answered] {
+  color: var(--ref-success);
+}
+
+.ui-chat-question__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-chat-question__question {
+  margin: 0;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-question[data-status='dismissed'] .ui-chat-question__question {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-question__answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 16px;
+}
+
+.ui-chat-question__options {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-chat-question__option {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-chat-question__recommended {
+  vertical-align: middle;
+}
+
+/* The description lines up with the label, past the radio or box before it. */
+.ui-chat-question__description {
+  padding-inline-start: 28px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-question__other,
+.ui-chat-question__text {
+  flex: 1 1 100%;
+  max-width: 360px;
+}
+
+.ui-chat-question__other {
+  order: 1;
+  padding-inline-start: 28px;
+}
+
+.ui-chat-question__preview {
+  flex: 1 1 240px;
+  box-sizing: border-box;
+  min-width: 0;
+  max-height: 240px;
+  padding: 8px 10px;
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  font-size: var(--ref-font-size-sm);
+}
+
+/*
+ * Code in a preview wraps rather than scrolling sideways: a scrolling block would be one more Tab
+ * stop between the options and the actions.
+ */
+.ui-chat-question__preview .ui-markdown__code-block {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ui-chat-question__preview > .ui-markdown > :first-child {
+  margin-top: 0;
+}
+
+.ui-chat-question__preview > .ui-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* Why the last request failed spans the card, just above the actions that retry it. */
+.ui-chat-question__error {
+  align-self: stretch;
+}
+
+/* The answers being sent are locked; the pending button carries its own spinner. */
+.ui-chat-question[data-submitting] .ui-chat-question__answer {
+  cursor: progress;
+}
+
+.ui-chat-question__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-question__back {
+  margin-inline-end: auto;
+}
+
+.ui-chat-question__next,
+.ui-chat-question__submit,
+.ui-chat-question__dismiss {
+  flex: none;
+}
+
+.ui-chat-question__announcement {
+  white-space: nowrap;
+}
+
+.ui-chat-question__summary {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.ui-chat-question__summary-item {
+  display: grid;
+  gap: 1px;
+}
+
+.ui-chat-question__summary-question {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-question__summary-answer {
+  margin: 0;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-question__status {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+}
+
+/* Chat Sources. A collapsed "Sources (n)" disclosure over a compact numbered list of sources, and superscript citation markers with a preview card. */
+
+.ui-chat-sources {
+  display: grid;
+  justify-items: start;
+}
+
+/* The trigger reads "Sources (3) >"; the chevron turns down once the list shows. */
+
+.ui-chat-sources__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--ref-control-height-xs);
+  margin-inline-start: -6px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: var(--ref-muted);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-chat-sources__trigger[data-hovered] {
+  background: var(--ref-hover);
+  color: var(--ref-text);
+}
+
+.ui-chat-sources__trigger[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-chat-sources__trigger[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-chat-sources__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-sources__indicator {
+  flex: none;
+  width: var(--ref-icon-size-md);
+  height: var(--ref-icon-size-md);
+}
+
+/* React Aria sets the panel's measured height while it opens and closes, then auto or 0px. */
+
+.ui-chat-sources__panel {
+  justify-self: stretch;
+  height: var(--disclosure-panel-height);
+  overflow: hidden;
+  transition: height var(--ref-duration) ease;
+}
+
+.ui-chat-sources__panel::before {
+  content: '';
+  display: block;
+  height: 6px;
+}
+
+.ui-chat-sources__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-inline-start: 1.6em;
+}
+
+.ui-chat-sources__item::marker {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-sources__item {
+  line-height: 1.4;
+}
+
+.ui-chat-citation__card {
+  display: grid;
+  gap: 2px;
+  line-height: 1.4;
+}
+
+:is(.ui-chat-sources__title, .ui-chat-citation__title) {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+:is(.ui-chat-sources__site, .ui-chat-citation__site) {
+  display: block;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+:is(.ui-chat-sources__snippet, .ui-chat-citation__snippet) {
+  display: -webkit-box;
+  margin: 2px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: var(--ref-font-size-sm);
+}
+
+/* The marker reads as a small superscript; its new-tab glyph stays out of the running text. */
+
+.ui-chat-citation {
+  margin-inline-start: 1px;
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.ui-chat-citation__marker {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chat-citation .ui-link__external-icon {
+  display: none;
+}
+
+.ui-chat-citation.ui-button {
+  color: var(--ref-accent-ink);
+  font-size: 0.75em;
+}
+
+.ui-chat-citation:focus-visible {
+  border-radius: var(--ref-radius-xs);
+  outline: var(--ref-focus-ring);
+}
+
+/* Chat Tool Call: a bordered card whose header names the call and whose body shows its JSON. */
+
+.ui-chat-tool-call {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 560px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size);
+}
+
+.ui-chat-tool-call[data-status='approval-requested'] {
+  border-color: var(--ref-warning);
+}
+
+.ui-chat-tool-call__disclosure {
+  min-width: 0;
+}
+
+.ui-chat-tool-call__heading {
+  margin: 0;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+/* The indicator and the glyph sit on the first line, so a wrapped label keeps them in place. */
+.ui-chat-tool-call__heading .ui-disclosure__trigger {
+  align-items: flex-start;
+  padding: 6px 10px;
+}
+
+.ui-chat-tool-call__heading .ui-disclosure__indicator {
+  margin-block: calc((1lh - 16px) / 2);
+}
+
+.ui-chat-tool-call__heading .ui-disclosure__title {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__status-glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-block: calc((1lh - 16px) / 2);
+  color: var(--ref-muted);
+}
+
+/* The label, the status, the duration and the badge flow as one paragraph beside the glyph. */
+.ui-chat-tool-call__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__summary > * + * {
+  margin-inline-start: 4px;
+}
+
+.ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-accent);
+}
+
+.ui-chat-tool-call[data-status='approval-requested'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-warning);
+}
+
+.ui-chat-tool-call[data-status='succeeded'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-success);
+}
+
+.ui-chat-tool-call[data-status='failed'] .ui-chat-tool-call__status-glyph,
+.ui-chat-tool-call[data-status='denied'] .ui-chat-tool-call__status-glyph {
+  color: var(--ref-danger);
+}
+
+.ui-chat-tool-call__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-tool-call__status,
+.ui-chat-tool-call__duration {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+  white-space: nowrap;
+}
+
+.ui-chat-tool-call__duration {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chat-tool-call__badge {
+  vertical-align: text-bottom;
+}
+
+.ui-chat-tool-call__body {
+  padding-inline: 10px;
+}
+
+.ui-chat-tool-call__body > :last-child {
+  margin-bottom: 6px;
+}
+
+.ui-chat-tool-call__part {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__part + .ui-chat-tool-call__part {
+  margin-top: 8px;
+}
+
+.ui-chat-tool-call__part-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__part-title {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-tool-call__copy {
+  flex: none;
+}
+
+.ui-chat-tool-call__json {
+  min-width: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-canvas);
+}
+
+.ui-chat-tool-call__json > .ui-scroll-region__viewport {
+  max-height: 240px;
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat-tool-call__json > .ui-scroll-region__viewport:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-chat-tool-call__json pre {
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 8px;
+  font: var(--ref-font-size-sm) / 1.45 var(--ref-mono);
+}
+
+.ui-chat-tool-call__empty {
+  margin: 0;
+  color: var(--ref-muted);
+}
+
+.ui-chat-tool-call__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--ref-danger);
+  overflow-wrap: anywhere;
+}
+
+.ui-chat-tool-call__error + * {
+  margin-top: 8px;
+}
+
+.ui-chat-tool-call__error .ui-glyph {
+  flex: none;
+  width: var(--ref-icon-size-lg);
+  height: var(--ref-icon-size-lg);
+}
+
+.ui-chat-tool-call__approval {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-top: 1px solid var(--ref-border);
+}
+
+/* The decision status stays mounted while empty, so it takes no space until it has text. */
+.ui-chat-tool-call__approval > * + :not(:empty) {
+  margin-top: 8px;
+}
+
+.ui-chat-tool-call__prompt {
+  margin: 0;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-tool-call__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__action {
+  flex: none;
+}
+
+.ui-chat-tool-call__deny-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-tool-call__reason {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.ui-chat-tool-call__decision {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-tool-call__approval[data-decision='approved'] .ui-chat-tool-call__decision,
+.ui-chat-tool-call__approval[data-decision='always'] .ui-chat-tool-call__decision {
+  color: var(--ref-success);
+}
+
+.ui-chat-tool-call__approval[data-decision='denied'] .ui-chat-tool-call__decision {
+  color: var(--ref-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
+    animation: none;
+  }
+}
+
+/* A row is a quiet call among the steps of a reply, alone or in a group: its kind's glyph and
+   label, the status and duration kept for assistive technology, and a chevron after the label on
+   hover and while open. A failed call is a row like the others, told apart by its danger glyph. A
+   call that waits for approval keeps its card. */
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested']) {
+  max-width: none;
+  border: 0;
+  background: none;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-chat-tool-call__heading {
+  font-size: var(--ref-font-size-sm);
+  font-weight: normal;
+}
+
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-disclosure__trigger {
+  width: auto;
+  max-width: 100%;
+  margin-inline-start: -6px;
+  padding: 2px 6px;
+  color: inherit;
+}
+
+.ui-chat-tool-call[data-variant='row'] .ui-disclosure__trigger[data-hovered] {
+  color: var(--ref-text);
+}
+
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-disclosure__indicator {
+  order: 1;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+}
+
+.ui-chat-tool-call[data-variant='row']
+  .ui-disclosure__trigger[data-hovered]
+  .ui-disclosure__indicator,
+.ui-chat-tool-call[data-variant='row']
+  .ui-disclosure__trigger[data-focus-visible]
+  .ui-disclosure__indicator,
+.ui-chat-tool-call[data-variant='row'] .ui-disclosure[data-expanded] .ui-disclosure__indicator {
+  opacity: 1;
+}
+
+.ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status-glyph {
+  color: inherit;
+}
+
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-chat-tool-call__body {
+  margin-block: 4px;
+  padding-inline: 0;
+  font-size: var(--ref-font-size-sm);
+  padding-inline-start: 22px;
+}
+
+/* What the call acted on reads like a reference after its label. */
+.ui-chat-tool-call__target {
+  color: var(--ref-text);
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: var(--ref-border-strong);
+  text-underline-offset: 3px;
+}
+
+/* Busy activity: the library spinner at the small icon size, in the trigger's or line's color. */
+.ui-chat-reasoning__spinner,
+.ui-chat-steps__spinner,
+.ui-chat-status-line__spinner {
+  --ref-spinner-size: var(--ref-icon-size-sm);
 }

@@ -14,14 +14,12 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { readOwn } from '../../utils/read-own.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useKeptCollectionAttributes } from '../../utils/use-kept-collection-attributes.js';
-import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { TableBody } from './table-body.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText, type TableColumnGroup, type TableColumnLayout } from './table-columns.js';
 import type { TableEditHistory } from './table-edit-history.js';
-import type { TableCsvExport } from './table-export.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
 import { readGridTracks } from './table-grid-tracks.js';
@@ -33,7 +31,7 @@ import type { TableCellWrap, TableColumn, TableRow } from './table-rows.js';
 import { TableScroll } from './table-scroll.js';
 import { TableControls } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
-import type { TableSpreadsheetProps } from './use-cell-selection.js';
+import type { TableCellEdit } from './use-cell-editing.js';
 import { useContentWidths } from './use-content-widths.js';
 import { useOrderedDropKeys } from './use-ordered-drop-keys.js';
 import type { TableGroupingProps } from './use-table-expansion.js';
@@ -55,8 +53,9 @@ export interface TableProps<T extends TableRow>
     ExpansionProps,
     TableSortOptions,
     TableGroupingProps<T>,
-    TableSpreadsheetProps<T>,
     RefProps<HTMLDivElement> {
+  /** Reports committed cell edits. The host updates its rows. */
+  onCellsChange?: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   /** Ordinary content in a full-width final row, outside row selection and actions. */
   trailingContent?: ReactNode;
   /** The data columns, in declared order. */
@@ -67,11 +66,6 @@ export interface TableProps<T extends TableRow>
   onRowAction?: ((key: Key) => void) | undefined;
   /** Reports a reader's selection press even when the selected keys stay the same. Defaults to false. */
   allowDuplicateSelectionEvents?: boolean | undefined;
-  /**
-   * Bulk actions on a selection bar above the grid while rows are selected, in multiple selection.
-   * Columns with `bulkEdit` add an action there that sets one column across the selected rows.
-   */
-  selectionActions?: readonly ActionRowAction[] | undefined;
   /** The id of the column holding nested rows' expand buttons. Defaults to the first drawn column. */
   treeColumn?: Key | undefined;
   /** Draws a search box that keeps the rows whose text contains every term. */
@@ -93,8 +87,6 @@ export interface TableProps<T extends TableRow>
   columnLayout?: TableColumnLayout | undefined;
   /** Initial column order and hidden columns while the table owns them and none are stored. */
   defaultColumnLayout?: TableColumnLayout | undefined;
-  /** Draws an export menu above the grid that writes rows as CSV. */
-  csvExport?: TableCsvExport<T> | undefined;
   /** Called with the layout after a column moves, hides or shows. */
   onColumnLayoutChange?: ((layout: TableColumnLayout) => void) | undefined;
   /** A row's child rows, drawn under it once it is expanded. */
@@ -286,7 +278,7 @@ function TableGridElement<T extends TableRow>({
  * A data table on React Aria's Table: columns and rows as plain data with render callbacks;
  * sorting by one or several columns; a search box and column filters; selection with a selection
  * bar and bulk edit; resizable, reorderable, hideable, pinned and grouped columns; row groups with
- * aggregates; nested and detail rows; cell editing and a spreadsheet mode; a summary row; row
+ * aggregates; nested and detail rows; cell editing; a summary row; row
  * reordering; pagination, loading more and virtualization; and loading, empty and error notices.
  */
 export function Table<T extends TableRow>({

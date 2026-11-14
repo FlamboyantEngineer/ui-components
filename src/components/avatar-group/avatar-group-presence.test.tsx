@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
-import { UserCard } from '../user-card/user-card.js';
+import { Card } from '../card/card.js';
 import { AvatarGroup, type AvatarGroupPerson } from './avatar-group.js';
 
 const names = ['Maria Santos', 'Jon Berg', 'Lena Ortiz', 'Sam Okafor', 'Priya Nair', 'Tom Li'];
@@ -183,13 +183,13 @@ describe('AvatarGroup', () => {
         people={people.slice(0, 3)}
         onAction={onAction}
         renderCard={(person) =>
-          person.id === 'p2' ? null : <UserCard name={person.name} description={person.id} />
+          person.id === 'p2' ? null : <Card title={person.name} description={person.id} />
         }
       />,
     );
     const persons = container.querySelectorAll('.ui-avatar-group__avatar');
-    expect(persons[0]).toHaveClass('ui-user-card-trigger');
-    expect(persons[2]).not.toHaveClass('ui-user-card-trigger');
+    expect(persons[0]).toHaveClass('ui-preview-trigger');
+    expect(persons[2]).not.toHaveClass('ui-preview-trigger');
     await user.click(screen.getByRole('button', { name: 'Jon Berg' }));
     expect(onAction).toHaveBeenCalledWith('p1');
     const card = await screen.findByRole('dialog', { name: 'Jon Berg' });
@@ -284,7 +284,7 @@ describe('AvatarGroup', () => {
         layout="strip"
         people={people.slice(0, 2)}
         cardTrigger="hover"
-        renderCard={(person) => <UserCard name={person.name} />}
+        renderCard={(person) => <Card title={person.name} />}
       />,
     );
     for (const person of container.querySelectorAll('.ui-avatar-group__avatar')) {

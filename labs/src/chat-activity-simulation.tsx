@@ -3,17 +3,15 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import type {
-  ChatPlanStep,
-  ChatPlanStepStatus,
-} from '../../src/components/chat-activity/chat-activity.js';
 import {
   ChatPlan,
+  type ChatPlanStep,
+  type ChatPlanStepStatus,
   ChatReasoning,
   ChatStatusLine,
   ChatSteps,
-} from '../../src/components/chat-activity/index.js';
-import type { ChatToolCallKind } from '../../src/components/chat-tool-call/chat-tool-call.js';
+  type ChatToolCallKind,
+} from '../../src/components/chat/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { Markdown } from '../../src/components/markdown/markdown.js';

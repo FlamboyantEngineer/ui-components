@@ -6,6 +6,7 @@ import { Section, SectionHeader } from '../../src/components/section-header/sect
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ModalConfirmationCases } from './modal-confirmation-cases.js';
+import { ModalControllerCases } from './modal-controller-cases.js';
 import { ModalCoverageSections } from './modal-coverage-cases.js';
 import { ModalFocusCases } from './modal-focus-cases.js';
 import { RetainedLetter } from './modal-retained-cases.js';
@@ -337,6 +338,7 @@ function Stacking() {
 
 mountLab(
   <>
+    <ModalControllerCases />
     <div data-lab-family="modal-main">
       <LabSection
         title="Notes over a dialog"

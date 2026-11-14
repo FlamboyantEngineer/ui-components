@@ -1,4 +1,4 @@
-import type { ChatConversation } from '../../src/components/chat-list/chat-list.js';
+import type { ChatConversation } from '../../src/components/chat/index.js';
 import { HistoryGlyph, SparklesGlyph } from '../../src/core/glyphs.js';
 import { otherPicture, samplePicture } from './people-samples.js';
 

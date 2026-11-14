@@ -1,7 +1,6 @@
 'use client';
 import { type Ref, type RefObject, useEffect, useImperativeHandle } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
-import type { ChatTextToken } from '../chat-parts/chat-parts.js';
 import type {
   MessageComposerContent,
   MessageComposerHandle,
@@ -9,6 +8,7 @@ import type {
   RichMessageComposerProps,
 } from '../message-composer/rich/rich-message-composer.js';
 import { toComposerTokens, toDisplayTokens } from './chat-model.js';
+import type { ChatTextToken } from './chat-parts.js';
 
 /**
  * What `insertToken` did: `inserted`, or why it changed nothing: the chat now shows an

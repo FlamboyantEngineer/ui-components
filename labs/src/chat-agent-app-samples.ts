@@ -2,10 +2,10 @@
 // the kinds of content an agent writes: photos, reasoning, tool calls, sources, questions, plans,
 // code, diffs and terminal output.
 
-import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
-import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
+import type { AttachmentData } from '../../src/components/attachment/attachment.js';
+import type { ChatMessageData, ChatPart } from '../../src/components/chat/index.js';
+import { tripAttachments } from './attachment-samples.js';
 import { tripQuestions } from './chat-agent-tasks.js';
-import { tripAttachments } from './chat-attachment-samples.js';
 import { tripSources } from './chat-parts-samples.js';
 import { plannerId, readerId } from './chat-samples.js';
 
@@ -16,7 +16,7 @@ function placePhoto(name: string, sky: string, ground: string): string {
 }
 
 /** A photo of `name` as an attachment. */
-export function photoOf(name: string, sky: string, ground: string): ChatAttachmentData {
+export function photoOf(name: string, sky: string, ground: string): AttachmentData {
   const id = `photo-${name.toLowerCase().replaceAll(' ', '-')}`;
   return {
     id,
@@ -27,7 +27,7 @@ export function photoOf(name: string, sky: string, ground: string): ChatAttachme
 }
 
 /** The photos the planner finds for a weekend in Lisbon. */
-export const lisbonPhotos: ChatAttachmentData[] = [
+export const lisbonPhotos: AttachmentData[] = [
   photoOf('Alfama', '#bae6fd', '#9a3412'),
   photoOf('Belém', '#e0f2fe', '#0f766e'),
   photoOf('Miradouro', '#fecaca', '#7c2d12'),

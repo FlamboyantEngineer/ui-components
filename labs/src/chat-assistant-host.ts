@@ -2,8 +2,7 @@
 // handlers for Copy, Apply and ratings, with a log of what the host received.
 
 import { useState } from 'react';
-import type { ChatFeedback } from '../../src/components/chat-message-actions/index.js';
-import type { ChatModelPickerProps } from '../../src/components/chat-model-picker/index.js';
+import type { ChatFeedback, ChatModelPickerProps } from '../../src/components/chat/index.js';
 import { describeModelChoice, labEfforts, labModels } from './chat-model-samples.js';
 import type { LabSetMessages } from './chat-people-host.js';
 

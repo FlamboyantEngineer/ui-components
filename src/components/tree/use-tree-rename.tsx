@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -19,8 +20,11 @@ import { Input } from '../../primitives/index.js';
 import { isFocused } from '../../utils/focus-target.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
+import { InlineError } from '../inline-error/inline-error.js';
+import { Stack } from '../layout/layout.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeItemData, TreeProps } from './tree-props.js';
+import { useTreeRenameRequest } from './use-tree-rename-request.js';
 
 type TreeRenameOptions<T extends TreeItemData> = Pick<TreeProps<T>, 'onRename' | 'canRename'> & {
   getTextValue: (item: T) => string;
@@ -70,23 +74,67 @@ function TreeRenameInput({
   name,
   inputRef,
   onBlur,
+  pending,
+  error,
 }: {
   name: string;
   inputRef: RefObject<HTMLInputElement | null>;
   onBlur: () => void;
+  pending: boolean;
+  error: string | null;
 }) {
   const strings = useUiStrings();
+  const errorId = useId();
   return (
-    <Input
-      ref={inputRef}
-      className={hooks.slotClass('rename-input')}
-      aria-label={strings.renameItem(name)}
-      defaultValue={name}
-      autoFocus
-      onFocus={(event) => event.currentTarget.select()}
-      onBlur={onBlur}
-    />
+    <Stack space="xs">
+      <Input
+        ref={inputRef}
+        className={hooks.slotClass('rename-input')}
+        aria-label={strings.renameItem(name)}
+        defaultValue={name}
+        readOnly={pending}
+        aria-busy={pending || undefined}
+        aria-invalid={Boolean(error) || undefined}
+        aria-describedby={error ? errorId : undefined}
+        autoFocus
+        onFocus={(event) => event.currentTarget.select()}
+        onBlur={onBlur}
+      />
+      {error ? (
+        <InlineError id={errorId} className={hooks.slotClass('rename-error')}>
+          {error}
+        </InlineError>
+      ) : null}
+    </Stack>
   );
+}
+
+/** Commits the current draft once, preserving its field until an asynchronous rename succeeds. */
+function finishRename<T extends TreeItemData>(options: {
+  key: Key | null;
+  input: HTMLInputElement | null;
+  scope: RenameScope<T>;
+  request: ReturnType<typeof useTreeRenameRequest>;
+  onRename: TreeProps<T>['onRename'];
+  getTextValue: (item: T) => string;
+  close: () => void;
+  isCommit: boolean;
+  restoreFocus: boolean;
+}) {
+  const { key, input, scope, request, onRename, getTextValue, isCommit, restoreFocus } = options;
+  if (key === null || request.pending) return;
+  const item = findRenameable(key, scope);
+  const name = input?.value.trim() ?? '';
+  const close = () => {
+    options.close();
+    if (restoreFocus && input && isFocused(input)) focusNear(input);
+  };
+  if (isCommit && item && name !== '' && name !== getTextValue(item)) {
+    request.run(() => onRename?.(item, name), close);
+  } else {
+    request.reset();
+    close();
+  }
 }
 
 /**
@@ -100,6 +148,7 @@ export function useTreeRename<T extends TreeItemData>(
   options: TreeRenameOptions<T>,
 ): TreeRename<T> | null {
   const { onRename, getTextValue, canRename, items, getChildren, disabledKeys } = options;
+  const request = useTreeRenameRequest();
   const [editingKey, setEditingKey] = useState<Key | null>(null);
   const editingRef = useRef<Key | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -113,26 +162,34 @@ export function useTreeRename<T extends TreeItemData>(
     if (!isRevoked) return;
     const input = inputRef.current;
     editingRef.current = null;
+    request.reset();
     if (input && isFocused(input)) focusNear(input);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- focus leaves the committed field before it unmounts.
     setEditingKey(null);
-  }, [isRevoked]);
+  }, [isRevoked, request]);
   return useMemo(() => {
     // A field open as `onRename` goes stays one render, so the revocation can move its focus.
     if (!onRename && editingKey === null) return null;
-    const finish = (isCommit: boolean) => {
-      const key = editingRef.current;
-      if (key === null) return;
-      editingRef.current = null;
-      setEditingKey(null);
-      const item = findRenameable(key, scope);
-      const name = inputRef.current?.value.trim() ?? '';
-      if (isCommit && item && name !== '' && name !== getTextValue(item)) onRename?.(item, name);
-    };
+    const finish = (isCommit: boolean, restoreFocus = false) =>
+      finishRename({
+        key: editingRef.current,
+        input: inputRef.current,
+        scope,
+        request,
+        onRename,
+        getTextValue,
+        close: () => {
+          editingRef.current = null;
+          setEditingKey(null);
+        },
+        isCommit,
+        restoreFocus,
+      });
     return {
       editingKey,
       start(item: T) {
-        if (!findRenameable(item.id, scope)) return false;
+        if (request.pending || !findRenameable(item.id, scope)) return false;
+        request.reset();
         editingRef.current = item.id;
         setEditingKey(item.id);
         return true;
@@ -143,17 +200,17 @@ export function useTreeRename<T extends TreeItemData>(
         if (event.key !== 'Enter' && event.key !== 'Escape') return;
         if (isComposingKey(event.nativeEvent)) return;
         event.preventDefault();
-        const row = inputRef.current?.closest<HTMLElement>('[role="row"]');
-        finish(event.key === 'Enter');
-        row?.focus();
+        finish(event.key === 'Enter', true);
       },
       renderEditor: (item: T) => (
         <TreeRenameInput
           name={getTextValue(item)}
           inputRef={inputRef}
           onBlur={() => finish(true)}
+          pending={request.pending}
+          error={request.error}
         />
       ),
     };
-  }, [editingKey, scope, onRename, getTextValue]);
+  }, [editingKey, scope, onRename, getTextValue, request]);
 }

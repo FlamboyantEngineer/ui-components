@@ -7,8 +7,10 @@ import {
   type FourSideValueAlign,
   type FourSideValues,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
-import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
-import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
+import {
+  PropertyPanel,
+  PropertyScope,
+} from '../../src/components/property-panel/property-panel.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { FourSidePropertyStripHostCases } from './four-side-property-strip-host-cases.js';

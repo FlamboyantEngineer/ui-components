@@ -6,8 +6,8 @@ import type { BaseProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
-import type { ModalController } from '../modal-controller/modal-controller.js';
 import { Modal, type ModalAction, type ModalProps } from './modal.js';
+import type { ModalController } from './modal-controller.js';
 import { modalHooks as hooks } from './modal-hooks.js';
 
 export interface ModalConfirmationProps

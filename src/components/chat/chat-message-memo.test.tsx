@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { article, assistantPeople, renderChat } from '../../../test/chat-fixtures.js';
 import { SparklesGlyph } from '../../core/glyphs.js';
-import type { ChatCustomPart, ChatMessageData } from '../chat-parts/chat-parts.js';
 import type { ChatProps } from './chat.js';
+import type { ChatCustomPart, ChatMessageData } from './chat-parts.js';
 
 /** A complete reply by the helper whose only part is a custom card, unless `fields` say. */
 function reply(id: string, fields: Partial<ChatMessageData> = {}): ChatMessageData {

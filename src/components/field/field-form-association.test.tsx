@@ -9,7 +9,6 @@ import { CodeEditor } from '../code-editor/code-editor.js';
 import { ColorField } from '../color-field/color-field.js';
 import { Combobox } from '../combobox/combobox.js';
 import { DateTimeField } from '../date-time-field/date-time-field.js';
-import { DecimalField } from '../decimal-field/decimal-field.js';
 import { ExpressionField } from '../expression-field/expression-field.js';
 import { FileUpload } from '../file-upload/file-upload.js';
 import { Form } from '../form/form.js';
@@ -88,8 +87,8 @@ const controls: Array<[string, ReactNode, string[][]]> = [
     ],
   ],
   [
-    'DecimalField',
-    <DecimalField key="d" label="D" name="d" form="owner" defaultValue="1.5" />,
+    'NumberField decimal',
+    <NumberField valueType="decimal" key="d" label="D" name="d" form="owner" defaultValue="1.5" />,
     [['d', '1.5']],
   ],
   [

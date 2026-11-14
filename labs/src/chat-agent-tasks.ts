@@ -1,7 +1,6 @@
 // The trip planner's longer tasks for the Chat lab: asking questions, and working through a plan.
 
-import type { ChatSendFunction } from '../../src/components/chat-controller/index.js';
-import type { ChatQuestionItem } from '../../src/components/chat-question/index.js';
+import type { ChatQuestionItem, ChatSendFunction } from '../../src/components/chat/index.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { nextLabId } from './chat-samples.js';
 

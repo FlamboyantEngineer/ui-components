@@ -13,6 +13,7 @@ import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { requireDefined } from './require-defined.js';
 import { ScrollRegionOptionCases } from './scroll-region-options.js';
+import { ScrollRegionOverviewCases } from './scroll-region-overview-cases.js';
 
 const cities = [
   'Amsterdam',
@@ -346,6 +347,7 @@ function Strip() {
 
 mountLab(
   <>
+    <ScrollRegionOverviewCases />
     <LabSection
       title="Axes and scrollbars"
       description="Each scrolling axis with native and overlay scrollbars, in a 220 by 120 pixel host."

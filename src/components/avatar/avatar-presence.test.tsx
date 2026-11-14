@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
-import { UserCard } from '../user-card/user-card.js';
+import { Card } from '../card/card.js';
 import { Avatar } from './avatar.js';
 
 function root(container: HTMLElement): HTMLElement {
@@ -164,18 +164,24 @@ describe('Avatar', () => {
         statusLabel="Away"
         size="sm"
         onPress={onPress}
-        card={<UserCard name="Maria Santos" statusLabel="Away" />}
+        card={
+          <Card title="Maria Santos">
+            <span>Away</span>
+          </Card>
+        }
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
     expect(trigger).toBe(root(container));
-    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card-trigger');
+    expect(trigger).toHaveClass('ui-avatar', 'ui-preview-trigger');
     expect(trigger).toHaveAttribute('data-size', 'sm');
     expect(trigger).toHaveAttribute('data-status', 'away');
     await user.click(trigger);
     expect(onPress).toHaveBeenCalledTimes(1);
     const card = await screen.findByRole('dialog', { name: 'Maria Santos' });
-    expect(card).toHaveClass('ui-user-card');
+    const previewCard = within(card).getByRole('region', { name: 'Maria Santos' });
+    expect(previewCard).toBeVisible();
+    expect(previewCard).toHaveClass('ui-card');
     expectHooksMatchSpec(container, 'AVATAR', { slots: ['surface', 'indicator'] });
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -241,7 +247,7 @@ describe('Avatar tooltips and hover cards', () => {
           name="Lena Ortiz"
           statusLabel="Busy"
           nameTooltip
-          card={<UserCard name="Lena Ortiz" />}
+          card={<Card title="Lena Ortiz" />}
         />
       </>,
     );
@@ -272,17 +278,21 @@ describe('Avatar tooltips and hover cards', () => {
         nameTooltip
         cardTrigger="hover"
         onPress={onPress}
-        card={<UserCard name="Maria Santos" statusLabel="Away" />}
+        card={
+          <Card title="Maria Santos">
+            <span>Away</span>
+          </Card>
+        }
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
     expect(trigger).toBe(root(container));
-    expect(trigger).toHaveClass('ui-avatar', 'ui-user-card-trigger');
+    expect(trigger).toHaveClass('ui-avatar', 'ui-preview-trigger');
     expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
     await hover(user, trigger);
     await advance(600);
     const card = screen.getByRole('dialog', { name: 'Maria Santos' });
-    expect(card.closest('.ui-user-card-trigger__popover')).toHaveAttribute(
+    expect(card.closest('.ui-preview-trigger__popover')).toHaveAttribute(
       'data-trigger',
       'PreviewTrigger',
     );
@@ -299,12 +309,12 @@ describe('Avatar tooltips and hover cards', () => {
   it('UIC-AVATAR-11.9 keeps the focused button while a card or name tooltip comes and goes', async () => {
     const user = userEvent.setup();
     const onPress = vi.fn();
-    const card = <UserCard name="Alice" />;
+    const card = <Card title="Alice" />;
     const { rerender } = render(<Avatar name="Alice" onPress={onPress} />);
     const button = screen.getByRole('button', { name: 'Alice' });
     await user.tab();
     expect(button).toHaveFocus();
-    expect(button).not.toHaveClass('ui-user-card-trigger');
+    expect(button).not.toHaveClass('ui-preview-trigger');
     expect(button).not.toHaveAttribute('aria-expanded');
 
     const steps = [
@@ -318,8 +328,8 @@ describe('Avatar tooltips and hover cards', () => {
       rerender(<Avatar name="Alice" onPress={onPress} {...step} />);
       expect(screen.getByRole('button', { name: 'Alice' })).toBe(button);
       expect(button).toHaveFocus();
-      if (step.card) expect(button).toHaveClass('ui-user-card-trigger');
-      else expect(button).not.toHaveClass('ui-user-card-trigger');
+      if (step.card) expect(button).toHaveClass('ui-preview-trigger');
+      else expect(button).not.toHaveClass('ui-preview-trigger');
     }
 
     rerender(<Avatar name="Alice" onPress={onPress} card={card} />);

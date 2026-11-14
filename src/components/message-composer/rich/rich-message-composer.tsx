@@ -2,7 +2,6 @@
 
 import { type FocusEvent, type Ref, useCallback, useRef } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
-import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
 import { type ComposerKeys, useComposerKeys } from '../composer-keys.js';
@@ -12,6 +11,7 @@ import {
   type MessageComposerMessage,
 } from '../composer-message.js';
 import type { MessageComposerSharedProps } from '../message-composer.js';
+import type { MessageReferenceResolver } from '../message-reference.js';
 import { type ComposerFormat, useComposerState } from '../use-composer-state.js';
 import type { MessageComposerRange } from './composer-edits.js';
 import type { MessageComposerPaste, MessageComposerPasteResult } from './composer-paste.js';
@@ -87,7 +87,7 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
    */
   triggers?: readonly MessageComposerTrigger[] | undefined;
   /** Looks up how a record reference's chip shows its record: name, icon, link, preview or unavailability. */
-  getReference?: RecordLabelResolver | undefined;
+  getReference?: MessageReferenceResolver | undefined;
   onFocus?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   /** The editable text box. */

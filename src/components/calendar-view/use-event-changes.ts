@@ -1,18 +1,17 @@
 'use client';
 
-// A calendar's event changes: whether the host allows each, the event menus and editor, and the
+// A calendar's event changes: whether the host allows each, the event menus, and the
 // event drags (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5 and 6).
 
-import { type RefObject, useCallback } from 'react';
-import { useEventEditing } from './calendar-event-editor.js';
+import { useCallback, useMemo } from 'react';
 import {
   type CalendarEventChange,
   type CalendarEventDragMode,
   useEventHandles,
 } from './calendar-event-handles.js';
+import type { CalendarEventMenuContext } from './calendar-event-menu.js';
 import type { PlacedEvent } from './calendar-layout.js';
 import type { CalendarViewEvent, CalendarViewMode, CalendarViewProps } from './calendar-view.js';
-import { dayCellSelector } from './use-calendar-grid.js';
 
 /**
  * Whether the reader may make a change to an event: only while the host takes changes, never to a
@@ -30,7 +29,7 @@ function useChangeCheck({
   );
 }
 
-/** The event menus, editor and handles of a calendar, from its props. */
+/** The event menus and handles of a calendar, from its props. */
 export function useEventChanges(
   props: Pick<
     CalendarViewProps,
@@ -42,7 +41,7 @@ export function useEventChanges(
     timeZone: string;
     onFocusedChange: (date: string) => void;
   },
-  { placed, gridRef }: { placed: PlacedEvent[]; gridRef: RefObject<HTMLElement | null> },
+  { placed }: { placed: PlacedEvent[] },
 ) {
   const { mode, timeZone, onFocusedChange } = props;
   const allows = useChangeCheck(props);
@@ -55,17 +54,15 @@ export function useEventChanges(
     allows,
     onMoved: onFocusedChange,
   });
-  const editing = useEventEditing({
-    events: placed,
-    timeZone,
-    onEventChange: props.onEventChange,
-    isEditable: (event) => allows(event, 'edit'),
-    eventMenu: props.eventMenu,
-    onEventMenuAction: props.onEventMenuAction,
-    eventMenuIcons: props.eventMenuIcons,
-    findDayCell: () =>
-      gridRef.current?.querySelector<HTMLElement>(`${dayCellSelector}[tabindex="0"]`) ?? null,
-    onMoved: onFocusedChange,
-  });
-  return { ...editing, handles: handles.context, drawn: handles.drawn };
+  const { eventMenu, onEventMenuAction, eventMenuIcons } = props;
+  const menu = useMemo<CalendarEventMenuContext>(
+    () => ({
+      entries: eventMenu,
+      onAction: onEventMenuAction,
+      icons: eventMenuIcons,
+      isEditable: (event) => allows(event, 'edit'),
+    }),
+    [eventMenu, onEventMenuAction, eventMenuIcons, allows],
+  );
+  return { menu, handles: handles.context, drawn: handles.drawn };
 }

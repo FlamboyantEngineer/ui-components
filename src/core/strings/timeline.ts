@@ -29,22 +29,12 @@ interface TimelineStrings {
   timelineProgressColumn: string;
   /** Names an item's context menu, from the item's name. */
   timelineItemActions: (item: string) => string;
-  /** Titles the item editor, from the item's name. */
-  timelineEditItem: (item: string) => string;
-  /** Labels the item editor's name field. */
-  timelineNameField: string;
-  /** Labels the item editor's dates field, for a bar. */
-  timelineDatesField: string;
-  /** Labels the item editor's day field, for a milestone. */
-  timelineDayField: string;
   /** Names the people an item is assigned to. */
   timelineAssignedTo: (names: readonly string[]) => string;
   /** Tells that an item is assigned to nobody. */
   timelineUnassigned: string;
   /** Heads the table view's column of assignees, and labels the item editor's assignees field. */
   timelineAssigneesColumn: string;
-  /** Names the link to an item's own page, from the item's name. */
-  timelineOpenItem: (item: string) => string;
   /** Heads the row list's duration column. */
   timelineDurationColumn: string;
   /** Heads the row list's dependencies column. */
@@ -66,9 +56,7 @@ export const timelineStrings = defineStrings<TimelineStrings>({
   timelineKeyboardHint: (kind) => ({ kind }),
   timelineQuarter: (quarter) => ({ quarter }),
   timelineItemActions: (item) => ({ item }),
-  timelineEditItem: (item) => ({ item }),
   timelineAssignedTo: (names) => ({ names }),
-  timelineOpenItem: (item) => ({ item }),
   timelineDuration: (days) => ({ days }),
   timelineItemCount: (count) => ({ count }),
 });

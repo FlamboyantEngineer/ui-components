@@ -3,7 +3,7 @@
 import { type RefCallback, type RefObject, useMemo } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
 import { mergeRefs } from '../../utils/merge-props.js';
-import { useToolbarScroll } from '../toolbar-scroller/toolbar-scroller.js';
+import { useToolbarScroll } from '../toolbar-row/toolbar-row.js';
 import { useTabActionScroll } from './tab-action-room.js';
 import type { TabListModel } from './tab-actions.js';
 import { useTabOverflow } from './tab-bar.js';

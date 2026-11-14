@@ -5,11 +5,11 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import {
   type StateMachineContextMenuEvent,
+  StateMachineSequence,
+  type StateMachineSequenceProps,
   type StateMachineState,
   type StateMachineTransition,
-  StateMachineView,
-  type StateMachineViewProps,
-} from './state-machine-view.js';
+} from './index.js';
 
 const draft: StateMachineState = { id: 'draft', label: 'Draft' };
 const approved: StateMachineState = { id: 'approved', label: 'Approved' };
@@ -20,10 +20,9 @@ const transitions: StateMachineTransition[] = [
   { id: 'approve', from: 'review', to: 'approved', label: 'Approve' },
 ];
 
-function Sequence(props: Partial<StateMachineViewProps>) {
+function Sequence(props: Partial<StateMachineSequenceProps>) {
   return (
-    <StateMachineView
-      presentation="sequence"
+    <StateMachineSequence
       aria-label="Lifecycle"
       states={states}
       transitions={transitions}
@@ -32,7 +31,7 @@ function Sequence(props: Partial<StateMachineViewProps>) {
   );
 }
 
-describe('StateMachineView sequence activation and selection', () => {
+describe('StateMachineSequence sequence activation and selection', () => {
   it('UIC-STATE-MACHINE-VIEW-5.1 activates on every press and Enter or Space, apart from selection', async () => {
     const user = userEvent.setup();
     const onStateAction = vi.fn();
@@ -129,7 +128,7 @@ describe('StateMachineView sequence activation and selection', () => {
   });
 });
 
-describe('StateMachineView sequence keyboard navigation', () => {
+describe('StateMachineSequence sequence keyboard navigation', () => {
   it('UIC-STATE-MACHINE-VIEW-5.2 gives the states one tab stop and moves with arrows, Home and End', async () => {
     const user = userEvent.setup();
     const onStateAction = vi.fn();
@@ -187,7 +186,7 @@ describe('StateMachineView sequence keyboard navigation', () => {
   });
 });
 
-describe('StateMachineView sequence selection reconciliation', () => {
+describe('StateMachineSequence sequence selection reconciliation', () => {
   it('UIC-STATE-MACHINE-VIEW-5.3 releases a removed or disabled selection once', () => {
     const onSelectionChange = vi.fn();
     const onTransitionSelectionChange = vi.fn();
@@ -240,7 +239,7 @@ describe('StateMachineView sequence selection reconciliation', () => {
   });
 });
 
-describe('StateMachineView sequence context menus', () => {
+describe('StateMachineSequence sequence context menus', () => {
   it('UIC-STATE-MACHINE-VIEW-5.4 sends typed pointer and keyboard requests with anchors', async () => {
     const user = userEvent.setup();
     const onStateContextMenu = vi.fn(

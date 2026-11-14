@@ -1,0 +1,374 @@
+import {
+  ChatToolCall,
+  type ChatToolCallApproval,
+  type ChatToolCallKind,
+  type ChatToolCallStatus,
+  type ChatToolCallVariant,
+} from '../../src/components/chat/index.js';
+import { SparklesGlyph } from '../../src/core/glyphs.js';
+import {
+  ApprovalDemo,
+  ControlledDemo,
+  ForecastCard,
+  QueueDemo,
+  recipeArgs,
+  recipeResult,
+  timetableResult,
+} from './chat-tool-call-samples.js';
+import { LabSection, StateMatrix } from './chrome/index.js';
+
+const statuses = [
+  'pending',
+  'running',
+  'approval-requested',
+  'succeeded',
+  'failed',
+  'denied',
+  'cancelled',
+] as const satisfies readonly ChatToolCallStatus[];
+
+const durations: Partial<Record<ChatToolCallStatus, number>> = {
+  succeeded: 1200,
+  failed: 3400,
+  cancelled: 800,
+};
+
+const optionSets = [
+  'approve',
+  'deny',
+  'always',
+  'approve deny',
+  'approve always',
+  'deny always',
+  'approve deny always',
+] as const;
+
+const decisions = {
+  approved: [{ decision: 'approved' }, 'succeeded'],
+  denied: [{ decision: 'denied' }, 'denied'],
+  'denied with reason': [{ decision: 'denied', reason: 'Search my saved recipes only' }, 'denied'],
+  always: [{ decision: 'always', scopeLabel: 'this conversation' }, 'succeeded'],
+} as const satisfies Record<string, readonly [ChatToolCallApproval, ChatToolCallStatus]>;
+
+const noop = () => {};
+
+/** One call of each kind, as a coding assistant would make it. */
+const kindCalls = {
+  read: { name: 'read_file', label: 'Read', target: 'notes/menu.md' },
+  edit: { name: 'edit_file', label: 'Edited', target: 'notes/menu.md' },
+  command: { name: 'run_command', label: 'Ran', target: 'npm test' },
+  search: { name: 'search_files', label: 'Searched', target: 'lentil' },
+  fetch: { name: 'fetch_url', label: 'Fetched', target: 'example.com/recipes' },
+  other: { name: 'plan_menu', label: 'Planned the menu', target: undefined },
+} as const satisfies Record<ChatToolCallKind, { name: string; label: string; target?: string }>;
+
+const kinds = Object.keys(kindCalls) as ChatToolCallKind[];
+
+/** Calls of tools without a glyph of their own, each named by its source or its tool name. */
+const letterCalls = {
+  source: { name: 'read_files', label: 'Read', source: 'OneDrive', target: 'menu.docx' },
+  'tool name': { name: 'plan_menu', label: 'Planned the menu' },
+  'non-Latin': { name: 'notes_search', label: 'Searched notes', source: '日記' },
+  'emoji first': { name: 'list_files', label: 'Listed files', source: '📁 Files' },
+  'no letter': { name: '++', label: 'Ran a macro' },
+  'host glyph': { name: 'suggest_names', label: 'Suggested names', glyph: SparklesGlyph },
+} as const;
+
+const letterCases = Object.keys(letterCalls) as Array<keyof typeof letterCalls>;
+
+/** A recipe search in one status, with or without its JSON, open or closed at first. */
+function StatusCall({
+  status,
+  details,
+  expansion,
+}: {
+  status: ChatToolCallStatus;
+  details: string;
+  expansion: string;
+}) {
+  const withDetails = details === 'args and result';
+  return (
+    <ChatToolCall
+      id={`status-${status}-${details}-${expansion}`.replaceAll(' ', '-')}
+      name="search_recipes"
+      status={status}
+      args={withDetails ? recipeArgs : undefined}
+      result={withDetails && status === 'succeeded' ? recipeResult : undefined}
+      error={status === 'failed' ? 'The recipe service did not answer in time.' : undefined}
+      durationMs={durations[status]}
+      approval={status === 'approval-requested' ? { scopeLabel: 'this conversation' } : undefined}
+      onApprove={noop}
+      onDeny={noop}
+      onAlwaysAllow={noop}
+      defaultExpanded={expansion === 'expanded'}
+    />
+  );
+}
+
+/** A finished or running call drawn as a card or as a quiet row. */
+function VariantCall({ variant, status }: { variant: string; status: string }) {
+  const callStatus = status as ChatToolCallStatus;
+  return (
+    <ChatToolCall
+      id={`variant-${variant}-${status}`}
+      name="read_file"
+      label="Read"
+      target="notes/menu.md"
+      kind="read"
+      variant={variant as ChatToolCallVariant}
+      status={callStatus}
+      args={{ path: 'notes/menu.md' }}
+      error={status === 'failed' ? 'The file is locked.' : undefined}
+      durationMs={status === 'running' ? undefined : 400}
+    />
+  );
+}
+
+/** A pending approval offering the decisions in `options`, with or without a named scope. */
+function OptionsCall({ options, scope }: { options: string; scope: string }) {
+  const offers = new Set(options.split(' '));
+  return (
+    <ChatToolCall
+      id={`options-${options}-${scope}`.replaceAll(' ', '-')}
+      name="send_shopping_list"
+      label="Send the shopping list to Ana"
+      status="approval-requested"
+      args={{ to: 'Ana', items: ['red lentils', 'lemons', 'cumin'] }}
+      approval={scope === 'none' ? {} : { scopeLabel: scope }}
+      onApprove={offers.has('approve') ? noop : undefined}
+      onDeny={offers.has('deny') ? noop : undefined}
+      onAlwaysAllow={offers.has('always') ? noop : undefined}
+    />
+  );
+}
+
+/** A decided approval, after the call ran or was refused. */
+function DecisionCall({ decision, expansion }: { decision: string; expansion: string }) {
+  const [approval, status] = decisions[decision as keyof typeof decisions];
+  return (
+    <ChatToolCall
+      id={`decision-${decision}-${expansion}`.replaceAll(' ', '-')}
+      name="search_recipes"
+      status={status}
+      args={recipeArgs}
+      result={status === 'succeeded' ? recipeResult : undefined}
+      durationMs={status === 'succeeded' ? 900 : undefined}
+      approval={approval}
+      onApprove={noop}
+      onDeny={noop}
+      onAlwaysAllow={noop}
+      defaultExpanded={expansion === 'expanded'}
+    />
+  );
+}
+
+export function ChatToolCallCases() {
+  return (
+    <div data-lab-family="chat-tool-call">
+      <LabSection
+        title="Statuses"
+        description="Every status, with no details or with arguments (and a result once done), closed or open at first. A running call is busy, a failed one starts closed with its error at the top of its body, and one that asks for approval opens by default."
+      >
+        <StateMatrix
+          axes={{
+            status: statuses,
+            details: ['none', 'args and result'],
+            expansion: ['collapsed', 'expanded'],
+          }}
+          render={(cell) => <StatusCall {...cell} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Variants"
+        description="A card stands on its own; a row is the quiet call a reply's steps show, alone or in a group, with its status and duration kept for assistive technology once it ends. The variant changes no content or behaviour."
+      >
+        <StateMatrix
+          axes={{ variant: ['card', 'row'], status: ['running', 'succeeded', 'failed'] }}
+          render={(cell) => <VariantCall {...cell} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Kinds"
+        description="Each kind running and once it succeeded: a finished call trades the status glyph for its kind's (a file for read, a pencil for edit, a terminal for command, a magnifier for search, a globe for fetch and, for any other, the letter of its tool or a wrench), and shows its target after the label."
+      >
+        <StateMatrix
+          axes={{ kind: kinds, status: ['running', 'succeeded'] }}
+          render={({ kind, status }) => (
+            <ChatToolCall
+              id={`kind-${kind}-${status}`}
+              {...kindCalls[kind]}
+              kind={kind}
+              variant="row"
+              status={status}
+              durationMs={status === 'succeeded' ? 500 : undefined}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Letter glyphs"
+        description="A finished call of kind other without a glyph of its own shows a letter in a rounded box: the first letter or digit of its source, else of its tool name, in any script. A name with no letter keeps the wrench, and a glyph the host gives for the tool wins over both."
+      >
+        <StateMatrix
+          axes={{ letter: letterCases, status: ['running', 'succeeded'] }}
+          render={({ letter, status }) => (
+            <ChatToolCall
+              id={`letter-${letter.replace(/\W+/g, '-')}-${status}`}
+              {...letterCalls[letter]}
+              variant="row"
+              status={status}
+              durationMs={status === 'succeeded' ? 500 : undefined}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Approval options"
+        description="A pending approval offers Approve (Ctrl+Enter), Deny (Escape focuses it; it asks for an optional reason) and Always allow, each only when the host handles it. Always allow names the host's scope."
+      >
+        <StateMatrix
+          axes={{ options: optionSets, scope: ['none', 'this conversation'] }}
+          render={(cell) => <OptionsCall {...cell} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Decisions"
+        description="Once decided, the card keeps the decision in place of the buttons."
+      >
+        <StateMatrix
+          axes={{
+            decision: ['approved', 'denied', 'denied with reason', 'always'],
+            expansion: ['collapsed', 'expanded'],
+          }}
+          render={(cell) => <DecisionCall {...cell} />}
+        />
+      </LabSection>
+      <LabSection
+        title="Auto-approved"
+        description="A call that ran without asking, because the tool was always allowed, carries a badge."
+      >
+        <StateMatrix
+          axes={{ status: ['running', 'succeeded'] }}
+          render={({ status }) => (
+            <ChatToolCall
+              id={`auto-${status}`}
+              name="search_recipes"
+              status={status}
+              args={recipeArgs}
+              result={status === 'succeeded' ? recipeResult : undefined}
+              durationMs={status === 'succeeded' ? 700 : undefined}
+              approval={{ isAutoApproved: true }}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Durations"
+        description="The unit follows the duration as shown: 59.94 s still reads in seconds, while 59.95 s rounds to a whole minute and never reads 60 s."
+      >
+        <StateMatrix
+          axes={{ duration: ['350', '59940', '59950', '119600', '125000'] }}
+          render={({ duration }) => (
+            <ChatToolCall
+              id={`duration-${duration}`}
+              name="search_recipes"
+              variant="row"
+              status="succeeded"
+              durationMs={Number(duration)}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Custom body"
+        description="A host draws its own view of a weather tool's result in place of the JSON."
+      >
+        <div data-lab-demo="custom-body">
+          <ChatToolCall
+            id="custom-weather"
+            name="get_weather"
+            label="Checked the weather in Porto"
+            status="succeeded"
+            args={{ city: 'Porto', days: 3 }}
+            durationMs={640}
+            defaultExpanded
+          >
+            <ForecastCard />
+          </ChatToolCall>
+        </div>
+      </LabSection>
+      <LabSection
+        title="Long result"
+        description="A long result scrolls inside its view, which takes keyboard focus to scroll."
+      >
+        <div data-lab-demo="long-result">
+          <ChatToolCall
+            id="long-timetable"
+            name="search_trains"
+            label="Searched trains from Lisbon to Porto"
+            status="succeeded"
+            args={{ from: 'Lisbon', to: 'Porto', date: '2026-05-14' }}
+            result={timetableResult}
+            durationMs={2300}
+            defaultExpanded
+          />
+        </div>
+      </LabSection>
+      <LabSection
+        title="JSON text as sent"
+        description="Arguments and a result that arrive as JSON text are re-indented without being read into values, so a large id, 1.0, -0, 1e2 and a repeated key show exactly as the tool sent them."
+      >
+        <ChatToolCall
+          id="json-text"
+          name="lookup_order"
+          status="succeeded"
+          args='{"orderId":12345678901234567890,"ratio":1.0}'
+          result='{"offset":-0,"total":1e2,"note":"first","note":"second"}'
+          durationMs={400}
+          defaultExpanded
+          data-lab-demo="json-text"
+        />
+      </LabSection>
+      <LabSection
+        title="Long label"
+        description="A label too long for one line wraps beside the status glyph, which stays on the first line, and the status, duration and badge follow its last word."
+      >
+        <StateMatrix
+          axes={{ 'long label': ['succeeded', 'running', 'failed'] }}
+          render={({ 'long label': status }) => (
+            <div style={{ width: 360 }}>
+              <ChatToolCall
+                id={`long-label-${status}`}
+                name="plan_weekend"
+                label="Compare the morning and afternoon trains from Lisbon to Porto for Saturday, keeping seats together"
+                status={status}
+                args={{ from: 'Lisbon', to: 'Porto', day: 'Saturday' }}
+                error={status === 'failed' ? 'The timetable service did not answer.' : undefined}
+                durationMs={status === 'running' ? undefined : 2300}
+                approval={status === 'succeeded' ? { isAutoApproved: true } : undefined}
+              />
+            </div>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Controlled expansion"
+        description="The host owns whether the card is open (isExpanded): its Show details button and the card's own trigger both go through onExpandedChange, which the host applies. Next status moves the call from running to done to failed, and the host's state holds through each."
+      >
+        <ControlledDemo />
+      </LabSection>
+      <LabSection
+        title="Interactive approval"
+        description="Decide with the buttons or the keyboard: Ctrl+Enter (Cmd+Enter on macOS) approves, Escape focuses Deny. Approving runs the tool; Deny asks for an optional reason. Ask again resets the call."
+      >
+        <ApprovalDemo />
+      </LabSection>
+      <LabSection
+        title="Next call in place"
+        description="One card the host reuses for its next waiting call. Press Deny and type a reason, then press Next call (or move focus away and back): the other call shows with a fresh approval and no reason, and focus lands on its Deny button. Each decision names the call it reached."
+      >
+        <QueueDemo />
+      </LabSection>
+    </div>
+  );
+}

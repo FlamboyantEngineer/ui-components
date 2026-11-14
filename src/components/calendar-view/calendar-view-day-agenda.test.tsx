@@ -185,7 +185,7 @@ describe('CalendarView agenda view', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /^Team lunch,/ }));
     expect(onEventAction).toHaveBeenLastCalledWith('lunch');
-    expect(screen.getByRole('dialog', { name: 'Edit event' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-CALENDAR-VIEW-1.8 offers no drags or edges in the agenda', () => {

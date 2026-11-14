@@ -30,22 +30,13 @@ test.describe('reference stylesheet right to left', () => {
     await expectEvenEdges(page.locator('[data-lab-demo="rtl"] .ui-problem-list'));
   });
 
-  test('UIC-LABS-3.1 mirrors the attachment corner buttons and the feed line', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('chat-attachment');
-    const attachment = page.locator('[data-lab-demo="rtl"] .ui-chat-attachment');
-    const download = await attachment.locator('.ui-chat-attachment__download').boundingBox();
-    const remove = await attachment.locator('.ui-chat-attachment__remove').boundingBox();
+  test('UIC-LABS-3.1 mirrors the attachment corner buttons', async ({ page, lab }) => {
+    await lab.open('attachment');
+    const attachment = page.locator('[data-lab-demo="rtl"] .ui-attachment');
+    const download = await attachment.locator('.ui-attachment__download').boundingBox();
+    const remove = await attachment.locator('.ui-attachment__remove').boundingBox();
     expect(download?.x ?? 0).toBeGreaterThan(remove?.x ?? 0);
     await lab.expectAccessible('[data-lab-demo="rtl"]');
-
-    await lab.open('activity-feed');
-    const entry = page.locator('[data-lab-demo="rtl"] .ui-activity-feed__entry').first();
-    // The line's inset from the entry's right edge, the start edge right to left.
-    const inset = await entry.evaluate((node) => getComputedStyle(node, '::before').right);
-    expect(inset).toBe('11px');
   });
 
   test('UIC-LABS-1.6 UIC-LABS-3.1 marks the current page by tint and a thin frame, not an edge bar', async ({
@@ -90,20 +81,7 @@ test.describe('reference stylesheet right to left', () => {
     await lab.expectAccessible('[data-lab-demo="rtl"]');
   });
 
-  test('UIC-LABS-3.1 tints duplicate mapping columns and fades skeletons toward the end', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('mapping-table');
-    const duplicate = page
-      .locator(
-        '[data-lab-demo="rtl"] .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column',
-      )
-      .first();
-    await expect(duplicate).toHaveCSS('box-shadow', 'none');
-    await expect(duplicate).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
-    await lab.expectAccessible('[data-lab-demo="rtl"]');
-
+  test('UIC-LABS-3.1 fades skeletons toward the end', async ({ page, lab }) => {
     await lab.open('card');
     const skeleton = page.locator('[data-lab-demo="rtl"] .ui-card__skeleton');
     await expect(skeleton).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
@@ -142,7 +120,6 @@ test.describe('reference stylesheet state emphasis', () => {
     ['tree-compare', '.ui-tree-compare__count'],
     ['problem-list', '.ui-problem-list'],
     ['condition-builder', '.ui-condition-builder__group:not([data-depth="1"])'],
-    ['change-list', '.ui-change-list__side'],
     ['comment-thread', '.ui-comment-thread__quote'],
   ] as const;
   for (const [name, selector] of cases) {

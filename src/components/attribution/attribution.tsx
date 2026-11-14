@@ -5,11 +5,8 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
+import { PreviewTrigger, type PreviewTriggerType } from '../hover-card/hover-card.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
-import {
-  UserCardTrigger,
-  type UserCardTriggerType,
-} from '../user-card-trigger/user-card-trigger.js';
 import { isTimeFirst, parseAttributionTemplate } from './attribution-template.js';
 
 export interface AttributionProps
@@ -31,7 +28,7 @@ export interface AttributionProps
   /** A card about the person, usually a `UserCard`, that their name opens. */
   card?: ReactNode;
   /** How `card` opens: on press (the default), or on hover and keyboard focus after a delay. */
-  cardTrigger?: UserCardTriggerType | undefined;
+  cardTrigger?: PreviewTriggerType | undefined;
 }
 
 const hooks = createHooks('attribution', ['time', 'person', 'avatar', 'name']);
@@ -54,9 +51,9 @@ function AttributionPerson({
   );
   if (!card) return <span {...hooks.slot('person')}>{content}</span>;
   return (
-    <UserCardTrigger card={card} trigger={cardTrigger} className={hooks.slotClass('person')}>
+    <PreviewTrigger preview={card} trigger={cardTrigger} className={hooks.slotClass('person')}>
       {content}
-    </UserCardTrigger>
+    </PreviewTrigger>
   );
 }
 

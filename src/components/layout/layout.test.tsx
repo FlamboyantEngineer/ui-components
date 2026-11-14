@@ -3,6 +3,7 @@ import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { ToolbarRow } from '../toolbar-row/toolbar-row.js';
 import {
   Cluster,
   FlexRow,
@@ -14,7 +15,6 @@ import {
   StatusBar,
   View,
 } from './layout.js';
-import { ToolbarRow } from './toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
 
 const spaces: LayoutSpace[] = ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
@@ -382,7 +382,7 @@ describe('Layout options', () => {
 });
 
 describe('StatusBar', () => {
-  it('UIC-LAYOUT-3.4 renders the status bar as a footer strip', () => {
+  it('UIC-LAYOUT-3.3 renders the status bar as a footer strip', () => {
     const { container } = render(
       <StatusBar aria-label="Status">
         <span>12 words</span>
@@ -398,7 +398,7 @@ describe('StatusBar', () => {
     expectHooksMatchSpec(container, 'LAYOUT');
   });
 
-  it('UIC-LAYOUT-3.4 never makes a status bar the page content information', () => {
+  it('UIC-LAYOUT-3.3 never makes a status bar the page content information', () => {
     const { container } = render(
       <>
         <StatusBar>Ready</StatusBar>

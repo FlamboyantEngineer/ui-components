@@ -10,7 +10,7 @@ import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 
 /**
  * Where an editor's changes stand: `idle` shows nothing, `dirty` has unsaved changes, `saving` is

@@ -4,7 +4,7 @@
 // Lab-only layout is inline.
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ChatModelPicker } from '../../src/components/chat-model-picker/chat-model-picker.js';
+import { ChatModelPicker } from '../../src/components/chat/index.js';
 import {
   MessageComposer,
   MessageComposerAttachButton,

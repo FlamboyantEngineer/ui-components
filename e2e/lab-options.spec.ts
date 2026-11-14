@@ -7,23 +7,11 @@ const output = (page: Page, scope: string, name: string) =>
 
 // Options of several components that their labs gained so each one can be tried by hand.
 test.describe('Lab options', () => {
-  test('UIC-ACTIVITY-FEED-2.1 reports a failed older page and loads it on retry', async ({
+  test('UIC-CHAT-16.11 reports a failed page of history and loads it on retry', async ({
     page,
     lab,
   }) => {
-    await lab.open('activity-feed');
-    const feed = demo(page, 'feed-load-error');
-    await feed.scrollIntoViewIfNeeded();
-    await expect(output(page, 'feed-load-error', 'load error')).toHaveText('The server is busy');
-    await feed.getByRole('button', { name: /older|more/i }).click();
-    await expect(feed.getByText('renamed')).toBeVisible();
-  });
-
-  test('UIC-CHAT-LIST-1.11 reports a failed page of history and loads it on retry', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('chat-list');
+    await lab.open('chat');
     const list = demo(page, 'history-load-error');
     const loadMore = list.getByRole('button', { name: 'Load more' });
     await loadMore.click();
@@ -33,20 +21,8 @@ test.describe('Lab options', () => {
     await expect(list.getByText('Choosing a reading lamp')).toBeVisible();
   });
 
-  test('UIC-VERSION-HISTORY-1.11 unfolds versions from the host and at first', async ({
-    page,
-    lab,
-  }) => {
-    await lab.open('version-history');
-    const host = demo(page, 'host-folding');
-    await host.getByRole('button', { name: 'Unfold every named version' }).click();
-    await expect(output(page, 'host-folding', 'host expanded')).toHaveText('f5, f2');
-    await host.getByRole('button', { name: 'Fold them all' }).click();
-    await expect(output(page, 'host-folding', 'host expanded')).toHaveText('none');
-  });
-
-  test('UIC-CHAT-SOURCES-1.4 lets the host show the sources', async ({ page, lab }) => {
-    await lab.open('chat-sources');
+  test('UIC-CHAT-36.4 lets the host show the sources', async ({ page, lab }) => {
+    await lab.open('chat');
     const sources = demo(page, 'host-expanded');
     await sources.getByRole('button', { name: 'Host shows the sources' }).click();
     await expect(output(page, 'host-expanded', 'expanded')).toHaveText('true');
@@ -59,11 +35,6 @@ test.describe('Lab options', () => {
       'aria-valuetext',
       /45\s?MB/,
     );
-  });
-
-  test('UIC-CONSTRAINT-EDITOR-1.3 orders bounds with the host compare', async ({ page, lab }) => {
-    await lab.open('constraint-editor');
-    await expect(output(page, 'compare', 'hex constraints')).toContainText('"default":"1F"');
   });
 
   test('UIC-MESSAGE-COMPOSER-1.2 UIC-MESSAGE-COMPOSER-5.1 adds its own menu and reports a refused send', async ({

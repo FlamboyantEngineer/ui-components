@@ -266,11 +266,9 @@ test('UIC-PROPERTY-PANEL-3.1 sizes the label column to the longest label and lin
   page,
   lab,
 }) => {
-  await lab.open('property-filter');
-  // The second filtered panel is wide enough to keep its labels beside the controls.
-  const section = page
-    .locator('.ui-property-panel:has(.ui-property-section .ui-property-row)')
-    .nth(1)
+  await lab.open('property-panel');
+  // The wide searchable panel keeps its labels beside the controls.
+  const section = matrixCell(page, 'layout=responsive width=wide')
     .locator('.ui-property-section__content:has(.ui-property-row)')
     .first();
   await section.scrollIntoViewIfNeeded();
@@ -299,7 +297,7 @@ test('UIC-PROPERTY-PANEL-2.2 draws the section count quieter than the title', as
   page,
   lab,
 }) => {
-  await lab.open('property-filter');
+  await lab.open('property-panel');
   const count = page.locator('.ui-property-section__count').first();
   const title = page.locator('.ui-property-section__title').first();
   const style = (locator: Locator) =>

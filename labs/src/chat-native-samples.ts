@@ -1,4 +1,4 @@
-import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/index.js';
+import type { ChatMessageData, ChatPart } from '../../src/components/chat/index.js';
 import { longMessages } from './chat-long-cases.js';
 import { plannerId } from './chat-samples.js';
 

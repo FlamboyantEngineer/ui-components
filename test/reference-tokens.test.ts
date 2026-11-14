@@ -322,7 +322,7 @@ ${common}`,
     expect(result.status).toBe(1);
     expect(result.stderr).not.toContain('reference/pdf-viewer.css');
     expect(result.stderr).toContain(
-      'card.css:1: --disclosure-panel-height belongs to a third-party engine; use it only in disclosure.css, chat-activity.css',
+      'card.css:1: --disclosure-panel-height belongs to a third-party engine; use it only in disclosure.css, chat.css',
     );
     expect(result.stderr).toContain('card.css:1: --min-font-size belongs to a third-party engine');
   });

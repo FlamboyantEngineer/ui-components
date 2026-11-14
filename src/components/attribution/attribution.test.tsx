@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { UserCard } from '../user-card/user-card.js';
+import { Card } from '../card/card.js';
 import { Attribution } from './attribution.js';
 
 const fixedNow = new Date(2026, 4, 23, 10, 30);
@@ -107,11 +107,11 @@ describe('Attribution', () => {
         time="2026-05-22"
         getNow={getNow}
         person={maria}
-        card={<UserCard name="Maria Santos" description="Research" />}
+        card={<Card title="Maria Santos" description="Research" />}
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Maria Santos' });
-    expect(trigger).toHaveClass('ui-attribution__person', 'ui-user-card-trigger');
+    expect(trigger).toHaveClass('ui-attribution__person', 'ui-preview-trigger');
     await user.click(trigger);
     expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toHaveTextContent('Research');
   });
@@ -123,7 +123,7 @@ describe('Attribution', () => {
         time="2026-05-22"
         getNow={getNow}
         person={maria}
-        card={<UserCard name="Maria Santos" />}
+        card={<Card title="Maria Santos" />}
         cardTrigger="hover"
       />,
     );

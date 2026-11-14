@@ -20,7 +20,6 @@ describe('ActionRow menus while locking', () => {
       const onAction = vi.fn();
       const more = (extra: Partial<ActionRowAction>): ActionRowAction[] => [
         {
-          verb: 'custom',
           id: 'more',
           label: 'More',
           items: [{ id: 'archive', label: 'Archive' }],

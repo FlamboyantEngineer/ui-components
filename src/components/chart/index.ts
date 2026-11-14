@@ -26,3 +26,5 @@ export type {
 export { LineChart } from './line-chart.js';
 export type { ScatterChartPoint, ScatterChartProps, ScatterChartSeries } from './scatter-chart.js';
 export { ScatterChart } from './scatter-chart.js';
+export type { SparklineMarker, SparklineProps, SparklineVariant } from './sparkline.js';
+export { Sparkline } from './sparkline.js';

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  type NumberDecimalFieldProps,
   type NumberEntryFieldProps,
   NumberField,
   type NumberFieldProps,
@@ -18,10 +19,14 @@ describe('NumberField props', () => {
   it('UIC-NUMBER-FIELD-1.1 types every mode in one union that a wrapper forwards', () => {
     expectTypeOf<ComponentProps<typeof NumberField>>().toEqualTypeOf<NumberFieldProps>();
     expectTypeOf<NumberFieldProps>().toEqualTypeOf<
-      NumberEntryFieldProps | NumberSliderFieldProps | NumberRangeFieldProps
+      | NumberEntryFieldProps
+      | NumberSliderFieldProps
+      | NumberRangeFieldProps
+      | NumberDecimalFieldProps
     >();
     const modes: NumberFieldProps[] = [
-      { label: 'Quantity', value: 2 },
+      { label: 'Quantity', valueType: 'number', value: 2 },
+      { label: 'Exact quantity', valueType: 'decimal', value: '9007199254740993' },
       { label: 'Volume', display: 'slider', value: 2 },
       { label: 'Price', range: true, value: [1, 4] },
     ];
@@ -39,9 +44,68 @@ describe('NumberField props', () => {
         ))}
       </>,
     );
+    expect(screen.getByRole('spinbutton', { name: 'Exact quantity' })).toHaveValue(
+      '9,007,199,254,740,993',
+    );
     expect(screen.getByRole('textbox', { name: 'Quantity' })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Volume' })).toHaveValue('2');
     expect(screen.getByRole('textbox', { name: 'Minimum Price' })).toHaveValue('1');
     expect(screen.getByRole('textbox', { name: 'Maximum Price' })).toHaveValue('4');
   });
+});
+
+// These assignments exercise the public discriminant and contextual callback inference.
+const decimalProps: NumberFieldProps = {
+  label: 'Exact',
+  valueType: 'decimal',
+  value: '0.1',
+  onChange: (value) => {
+    expectTypeOf(value).toEqualTypeOf<string | null>();
+  },
+  onCommit: (value) => {
+    expectTypeOf(value).toEqualTypeOf<string | null>();
+  },
+};
+const numericProps: NumberFieldProps = {
+  label: 'Numeric',
+  value: 0.1,
+  onChange: (value) => {
+    expectTypeOf(value).toEqualTypeOf<number | null>();
+  },
+};
+it('UIC-NUMBER-FIELD-9.1 types decimal and numeric callbacks without a mixed value', () => {
+  expect([decimalProps, numericProps]).toHaveLength(2);
+  expectTypeOf<{
+    label: string;
+    valueType: 'decimal';
+    display: 'slider';
+    value: string;
+  }>().not.toExtend<NumberFieldProps>();
+  expectTypeOf<{
+    label: string;
+    valueType: 'decimal';
+    range: true;
+    value: [number, number];
+  }>().not.toExtend<NumberFieldProps>();
+  expectTypeOf<{
+    label: string;
+    valueType: 'decimal';
+    radix: 16;
+    value: string;
+  }>().not.toExtend<NumberFieldProps>();
+  expectTypeOf<{ label: string; value: string }>().not.toExtend<NumberFieldProps>();
+  expectTypeOf<{ label: string; value: number; scale: number }>().not.toExtend<NumberFieldProps>();
+});
+
+it('UIC-NUMBER-FIELD-9.1 rejects numeric callbacks and units in exact mode', () => {
+  expectTypeOf<{
+    label: string;
+    valueType: 'decimal';
+    onChange: (value: number | null) => void;
+  }>().not.toExtend<NumberFieldProps>();
+  expectTypeOf<{
+    label: string;
+    valueType: 'decimal';
+    units: { unit: string; conversions: Record<string, number> };
+  }>().not.toExtend<NumberFieldProps>();
 });

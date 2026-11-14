@@ -53,25 +53,19 @@
   align-items: center;
 }
 
-.ui-action-row[data-selection] {
-  padding: 4px 8px;
-  border-radius: var(--ref-radius);
-  background: var(--ref-selected);
-}
-
-.ui-action-row__selection {
+/* Intrinsic lead content, such as a counted choice, scrolls while adjacent actions keep their room. */
+.ui-action-row[data-lead-overflow='scroll'] > .ui-action-row__lead {
   display: flex;
-  flex: none;
-  align-items: center;
-  gap: 4px;
+  flex: 1 1 0%;
+  max-width: none;
+  overflow: auto hidden;
 }
-
-.ui-action-row__clear {
+.ui-action-row[data-lead-overflow='scroll'] > .ui-action-row__lead > * {
   flex: none;
+  max-width: none;
 }
-
-.ui-action-row__count {
-  color: var(--ref-text);
-  font-weight: var(--ref-font-weight-strong);
-  white-space: nowrap;
+.ui-action-row[data-lead-overflow='scroll'][data-overflow='menu'] > .ui-action-row__actions {
+  flex: 0 1 auto;
+  max-width: 50%;
+  min-width: var(--ref-control-height-md);
 }

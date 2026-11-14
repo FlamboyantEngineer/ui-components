@@ -1,6 +1,6 @@
 import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import type { StateMachineTransition } from './state-machine-view.js';
+import type { StateMachineTransition } from './state-machine-model.js';
 
 interface SequenceBox {
   x: number;

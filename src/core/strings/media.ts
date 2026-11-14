@@ -23,19 +23,6 @@ interface MediaStrings {
   assetResults: string;
   /** Says an asset picker's search found nothing. */
   assetsEmpty: string;
-  /** Labels the text that describes a chosen image to those who cannot see it. */
-  assetAlt: string;
-  /** Labels a chosen image's width in pixels. */
-  assetWidth: string;
-  /** Labels a chosen image's height in pixels. */
-  assetHeight: string;
-  /** Labels the choice that keeps a chosen image's width and height in proportion. */
-  assetConstrain: string;
-  /** Labels the alignment of a chosen image. */
-  assetAlign: string;
-  assetAlignStart: string;
-  assetAlignCenter: string;
-  assetAlignEnd: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { ChatParts } from '../../src/components/chat-parts/index.js';
+import { ChatParts } from '../../src/components/chat/index.js';
 import {
   ChatMessage,
   ChatTranscript,

@@ -228,7 +228,7 @@ test.describe('Number Field lab, slider display', () => {
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(volume).toHaveAttribute('aria-valuetext', '50');
 
-    await page.getByRole('button', { name: 'Submit' }).click();
+    await page.getByRole('button', { name: 'Submit', exact: true }).click();
     const quiet = field(page, 'quiet');
     const start = quiet.getByRole('slider', { name: 'Minimum Quiet hours' });
     await expect(start).toBeFocused();
@@ -240,7 +240,7 @@ test.describe('Number Field lab, slider display', () => {
     await page.keyboard.press('PageUp');
     await page.keyboard.press('PageUp');
     await expect(start).not.toHaveAttribute('aria-invalid');
-    await page.getByRole('button', { name: 'Submit' }).click();
+    await page.getByRole('button', { name: 'Submit', exact: true }).click();
     await expect(output(page, 'Submitted')).toHaveText('volume=50 quiet-from=10 quiet-to=22');
   });
 });

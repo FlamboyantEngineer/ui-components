@@ -7,7 +7,7 @@ import { CardGrid, CardGridItem } from '../card/card.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { Image } from '../image/image.js';
 import { assetPickerHooks as hooks } from './asset-picker-hooks.js';
-import type { AssetPickerItem } from './asset-placement.js';
+import type { AssetPickerItem } from './asset-picker-types.js';
 
 interface AssetResultsProps {
   search: RemoteSearch<AssetPickerItem>;

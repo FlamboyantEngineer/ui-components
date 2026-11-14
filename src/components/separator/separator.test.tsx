@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ToolbarRow, ToolbarRowSeparator } from '../layout/toolbar-row.js';
 import { Menu, MenuItem, MenuSeparator } from '../menu/menu.js';
+import { ToolbarRow, ToolbarRowSeparator } from '../toolbar-row/toolbar-row.js';
 import { Separator } from './separator.js';
 
 const variants = ['solid', 'dashed', 'dotted', 'wiggly'] as const;
@@ -227,7 +227,7 @@ describe('Separator', () => {
     expect(menuRule.tagName).toBe('HR');
     expect(menuRule).toHaveAttribute('data-orientation', 'horizontal');
     expectHooksMatchSpec(container, 'SEPARATOR');
-    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['separator'] });
+    expectHooksMatchSpec(container, 'TOOLBAR-ROW', { slots: ['ui-toolbar-row__separator'] });
     expectHooksMatchSpec(document.body, 'MENU');
   });
 });

@@ -59,10 +59,10 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-2.1 - Hooks and caller attributes
 
-Both composers shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to their root, and put their `ref`, focus and keyboard handlers on the input (the text area, or the rich composer's text box). The text area's `ref` stays attached across renders: a callback ref is called again only when the caller passes a new one. The caller's key handlers run for the keys the completion list and the composer (UIC-MESSAGE-COMPOSER-1.2, 3.3 to 3.5, 4.3, 4.5) do not use. The composer looks focused while its input holds focus (`.ui-message-composer:has(.ui-message-composer__input:focus)`), not while one of its controls does: a menu among the controls that closes and gives focus back to its trigger, such as the [Chat Model Picker](CHAT-MODEL-PICKER.md), leaves the frame at rest, with only the trigger's own focus ring under keyboard use.
+Both composers shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to their root, and put their `ref`, focus and keyboard handlers on the input (the text area, or the rich composer's text box). The text area's `ref` stays attached across renders: a callback ref is called again only when the caller passes a new one. The caller's key handlers run for the keys the completion list and the composer (UIC-MESSAGE-COMPOSER-1.2, 3.3 to 3.5, 4.3, 4.5) do not use. The composer looks focused while its input holds focus (`.ui-message-composer:has(.ui-message-composer__input:focus)`), not while one of its controls does: a menu among the controls that closes and gives focus back to its trigger, such as the [Chat Model Picker](CHAT.md), leaves the frame at rest, with only the trigger's own focus ring under keyboard use.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-content.tsx`, `labs/reference/message-composer.css`
-Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/chat-model-picker.spec.ts`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/chat-chat-model-picker.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-2.2 - Accessibility
 
@@ -205,7 +205,7 @@ Verification: `src/components/message-composer/rich/rich-message-composer.test.t
 
 ### UIC-MESSAGE-COMPOSER-4.9 - Record references
 
-A token of kind `reference` shall stand for a record the host names: `id` is its opaque identity, `label` the text the reference shows (in the message's text, without a trigger character), and the optional `recordType` the host's kind or scope for it. The composer neither reads nor fetches the record. Its pill draws a [Record Label](RECORD-LABEL.md) chip whose identifier is the label, with what `getReference({ id, label, recordType })` returns for it each time it draws (its name, icon, link, kind, version, state, preview, or that it is missing or restricted, as [UIC-RECORD-LABEL-11](RECORD-LABEL.md#uic-record-label-11---contract) says); without `getReference`, or when it returns nothing, the chip shows only the label. A link reaches the record through the provider's link renderer, and the editor leaves presses and keys in the chip to it. While the composer is editable the chip has its remove button, which removes the reference and returns focus to the text box. References mix with text and other pills on any line, and a message of references alone is not blank. The message's tokens carry each reference's `id`, `label` and `recordType` through `onChange`, `onSubmit`, a failed send ([UIC-MESSAGE-COMPOSER-3.9](#uic-message-composer-39---accepting-a-message)), `editValue` and the stored draft ([UIC-MESSAGE-COMPOSER-3.6](#uic-message-composer-36---draft)), which ignores a stored message whose tokens have another kind or a `recordType` that is not text. In a code block, or in the plain composer, a reference goes in as its label. Copying from the text box copies the reference's label as plain text.
+A token of kind `reference` shall stand for a record the host names: `id` is its opaque identity, `label` the text the reference shows (in the message's text, without a trigger character), and the optional `recordType` the host's kind or scope for it. The composer neither reads nor fetches the record. Its pill draws a neutral `MessageReference` whose default label is the token label, with what `getReference({ id, label, recordType })` returns for it each time it draws (its label override, name, icon, link, supporting content or preview); without `getReference`, or when it returns nothing, the chip shows only the label. A link reaches the record through the provider's link renderer, and the editor leaves presses and keys in the chip to it. While the composer is editable the chip has its remove button, which removes the reference and returns focus to the text box. References mix with text and other pills on any line, and a message of references alone is not blank. The message's tokens carry each reference's `id`, `label` and `recordType` through `onChange`, `onSubmit`, a failed send ([UIC-MESSAGE-COMPOSER-3.9](#uic-message-composer-39---accepting-a-message)), `editValue` and the stored draft ([UIC-MESSAGE-COMPOSER-3.6](#uic-message-composer-36---draft)), which ignores a stored message whose tokens have another kind or a `recordType` that is not text. In a code block, or in the plain composer, a reference goes in as its label. Copying from the text box copies the reference's label as plain text.
 
 Implementation: `src/components/message-composer/composer-message.ts`, `src/components/message-composer/rich/composer-pill.tsx`, `src/components/message-composer/rich/composer-schema.ts`, `src/components/message-composer/rich/composer-markdown.ts`, `src/components/message-composer/rich/rich-editor.tsx`
 Verification: `src/components/message-composer/rich/composer-pill.test.tsx`, `src/components/message-composer/rich/composer-markdown.test.ts`, `e2e/message-composer.spec.ts`
@@ -360,7 +360,7 @@ Verification: `src/components/message-composer/composer-controls.test.tsx`
 
 ### UIC-MESSAGE-COMPOSER-6.2 - Placing controls
 
-`startControls` and `endControls` shall take any nodes, so a host places any number of controls in any order at the start or the end of the row: the built-in ones of this spec, a [Chat Model Picker](CHAT-MODEL-PICKER.md) or its own. Both groups render, empty or not, so a stylesheet can push the end group to the end of the row. The "+", attach, emoji and send buttons act on the composer around them: placed outside a composer's controls they throw an `Error` naming themselves.
+`startControls` and `endControls` shall take any nodes, so a host places any number of controls in any order at the start or the end of the row: the built-in ones of this spec, a [Chat Model Picker](CHAT.md) or its own. Both groups render, empty or not, so a stylesheet can push the end group to the end of the row. The "+", attach, emoji and send buttons act on the composer around them: placed outside a composer's controls they throw an `Error` naming themselves.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-controls.ts`
 Verification: `src/components/message-composer/composer-controls.test.tsx`
@@ -425,40 +425,54 @@ Verification: `src/components/message-composer/composer-select.test.tsx`
 Implementation: `src/components/message-composer/composer-toggle.tsx`
 Verification: `src/components/message-composer/composer-toggle.test.tsx`, `e2e/message-composer-controls.spec.ts`
 
+## UIC-MESSAGE-COMPOSER-10 - Neutral references
+
+### UIC-MESSAGE-COMPOSER-10.1 - Host presentation
+
+`MessageReference` shall render a token label with optional icon, name, supporting description, link, hover preview and remove action. `MessageReferenceResolver` accepts an opaque id, label and optional host scope and returns `MessageReferencePresentation`; a host may replace the label to express its own availability policy. The composer and Chat use the same reference renderer. A literal space separates the label content from its description so copied and accessible text remains readable. Reference presentation imports no rich editor peers. A missing resolver displays the token label. The neutral reference stylesheet provides inline geometry, spacing and wrapping without host CSS.
+
+Implementation: `src/components/message-composer/message-reference.tsx`, `src/components/message-composer/rich/composer-pill.tsx`, `src/components/chat/chat-text-part.tsx`, `labs/reference/message-composer.css`
+Verification: `src/components/message-composer/message-reference.test.tsx`, `src/components/message-composer/rich/composer-pill.test.tsx`, `src/components/chat/chat-text-part.test.tsx`
+
 ## Hooks
 
-| Hook                               | Kind      | Values                                       | Description                                                           |
-| ---------------------------------- | --------- | -------------------------------------------- | --------------------------------------------------------------------- |
-| `ui-message-composer`              | root      |                                              | The composer's frame.                                                 |
-| `ui-message-composer__banner`      | slot      |                                              | The line above everything else: the message replied to or edited.     |
-| `ui-message-composer__attachments` | slot      |                                              | The attachments above the text.                                       |
-| `ui-message-composer__input`       | slot      |                                              | The text area, or the rich composer's editable text box.              |
-| `ui-message-composer__placeholder` | slot      |                                              | Rich: the empty text box's first line, which shows the placeholder.   |
-| `ui-message-composer__pill`        | slot      |                                              | Rich: a mention, command, record reference or host token in the text. |
-| `ui-message-composer__pill-icon`   | slot      |                                              | Rich: a host token's icon, before its label (also `ui-icon`).         |
-| `ui-message-composer__code-block`  | slot      |                                              | Rich: a code block (`pre`).                                           |
-| `ui-message-composer__footer`      | slot      |                                              | The row of controls below the text.                                   |
-| `ui-message-composer__start`       | slot      |                                              | The controls at the start of the row.                                 |
-| `ui-message-composer__end`         | slot      |                                              | The controls at the end of the row, then the send button.             |
-| `ui-message-composer__menu-button` | slot      |                                              | The "+" button that opens the menu (also `ui-button`).                |
-| `ui-message-composer__menu`        | slot      |                                              | The menu the "+" button opens and its submenus (also `ui-menu`).      |
-| `ui-message-composer__attach`      | slot      |                                              | The attach button (also `ui-button`).                                 |
-| `ui-message-composer__emoji`       | slot      |                                              | The emoji button (also `ui-button`).                                  |
-| `ui-message-composer__select`      | slot      |                                              | A select's trigger (also `ui-button`).                                |
-| `ui-message-composer__select-menu` | slot      |                                              | The menu a select opens (also `ui-menu`).                             |
-| `ui-message-composer__toggle`      | slot      |                                              | A toggle (also `ui-button`).                                          |
-| `ui-message-composer__cancel`      | slot      |                                              | The Cancel button of edit mode (also `ui-button`).                    |
-| `ui-message-composer__action`      | slot      |                                              | The send, stop or save button (also `ui-button`).                     |
-| `ui-message-composer__completions` | slot      |                                              | The completion list's popover (also `ui-completion-list`).            |
-| `data-pending`                     | state     | `true`                                       | On the root: a reply is on its way.                                   |
-| `data-editing`                     | state     | `true`                                       | On the root: the composer edits a message.                            |
-| `data-drop-target`                 | state     | `true`                                       | On the root: a drag carrying files is over the composer.              |
-| `data-submitting`                  | state     | `true`                                       | On the root: a sent message waits for the host to accept it.          |
-| `data-compact`                     | state     | `true`                                       | On the root: the row is too narrow, controls show their icon alone.   |
-| `data-disabled`                    | state     | `true`                                       | On the root, and on the input (React Aria): disabled.                 |
-| `data-focused`                     | state     | `true`                                       | On the input: focused (React Aria).                                   |
-| `data-focus-visible`               | state     | `true`                                       | On the input: focused from the keyboard (React Aria).                 |
-| `data-hovered`                     | state     | `true`                                       | On the input: under the pointer (React Aria).                         |
-| `data-kind`                        | attribute | `mention`, `command`, `reference`, `trigger` | On a pill: what it stands for.                                        |
-| `data-trigger`                     | attribute |                                              | On a `trigger` pill: the id of the host trigger it came from.         |
-| `data-placeholder`                 | attribute |                                              | On the placeholder line: the placeholder text.                        |
+| Hook                                | Kind      | Values / Meaning                             |
+| ----------------------------------- | --------- | -------------------------------------------- |
+| `ui-message-composer`               | root      |                                              | The composer's frame.                                                 |
+| `ui-message-composer__banner`       | slot      |                                              | The line above everything else: the message replied to or edited.     |
+| `ui-message-composer__attachments`  | slot      |                                              | The attachments above the text.                                       |
+| `ui-message-composer__input`        | slot      |                                              | The text area, or the rich composer's editable text box.              |
+| `ui-message-composer__placeholder`  | slot      |                                              | Rich: the empty text box's first line, which shows the placeholder.   |
+| `ui-message-composer__pill`         | slot      |                                              | Rich: a mention, command, record reference or host token in the text. |
+| `ui-message-composer__pill-icon`    | slot      |                                              | Rich: a host token's icon, before its label (also `ui-icon`).         |
+| `ui-message-composer__code-block`   | slot      |                                              | Rich: a code block (`pre`).                                           |
+| `ui-message-composer__footer`       | slot      |                                              | The row of controls below the text.                                   |
+| `ui-message-composer__start`        | slot      |                                              | The controls at the start of the row.                                 |
+| `ui-message-composer__end`          | slot      |                                              | The controls at the end of the row, then the send button.             |
+| `ui-message-composer__menu-button`  | slot      |                                              | The "+" button that opens the menu (also `ui-button`).                |
+| `ui-message-composer__menu`         | slot      |                                              | The menu the "+" button opens and its submenus (also `ui-menu`).      |
+| `ui-message-composer__attach`       | slot      |                                              | The attach button (also `ui-button`).                                 |
+| `ui-message-composer__emoji`        | slot      |                                              | The emoji button (also `ui-button`).                                  |
+| `ui-message-composer__select`       | slot      |                                              | A select's trigger (also `ui-button`).                                |
+| `ui-message-composer__select-menu`  | slot      |                                              | The menu a select opens (also `ui-menu`).                             |
+| `ui-message-composer__toggle`       | slot      |                                              | A toggle (also `ui-button`).                                          |
+| `ui-message-composer__cancel`       | slot      |                                              | The Cancel button of edit mode (also `ui-button`).                    |
+| `ui-message-composer__action`       | slot      |                                              | The send, stop or save button (also `ui-button`).                     |
+| `ui-message-composer__completions`  | slot      |                                              | The completion list's popover (also `ui-completion-list`).            |
+| `data-pending`                      | state     | `true`                                       | On the root: a reply is on its way.                                   |
+| `data-editing`                      | state     | `true`                                       | On the root: the composer edits a message.                            |
+| `data-drop-target`                  | state     | `true`                                       | On the root: a drag carrying files is over the composer.              |
+| `data-submitting`                   | state     | `true`                                       | On the root: a sent message waits for the host to accept it.          |
+| `data-compact`                      | state     | `true`                                       | On the root: the row is too narrow, controls show their icon alone.   |
+| `data-disabled`                     | state     | `true`                                       | On the root, and on the input (React Aria): disabled.                 |
+| `data-focused`                      | state     | `true`                                       | On the input: focused (React Aria).                                   |
+| `data-focus-visible`                | state     | `true`                                       | On the input: focused from the keyboard (React Aria).                 |
+| `data-hovered`                      | state     | `true`                                       | On the input: under the pointer (React Aria).                         |
+| `data-kind`                         | attribute | `mention`, `command`, `reference`, `trigger` | On a pill: what it stands for.                                        |
+| `data-trigger`                      | attribute |                                              | On a `trigger` pill: the id of the host trigger it came from.         |
+| `data-placeholder`                  | attribute |                                              | On the placeholder line: the placeholder text.                        |
+| `ui-message-reference`              | root      | Inline reference                             |
+| `ui-message-reference__content`     | slot      | Label and optional link                      |
+| `ui-message-reference__description` | slot      | Host supporting content                      |
+| `ui-message-reference__remove`      | slot      | Remove action                                |
+| `ui-message-reference__preview`     | slot      | Host hover preview                           |

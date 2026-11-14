@@ -4,7 +4,7 @@ import {
   type ChatSource,
   ChatSources,
   createCitationOverride,
-} from '../../src/components/chat-sources/index.js';
+} from '../../src/components/chat/index.js';
 import { createCodeBlockOverride } from '../../src/components/code-block/index.js';
 import { Markdown, type MarkdownNode } from '../../src/components/markdown/index.js';
 

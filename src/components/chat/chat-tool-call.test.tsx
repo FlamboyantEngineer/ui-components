@@ -1,0 +1,456 @@
+import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { getToolCallTrigger } from '../../../test/chat-tool-call-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { SparklesGlyph } from '../../core/glyphs.js';
+import { ChatToolCall, type ChatToolCallStatus } from './chat-tool-call.js';
+
+const statusTexts: Record<ChatToolCallStatus, [string, string]> = {
+  pending: ['Pending', 'clock'],
+  running: ['Running', 'spinner'],
+  'approval-requested': ['Needs approval', 'hand-raised'],
+  succeeded: ['Done', 'letter'],
+  failed: ['Failed', 'error'],
+  denied: ['Denied', 'no-symbol'],
+  cancelled: ['Cancelled', 'x-circle'],
+};
+
+describe('ChatToolCall', () => {
+  it('UIC-CHAT-39.8 publishes its variant, a card by default', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call-1" name="search_recipes" status="succeeded" />,
+    );
+    const root = container.querySelector('.ui-chat-tool-call');
+    expect(root).toHaveAttribute('data-variant', 'card');
+    rerender(<ChatToolCall id="call-1" name="search_recipes" status="succeeded" variant="row" />);
+    expect(root).toHaveAttribute('data-variant', 'row');
+  });
+
+  it('UIC-CHAT-39.1 UIC-CHAT-39.6 draws a card whose trigger names the call', () => {
+    const { container } = render(
+      <ChatToolCall
+        id="call-1"
+        name="search_recipes"
+        label="Searched recipes"
+        status="succeeded"
+        args={{ query: 'lentil soup' }}
+        result={{ count: 3 }}
+        durationMs={1200}
+        approval={{ isAutoApproved: true }}
+        className="extra"
+        data-testid="tool"
+        data-status="ignored"
+        defaultExpanded
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveClass('ui-chat-tool-call', 'extra');
+    expect(root).toHaveAttribute('id', 'call-1');
+    expect(root).toHaveAttribute('data-testid', 'tool');
+    expect(root).toHaveAttribute('data-status', 'succeeded');
+    const disclosure = root.querySelector('.ui-chat-tool-call__disclosure');
+    expect(disclosure).toHaveClass('ui-disclosure');
+    const heading = screen.getByRole('heading', { level: 3 });
+    expect(heading).toHaveClass('ui-chat-tool-call__heading');
+    const trigger = within(heading).getByRole('button');
+    expect(trigger).toHaveAccessibleName('Searched recipes Done 1.2 seconds Auto-approved');
+    expect(disclosure?.querySelector('.ui-chat-tool-call__body')).toHaveClass(
+      'ui-disclosure__panel',
+    );
+    expectHooksMatchSpec(container, 'CHAT', {
+      slots: [
+        'ui-chat-tool-call__disclosure',
+        'ui-chat-tool-call__heading',
+        'ui-chat-tool-call__status-glyph',
+        'ui-chat-tool-call__summary',
+        'ui-chat-tool-call__label',
+        'ui-chat-tool-call__status',
+        'ui-chat-tool-call__duration',
+        'ui-chat-tool-call__badge',
+        'ui-chat-tool-call__body',
+        'ui-chat-tool-call__part',
+        'ui-chat-tool-call__part-header',
+        'ui-chat-tool-call__part-title',
+        'ui-chat-tool-call__copy',
+        'ui-chat-tool-call__json',
+      ],
+      callerAttributes: ['data-testid'],
+    });
+  });
+
+  it('UIC-CHAT-39.1 holds the label, status, duration and badge in the summary beside the glyph', () => {
+    const { container } = render(
+      <ChatToolCall
+        id="call-long"
+        name="plan_weekend"
+        label="Compare the morning and afternoon trains for Saturday"
+        status="succeeded"
+        durationMs={2300}
+        approval={{ isAutoApproved: true }}
+      />,
+    );
+    const title = getToolCallTrigger(container).querySelector('.ui-disclosure__title');
+    const [glyph, summary] = Array.from(title?.children ?? []);
+    expect(glyph).toHaveClass('ui-chat-tool-call__status-glyph');
+    expect(summary).toHaveClass('ui-chat-tool-call__summary');
+    expect(Array.from(summary?.children ?? []).map((part) => part.classList[0])).toEqual([
+      'ui-chat-tool-call__label',
+      'ui-chat-tool-call__status',
+      'ui-chat-tool-call__duration',
+      'ui-badge',
+    ]);
+    expect(summary).toHaveTextContent(
+      'Compare the morning and afternoon trains for Saturday Done 2.3 s2.3 seconds Auto-approved',
+    );
+  });
+
+  it('UIC-CHAT-39.2 derives the label from the name when none is given', () => {
+    const { container } = render(<ChatToolCall id="call-2" name="getWeather" status="pending" />);
+    expect(container.querySelector('.ui-chat-tool-call__label')).toHaveTextContent('Get weather');
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Get weather Pending');
+  });
+
+  it("UIC-CHAT-39.1 UIC-CHAT-39.7 shows the target after the label and the kind's glyph once the call succeeded", () => {
+    const { container, rerender } = render(
+      <ChatToolCall
+        id="call"
+        name="read_file"
+        label="Read"
+        target="notes.txt"
+        kind="read"
+        status="running"
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-kind', 'read');
+    const trigger = getToolCallTrigger(container);
+    expect(trigger).toHaveAccessibleName('Read notes.txt Running');
+    expect(root.querySelector('.ui-chat-tool-call__target')).toHaveTextContent('notes.txt');
+    const glyph = () => root.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveClass('ui-spinner');
+    const kindGlyphs = {
+      read: 'file-text',
+      edit: 'edit',
+      command: 'terminal',
+      search: 'search',
+      fetch: 'globe',
+      other: 'letter',
+    } as const;
+    for (const [kind, name] of Object.entries(kindGlyphs)) {
+      rerender(
+        <ChatToolCall
+          id="call"
+          name="read_file"
+          label="Read"
+          target="notes.txt"
+          kind={kind as keyof typeof kindGlyphs}
+          status="succeeded"
+        />,
+      );
+      expect(root).toHaveAttribute('data-kind', kind);
+      expect(glyph()).toHaveAttribute('data-glyph', name);
+    }
+    expectHooksMatchSpec(container, 'CHAT', { slots: ['ui-chat-tool-call__target'] });
+    rerender(<ChatToolCall id="call" name="read_file" status="succeeded" />);
+    expect(root).toHaveAttribute('data-kind', 'other');
+    expect(root.querySelector('.ui-chat-tool-call__target')).toBeNull();
+  });
+
+  it('UIC-CHAT-39.9 shows the letter of its source, else of its name, once an other call succeeded', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="read_files" source="OneDrive" status="running" />,
+    );
+    const glyph = () => container.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveClass('ui-spinner');
+    rerender(<ChatToolCall id="call" name="read_files" source="OneDrive" status="succeeded" />);
+    expect(glyph()).toHaveClass('ui-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'letter');
+    expect(glyph()).toHaveAttribute('data-letter', 'O');
+    expect(glyph()).toHaveAttribute('aria-hidden', 'true');
+    expect(glyph()).toHaveTextContent('O');
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Read files Done');
+    rerender(<ChatToolCall id="call" name="read_files" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-letter', 'R');
+    rerender(<ChatToolCall id="call" name="read_files" source="📁 日記" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-letter', '日');
+    rerender(<ChatToolCall id="call" name="++" source="✨" status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-glyph', 'wrench');
+    expect(glyph()).not.toHaveAttribute('data-letter');
+    rerender(
+      <ChatToolCall id="call" name="read_files" source="OneDrive" kind="read" status="succeeded" />,
+    );
+    expect(glyph()).toHaveAttribute('data-glyph', 'file-text');
+  });
+
+  it('UIC-CHAT-39.9 shows the glyph given for the tool once the call succeeded', () => {
+    const { container, rerender } = render(
+      <ChatToolCall
+        id="call"
+        name="read_files"
+        kind="read"
+        glyph={SparklesGlyph}
+        status="failed"
+      />,
+    );
+    const glyph = () => container.querySelector('.ui-chat-tool-call__status-glyph');
+    expect(glyph()).toHaveAttribute('data-glyph', 'error');
+    rerender(
+      <ChatToolCall
+        id="call"
+        name="read_files"
+        kind="read"
+        glyph={SparklesGlyph}
+        status="succeeded"
+      />,
+    );
+    expect(glyph()).toHaveAttribute('data-glyph', 'sparkles');
+    rerender(<ChatToolCall id="call" name="read_files" glyph={SparklesGlyph} status="succeeded" />);
+    expect(glyph()).toHaveAttribute('data-glyph', 'sparkles');
+    expectHooksMatchSpec(container, 'CHAT', {});
+  });
+
+  it('UIC-CHAT-39.3 publishes each status with its text and glyph, busy while running', () => {
+    for (const [status, [text, glyph]] of Object.entries(statusTexts)) {
+      const { container, unmount } = render(
+        <ChatToolCall id="call" name="run_tests" status={status as ChatToolCallStatus} />,
+      );
+      const root = container.firstElementChild as HTMLElement;
+      expect(root).toHaveAttribute('data-status', status);
+      expect(root.querySelector('.ui-chat-tool-call__status')).toHaveTextContent(text);
+      const statusGlyph = root.querySelector('.ui-chat-tool-call__status-glyph');
+      // A running call shows the library spinner; every other status a named glyph.
+      if (glyph === 'spinner') expect(statusGlyph).toHaveClass('ui-spinner');
+      else expect(statusGlyph).toHaveAttribute('data-glyph', glyph);
+      if (status === 'running') expect(root).toHaveAttribute('aria-busy', 'true');
+      else expect(root).not.toHaveAttribute('aria-busy');
+      unmount();
+    }
+  });
+
+  it('UIC-CHAT-39.4 shows a short duration and reads a long one', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={350} />,
+    );
+    const duration = () => container.querySelector('.ui-chat-tool-call__duration') as HTMLElement;
+    expect(duration().querySelector('[aria-hidden="true"]')).toHaveTextContent('350 ms');
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Run tests Done 350 milliseconds');
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={1000} />);
+    expect(duration()).toHaveTextContent('1 s1 second');
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={125_000} />);
+    expect(duration().querySelector('[aria-hidden="true"]')).toHaveTextContent('2 min 5 s');
+    expect(getToolCallTrigger(container)).toHaveAccessibleName(
+      'Run tests Done 2 minutes 5 seconds',
+    );
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={60_000} />);
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Run tests Done 1 minute');
+    expect(duration().querySelector('[aria-hidden="true"]')).toHaveTextContent('1 min');
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" />);
+    expect(duration()).toBeNull();
+  });
+
+  it('UIC-CHAT-39.4 picks the unit from the rounded duration', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={59_949} />,
+    );
+    const shown = () =>
+      container.querySelector('.ui-chat-tool-call__duration [aria-hidden="true"]') as HTMLElement;
+    expect(shown()).toHaveTextContent('59.9 s');
+    for (const durationMs of [59_950, 59_999, 60_000]) {
+      rerender(
+        <ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={durationMs} />,
+      );
+      expect(shown()).toHaveTextContent(/^1 min$/);
+    }
+    rerender(<ChatToolCall id="call" name="run_tests" status="succeeded" durationMs={119_600} />);
+    expect(shown()).toHaveTextContent(/^2 min$/);
+    expect(getToolCallTrigger(container)).toHaveAccessibleName('Run tests Done 2 minutes');
+  });
+
+  it('UIC-CHAT-39.5 marks an auto-approved call with a badge', () => {
+    const { container, rerender } = render(
+      <ChatToolCall id="call" name="run_tests" status="running" approval={{}} />,
+    );
+    expect(container.firstElementChild).not.toHaveAttribute('data-auto-approved');
+    expect(container.querySelector('.ui-chat-tool-call__badge')).toBeNull();
+    rerender(
+      <ChatToolCall
+        id="call"
+        name="run_tests"
+        status="running"
+        approval={{ isAutoApproved: true }}
+      />,
+    );
+    expect(container.firstElementChild).toHaveAttribute('data-auto-approved', 'true');
+    const badge = container.querySelector('.ui-chat-tool-call__badge');
+    expect(badge).toHaveClass('ui-badge');
+    expect(badge).toHaveTextContent('Auto-approved');
+  });
+
+  it('UIC-CHAT-40.1 UIC-CHAT-40.2 shows the arguments and result as copyable JSON', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ChatToolCall
+        id="call"
+        name="search_recipes"
+        status="succeeded"
+        args={{ query: 'soup' }}
+        result='[{"title":"Lentil soup"}]'
+        defaultExpanded
+      />,
+    );
+    const parts = container.querySelectorAll('.ui-chat-tool-call__part');
+    expect([...parts].map((part) => part.getAttribute('data-part'))).toEqual([
+      'arguments',
+      'result',
+    ]);
+    const argumentsView = screen.getByRole('group', { name: 'Arguments' });
+    expect(argumentsView).toHaveAttribute('tabindex', '0');
+    expect(argumentsView.closest('.ui-chat-tool-call__json')).toHaveClass('ui-scroll-region');
+    expect(argumentsView.querySelector('pre')?.textContent).toBe('{\n  "query": "soup"\n}');
+    const resultView = screen.getByRole('group', { name: 'Result' });
+    expect(resultView.querySelector('pre')?.textContent).toBe(
+      '[\n  {\n    "title": "Lentil soup"\n  }\n]',
+    );
+    await user.click(screen.getByRole('button', { name: 'Copy result' }));
+    expect(await navigator.clipboard.readText()).toBe('[\n  {\n    "title": "Lentil soup"\n  }\n]');
+    await user.click(screen.getByRole('button', { name: 'Copy arguments' }));
+    expect(await navigator.clipboard.readText()).toBe('{\n  "query": "soup"\n}');
+  });
+
+  it('UIC-CHAT-40.1 shows only the parts that are defined', () => {
+    render(
+      <ChatToolCall id="call" name="get_weather" status="running" args={{}} defaultExpanded />,
+    );
+    expect(screen.getByRole('group', { name: 'Arguments' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Result' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-40.3 replaces the body with children', () => {
+    render(
+      <ChatToolCall id="call" name="get_weather" status="succeeded" args={{}} defaultExpanded>
+        <p>Sunny, 24 degrees</p>
+      </ChatToolCall>,
+    );
+    expect(screen.getByText('Sunny, 24 degrees')).toBeVisible();
+    expect(screen.queryByRole('group', { name: 'Arguments' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-40.4 notes a body with nothing to show', () => {
+    const { container } = render(
+      <ChatToolCall id="call" name="get_weather" status="pending" defaultExpanded />,
+    );
+    expect(container.querySelector('.ui-chat-tool-call__empty')).toHaveTextContent('No details');
+  });
+
+  it('UIC-CHAT-40.5 shows the error of a failed call at the top of the body', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <ChatToolCall
+        id="call"
+        name="get_weather"
+        status="failed"
+        error="The service timed out."
+        args={{ city: 'Lyon' }}
+      />,
+    );
+    const error = screen.getByText('The service timed out.');
+    expect(error).toHaveClass('ui-chat-tool-call__error');
+    expect(error.querySelector('[data-glyph="error"]')).toHaveAttribute('aria-hidden', 'true');
+    expect(error.closest('.ui-chat-tool-call__body')).not.toBeNull();
+    expect(error.nextElementSibling).toHaveClass('ui-chat-tool-call__part');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(error).not.toBeVisible();
+    await user.click(getToolCallTrigger(container));
+    expect(error).toBeVisible();
+    expectHooksMatchSpec(container, 'CHAT', { slots: ['ui-chat-tool-call__error'] });
+    rerender(<ChatToolCall id="call" name="get_weather" status="succeeded" error="Stale" />);
+    expect(screen.queryByText('Stale')).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-40.5 hides the error with a custom body when the reader collapses it', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ChatToolCall id="call" name="get_weather" status="failed" error="Timed out." defaultExpanded>
+        <p>Retry later.</p>
+      </ChatToolCall>,
+    );
+    expect(screen.getByText('Timed out.')).toBeVisible();
+    expect(screen.getByText('Retry later.')).toBeVisible();
+    await user.click(getToolCallTrigger(container));
+    expect(screen.getByText('Timed out.')).not.toBeVisible();
+    expect(screen.getByText('Retry later.')).not.toBeVisible();
+    expect(getToolCallTrigger(container)).toHaveAccessibleName(/Failed/);
+  });
+
+  it('UIC-CHAT-41.1 follows the status until the reader toggles it', async () => {
+    const user = userEvent.setup();
+    const props = { id: 'call', name: 'delete_file' } as const;
+    const { container, rerender } = render(<ChatToolCall {...props} status="pending" />);
+    const trigger = getToolCallTrigger(container);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatToolCall {...props} status="approval-requested" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    rerender(<ChatToolCall {...props} status="running" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatToolCall {...props} status="failed" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatToolCall {...props} status="approval-requested" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(<ChatToolCall {...props} status="failed" />);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-CHAT-41.1 starts from defaultExpanded and holds it across statuses', () => {
+    const props = { id: 'call', name: 'delete_file' } as const;
+    const { container, rerender } = render(
+      <ChatToolCall {...props} status="pending" defaultExpanded />,
+    );
+    expect(getToolCallTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+    rerender(<ChatToolCall {...props} status="succeeded" defaultExpanded />);
+    expect(getToolCallTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('UIC-CHAT-41.1 reports requested states while controlled', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const { container } = render(
+      <ChatToolCall
+        id="call"
+        name="delete_file"
+        status="failed"
+        isExpanded={false}
+        onExpandedChange={onExpandedChange}
+      />,
+    );
+    const trigger = getToolCallTrigger(container);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.click(trigger);
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('UIC-CHAT-41.1 hands controlled state back to the caller', async () => {
+    const user = userEvent.setup();
+    function Controlled() {
+      const [isExpanded, setIsExpanded] = useState(false);
+      return (
+        <ChatToolCall
+          id="call"
+          name="delete_file"
+          status="succeeded"
+          result="Removed"
+          isExpanded={isExpanded}
+          onExpandedChange={setIsExpanded}
+        />
+      );
+    }
+    const { container } = render(<Controlled />);
+    await user.click(getToolCallTrigger(container));
+    expect(getToolCallTrigger(container)).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('group', { name: 'Result' })).toBeVisible();
+  });
+});

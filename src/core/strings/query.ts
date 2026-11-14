@@ -60,8 +60,6 @@ interface QueryStrings {
   noRules: string;
   /** Names a rule's or a group's menu of actions. */
   conditionActions: string;
-  /** Submits a query. */
-  runQuery: string;
   /** Shows the facet values a list keeps folded, from how many there are. */
   showMoreValues: (count: number) => string;
 }

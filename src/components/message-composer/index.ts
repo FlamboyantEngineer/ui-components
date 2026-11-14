@@ -28,3 +28,10 @@ export type {
 } from './message-composer.js';
 export { MessageComposer } from './message-composer.js';
 export { useMessageComposerControls } from './message-composer.js';
+export type {
+  MessageReferenceData,
+  MessageReferencePresentation,
+  MessageReferenceProps,
+  MessageReferenceResolver,
+} from './message-reference.js';
+export { MessageReference } from './message-reference.js';

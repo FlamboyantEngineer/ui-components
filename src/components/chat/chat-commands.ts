@@ -1,9 +1,6 @@
-import type {
-  ChatFeedback,
-  ChatMessageCommandProps,
-} from '../chat-message-actions/chat-message-actions.js';
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
+import type { ChatFeedback, ChatMessageCommandProps } from './chat-message-actions.js';
 import { type ChatParticipantIndex, isOwnText, readMessageText } from './chat-model.js';
+import type { ChatMessageData } from './chat-parts.js';
 
 /**
  * The message commands a chat offers, each bound to a message id and present only when the chat

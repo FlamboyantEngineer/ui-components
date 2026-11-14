@@ -14,6 +14,7 @@ export const treeHooks = createHooks('tree', [
   'label',
   'new-mark',
   'rename-input',
+  'rename-error',
   'meta',
   'load-error',
   'actions',

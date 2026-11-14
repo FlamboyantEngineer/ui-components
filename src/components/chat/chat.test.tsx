@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
+import { join } from 'node:path';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -13,7 +13,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { readMenuIcons } from '../../../test/menu-fixtures.js';
 import { collectImports, collectPackages } from '../../../test/module-imports.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
-import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
+import type { ChatMessageData, ChatPart } from './chat-parts.js';
 
 installEditorDom();
 
@@ -64,8 +64,11 @@ function askingReply(question: string, labels: [string, string]): ChatMessageDat
 describe('Chat', () => {
   it('UIC-CHAT-1.1 ships from its own entry point and stays out of the package root', () => {
     const root = [...collectImports(join(process.cwd(), 'src/index.ts'))];
-    const chatDir = `${sep}components${sep}chat${sep}`;
-    expect(root.filter((file) => file.includes(chatDir))).toEqual([]);
+    for (const file of ['chat.tsx', 'chat-composer.tsx']) {
+      expect(root).not.toContain(join(process.cwd(), 'src/components/chat', file));
+    }
+    const optionalPeers = /^(prosemirror-|@handlewithcare\/react-prosemirror|react-reconciler)/;
+    expect(collectPackages('src/index.ts').filter((name) => optionalPeers.test(name))).toEqual([]);
     expect(collectPackages('src/components/chat/index.ts')).toContain('prosemirror-state');
     const entry = readFileSync(join(process.cwd(), 'src/components/chat/index.ts'), 'utf8');
     expect(entry).toMatch(/export \{ Chat, ChatHeader \}/);
@@ -95,7 +98,14 @@ describe('Chat', () => {
     ]);
     expect(screen.getByRole('feed', { name: 'Hiking group' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT', {
-      slots: ['transcript', 'typing', 'queue', 'progress', 'composer', 'search-toggle'],
+      slots: [
+        'ui-chat__transcript',
+        'ui-chat__typing',
+        'ui-chat__queue',
+        'ui-chat__progress',
+        'ui-chat__composer',
+        'ui-chat__search-toggle',
+      ],
       callerAttributes: ['data-testid'],
     });
   });
@@ -113,7 +123,13 @@ describe('Chat', () => {
     expect(last.closest('[aria-live], [role="status"], [role="alert"], [role="log"]')).toBeNull();
     expect(last.querySelector('[aria-live]')).toBeNull();
     expectHooksMatchSpec(container, 'CHAT', {
-      slots: ['transcript', 'typing', 'progress', 'composer', 'disclaimer'],
+      slots: [
+        'ui-chat__transcript',
+        'ui-chat__typing',
+        'ui-chat__progress',
+        'ui-chat__composer',
+        'ui-chat__disclaimer',
+      ],
     });
   });
 
@@ -178,7 +194,7 @@ describe('Chat', () => {
       messages: [awaiting],
       onApprove: (id) => approvals.push(id),
     });
-    expect(document.getElementById('r1-book')).toHaveClass('ui-chat-tool-call');
+    expect(document.querySelector('.ui-chat-tool-call')).toHaveClass('ui-chat-tool-call');
     await user.click(screen.getByRole('button', { name: 'Approve' }));
     expect(approvals).toEqual(['book']);
   });
@@ -203,10 +219,10 @@ describe('Chat', () => {
     expect(onAnswerQuestion).toHaveBeenLastCalledWith('ask', [
       { questionId: 'pace', optionIds: ['packed'] },
     ]);
-    expect(document.getElementById('r2-ask')).toHaveAttribute('data-submitting', 'true');
+    expect(document.querySelector('.ui-chat-question')).toHaveAttribute('data-submitting', 'true');
     const other = askingReply('When should the tour start?', ['Morning', 'Evening']);
     rerenderWith({ ...props, conversationId: 'tour', messages: [other] });
-    const card = document.getElementById('r2-ask');
+    const card = document.querySelector('.ui-chat-question');
     expect(card).not.toHaveAttribute('data-submitting');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.queryByRole('radio', { checked: true })).not.toBeInTheDocument();
@@ -235,7 +251,7 @@ describe('Chat', () => {
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('UIC-CHAT-1.5 UIC-CHAT-PARTS-5.4 keeps a failed call a collapsed row as the final answer arrives', async () => {
+  it('UIC-CHAT-1.5 UIC-CHAT-29.4 keeps a failed call a collapsed row as the final answer arrives', async () => {
     const steps = (hotels: 'running' | 'failed'): ChatPart[] => [
       {
         type: 'reasoning',

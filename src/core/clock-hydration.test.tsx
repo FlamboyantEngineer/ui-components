@@ -3,7 +3,6 @@ import type { ReactElement } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ActivityFeed } from '../components/activity-feed/activity-feed.js';
 import { CalendarView } from '../components/calendar-view/calendar-view.js';
 import { RelativeDateField } from '../components/relative-date-field/relative-date-field.js';
 import { Timeline } from '../components/timeline/timeline.js';
@@ -56,14 +55,6 @@ describe('Hydration-stable clock', () => {
       'present',
     );
     expect(host).toHaveTextContent('Today');
-    unmount();
-  });
-
-  it('UIC-PROVIDER-8.2 hydrates activity day headings as dates, then as words', async () => {
-    const items = [{ id: 'a', action: 'Planted tomatoes', time: '2026-11-01T00:01:00Z' }];
-    const { server, host, unmount } = await hydrateAcrossMidnight(<ActivityFeed items={items} />);
-    expect(server).toContain('Sunday, November 1, 2026');
-    expect(host.querySelector('.ui-activity-feed__day')).toHaveTextContent('Today');
     unmount();
   });
 

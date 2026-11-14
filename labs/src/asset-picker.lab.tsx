@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import {
-  AssetPicker,
-  type AssetPickerItem,
-  type AssetPlacement,
-} from '../../src/components/asset-picker/index.js';
+import { AssetPicker, type AssetPickerItem } from '../../src/components/asset-picker/index.js';
 import { LabSection, mountLab } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 
@@ -71,11 +67,6 @@ function failingSearch(): Promise<AssetPickerItem[]> {
   return Promise.reject(new Error('The library is offline.'));
 }
 
-function describePlacement(item: AssetPickerItem, placement: AssetPlacement) {
-  const size = `${placement.width ?? '?'} × ${placement.height ?? '?'}`;
-  return `${item.name}, ${size}, ${placement.align}, alt "${placement.alt}"`;
-}
-
 function InsertDemo() {
   const [inserted, setInserted] = useState('nothing');
   return (
@@ -83,7 +74,7 @@ function InsertDemo() {
       <AssetPicker
         aria-label="Insert an image"
         search={searchLibrary}
-        onSelect={(item, placement) => setInserted(describePlacement(item, placement))}
+        onSelect={(item) => setInserted(item.name)}
         onCancel={() => setInserted('cancelled')}
       />
       <p>
@@ -100,9 +91,8 @@ function AlignedDemo() {
       <AssetPicker
         aria-label="Insert a centred image"
         search={searchLibrary}
-        defaultAlign="center"
         searchDelay={1000}
-        onSelect={(item, placement) => setInserted(describePlacement(item, placement))}
+        onSelect={(item) => setInserted(item.name)}
       />
       <LabOutput name="aligned">{inserted}</LabOutput>
     </div>
@@ -112,8 +102,8 @@ function AlignedDemo() {
 mountLab(
   <>
     <LabSection
-      title="Browse, search and place"
-      description="The picker browses the library as it opens and searches as you type. Choose an image, set its alternative text, size (kept in proportion until you turn that off) and alignment, then insert it."
+      title="Browse, search and select"
+      description="The picker browses the library as it opens and searches as you type. Choose an image and confirm the selected asset. Hosts own alternative text, dimensions and alignment."
     >
       <InsertDemo />
     </LabSection>
@@ -130,8 +120,8 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
-      title="Alignment and search delay"
-      description="A chosen image starts centred instead of at the start, and the search waits a full second after the last keystroke."
+      title="Search delay"
+      description="The search waits a full second after the last keystroke."
     >
       <AlignedDemo />
     </LabSection>

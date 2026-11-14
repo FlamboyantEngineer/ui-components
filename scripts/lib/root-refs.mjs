@@ -9,8 +9,6 @@ import ts from 'typescript';
  * Keep each reason short; a component that gains a root element leaves the list.
  */
 export const ROOTLESS = new Map([
-  ['AppFrameBandContent', 'projects its children into a band region'],
-  ['AppFrameContent', 'projects its children into a frame region'],
   ['CardAction', "makes its children the card's action"],
   ['ChatMessageActionsMenu', 'attaches a context menu to its target element'],
   ['DrawerTrigger', 'pairs its trigger child with a drawer'],

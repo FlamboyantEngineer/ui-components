@@ -8,12 +8,11 @@ import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { Button } from '../button/button.js';
 import { Form, useFormValidity } from '../form/form.js';
-import { PropertyFilter } from '../property-filter/property-filter.js';
-import { PropertyScope } from '../property-scope/property-scope.js';
 import { TextField } from '../text-field/text-field.js';
 import { PropertyCard } from './property-card.js';
 import { PropertyGroup, PropertyPanel } from './property-panel.js';
 import { PropertyRow } from './property-row.js';
+import { PropertyScope } from './property-scope.js';
 import { PropertySection } from './property-section.js';
 
 function glyph(trigger: HTMLElement) {
@@ -261,7 +260,7 @@ describe('PropertySection', () => {
   });
 });
 
-describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a field before focusing it', () => {
+describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-PANEL-4.7 UIC-FIELD-3.12 reveals a field before focusing it', () => {
   function Sizes({ hideIn }: { hideIn: 'none' | 'section' | 'card' }) {
     const width = <TextField label="Width" name="width" isRequired />;
     return (
@@ -320,9 +319,13 @@ describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     const panel = (
-      <PropertyFilter aria-label="Shape" defaultQuery={hideIn === 'filter' ? 'Height' : ''}>
+      <PropertyPanel
+        searchable
+        aria-label="Shape"
+        defaultQuery={hideIn === 'filter' ? 'Height' : ''}
+      >
         <Sizes hideIn={hideIn === 'filter' ? 'none' : hideIn} />
-      </PropertyFilter>
+      </PropertyPanel>
     );
     const { unmount } = render(<Settings onSubmit={onSubmit}>{panel}</Settings>);
     expect(width().closest('[hidden], [aria-hidden="true"]')).not.toBeNull();
@@ -351,7 +354,7 @@ describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a
     const onClear = vi.fn();
     render(
       <Settings>
-        <PropertyPanel aria-label="Shape">
+        <PropertyPanel searchable aria-label="Shape">
           <PropertyScope query="Height" onClear={onClear}>
             <PropertySection title="Size" isExpanded={false} onExpandedChange={onExpandedChange}>
               <PropertyRow label="Width">
@@ -377,7 +380,7 @@ describe('UIC-PROPERTY-PANEL-2.8 UIC-PROPERTY-SCOPE-1.7 UIC-FIELD-3.12 reveals a
     const user = userEvent.setup();
     render(
       <Settings>
-        <PropertyPanel aria-label="Shape">
+        <PropertyPanel searchable aria-label="Shape">
           <PropertySection title="Visible">
             <PropertyRow label="Name">
               <TextField label="Name" isRequired />

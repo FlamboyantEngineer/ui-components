@@ -1,18 +1,12 @@
 import { defineStrings, toSelectKey } from '../message-format.js';
 /**
- * Strings of the folder manager, code and JSON editors, completions, conversations, emoji picker,
- * PDF viewer, data tables, timestamps, save status, record labels, outlines, state histories,
- * comments and reactions.
+ * Strings of code and JSON editors, completions, conversations, emoji picker, PDF viewer,
+ * data tables, timestamps, save status, outlines, comments and reactions.
  */
 interface ContentStrings {
-  newFolder: string;
-  /** Names the field that names a new folder. */
-  newFolderName: string;
   rename: string;
   /** Names the field that renames an item, from its current name. */
   renameItem: (name: string) => string;
-  /** Why a folder takes no new folder: it is at the deepest level allowed. */
-  folderDepthLimit: (depth: number) => string;
   /** Opens the list of places the selected items can move to. */
   moveTo: string;
   /** The top level of a tree, as a place items can move to. */
@@ -155,14 +149,6 @@ interface ContentStrings {
   attribution: string;
   /** An editor's save status (`Saving…`). */
   saveStatus: (phase: 'dirty' | 'saving' | 'saved' | 'error' | 'offline') => string;
-  /** Stands in for a record the reader may not see, or that no longer exists. */
-  recordUnavailable: (reason: 'restricted' | 'missing') => string;
-  /** Default accessible name of a history of state changes. */
-  stateHistory: string;
-  /** Marks the state something is in now, in a history of states. */
-  currentState: string;
-  /** Marks a state not reached yet, in a history of states. */
-  upcomingState: string;
   /** Default name of a comment thread. */
   commentThread: string;
   /** Names the menu of one comment's actions. */
@@ -201,7 +187,6 @@ interface ContentStrings {
 /** The module's text, with the message values each text function reads its arguments as. */
 export const contentStrings = defineStrings<ContentStrings>({
   renameItem: (name) => ({ name }),
-  folderDepthLimit: (depth) => ({ depth }),
   invalidJsonAt: (line, column) => ({ line: String(line), column: String(column) }),
   jsonTypeMismatch: (types) => ({ types: { items: types, type: 'or' } }),
   jsonValueMismatch: (values) => ({ values: { items: values, type: 'or' }, count: values.length }),
@@ -227,7 +212,6 @@ export const contentStrings = defineStrings<ContentStrings>({
   paginationOf: (name) => ({ name }),
   seriesSummary: (values) => ({ ...values }),
   saveStatus: (phase) => ({ phase }),
-  recordUnavailable: (reason) => ({ reason }),
   showMoreReplies: (count) => ({ count }),
   mentionGroupCount: (count) => ({ count }),
   reactionSummary: (count, labels, own) => ({

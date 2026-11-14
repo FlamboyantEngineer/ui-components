@@ -6,9 +6,10 @@ import { join } from 'node:path';
 import type { Ref } from 'react';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { BadgeProps } from '../src/components/badge/badge.js';
+import type { StatusLightProps } from '../src/components/badge/status-light.js';
 import type { BannerProps } from '../src/components/banner/banner.js';
 import type { ButtonProps } from '../src/components/button/button.js';
-import type { ButtonGroupProps } from '../src/components/button-group/button-group.js';
+import type { ButtonGroupProps } from '../src/components/button/button-group.js';
 import type { CardProps } from '../src/components/card/card.js';
 import type { CheckboxProps } from '../src/components/checkbox/checkbox.js';
 import type { ComboboxProps } from '../src/components/combobox/combobox.js';
@@ -16,7 +17,6 @@ import type { DescriptionListProps } from '../src/components/description-list/de
 import type { IconProps } from '../src/components/icon/icon.js';
 import type { AspectRatioProps } from '../src/components/layout/aspect-ratio.js';
 import type { PageProps, StackProps } from '../src/components/layout/layout.js';
-import type { ToolbarRowGroupProps } from '../src/components/layout/toolbar-row.js';
 import type { ContentsProps } from '../src/components/layout/wrappers.js';
 import type { ListProps } from '../src/components/list-row/list-row.js';
 import type { ModalProps } from '../src/components/modal/modal.js';
@@ -24,9 +24,9 @@ import type { OverflowListProps } from '../src/components/overflow-list/overflow
 import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-region.js';
 import type { SegmentedChoiceProps } from '../src/components/segmented-choice/segmented-choice.js';
 import type { SeparatorProps } from '../src/components/separator/separator.js';
-import type { StatusLightProps } from '../src/components/status-light/status-light.js';
 import type { SwitchProps } from '../src/components/switch/switch.js';
 import type { TagGroupProps, TagProps } from '../src/components/tag-group/tag-group.js';
+import type { ToolbarRowGroupProps } from '../src/components/toolbar-row/toolbar-row.js';
 import type { VisuallyHiddenProps } from '../src/components/visually-hidden/visually-hidden.js';
 import type { PressEvent, PressEventProps } from '../src/core/events.js';
 import type {

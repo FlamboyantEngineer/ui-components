@@ -15,6 +15,7 @@ import {
   useFieldControl,
 } from '../field/field.js';
 import { DecimalControl } from './decimal-control.js';
+import { ExactDecimalField, type NumberDecimalFieldProps } from './exact-decimal-field.js';
 import { createQuantityCodec, createRadixCodec } from './number-codecs.js';
 import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 import {
@@ -49,6 +50,9 @@ export type NumberFieldTextInputProps = Pick<
 /** The props of a `NumberField` that holds one number in a number input. */
 export interface NumberEntryFieldProps
   extends FieldInputProps<number | null>, NumberFieldTextInputProps {
+  valueType?: 'number' | undefined;
+  scale?: never;
+  roundingMode?: never;
   /** Holds a range with `true` (`NumberRangeFieldProps`); a single number otherwise. */
   range?: false | undefined;
   /** A number input (`field`, the default); `slider` draws a track (`NumberSliderFieldProps`). */
@@ -104,11 +108,11 @@ export interface NumberEntryFieldProps
 }
 
 /**
- * The props of any `NumberField`: a number input, a slider (`display="slider"`) or a range
- * (`range`), told apart by `range` and `display`. A wrapper typed with it forwards every mode.
+ * One field contract: ordinary numbers by default, exact decimal strings with `valueType="decimal"`.
+ * Ordinary numbers also support sliders and ranges. A wrapper typed with it forwards every mode.
  */
 export type NumberFieldProps =
-  NumberEntryFieldProps | NumberSliderFieldProps | NumberRangeFieldProps;
+  NumberEntryFieldProps | NumberSliderFieldProps | NumberRangeFieldProps | NumberDecimalFieldProps;
 
 export type NumberControlConfig = Pick<
   NumberEntryFieldProps,
@@ -306,18 +310,20 @@ function NumberEntryField({
 export type { NumberFieldRadix } from './radix-number.js';
 
 /**
- * A field for a number or, with `range`, a range (a start and an end), drawn as number inputs or,
- * with `display="slider"`, as a track with a thumb per value.
+ * A field for ordinary numbers or exact decimal strings. Ordinary numbers also support a range
+ * (a start and an end), drawn as inputs or as a slider with a thumb per value.
  */
+export function NumberField(props: NumberDecimalFieldProps): ReactElement;
 export function NumberField(props: NumberRangeFieldProps): ReactElement;
 export function NumberField(props: NumberSliderFieldProps): ReactElement;
 export function NumberField(props: NumberEntryFieldProps): ReactElement;
 // Last, so `ComponentProps<typeof NumberField>` holds every mode and a wrapper can forward any.
 export function NumberField(props: NumberFieldProps): ReactElement;
 export function NumberField(props: NumberFieldProps): ReactElement {
+  if (props.valueType === 'decimal') return <ExactDecimalField {...props} />;
   if (props.range) return <NumberRangeField {...props} />;
   if (props.display === 'slider') return <NumberSliderField {...props} />;
-  const { range: _range, display: _display, ...entry } = props;
+  const { valueType: _valueType, range: _range, display: _display, ...entry } = props;
   // A quantity's compact notation would not read back, so it is written in standard notation.
   const formatOptions = entry.units
     ? toQuantityFormatOptions(entry.formatOptions)
@@ -325,6 +331,7 @@ export function NumberField(props: NumberFieldProps): ReactElement {
   return <NumberEntryField {...entry} formatOptions={formatOptions} />;
 }
 
+export type { NumberDecimalFieldProps } from './exact-decimal-field.js';
 export type {
   NumberFieldDisplay,
   NumberRange,

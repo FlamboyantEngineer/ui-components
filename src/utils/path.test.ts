@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { formatFolderPath, formatPath, PATH_SEPARATOR, type PathFolder } from './path.js';
 
 describe('formatPath', () => {
-  it('UIC-PATH-1.1 joins trimmed nonblank labels with one separator, keeping array entries whole', () => {
+  it('UIC-PATH-FORMAT-1.1 joins trimmed nonblank labels with one separator, keeping array entries whole', () => {
     const labels = Object.freeze([' Garden ', '', 'Herbs', 'basil.txt']);
     expect(PATH_SEPARATOR).toBe('/');
     expect(formatPath(labels)).toBe('Garden/Herbs/basil.txt');
@@ -15,7 +15,7 @@ describe('formatPath', () => {
     expect(labels).toEqual([' Garden ', '', 'Herbs', 'basil.txt']);
   });
 
-  it('UIC-PATH-1.2 roots paths and reads empty paths as the root, empty or a fallback', () => {
+  it('UIC-PATH-FORMAT-1.2 roots paths and reads empty paths as the root, empty or a fallback', () => {
     expect(formatPath(['Garden', 'Herbs'], { rooted: true })).toBe('/Garden/Herbs');
     expect(formatPath(' /Garden//Herbs/ ', { rooted: true })).toBe('/Garden/Herbs');
     expect(formatPath([], { rooted: true })).toBe('/');
@@ -37,7 +37,7 @@ describe('formatFolderPath', () => {
     { id: 'cycle2', parentId: 'cycle1', name: 'Second' },
   ]);
 
-  it('UIC-PATH-1.3 walks parents, keeps known ancestors, stops at cycles and names blank folders by id', () => {
+  it('UIC-PATH-FORMAT-1.3 walks parents, keeps known ancestors, stops at cycles and names blank folders by id', () => {
     for (const [id, expected] of [
       [null, '/'],
       [undefined, '/'],
@@ -53,7 +53,7 @@ describe('formatFolderPath', () => {
     }
   });
 
-  it('UIC-PATH-1.3 uses a root label and prefers a resolved path', () => {
+  it('UIC-PATH-FORMAT-1.4 uses a root label and prefers a resolved path', () => {
     expect(formatFolderPath(folders, null, 'Unsorted')).toBe('Unsorted');
     expect(formatFolderPath(folders, 'missing', 'Unsorted')).toBe('Unsorted');
     expect(

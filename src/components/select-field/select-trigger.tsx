@@ -12,7 +12,7 @@ import {
 import { Button } from '../button/button.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { Icon, toIconProps } from '../icon/icon.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
 import type { ChosenSelectOption } from './select-options.js';
 

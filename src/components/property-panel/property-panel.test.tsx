@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
 import { Field, Fieldset, useFieldState } from '../field/field.js';
-import { PropertyScope } from '../property-scope/property-scope.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -16,6 +15,7 @@ import {
   PropertyStrip,
   PropertyStripCell,
 } from './property-panel.js';
+import { PropertyScope } from './property-scope.js';
 
 describe('PropertyPanel', () => {
   it('UIC-PROPERTY-PANEL-1.1 is a named section with an optional header and a body', () => {

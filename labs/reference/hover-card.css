@@ -69,3 +69,65 @@
     animation: none;
   }
 }
+
+/* Preview Trigger */
+
+.ui-preview-trigger:where(:not(.ui-avatar)) {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  vertical-align: middle;
+  cursor: pointer;
+  outline: none;
+}
+
+/* A name alone flows with the sentence: inline on its baseline, wrapping like the words around it.
+   Triggers that hold an avatar or an identity keep the centred inline-flex box above. */
+.ui-preview-trigger:where(:not(.ui-avatar, :has(.ui-avatar, .ui-user-identity))) {
+  display: inline;
+  vertical-align: baseline;
+}
+
+.ui-preview-trigger[data-hovered]:not(.ui-avatar) {
+  text-decoration: underline;
+}
+
+.ui-preview-trigger[data-focus-visible] {
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-preview-trigger[data-disabled] {
+  cursor: default;
+  text-decoration: none;
+  opacity: var(--ref-disabled-opacity);
+}
+
+.ui-preview-trigger__popover[data-entering] {
+  animation: ref-fade var(--ref-duration-fast) ease-out;
+}
+
+.ui-preview-trigger__popover[data-exiting] {
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
+}
+
+.ui-preview-trigger__popover {
+  box-sizing: border-box;
+  max-inline-size: min(28rem, calc(100vw - 2rem));
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-preview-trigger__content {
+  min-inline-size: 0;
+  outline: none;
+}

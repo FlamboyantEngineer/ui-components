@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../../core/provider.js';
 import { createMemoryStorage } from '../../../core/storage.js';
-import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { MessageComposerMenuButton } from '../composer-menu.js';
 import type { MessageComposerMessage } from '../composer-message.js';
+import type { MessageReferenceResolver } from '../message-reference.js';
 import { RichMessageComposer, type RichMessageComposerProps } from './rich-message-composer.js';
 
 installEditorDom();
@@ -28,10 +28,10 @@ const draft: MessageComposerMessage = {
 };
 
 /** The host's lookup: the trip is shown with its name and link, the note is gone. */
-const getReference = vi.fn<RecordLabelResolver>((reference) =>
+const getReference = vi.fn<MessageReferenceResolver>((reference) =>
   reference.id === tripId
-    ? { name: 'Lisbon weekend', href: '/trips/4', type: 'Itinerary' }
-    : { unavailable: 'missing' },
+    ? { name: 'Lisbon weekend', href: '/trips/4', description: 'Itinerary' }
+    : { label: 'Missing item' },
 );
 
 const box = () => screen.getByRole('textbox', { name: 'Message' });
@@ -74,7 +74,7 @@ function renderComposer(props: Partial<RichMessageComposerProps> = {}) {
 }
 
 describe('RichMessageComposer references', () => {
-  it('UIC-MESSAGE-COMPOSER-4.9 UIC-RECORD-LABEL-3.2 draws each reference as a record chip from the host lookup by id', () => {
+  it('UIC-MESSAGE-COMPOSER-4.9 UIC-MESSAGE-COMPOSER-10.1 draws each reference as host content from the host lookup by id', () => {
     renderComposer({ defaultValue: draft });
     const [first, second] = chips();
     expect(getReference).toHaveBeenCalledWith({
@@ -85,10 +85,7 @@ describe('RichMessageComposer references', () => {
     expect(first).toHaveAttribute('contenteditable', 'false');
     expect(within(first as HTMLElement).getByRole('link')).toHaveAttribute('href', '/trips/4');
     expect(first).toHaveTextContent('TRIP-4 Lisbon weekend Itinerary');
-    expect(second?.querySelector('.ui-record-label')).toHaveAttribute(
-      'data-unavailable',
-      'missing',
-    );
+    expect(second).toHaveTextContent('Missing item');
     expect(box()).toHaveTextContent(/^Please review TRIP-4.* and Missing item first$/);
   });
 
@@ -178,9 +175,10 @@ describe('RichMessageComposer references', () => {
         <RichMessageComposer persistKey="draft" getReference={getReference} />
       </UiProvider>,
     );
-    expect(
-      chips().map((chip) => chip.querySelector('.ui-record-label__identifier')?.textContent),
-    ).toEqual(['TRIP-4', 'Missing item']);
+    expect(chips().map((chip) => chip.querySelector('.ui-label__label')?.textContent)).toEqual([
+      'TRIP-4 Lisbon weekend',
+      'Missing item',
+    ]);
     unmountRestored();
     const unsafe = { ...draft, tokens: [{ ...draft.tokens[0], recordType: { html: '<b>x</b>' } }] };
     storage.setItem('draft', JSON.stringify(unsafe));

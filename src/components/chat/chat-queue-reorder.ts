@@ -3,7 +3,7 @@
 import { type RefObject, useRef } from 'react';
 import { useDragType } from '../../utils/use-drag-type.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';
-import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
+import type { ChatQueuedMessage } from './chat-controller.js';
 
 export interface ChatQueueReorder {
   draggingRef: RefObject<string | null>;

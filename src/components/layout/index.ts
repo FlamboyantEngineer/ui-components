@@ -27,14 +27,5 @@ export type {
   ViewProps,
 } from './layout.js';
 export { Cluster, FlexRow, Grid, InlineField, Page, Stack, StatusBar, View } from './layout.js';
-export type {
-  ToolbarRowGroupProps,
-  ToolbarRowOverflow,
-  ToolbarRowProps,
-  ToolbarRowRole,
-  ToolbarRowSeparatorProps,
-  ToolbarRowVariant,
-} from './toolbar-row.js';
-export { ToolbarRow, ToolbarRowGroup, ToolbarRowSeparator } from './toolbar-row.js';
 export type { ContentsProps, EmbeddedFrameProps, InlineContentsProps } from './wrappers.js';
 export { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';

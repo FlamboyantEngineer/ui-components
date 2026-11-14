@@ -159,7 +159,7 @@ test.describe('Layout lab', () => {
     ).toBeHidden();
   });
 
-  test('UIC-LAYOUT-3.3 moves focus with arrows in a toolbar row and tabs through a group', async ({
+  test('UIC-TOOLBAR-ROW-1.1 moves focus with arrows in a toolbar row and tabs through a group', async ({
     page,
     lab,
   }) => {
@@ -185,7 +185,7 @@ test.describe('Layout lab', () => {
     expect(surface).toBe('solid');
   });
 
-  test('UIC-LAYOUT-3.4 draws the status bar with items at both ends', async ({ page, lab }) => {
+  test('UIC-LAYOUT-3.3 draws the status bar with items at both ends', async ({ page, lab }) => {
     await lab.open('layout');
     const bar = page.locator(`${cell('Status bar', 'justify=between wrap=nowrap')} .ui-status-bar`);
     const barBox = await box(bar);
@@ -252,7 +252,7 @@ test.describe('Layout lab', () => {
     );
   });
 
-  test('UIC-LAYOUT-3.5 sizes aspect-ratio boxes from their width', async ({ page, lab }) => {
+  test('UIC-LAYOUT-3.4 sizes aspect-ratio boxes from their width', async ({ page, lab }) => {
     await lab.open('layout');
     for (const [ratio, factor] of [
       ['1-1', 1],
@@ -268,7 +268,7 @@ test.describe('Layout lab', () => {
     }
   });
 
-  test('UIC-LAYOUT-3.6 UIC-LAYOUT-3.7 lays toolbar groups out along the row with separators across it', async ({
+  test('UIC-TOOLBAR-ROW-1.2 UIC-TOOLBAR-ROW-1.3 lays toolbar groups out along the row with separators across it', async ({
     page,
     lab,
   }) => {
@@ -297,7 +297,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws no fades when opted out, and the chevrons on the canvas without them', async ({
+  test('UIC-TOOLBAR-ROW-1.4 UIC-SCROLL-STRIP-2.1 draws no fades when opted out, and the chevrons on the canvas without them', async ({
     page,
     lab,
   }) => {
@@ -311,7 +311,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible('[data-lab-section="Toolbar edge fades"]');
   });
 
-  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws the scroll buttons as ghost chevrons over the fades', async ({
+  test('UIC-TOOLBAR-ROW-1.4 UIC-SCROLL-STRIP-2.1 draws the scroll buttons as ghost chevrons over the fades', async ({
     page,
     lab,
   }) => {
@@ -340,7 +340,7 @@ test.describe('Layout lab', () => {
     await expect(start).toHaveAccessibleName('Scroll backward');
   });
 
-  test('UIC-LAYOUT-3.8 wraps tools and groups, scrolls them, or keeps one clipped row', async ({
+  test('UIC-TOOLBAR-ROW-1.4 wraps tools and groups, scrolls them, or keeps one clipped row', async ({
     page,
     lab,
   }) => {
@@ -376,7 +376,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible('[data-lab-section="Toolbar overflow"]');
   });
 
-  test('UIC-LAYOUT-2.7 UIC-LAYOUT-3.3 UIC-LAYOUT-3.8 keeps drafts and focus while the presentation changes', async ({
+  test('UIC-LAYOUT-2.7 UIC-TOOLBAR-ROW-1.1 UIC-TOOLBAR-ROW-1.4 keeps drafts and focus while the presentation changes', async ({
     page,
     lab,
   }) => {
@@ -414,7 +414,7 @@ test.describe('Layout lab', () => {
     await expect(note).toHaveValue('stack draft');
   });
 
-  test('UIC-LAYOUT-3.10 joins an attached group into one run', async ({ page, lab }) => {
+  test('UIC-TOOLBAR-ROW-1.6 joins an attached group into one run', async ({ page, lab }) => {
     await lab.open('layout');
     const section = 'Attached toolbar groups';
     const attached = page.locator(cell(section, 'density=attached orientation=horizontal'));
@@ -435,7 +435,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible('[data-lab-section="Attached toolbar groups"]');
   });
 
-  test('UIC-LAYOUT-3.9 keeps a pending toolbar in place, unpainted and inert', async ({
+  test('UIC-TOOLBAR-ROW-1.5 keeps a pending toolbar in place, unpainted and inert', async ({
     page,
     lab,
   }) => {

@@ -149,3 +149,11 @@ export function MessageComposer(props: MessageComposerProps) {
     </ComposerFrame>
   );
 }
+
+export type {
+  MessageReferenceData,
+  MessageReferencePresentation,
+  MessageReferenceProps,
+  MessageReferenceResolver,
+} from './message-reference.js';
+export { MessageReference } from './message-reference.js';

@@ -35,12 +35,6 @@ interface PlanningStrings {
   calendarEvent: (title: string, when: string) => string;
   /** Names a calendar event's context menu, by the event's title. */
   eventActions: (title: string) => string;
-  /** Titles the dialog that edits a calendar event. */
-  editEvent: string;
-  /** Labels the title field of the calendar event editor. */
-  eventTitle: string;
-  /** Labels the start and end field of the calendar event editor. */
-  eventWhen: string;
   /** Names the edge that changes a calendar event's start, by the event's title. */
   changeEventStart: (title: string) => string;
   /** Names the edge that changes a calendar event's end, by the event's title. */

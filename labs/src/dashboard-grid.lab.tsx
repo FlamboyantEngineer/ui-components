@@ -11,7 +11,6 @@ import {
   DashboardTile,
   type DashboardTileMenuIcons,
 } from '../../src/components/dashboard-grid/index.js';
-import { StatTile } from '../../src/components/stat-tile/stat-tile.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { DeleteGlyph, MoveGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
@@ -53,9 +52,17 @@ const frameWidths = { wide: 360, tight: 320, narrow: 140 } as const;
 function TileContent({ id }: { id: string }) {
   switch (id) {
     case 'visitors':
-      return <StatTile label="Visitors" value={1284} delta={12} goal="increase" />;
+      return (
+        <Card title="Visitors">
+          <strong>1284</strong>
+        </Card>
+      );
     case 'orders':
-      return <StatTile label="Orders" value={312} delta={-4} goal="increase" />;
+      return (
+        <Card title="Orders">
+          <strong>312</strong>
+        </Card>
+      );
     case 'crates':
       return (
         <BarChart

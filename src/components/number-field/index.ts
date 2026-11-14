@@ -1,3 +1,7 @@
+export type { DecimalRoundingMode } from './decimal.js';
+export { toCanonicalDecimal } from './decimal.js';
+export type { DecimalFormatOptions } from './decimal-locale.js';
+export type { NumberDecimalFieldProps } from './exact-decimal-field.js';
 export type {
   NumberEntryFieldProps,
   NumberFieldAdornmentPlacement,

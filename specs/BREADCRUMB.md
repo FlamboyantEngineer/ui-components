@@ -92,9 +92,9 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-2.5 - Full-label tooltip
 
-Each crumb's label shall be a [Truncation Tooltip](TRUNCATION-TOOLTIP.md): while the stylesheet cuts it, resting a mouse or pen on it, or keyboard focus reaching its crumb (by Tab or the arrow keys), shows the whole label in a tooltip, the current crumb's included. A label that fits shows none. The tooltip is visual only: the label already names the crumb, so it adds no description and never moves focus.
+Each crumb's label shall be a [Truncation Tooltip](TOOLTIP.md): while the stylesheet cuts it, resting a mouse or pen on it, or keyboard focus reaching its crumb (by Tab or the arrow keys), shows the whole label in a tooltip, the current crumb's included. A label that fits shows none. The tooltip is visual only: the label already names the crumb, so it adds no description and never moves focus.
 
-Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `src/components/truncation-tooltip/truncation-tooltip.tsx`
+Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `src/components/tooltip/truncation-tooltip.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
 
 ## Hooks

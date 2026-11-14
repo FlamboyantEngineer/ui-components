@@ -1,13 +1,14 @@
+import { useId } from 'react';
 // A minimal rendering of controller messages: text as plain text, tool calls and questions as their
 // cards so the reader can answer them, and a one-line summary of every other part.
-
 import {
   type ChatControllerProps,
+  type ChatMessageData,
+  type ChatPart,
+  ChatQuestion,
+  ChatToolCall,
   isAwaitingReader,
-} from '../../src/components/chat-controller/chat-controller.js';
-import type { ChatMessageData, ChatPart } from '../../src/components/chat-parts/chat-parts.js';
-import { ChatQuestion } from '../../src/components/chat-question/chat-question.js';
-import { ChatToolCall } from '../../src/components/chat-tool-call/chat-tool-call.js';
+} from '../../src/components/chat/index.js';
 import { ChatMessage } from '../../src/components/chat-transcript/chat-transcript.js';
 import { readerId } from './chat-controller-agents.js';
 
@@ -43,12 +44,14 @@ function summarize(part: ChatPart): string {
 }
 
 function LabPart({ part, responses }: { part: ChatPart; responses?: LabResponses | undefined }) {
+  const scope = useId();
   if (part.type === 'text') return <p data-lab-part="text">{part.text}</p>;
   if (part.type === 'tool-call') {
     const { type: _type, ...call } = part;
     return (
       <ChatToolCall
         {...call}
+        id={`${scope}-${call.id}`}
         onApprove={responses && (() => responses.onApprove(part.id))}
         onDeny={responses && ((reason) => responses.onDeny(part.id, reason))}
         onAlwaysAllow={responses && (() => responses.onAlwaysAllow(part.id))}
@@ -60,6 +63,7 @@ function LabPart({ part, responses }: { part: ChatPart; responses?: LabResponses
     return (
       <ChatQuestion
         {...card}
+        id={`${scope}-${card.id}`}
         onSubmit={responses && ((answers) => responses.onAnswerQuestion(part.id, answers))}
         onDismiss={responses && (() => responses.onDismissQuestion(part.id))}
       />
@@ -81,7 +85,6 @@ export function LabMessage({
   const isWaiting = message.parts.some(isAwaitingReader);
   return (
     <ChatMessage
-      id={message.id}
       origin={isReader ? 'sent' : 'received'}
       author={isReader ? reader : helper}
       time={message.createdAt}

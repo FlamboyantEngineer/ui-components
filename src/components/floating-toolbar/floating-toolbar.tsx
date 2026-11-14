@@ -13,8 +13,8 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Placement, RefProps } from '../../core/props.js';
 import { Popover, useLocale } from '../../primitives/index.js';
 import { DEFAULT_OVERLAY_GAP } from '../../utils/overlay-defaults.js';
-import { ToolbarRow } from '../layout/layout.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { ToolbarRow } from '../toolbar-row/toolbar-row.js';
 
 export interface FloatingToolbarProps extends RefProps<HTMLElement>, BaseProps, AriaLabellingProps {
   /** Shows the toolbar. */

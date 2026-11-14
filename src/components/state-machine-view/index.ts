@@ -1,15 +1,13 @@
-export type { StateMachineSequenceViewProps } from './state-machine-sequence.js';
-export { StateMachineSequence } from './state-machine-sequence.js';
+export type { StateMachineGraphProps } from './state-machine-graph.js';
+export { StateMachineGraph } from './state-machine-graph.js';
 export type {
   StateMachineContextMenuEvent,
-  StateMachineSequenceProps,
+  StateMachineDensity,
+  StateMachineSequenceGeometry,
   StateMachineState,
   StateMachineTooltipPlacement,
   StateMachineTransition,
   StateMachineTransitionRequest,
-  StateMachineViewDensity,
-  StateMachineViewPresentation,
-  StateMachineViewProps,
-  StateMachineViewSequenceGeometry,
-} from './state-machine-view.js';
-export { StateMachineView } from './state-machine-view.js';
+} from './state-machine-model.js';
+export type { StateMachineSequenceProps } from './state-machine-sequence.js';
+export { StateMachineSequence } from './state-machine-sequence.js';

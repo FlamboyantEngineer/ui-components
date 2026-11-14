@@ -45,3 +45,22 @@ export function LockedRenameTree() {
     </div>
   );
 }
+
+/** Async inline rename keeps the typed name while the host saves or rejects it. */
+export function AsyncRenameTree() {
+  const [items, setItems] = useState(TASKS);
+  return (
+    <Tree
+      aria-label="Async rename tasks"
+      items={items}
+      getTextValue={(item) => item.name}
+      onRename={async (item, name) => {
+        await Promise.resolve();
+        if (name.toLowerCase() === 'reserved') throw new Error('Choose another name.');
+        setItems((current) =>
+          current.map((entry) => (entry.id === item.id ? { ...entry, name } : entry)),
+        );
+      }}
+    />
+  );
+}

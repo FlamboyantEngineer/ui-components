@@ -91,7 +91,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-3.1 - Overview paint
 
-With `overview` markers (or `overviewLayers`), in either scrollbar mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the native scrollbar or to paint the scrollbar track with; in overlay mode it comes before the tracks, so the reference sheet paints it on the vertical track's place, under the thumb. Scrolling and the scrollbars are untouched. A scroll container other than a region takes the same paint from [Scroll Overview](SCROLL-OVERVIEW.md). Content that fits paints nothing. Markers equal field by field to the previous ones, as a host that writes them inline passes, keep the subscription and the painted image. Removing the markers or unmounting releases the observers and the pending frame.
+With `overview` markers (or `overviewLayers`), in either scrollbar mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the native scrollbar or to paint the scrollbar track with; in overlay mode it comes before the tracks, so the reference sheet paints it on the vertical track's place, under the thumb. Scrolling and the scrollbars are untouched. A scroll container other than a region takes the same paint from [Scroll Overview](SCROLL-REGION.md). Content that fits paints nothing. Markers equal field by field to the previous ones, as a host that writes them inline passes, keep the subscription and the painted image. Removing the markers or unmounting releases the observers and the pending frame.
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `src/utils/same-overview-layers.ts`, `src/utils/observe-viewport.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
@@ -154,10 +154,44 @@ Edge fades shall be on by default. A region that scrolls on some axis publishes 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
+## Scroll Overview
+
+`ScrollOverview` is a custom vertical scrollbar for a scroll container whose native scrollbar the host hides (for example with `scrollbar-width: none`): a track that paints where markers sit in the container's content, scaled to its visible height, so a reader sees at a glance where matches, comments or changes are in a long document, and a thumb over the marks that follows and drives the scroll position. It works with any element that scrolls, given by `scrollRef`; [Scroll Region](SCROLL-REGION.md) paints the same overview under its own overlay thumb (UIC-SCROLL-REGION-3). Where the track goes (beside the container, over its edge, in a gutter) is the stylesheet's.
+
+## UIC-SCROLL-REGION-5 - Markers
+
+### UIC-SCROLL-REGION-5.1 - Paint
+
+`ScrollOverview` shall render a `ui-scroll-overview` element, hidden from assistive technology, as tall as the container's visible height (`height` inline), and publish the overview image as `--ui-scroll-overview-image`: `markers`, or the named `layers` that replace them, mapped and mixed exactly as UIC-SCROLL-REGION-3.2 and 3.3 describe, and `none` when nothing paints, which the root publishes as `data-empty`, as it does while the content fits the container. The root takes the caller's `ref`, `className`, `id` and `data-*` attributes.
+
+Implementation: `src/components/scroll-region/scroll-overview.tsx`, `src/utils/scroll-overview.ts`
+Verification: `src/components/scroll-region/scroll-overview.test.tsx`, `e2e/scroll-region-scroll-overview.spec.ts`
+
+### UIC-SCROLL-REGION-5.2 - Element markers
+
+A marker may name an `element` (with its `color` and `priority`) in place of a content `top` and `height`. The overview shall measure the element's box from the top of the container's scrolled content, so the mark sits where the element is whatever the scroll position, and measure again on the next frame when the container or a marked element resizes, the content changes (nodes, text or attributes anywhere inside), an image in it loads, or fonts finish loading. An element outside the container, or no longer in the document, marks nothing. The observers and the pending frame are released when the markers change or the overview unmounts. Markers are compared by their fields, so markers or layers written inline, new objects with equal fields on each render, neither rebuild the observers nor measure again.
+
+Implementation: `src/components/scroll-region/scroll-overview.tsx`, `src/components/scroll-region/scroll-overview-markers.ts`, `src/utils/observe-viewport.ts`, `src/utils/same-overview-layers.ts`
+Verification: `src/components/scroll-region/scroll-overview.test.tsx`, `e2e/scroll-region-scroll-overview.spec.ts`
+
+### UIC-SCROLL-REGION-5.3 - Activating a marker
+
+Without `onMarkerActivate` a press on the track beside the thumb shall page the container one visible height toward it (UIC-SCROLL-REGION-5.4). With it, the root publishes `data-interactive` and a press on the track finds the marker drawn at that pixel (the lowest priority among those covering it), scrolls the container so the marker's top is at its top, and calls `onMarkerActivate` with the marker as given. A press where no marker is drawn pages toward it. The track stays hidden from assistive technology, so keyboard and screen reader users reach the same places through the host's own navigation.
+
+Implementation: `src/components/scroll-region/scroll-overview.tsx`, `src/components/scroll-region/scroll-overview-markers.ts`
+Verification: `src/components/scroll-region/scroll-overview.test.tsx`, `e2e/scroll-region-scroll-overview.spec.ts`
+
+### UIC-SCROLL-REGION-5.4 - Thumb
+
+While the content overflows the container, the overview shall draw a `ui-scroll-overview__thumb` over the marks (the root publishes `data-scrollable`), as long as the visible share of the content, at least 24 pixels, and placed along the track as far as the container is scrolled; it follows the container's scrolling at most once a frame. While the content fits, the thumb is hidden with the native `hidden` attribute. Dragging the thumb with the primary button scrolls the container in proportion to the thumb's travel, under an ancestor `transform: scale()` too; the drag keeps the pointer captured until release and its click neither pages nor activates a marker. A press on the track beside the thumb pages the container one visible height toward the press, unless a marker is pressed (UIC-SCROLL-REGION-5.3). The thumb, like the track, is hidden from assistive technology and takes no focus: the container scrolls from the keyboard natively. The reference sheet draws the thumb translucent, so the marks under it show through.
+
+Implementation: `src/components/scroll-region/scroll-overview.tsx`, `src/components/scroll-region/scroll-overview-thumb.tsx`, `labs/reference/scroll-region.css`
+Verification: `src/components/scroll-region/scroll-overview.test.tsx`, `e2e/scroll-region-scroll-overview.spec.ts`
+
 ## Hooks
 
-| Hook                                  | Kind      | Values                                                           | Description                                                |
-| ------------------------------------- | --------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| Hook                                  | Kind      | Values / Meaning                                                 |
+| ------------------------------------- | --------- | ---------------------------------------------------------------- |
 | `ui-scroll-region`                    | root      |                                                                  | The frame.                                                 |
 | `ui-scroll-region__viewport`          | slot      |                                                                  | The scrolling element.                                     |
 | `ui-scroll-region__overview`          | slot      |                                                                  | Decorative overview layer.                                 |
@@ -194,3 +228,9 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 | `--ui-scroll-region-overflow-y-end`   | property  |                                                                  | Distance left below the bottom, in pixels.                 |
 | `--ui-scroll-region-overflow-x-start` | property  |                                                                  | Distance scrolled past the inline start, in pixels.        |
 | `--ui-scroll-region-overflow-x-end`   | property  |                                                                  | Distance left beyond the inline end, in pixels.            |
+| `ui-scroll-overview`                  | root      |                                                                  | The overview track.                                        |
+| `ui-scroll-overview__thumb`           | slot      |                                                                  | The thumb over the marks.                                  |
+| `data-empty`                          | state     | `true`                                                           | Nothing paints.                                            |
+| `data-interactive`                    | state     | `true`                                                           | A press on a marker scrolls to it.                         |
+| `data-scrollable`                     | state     | `true`                                                           | The content overflows; the thumb shows.                    |
+| `--ui-scroll-overview-image`          | property  |                                                                  | The overview image (`linear-gradient`), or `none`.         |

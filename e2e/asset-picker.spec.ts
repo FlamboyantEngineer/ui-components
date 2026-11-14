@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Asset Picker lab', () => {
-  test('UIC-ASSET-PICKER-1.1 UIC-ASSET-PICKER-1.2 searches, places and inserts an image', async ({
+  test('UIC-ASSET-PICKER-1.1 UIC-ASSET-PICKER-1.2 searches, selects and confirms an image', async ({
     page,
     lab,
   }) => {
@@ -12,15 +12,8 @@ test.describe('Asset Picker lab', () => {
     await demo.getByRole('searchbox', { name: 'Search images' }).fill('loaf');
     await expect(grid.getByRole('row')).toHaveCount(1);
     await grid.getByRole('row', { name: 'Round loaf' }).click();
-    const width = demo.getByRole('textbox', { name: 'Width' });
-    await width.fill('400');
-    await width.press('Tab');
-    await expect(demo.getByRole('textbox', { name: 'Height' })).toHaveValue('300');
-    await demo.getByRole('radio', { name: 'Center' }).click();
     await demo.getByRole('button', { name: 'Insert' }).click();
-    await expect(demo.locator('[data-lab-inserted]')).toHaveText(
-      'Round loaf, 400 × 300, center, alt "A round loaf on a board"',
-    );
+    await expect(demo.locator('[data-lab-inserted]')).toHaveText('Round loaf');
     await lab.expectAccessible('[data-lab-demo="insert"]');
   });
 
@@ -52,7 +45,7 @@ test.describe('Asset Picker lab', () => {
     const first = grid.getByRole('row', { name: 'Round loaf' });
     const before = await first.boundingBox();
     await first.click();
-    await expect(demo.getByRole('textbox', { name: 'Width' })).toBeVisible();
+    await expect(demo.getByRole('button', { name: 'Insert' })).toBeEnabled();
     expect(await first.boundingBox()).toEqual(before);
   });
 });

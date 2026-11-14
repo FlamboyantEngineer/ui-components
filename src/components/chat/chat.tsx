@@ -8,7 +8,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readOwn } from '../../utils/read-own.js';
 import { RetainedStateContext, useRetainedStateScope } from '../../utils/use-retained-state.js';
-import type { ChatMessageData, ChatParticipant } from '../chat-parts/chat-parts.js';
 import {
   ChatDateSeparator,
   ChatTranscript,
@@ -32,6 +31,7 @@ import {
   listReaders,
   listTypingNames,
 } from './chat-model.js';
+import type { ChatMessageData, ChatParticipant } from './chat-parts.js';
 import { ChatSearchBar, ChatSearchToggle, useChatSearch } from './chat-search.js';
 import { type ChatState, useChatState } from './use-chat-state.js';
 import { type ChatMessageOptions, useMessageContext } from './use-message-context.js';

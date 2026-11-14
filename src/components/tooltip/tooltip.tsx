@@ -162,3 +162,5 @@ export type {
 export { AnchoredTooltip } from './anchored-tooltip.js';
 export type { ManualTooltipState } from './manual-tooltip.js';
 export { ManualTooltip, useManualTooltipState } from './manual-tooltip.js';
+export type { TruncationTooltipProps } from './truncation-tooltip.js';
+export { TruncationTooltip } from './truncation-tooltip.js';

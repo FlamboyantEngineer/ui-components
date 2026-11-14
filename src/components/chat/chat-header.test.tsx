@@ -29,9 +29,13 @@ describe('ChatHeader', () => {
     expect(status).toHaveAttribute('aria-hidden', 'true');
     expect(within(root).getByRole('button', { name: 'Mute' })).toBeVisible();
     expectHooksMatchSpec(container, 'CHAT', {
-      slots: ['avatar', 'text', 'title', 'status', 'actions'].map(
-        (slot) => `ui-chat-header__${slot}`,
-      ),
+      slots: [
+        'ui-chat-header__avatar',
+        'ui-chat-header__text',
+        'ui-chat-header__title',
+        'ui-chat-header__status',
+        'ui-chat-header__actions',
+      ],
       callerAttributes: ['data-testid'],
     });
   });

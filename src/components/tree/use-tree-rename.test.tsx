@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
@@ -88,4 +88,62 @@ describe('Tree renaming', () => {
     await userEvent.keyboard('{Enter}');
     expect(onRename).toHaveBeenCalledWith(FOOD[0], 'Nuts and seeds');
   });
+});
+
+describe('Tree async renaming', () => {
+  it('UIC-TREE-7.3 retains a rejected draft and lets Enter retry it', async () => {
+    const user = userEvent.setup();
+    const rename = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Name is reserved'))
+      .mockResolvedValueOnce(undefined);
+    const { container } = render(<FoodTree onRename={rename} />);
+    await user.tab();
+    await user.keyboard('{F2}Berries{Enter}');
+    expect(await screen.findByText('Name is reserved')).toBeVisible();
+    expectHooksMatchSpec(container, 'TREE', { slots: ['rename-input', 'rename-error'] });
+    const input = screen.getByRole('textbox', { name: 'Rename Fruit' });
+    expect(input).toHaveValue('Berries');
+    expect(input).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(row('Fruit')).toHaveFocus();
+    expect(rename).toHaveBeenLastCalledWith(FOOD[0], 'Berries');
+  });
+
+  it('UIC-TREE-7.3 keeps a pending draft read-only and ignores duplicate submits', async () => {
+    const user = userEvent.setup();
+    const rename = vi.fn(() => new Promise<void>(() => undefined));
+    const { container } = render(<FoodTree onRename={rename} />);
+    await user.tab();
+    await user.keyboard('{F2}Berries{Enter}{Enter}');
+    expectHooksMatchSpec(container, 'TREE', { slots: ['rename-input'] });
+    expect(screen.getByRole('textbox', { name: 'Rename Fruit' })).toHaveAttribute('readonly');
+    expect(screen.getByRole('textbox', { name: 'Rename Fruit' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(rename).toHaveBeenCalledTimes(1);
+  });
+});
+
+it('UIC-TREE-7.3 ignores a pending rename after its row was revoked and edited again', async () => {
+  const user = userEvent.setup();
+  let settle: () => void = () => {};
+  const pending = new Promise<void>((resolve) => {
+    settle = resolve;
+  });
+  const { rerender } = render(<FoodTree onRename={() => pending} />);
+  await user.tab();
+  await user.keyboard('{F2}Berries{Enter}');
+  rerender(<FoodTree onRename={() => pending} disabledKeys={['fruit']} />);
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  rerender(<FoodTree onRename={() => pending} />);
+  await user.click(row('Fruit'));
+  await user.keyboard('{F2}Fresh fruit');
+  await act(async () => {
+    settle();
+    await pending;
+  });
+  expect(screen.getByRole('textbox', { name: 'Rename Fruit' })).toHaveValue('Fresh fruit');
 });

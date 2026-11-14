@@ -7,8 +7,8 @@ import {
   type ChatSendContext,
   type ChatStreamEvent,
   useChatController,
-} from '../src/components/chat-controller/chat-controller.js';
-import type { ChatMessageData } from '../src/components/chat-parts/chat-parts.js';
+} from '../src/components/chat/chat-controller.js';
+import type { ChatMessageData } from '../src/components/chat/chat-parts.js';
 import { UiProvider } from '../src/core/provider.js';
 
 /** A stream the test pushes events into and ends; it also ends when its signal aborts. */

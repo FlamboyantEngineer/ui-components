@@ -9,7 +9,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
-import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { TruncationTooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { type CardActionOptions, CardActionTitle } from './card-action.js';
 import { cardHooks } from './card-hooks.js';

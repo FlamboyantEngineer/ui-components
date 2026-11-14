@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { layoutSequence, type SequenceMeasurements } from './sequence-layout.js';
-import type { StateMachineState, StateMachineTransition } from './state-machine-view.js';
+import type { StateMachineState, StateMachineTransition } from './state-machine-model.js';
 
 const states: StateMachineState[] = Array.from({ length: 6 }, (_, id) => ({
   id,

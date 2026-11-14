@@ -9,7 +9,7 @@ import type {
   ChatMessageData,
   ChatPart,
   ChatParticipant,
-} from '../src/components/chat-parts/chat-parts.js';
+} from '../src/components/chat/chat-parts.js';
 
 export const reader: ChatParticipant = { id: 'sam', name: 'Sam Reed', kind: 'person' };
 export const ana: ChatParticipant = {
@@ -78,5 +78,8 @@ export function renderChat(props: Partial<ChatProps> = {}) {
   return { ...view, user, rerenderWith, ...callbacks };
 }
 
-/** The message article with the DOM id `id`. */
-export const article = (id: string) => document.getElementById(id) as HTMLElement;
+/** The message article with logical identity `id` in a single fixture conversation. */
+export const article = (id: string) =>
+  [...document.querySelectorAll<HTMLElement>('.ui-chat-message')].find(
+    (element) => element.getAttribute('data-message-id') === id || element.id === id,
+  ) as HTMLElement;

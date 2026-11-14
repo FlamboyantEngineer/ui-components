@@ -4,8 +4,11 @@
 
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Chat } from '../../src/components/chat/index.js';
-import type { ChatMessageData, ChatQuestionPart } from '../../src/components/chat-parts/index.js';
+import {
+  Chat,
+  type ChatMessageData,
+  type ChatQuestionPart,
+} from '../../src/components/chat/index.js';
 import type {
   MessageComposerPaste,
   MessageComposerPasteResult,

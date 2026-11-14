@@ -221,6 +221,7 @@ function DraggableCalendar() {
         defaultDate="2026-11-02"
         defaultView="week"
         canChangeEvent={(event, change) => !(event.id === 'fixed' && change === 'resize')}
+        onEventAction={(key) => setLog(`Opened ${String(key)}`)}
         onEventChange={(next, previous) => {
           const when = `${next.title}: ${next.start} to ${next.end ?? next.start}`;
           if (isDeclining) {
@@ -530,26 +531,26 @@ mountLab(
       <InteractiveCalendar />
     </LabSection>
     <LabSection
-      title="Event menus and editor"
-      description="Click an event (or focus it and press Enter) to open its editor. Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key) for its menu: Edit opens a dialog with the event's title, all-day state and start and end, Duplicate and Delete are the host's own entries. Save is disabled while the title is blank or the end comes before the start; Cancel and Escape keep the event. Release 2.4 is locked: a click only reports it, and its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu or editor, then remove it with the button: the menu or editor closes and focus goes to its day."
+      title="Event menus and host actions"
+      description="Click an event (or focus it and press Enter) to report its action to the host. Right-click an event, long-press it, or focus it and press Shift+F10 (or the Context Menu key) for its menu: Edit reports a host request, Duplicate and Delete are the host's own entries. Release 2.4 is locked: a click only reports it, and its menu has no Edit. Events behind +n more on 18 March have the same menu. Open Design review's menu, then remove it with the button: the menu closes and focus goes to its day."
     >
       <EditableCalendar />
     </LabSection>
     <LabSection
       title="Event menu icons"
-      description="Right-click an event or press Shift+F10 on it. Edit has no icon by default; here the host gives it one, Duplicate and Delete bring their own and Share has none, every label in line. Edit still opens the editor."
+      description="Right-click an event or press Shift+F10 on it. Edit has no icon by default; here the host gives it one, Duplicate and Delete bring their own and Share has none, every label in line. Edit reports the action to the host."
     >
       <IconMenuCalendar />
     </LabSection>
     <LabSection
       title="Moving and resizing"
-      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging opens the editor. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Arrows with Shift, Control, Alt or Meta are left to the browser and change nothing. While held, the preview sits at the left of its day or on the first row of bars, over the others, which keep their places; the events are packed as usual once it is released. Escape or a cancelled pointer abandons a drag, and with Decline changes the host keeps each event as it was. Re-render with copied events re-renders the host four times a second with fresh copies of its events, and a drag carries on. Wednesday is crowded with blocks side by side and two rows of bars. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
+      description="Pick a drag mode; no handle is drawn. Move and end: drag an event to move it, keeping its length, and drag its end edge (the right edge of a bar, the bottom of a block) to change its end. Start and end: drag its start edge or its end edge to change that end alone; the event itself does not move. Dragging, by the event or either edge, fades the event where it stands and shows a dashed preview where it would land, timed events snap to 15 minutes, and a click without dragging reports the host action. With the keyboard, focus an event (Move and end) or Tab to an edge and use the arrow keys: Left and Right a day, Up and Down 15 minutes on the time grid or a week on a bar. Arrows with Shift, Control, Alt or Meta are left to the browser and change nothing. While held, the preview sits at the left of its day or on the first row of bars, over the others, which keep their places; the events are packed as usual once it is released. Escape or a cancelled pointer abandons a drag, and with Decline changes the host keeps each event as it was. Re-render with copied events re-renders the host four times a second with fresh copies of its events, and a drag carries on. Wednesday is crowded with blocks side by side and two rows of bars. Night shift crosses midnight and the clocks going back on 1 November; Offsite is a multi-day bar changed as one event; Fixed-length review only moves; Locked audit is read-only."
     >
       <DraggableCalendar />
     </LabSection>
     <LabSection
       title="Day and agenda"
-      description="The day view is the week's time grid for one day: all-day bars above, overlapping Team lunch and Design review side by side, every event press, menu, editor, drag and keyboard step as in the week. Previous and Next move a day; PageUp and PageDown on the day move a day too. Switch to Agenda: the focused day's week is listed by day under headings, all-day events first (All day), Trip to Lisbon on each of its days, then by start. Agenda month lists the whole month by day instead, and Previous and Next then move a month. Agenda events open, take menus and the editor, but do not drag. Board review is read-only. List empty days to show the week's quiet days under their headings; move to an empty week (Next twice from 18 March) for the host's empty state. Narrow host shows the agenda's times above titles at 320px. The view and the focused day survive every switch."
+      description="The day view is the week's time grid for one day: all-day bars above, overlapping Team lunch and Design review side by side, every event press, menu, host action, drag and keyboard step as in the week. Previous and Next move a day; PageUp and PageDown on the day move a day too. Switch to Agenda: the focused day's week is listed by day under headings, all-day events first (All day), Trip to Lisbon on each of its days, then by start. Agenda month lists the whole month by day instead, and Previous and Next then move a month. Agenda events open, take menus and host actions, but do not drag. Board review is read-only. List empty days to show the week's quiet days under their headings; move to an empty week (Next twice from 18 March) for the host's empty state. Narrow host shows the agenda's times above titles at 320px. The view and the focused day survive every switch."
     >
       <DayAndAgenda />
     </LabSection>

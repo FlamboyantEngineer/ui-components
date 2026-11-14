@@ -6,7 +6,7 @@ import {
   type ChatPart,
   ChatParts,
   type ChatToolCallPart,
-} from '../../src/components/chat-parts/index.js';
+} from '../../src/components/chat/index.js';
 
 const succeeded = (call: Omit<ChatToolCallPart, 'type' | 'status'>): ChatToolCallPart => ({
   type: 'tool-call',

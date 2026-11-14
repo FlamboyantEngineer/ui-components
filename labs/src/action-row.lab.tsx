@@ -1,20 +1,27 @@
 import { useState } from 'react';
 import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
-import { actionVerbs, orderActions } from '../../src/components/action-row/index.js';
+import { Button } from '../../src/components/button/button.js';
+import { Cluster } from '../../src/components/layout/layout.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import {
+  CloseGlyph as ActionCloseGlyph,
   CopyGlyph,
+  DeleteGlyph as ActionDeleteGlyph,
   DeleteGlyph,
+  EditGlyph as ActionEditGlyph,
   EditGlyph,
   ExpandGlyph,
   HelpGlyph,
+  MoreGlyph as ActionMoreGlyph,
+  PlusGlyph as ActionPlusGlyph,
+  RefreshGlyph as ActionRefreshGlyph,
+  SaveGlyph as ActionSaveGlyph,
   SearchGlyph,
   SortAscendingGlyph,
   UploadGlyph,
 } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { LabHelperCalls } from './lab-helper-calls.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'pending', 'with lead'] as const;
@@ -27,17 +34,35 @@ const caseFrame = { maxWidth: 420 };
 function actionsFor(state: (typeof states)[number]): ActionRowAction[] {
   return [
     {
-      verb: 'custom',
       id: 'full-screen',
       icon: ExpandGlyph,
       label: 'Full screen',
       isSelected: state === 'selected',
       onPress: noop,
     },
-    { verb: 'add', label: 'Add note', isDisabled: state === 'disabled', onPress: noop },
-    { verb: 'refresh', isDisabled: state === 'disabled', onPress: noop },
-    { verb: 'save', isPending: state === 'pending', onPress: noop },
-    { verb: 'cancel', onPress: noop },
+    {
+      id: 'add',
+      icon: ActionPlusGlyph,
+      label: 'Add note',
+      isDisabled: state === 'disabled',
+      onPress: noop,
+    },
+    {
+      id: 'refresh',
+      label: 'Refresh',
+      icon: ActionRefreshGlyph,
+      isDisabled: state === 'disabled',
+      onPress: noop,
+    },
+    {
+      id: 'save',
+      label: 'Save',
+      icon: ActionSaveGlyph,
+      pendingLabel: 'Saving',
+      isPending: state === 'pending',
+      onPress: noop,
+    },
+    { id: 'cancel', label: 'Cancel', icon: ActionCloseGlyph, onPress: noop },
   ];
 }
 
@@ -48,10 +73,11 @@ function MoreMenu() {
       <ActionRow
         lead={<strong>Report.pdf</strong>}
         actions={[
-          { verb: 'edit', onPress: () => setLast('edit') },
+          { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: () => setLast('edit') },
           {
-            verb: 'more',
+            id: 'more',
             label: 'More actions',
+            icon: ActionMoreGlyph,
             onAction: (key) => setLast(String(key)),
             items: [
               { id: 'rename', label: 'Rename', icon: EditGlyph, shortcut: 'F2' },
@@ -63,7 +89,6 @@ function MoreMenu() {
             ],
           },
           {
-            verb: 'custom',
             id: 'sort',
             icon: SortAscendingGlyph,
             label: 'Sort',
@@ -80,7 +105,12 @@ function MoreMenu() {
               },
             ],
           },
-          { verb: 'refresh', onPress: () => setLast('refresh') },
+          {
+            id: 'refresh',
+            label: 'Refresh',
+            icon: ActionRefreshGlyph,
+            onPress: () => setLast('refresh'),
+          },
         ]}
       />
       <p>
@@ -104,16 +134,15 @@ function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
         lead={<span>Report.pdf</span>}
         actions={[
           {
-            verb: 'custom',
             id: 'duplicate',
             icon: CopyGlyph,
             label: 'Duplicate',
             onPress: press('duplicate'),
           },
-          { verb: 'add', label: 'Add note', onPress: press('add') },
-          { verb: 'refresh', onPress: press('refresh') },
-          { verb: 'edit', onPress: press('edit') },
-          { verb: 'delete', onPress: press('delete') },
+          { id: 'add', icon: ActionPlusGlyph, label: 'Add note', onPress: press('add') },
+          { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: press('refresh') },
+          { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: press('edit') },
+          { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: press('delete') },
         ]}
       />
       <p>
@@ -137,8 +166,14 @@ function SlowSave() {
         <ActionRow
           overflow="menu"
           actions={[
-            { verb: 'refresh', onPress: noop },
-            { verb: 'save', onPress: save },
+            { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop },
+            {
+              id: 'save',
+              label: 'Save',
+              icon: ActionSaveGlyph,
+              pendingLabel: 'Saving',
+              onPress: save,
+            },
           ]}
         />
       </div>
@@ -154,7 +189,6 @@ function ChangingActions() {
   const [hasArchive, setHasArchive] = useState(true);
   const [last, setLast] = useState('none');
   const archive: ActionRowAction = {
-    verb: 'custom',
     id: 'archive',
     icon: UploadGlyph,
     label: 'Archive',
@@ -164,7 +198,6 @@ function ChangingActions() {
     },
   };
   const share: ActionRowAction = {
-    verb: 'custom',
     id: 'share',
     icon: CopyGlyph,
     label: 'Share',
@@ -192,8 +225,9 @@ function LoadedEntries() {
   const [items, setItems] = useState<ActionRowAction['items']>([]);
   const [last, setLast] = useState('none');
   const more: ActionRowAction = {
-    verb: 'more',
     id: 'more',
+    label: 'More',
+    icon: ActionMoreGlyph,
     items,
     onPress: () => {
       setLast('load');
@@ -223,7 +257,6 @@ function LoadedEntries() {
 function SharedIdMenus() {
   const [last, setLast] = useState('none');
   const menuAction = (id: string, label: string): ActionRowAction => ({
-    verb: 'custom',
     id,
     icon: id === 'sheet' ? CopyGlyph : SortAscendingGlyph,
     label,
@@ -268,17 +301,34 @@ function SelectionBar() {
           {name}
         </label>
       ))}
-      <ActionRow
-        toolbar
-        aria-label="Bulk actions"
-        lead={<input aria-label="Note for the selection" placeholder="Note" />}
-        selectedCount={selected.length}
-        onClearSelection={() => setSelected([])}
-        actions={[
-          { verb: 'edit', label: 'Edit selected', onPress: noop },
-          { verb: 'delete', label: 'Delete selected', onPress: () => setSelected([]) },
-        ]}
-      />
+      {selected.length > 0 ? (
+        <ActionRow
+          toolbar
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !event.defaultPrevented && !event.nativeEvent.isComposing)
+              setSelected([]);
+          }}
+          aria-label="Bulk actions"
+          lead={
+            <Cluster>
+              <Button size="sm" onPress={() => setSelected([])}>
+                Clear selection
+              </Button>
+              <span role="status">{selected.length} selected</span>
+              <input aria-label="Note for the selection" placeholder="Note" />
+            </Cluster>
+          }
+          actions={[
+            { id: 'edit', icon: ActionEditGlyph, label: 'Edit selected', onPress: noop },
+            {
+              id: 'delete',
+              icon: ActionDeleteGlyph,
+              label: 'Delete selected',
+              onPress: () => setSelected([]),
+            },
+          ]}
+        />
+      ) : null}
     </div>
   );
 }
@@ -302,8 +352,8 @@ function EmptyRow() {
   const [lead, setLead] = useState<LeadChoice>('title');
   const actions: ActionRowAction[] = hasActions
     ? [
-        { verb: 'edit', onPress: noop },
-        { verb: 'delete', onPress: noop },
+        { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
+        { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
       ]
     : [];
   return (
@@ -337,7 +387,7 @@ mountLab(
   <>
     <LabSection
       title="Sizes and states"
-      description="Hover or tab to an action to see its tooltip. Custom actions come first, then the verbs in their fixed order."
+      description="Hover or tab to an action to see its tooltip. Actions retain the order supplied by the caller."
     >
       <StateMatrix
         axes={{ state: states, size: sizes }}
@@ -351,22 +401,28 @@ mountLab(
       />
     </LabSection>
     <LabSection
-      title="Fixed order"
-      description="Every verb given in reverse order, plus two custom actions, drawn in the row's order."
+      title="Caller order"
+      description="Actions supplied in a deliberate order, drawn in the caller's order."
     >
       <div style={caseFrame} data-lab-case="order">
         <ActionRow
           actions={[
-            { verb: 'close', onPress: noop },
-            { verb: 'cancel', onPress: noop },
-            { verb: 'save', onPress: noop },
-            { verb: 'delete', onPress: noop },
-            { verb: 'edit', onPress: noop },
-            { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
-            { verb: 'more', onPress: noop },
-            { verb: 'refresh', onPress: noop },
-            { verb: 'add', onPress: noop },
-            { verb: 'custom', id: 'search', icon: SearchGlyph, label: 'Search', onPress: noop },
+            { id: 'close', label: 'Close', icon: ActionCloseGlyph, onPress: noop },
+            { id: 'cancel', label: 'Cancel', icon: ActionCloseGlyph, onPress: noop },
+            {
+              id: 'save',
+              label: 'Save',
+              icon: ActionSaveGlyph,
+              pendingLabel: 'Saving',
+              onPress: noop,
+            },
+            { id: 'delete', label: 'Delete', icon: ActionDeleteGlyph, onPress: noop },
+            { id: 'edit', label: 'Edit', icon: ActionEditGlyph, onPress: noop },
+            { id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
+            { id: 'more', label: 'More', icon: ActionMoreGlyph, onPress: noop },
+            { id: 'refresh', label: 'Refresh', icon: ActionRefreshGlyph, onPress: noop },
+            { id: 'add', label: 'Add', icon: ActionPlusGlyph, onPress: noop },
+            { id: 'search', icon: SearchGlyph, label: 'Search', onPress: noop },
           ]}
         />
       </div>
@@ -378,22 +434,24 @@ mountLab(
       <div style={caseFrame} data-lab-case="no-icon">
         <ActionRow
           actions={[
-            { verb: 'custom', id: 'schedule', label: 'Schedule', isSelected: false, onPress: noop },
-            { verb: 'custom', id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
+            { id: 'schedule', label: 'Schedule', isSelected: false, onPress: noop },
+            { id: 'help', icon: HelpGlyph, label: 'Help', onPress: noop },
           ]}
         />
       </div>
     </LabSection>
     <LabSection
       title="Menus and disabled reason"
-      description="The more verb and the custom sort action open menus of typed items. The disabled delete keeps focus so its tooltip can explain why."
+      description="The More and Sort actions open menus of typed items. The disabled delete keeps focus so its tooltip can explain why."
     >
       <MoreMenu />
       <div style={caseFrame} data-lab-case="disabled-reason">
         <ActionRow
           actions={[
             {
-              verb: 'delete',
+              id: 'delete',
+              label: 'Delete',
+              icon: ActionDeleteGlyph,
               isDisabled: true,
               tooltip: 'Only the owner can delete this file',
               onPress: noop,
@@ -446,22 +504,6 @@ mountLab(
       description="Turn the actions off for a lead-only row. With no actions and an empty lead (not set, null or the empty string) the row renders nothing; the number 0 is content and keeps it."
     >
       <EmptyRow />
-    </LabSection>
-    <LabSection
-      title="Host helpers"
-      description="The standard verbs in their drawing order, and orderActions sorting a host list the same way, such as for a menu of the same actions."
-    >
-      <LabHelperCalls
-        calls={[
-          ['Object.keys(actionVerbs)', Object.keys(actionVerbs).join(', ')],
-          [
-            "orderActions([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])",
-            orderActions<ActionRowAction>([{ verb: 'delete' }, { verb: 'add' }, { verb: 'edit' }])
-              .map((action) => action.verb)
-              .join(', '),
-          ],
-        ]}
-      />
     </LabSection>
   </>,
 );

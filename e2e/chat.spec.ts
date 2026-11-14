@@ -3,7 +3,7 @@ import { cellSelector, expect, formatLabUrl, matrixCell, test, waitForLab } from
 
 const section = (page: Page, title: string) => page.locator(`[data-lab-section="${title}"]`);
 const composer = (scope: Locator) => scope.getByRole('textbox', { name: 'Message' });
-const message = (scope: Locator, id: string) => scope.locator(`article[id="${id}"]`);
+const message = (scope: Locator, id: string) => scope.locator(`article[data-message-id="${id}"]`);
 const lastReply = (scope: Locator) => scope.locator('article').last();
 
 /** Opens the Chat lab with the fake agent pausing `pause` milliseconds between chunks. */
@@ -189,7 +189,7 @@ test.describe('Chat lab', () => {
     await expect(composer(assistant)).toBeFocused();
   });
 
-  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 UIC-SHORTCUT-3.3 queues on Enter, edits the newest queued message on Up and sends now on Ctrl+Enter', async ({
+  test('UIC-CHAT-3.4 UIC-CHAT-12.5 UIC-SHORTCUT-3.3 queues on Enter, edits the newest queued message on Up and sends now on Ctrl+Enter', async ({
     page,
   }) => {
     await openChat(page, 80);
@@ -203,7 +203,7 @@ test.describe('Chat lab', () => {
     await expect(demo.getByText('stop the reply and send now')).toBeVisible();
     await demo.getByRole('button', { name: 'Paste a sample image' }).click();
     await expect(
-      demo.locator('.ui-chat__composer .ui-chat-attachment[data-status="complete"]'),
+      demo.locator('.ui-chat__composer .ui-attachment[data-status="complete"]'),
     ).toHaveCount(1);
     await composer(demo).click();
     await page.keyboard.type('And a café');
@@ -227,7 +227,7 @@ test.describe('Chat lab', () => {
     await expect(state).toHaveText('idle');
   });
 
-  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 steers with a queued message and ends an edit whose message is removed', async ({
+  test('UIC-CHAT-3.4 UIC-CHAT-12.5 steers with a queued message and ends an edit whose message is removed', async ({
     page,
   }) => {
     await openChat(page, 80);
@@ -251,7 +251,7 @@ test.describe('Chat lab', () => {
     await expect(composer(demo)).toBeFocused();
   });
 
-  test('UIC-CHAT-3.4 UIC-CHAT-CONTROLLER-2.5 holds a queued message while it is edited and sends the saved text', async ({
+  test('UIC-CHAT-3.4 UIC-CHAT-12.5 holds a queued message while it is edited and sends the saved text', async ({
     page,
   }) => {
     await openChat(page, 20);
@@ -362,12 +362,14 @@ test.describe('Chat lab', () => {
   }) => {
     await lab.open('chat');
     const demo = page.locator('[data-lab-demo="inline-options"]');
-    await expect(demo.locator('article[id="inline-2"]')).toContainText('Hill castle');
+    await expect(demo.locator('article[data-message-id="inline-2"]')).toContainText('Hill castle');
     await demo.getByRole('button', { name: 'Stream a reply' }).click();
     await expect(demo).toContainText('Streaming');
     await expect(demo.locator('.ui-chat-status-line__icon circle')).toBeVisible();
     await expect(demo).toContainText('Done', { timeout: 15_000 });
-    await expect(demo.locator('article[id="inline-4"]')).toContainText('beats the crowds.');
+    await expect(demo.locator('article[data-message-id="inline-4"]')).toContainText(
+      'beats the crowds.',
+    );
     await expect(demo).toContainText('Saved place drawn again: 0');
     await lab.expectAccessible('[data-lab-section="Inline options"]');
   });
@@ -387,7 +389,7 @@ test.describe('Chat lab', () => {
     await rateAndCopy(page, reply);
   });
 
-  test('UIC-CHAT-1.1 UIC-CHAT-LIST-1.1 opens earlier agent conversations and keeps a reply running behind another', async ({
+  test('UIC-CHAT-1.1 UIC-CHAT-16.1 opens earlier agent conversations and keeps a reply running behind another', async ({
     page,
   }) => {
     await openChat(page, 30);
@@ -395,7 +397,7 @@ test.describe('Chat lab', () => {
     const list = assistant.getByRole('grid', { name: 'Conversations' });
     const row = (title: string) => list.getByRole('row', { name: new RegExp(`^${title}`) });
     await expect(assistant.locator('.ui-chat-header')).toContainText('Two days in Lisbon');
-    await expect(assistant.locator('.ui-chat-attachment[data-kind="image"]')).toHaveCount(5);
+    await expect(assistant.locator('.ui-attachment[data-kind="image"]')).toHaveCount(5);
     await expect(assistant.getByRole('link', { name: /^Source 1:/ })).toBeVisible();
     await expect(
       assistant.locator('.ui-chat-tool-call', { hasText: 'Book a table for two' }),
@@ -411,7 +413,7 @@ test.describe('Chat lab', () => {
     const reply = lastReply(assistant);
     await expect(reply).toHaveAttribute('data-status', 'complete');
     await expect(reply).toContainText('Here is how the places look.');
-    await expect(reply.locator('.ui-chat-attachment[data-kind="image"]')).toHaveCount(3);
+    await expect(reply.locator('.ui-attachment[data-kind="image"]')).toHaveCount(3);
     await expect(row('Two days in Lisbon')).not.toHaveAccessibleName(/Working/);
 
     await assistant.getByRole('button', { name: 'New chat' }).click();
@@ -561,7 +563,7 @@ test.describe('Chat lab', () => {
       .getByRole('list', { name: 'Attachments' });
     await expect(files.getByRole('alert')).toContainText('did not arrive');
     await files.getByRole('button', { name: 'Retry' }).click();
-    await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toBeVisible();
+    await expect(files.locator('.ui-attachment[data-status="complete"]')).toBeVisible();
 
     const refused = page.waitForEvent('filechooser');
     await attachFromMenu(page, assistant);
@@ -572,9 +574,9 @@ test.describe('Chat lab', () => {
       { name: 'route.txt', mimeType: 'text/plain', buffer: Buffer.from('txt') },
     ]);
     await expect(files.getByRole('alert')).toContainText('huge-photo.png is too large');
-    await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toHaveCount(2);
+    await expect(files.locator('.ui-attachment[data-status="complete"]')).toHaveCount(2);
     await files.getByRole('button', { name: 'Retry' }).click();
-    await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toHaveCount(3);
+    await expect(files.locator('.ui-attachment[data-status="complete"]')).toHaveCount(3);
   });
 
   test('UIC-CHAT-2.4 UIC-CHAT-2.5 replies with a quote and edits it between two people', async ({
@@ -786,7 +788,7 @@ test.describe('Chat lab, everything in one chat', () => {
       await expect(message(chat, 'all-7').locator('.ui-chat-message__edited')).toHaveText('Edited');
       await expect(message(chat, 'all-8')).toHaveAttribute('data-deleted', 'true');
       await expect(message(chat, 'all-10')).toHaveAttribute('data-delivery', 'failed');
-      await expect(message(chat, 'all-3').locator('.ui-chat-attachment__preview')).toHaveCount(2);
+      await expect(message(chat, 'all-3').locator('.ui-attachment__preview')).toHaveCount(2);
       await lab.expectAccessible('[data-lab-section="Everything in one chat"]');
     }
   });

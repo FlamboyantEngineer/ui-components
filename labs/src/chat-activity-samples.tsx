@@ -1,5 +1,5 @@
 // Sample data and stand-ins shared by the Chat Activity lab's cases and its simulation.
-import type { ChatPlanStep } from '../../src/components/chat-activity/chat-activity.js';
+import type { ChatPlanStep } from '../../src/components/chat/index.js';
 import { Label } from '../../src/components/label/label.js';
 import { CheckGlyph, ClockGlyph } from '../../src/core/glyphs.js';
 

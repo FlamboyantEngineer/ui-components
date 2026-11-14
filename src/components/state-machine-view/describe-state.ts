@@ -1,7 +1,7 @@
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import { normalizeCount } from '../../utils/count.js';
-import type { StateMachineState } from './state-machine-view.js';
+import type { StateMachineState } from './state-machine-model.js';
 
 /** A notification count shows only when positive, and caps at this value as `9+`. */
 export const notificationCountMax = 9;
