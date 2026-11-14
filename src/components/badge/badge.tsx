@@ -237,7 +237,14 @@ function LabelBadge({
     ariaLabel,
     ariaHidden: rest['aria-hidden'],
   });
-  const data = { variant, tone, size, bare, mutedDot: isStatus && mutedDot, collapsed: isCollapsed };
+  const data = {
+    variant,
+    tone,
+    size,
+    bare,
+    mutedDot: isStatus && mutedDot,
+    collapsed: isCollapsed,
+  };
   return (
     <span {...rest} {...hooks.root({ className, data })} role={role} aria-label={name}>
       {isStatus ? <span {...hooks.slot('dot')} aria-hidden="true" /> : null}

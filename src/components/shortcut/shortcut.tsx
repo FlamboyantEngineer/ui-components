@@ -5,7 +5,7 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Keyboard } from '../../primitives/index.js';
-import { MetaLine, type MetaLineProps } from '../meta-line/meta-line.js';
+import { MetaLineBase, type MetaLineBaseProps } from '../meta-line/meta-line-base.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   formatShortcutAccessibleText,
@@ -55,7 +55,7 @@ export interface KeyHintsProps
   extends
     RefProps<HTMLSpanElement>,
     BaseProps,
-    Pick<MetaLineProps, 'aria-label' | 'aria-labelledby'> {
+    Pick<MetaLineBaseProps, 'aria-label' | 'aria-labelledby'> {
   /** The legend's entries, in order. */
   hints: readonly KeyHint[];
   /** The notation of every shortcut. Defaults to the detected platform. */
@@ -135,7 +135,7 @@ export function Shortcut({
 /** A key legend such as `↑↓ move · Enter select`, drawn on one metadata line. */
 export function KeyHints({ hints, platform, appearance, className, ...rest }: KeyHintsProps) {
   return (
-    <MetaLine
+    <MetaLineBase
       {...rest}
       className={mergeClassNames(hintHooks.className, className)}
       items={hints.map((hint, index) => (

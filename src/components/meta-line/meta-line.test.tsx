@@ -4,7 +4,8 @@ import { createElement, Fragment, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ClockGlyph } from '../../core/glyphs.js';
-import { formatMetaLine, MetaLine, type MetaLineTextItem } from './meta-line.js';
+import { MetaLine } from './meta-line.js';
+import { formatMetaLine, type MetaLineTextItem } from './meta-line-text.js';
 
 function Counter() {
   const [count, setCount] = useState(0);

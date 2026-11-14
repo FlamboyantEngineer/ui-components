@@ -11,7 +11,7 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import { formatMetaLine } from '../meta-line/meta-line.js';
+import { formatMetaLine } from '../meta-line/meta-line-text.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { FileRejection, FileRules } from './file-rules.js';
 import { ButtonCommand, type CommandProps, DropZoneCommand } from './file-upload-drop.js';

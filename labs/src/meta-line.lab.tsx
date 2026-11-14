@@ -3,7 +3,7 @@ import {
   formatMetaLine,
   MetaLine,
   type MetaLineItem,
-} from '../../src/components/meta-line/meta-line.js';
+} from '../../src/components/meta-line/index.js';
 import { CalendarGlyph, ClockGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
