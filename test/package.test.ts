@@ -341,7 +341,9 @@ describe('optional rich-text peers', () => {
   const componentsDir = join(process.cwd(), 'src/components');
   /** Every component entry point the `./*` export serves, as its subpath. */
   const entries = readdirSync(componentsDir).flatMap((name) =>
-    [name, `${name}/rich`].filter((entry) => existsSync(join(componentsDir, entry, 'index.ts'))),
+    [name, `${name}/rich`, `${name}/kit`].filter((entry) =>
+      existsSync(join(componentsDir, entry, 'index.ts')),
+    ),
   );
 
   it('UIC-MESSAGE-COMPOSER-4.1 are reached only from the rich text, rich composer, chat and comment mention entry points', () => {
@@ -353,10 +355,19 @@ describe('optional rich-text peers', () => {
       'comment-composer/rich',
       'message-composer/rich',
       'rich-text-editor',
+      'rich-text-editor/kit',
     ]);
     for (const entry of ['src/index.ts', 'src/core/index.ts']) {
       expect(collectPackages(entry).filter((name) => RICH_TEXT_PEER.test(name))).toEqual([]);
     }
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-13.6 serves the kit from an entry point that reaches only the model and state packages', () => {
+    // prosemirror-state is imported for its types alone, so only prosemirror-model loads.
+    expect(collectPackages('src/components/rich-text-editor/kit/index.ts')).toEqual([
+      'prosemirror-model',
+      'prosemirror-state',
+    ]);
   });
 
   it('UIC-MESSAGE-COMPOSER-4.1 pins prosemirror-view exactly where the React view requires it', () => {

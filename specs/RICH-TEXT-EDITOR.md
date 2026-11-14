@@ -346,10 +346,10 @@ Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
 
 ### UIC-RICH-TEXT-EDITOR-13.6 - Server-safe assembly
 
-Kits shall be assembled without a DOM, so a server builds the same schema and plugin order as the browser and reads and writes the same documents.
+Kits shall be assembled without a DOM, so a server builds the same schema and plugin order as the browser and reads and writes the same documents. `createRichTextKit` and the extension types (`RichTextExtension`, `RichTextExtensionNode`, `RichTextExtensionMark`, `RichTextPluginContribution`, `RichTextKit`) shall also be exported from `@flamboyantengineer/ui-components/rich-text-editor/kit`, which reaches `prosemirror-model` and the types of `prosemirror-state` and nothing else, so a server assembles a kit without loading React, React Aria or the editor's view.
 
-Implementation: `src/components/rich-text-editor/rich-text-extension.ts`
-Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`
+Implementation: `src/components/rich-text-editor/rich-text-extension.ts`, `src/components/rich-text-editor/kit/index.ts`
+Verification: `src/components/rich-text-editor/rich-text-extension.test.tsx`, `test/package.test.ts`
 
 ## UIC-RICH-TEXT-EDITOR-14 - Engines
 
