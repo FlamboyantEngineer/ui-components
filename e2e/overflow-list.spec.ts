@@ -88,7 +88,7 @@ test.describe('Overflow List lab', () => {
 
     await slider.fill('80');
     await expect(row.locator('.ui-overflow-list__item')).toHaveCount(0);
-    await expect(row.getByRole('button', { name: `${fruit.length} more` })).toBeVisible();
+    await expect(row.getByRole('button', { name: `${fruit.length} items` })).toBeVisible();
     await slider.fill('560');
     await expect(row.locator('.ui-overflow-list__item')).toHaveCount(fruit.length);
   });
@@ -195,6 +195,24 @@ for (const scale of [1.5, 0.5]) {
     await expectInsideRow(row);
   });
 }
+
+test('UIC-OVERFLOW-LIST-1.1 keeps a row scaled in the lab inside its cell', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('overflow-list');
+  const cell = page.locator(cellSelector('scale=1.5'));
+  const row = cell.locator('.ui-overflow-list');
+  await expect(row).toHaveAttribute('data-overflowing', 'true');
+  const cellBox = await cell.boundingBox();
+  const rowBox = await row.boundingBox();
+  expect(rowBox && cellBox && rowBox.x + rowBox.width).toBeLessThanOrEqual(
+    (cellBox?.x ?? 0) + (cellBox?.width ?? 0),
+  );
+  expect(rowBox && cellBox && rowBox.y + rowBox.height).toBeLessThanOrEqual(
+    (cellBox?.y ?? 0) + (cellBox?.height ?? 0),
+  );
+});
 
 test('UIC-OVERFLOW-LIST-1.5 UIC-OVERFLOW-LIST-1.6 keeps priorities and a minimum in a host row, with the indicator placed or nested', async ({
   page,

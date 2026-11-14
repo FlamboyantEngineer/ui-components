@@ -41,4 +41,18 @@ test.describe('Asset Picker lab', () => {
     await expect(demo.getByText('Search is unavailable.')).toBeVisible();
     await expect(demo.getByRole('button', { name: 'Insert' })).toBeDisabled();
   });
+
+  test('UIC-ASSET-PICKER-1.1 keeps the results the same size when an image is chosen', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('asset-picker');
+    const demo = page.locator('[data-lab-demo="insert"]');
+    const grid = demo.getByRole('grid', { name: 'Images' });
+    const first = grid.getByRole('row', { name: 'Round loaf' });
+    const before = await first.boundingBox();
+    await first.click();
+    await expect(demo.getByRole('textbox', { name: 'Width' })).toBeVisible();
+    expect(await first.boundingBox()).toEqual(before);
+  });
 });

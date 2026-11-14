@@ -23,18 +23,16 @@
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  padding: 4px 8px 4px 12px;
+  /* The toggle sits 16 pixels from the start edge, centred on the 56-pixel collapsed rail, in both
+     states: collapsing or expanding never moves it, so it can be pressed again where it is. */
+  padding-block: 4px;
+  padding-inline: 16px 8px;
   font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-navigation-rail__header > :not(.ui-navigation-rail__toggle) {
   flex: 1 1 auto;
   min-width: 0;
-}
-
-.ui-navigation-rail[data-collapsed] .ui-navigation-rail__header {
-  flex-direction: column;
-  padding-inline: 4px;
 }
 
 .ui-navigation-rail[data-collapsed]

@@ -46,10 +46,13 @@ test.describe('Navigation Rail lab', () => {
     const rail = page.locator(stateRail('expanded', 'fixed'));
     const wide = (await rail.boundingBox())?.width ?? 0;
     const toggle = rail.getByRole('button', { name: 'Collapse navigation' });
+    const before = await toggle.boundingBox();
     await toggle.click();
     await expect(rail).toHaveAttribute('data-collapsed', 'true');
     await expect(rail.getByRole('button', { name: 'Expand navigation' })).toBeFocused();
     await expect.poll(async () => (await rail.boundingBox())?.width ?? 0).toBeLessThan(wide);
+    // The toggle stays where it was, so a second press needs no pointer move.
+    expect(await rail.locator('.ui-navigation-rail__toggle').boundingBox()).toEqual(before);
     const plan = rail.getByRole('link', { name: 'Weekly menu' });
     await expect(plan.locator('.ui-navigation-rail__label')).toHaveClass(/ui-visually-hidden/);
     await page.mouse.move(600, 5);

@@ -1,7 +1,10 @@
 'use client';
 
+import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isOverflowing } from '../../utils/is-overflowing.js';
+import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { renderKatexMath } from './katex-renderer.js';
 import { mathPreviewHooks as hooks } from './math-preview-hooks.js';
 import {
@@ -21,6 +24,30 @@ export interface MathPreviewProps extends RefProps<HTMLSpanElement>, BaseProps {
   renderer?: MathRenderer | undefined;
   /** The longest source typeset, in characters. Defaults to 10000. */
   maxLength?: number | undefined;
+}
+
+/**
+ * The typeset math. Math wider than its box scrolls inside it (in the reference sheet), so while it
+ * does the box takes keyboard focus and publishes `data-overflowing`: the reader can scroll it with
+ * the arrow keys.
+ */
+function MathSlot({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [isCut, setCut] = useState(false);
+  const measure = useCallback(() => {
+    setCut(ref.current !== null && isOverflowing(ref.current, 'horizontal'));
+  }, []);
+  useResizeObserver([ref], measure);
+  useLayoutEffect(measure, [measure, children]);
+  return (
+    <span
+      ref={ref}
+      {...hooks.slot('math', { overflowing: isCut })}
+      tabIndex={isCut ? 0 : undefined}
+    >
+      {children}
+    </span>
+  );
 }
 
 /** The typeset math, or what stands in for it: typesetting, or why the source does not typeset. */
@@ -44,7 +71,7 @@ export function MathPreviewContent({
       </>
     );
   }
-  if (preview.math !== null) return <span {...hooks.slot('math')}>{preview.math}</span>;
+  if (preview.math !== null) return <MathSlot>{preview.math}</MathSlot>;
   if (preview.status === 'pending') {
     return <span {...hooks.slot('pending')}>{strings.mathPending}</span>;
   }
