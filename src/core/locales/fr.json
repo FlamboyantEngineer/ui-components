@@ -717,7 +717,6 @@
   "formulaCellReference": "Référence de cellule",
   "formulaCellContent": "Contenu de la cellule",
   "formulaInvalidReference": "Aucune cellule nommée {text}",
-  "formulaResult": "Résultat",
   "formulaKeysHint": "Entrée valide, Échap annule.",
   "formulaFunctions": "Insérer une fonction",
   "relationItems": "Éléments",

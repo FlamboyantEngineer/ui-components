@@ -70,6 +70,7 @@ function Rules() {
     <>
       <DecimalField
         label="Ratio"
+        showStepper
         step="0.1"
         minValue="0"
         maxValue="1"
@@ -101,7 +102,6 @@ function Rules() {
         label="Tolerance"
         scale={3}
         roundingMode="trunc"
-        hideStepper
         defaultValue="0.125"
         description="Drops digits past the third, with no step buttons."
         data-lab-field="tolerance"

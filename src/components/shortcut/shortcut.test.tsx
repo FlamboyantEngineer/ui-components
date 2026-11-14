@@ -216,16 +216,16 @@ describe('KeyHints', () => {
 });
 
 describe('Shortcut appearance', () => {
-  it('UIC-SHORTCUT-2.5 publishes keycaps by default and text when asked, with the same keys and words', () => {
+  it('UIC-SHORTCUT-2.5 publishes text by default and keycaps when asked, with the same keys and words', () => {
     const { container, rerender } = render(
       <Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="mac" />,
     );
     const root = container.firstElementChild as HTMLElement;
-    expect(root).toHaveAttribute('data-appearance', 'keycaps');
-    const keycaps = root.innerHTML;
-    rerender(<Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="mac" appearance="text" />);
     expect(root).toHaveAttribute('data-appearance', 'text');
-    expect(root.innerHTML).toBe(keycaps);
+    const text = root.innerHTML;
+    rerender(<Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="mac" appearance="keycaps" />);
+    expect(root).toHaveAttribute('data-appearance', 'keycaps');
+    expect(root.innerHTML).toBe(text);
     expect(root.querySelector('.ui-shortcut__keys')).toHaveTextContent('⌘K ⌘C');
     expect(root.querySelector('.ui-shortcut__text')).toHaveTextContent('Command K, then Command C');
     expectHooksMatchSpec(container, 'SHORTCUT');

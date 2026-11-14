@@ -80,7 +80,8 @@
 }
 
 .ui-board__column[data-over-limit] {
-  border-color: var(--ref-danger);
+  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), var(--ref-canvas));
 }
 
 .ui-board__column[data-dragging] {
@@ -130,8 +131,8 @@
 }
 
 .ui-board__column[data-over-limit] .ui-board__column-count {
-  background: var(--ref-danger-fill);
-  color: var(--ref-on-fill);
+  background: var(--ref-warning-fill);
+  color: var(--ref-on-warning-fill);
 }
 
 .ui-board__column-handle {
@@ -194,10 +195,6 @@
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-}
-
-.ui-board__cell[data-over-limit] {
-  box-shadow: inset 0 0 0 1px var(--ref-danger);
 }
 
 .ui-board__cards {
