@@ -207,6 +207,39 @@ describe('TabList', () => {
     expect(wheel({ deltaY: 50 })).toBe(false);
   });
 
+  it('UIC-TABS-2.9 fades the edges that hide tabs by default, and not when opted out', async () => {
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist' ? 500 : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'tablist' ? 200 : 0;
+    });
+    const { container, rerender } = render(<Fruit />);
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    const fades = container.querySelectorAll('.ui-tabs__fade');
+    expect(fades).toHaveLength(2);
+    expect(fades[0]).toHaveAttribute('data-edge', 'start');
+    expect(fades[0]).toHaveAttribute('hidden');
+    expect(fades[0]).toHaveAttribute('aria-hidden', 'true');
+    expect(fades[1]).toHaveAttribute('data-edge', 'end');
+    expect(fades[1]).not.toHaveAttribute('hidden');
+    const list = screen.getByRole('tablist');
+    list.scrollLeft = 100;
+    fireEvent.scroll(list);
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    expect(fades[0]).not.toHaveAttribute('hidden');
+    expectHooksMatchSpec(container, 'TABS', { slots: ['bar', 'list', 'fade'] });
+    rerender(<Fruit showEdgeFades={false} />);
+    expect(container.querySelector('.ui-tabs__fade')).toBeNull();
+    expect(container.querySelector('.ui-tabs__bar')).toBeNull();
+    rerender(<Fruit overflow="menu" />);
+    expect(container.querySelector('.ui-tabs__fade')).toBeNull();
+  });
+
   it('UIC-TABS-2.7 does not draw its tabs again while the list scrolls', async () => {
     vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
       this: HTMLElement,
@@ -438,6 +471,9 @@ describe('TabList', () => {
     expect(screen.getByRole('tab')).toHaveAttribute('data-swapped', 'selected tab');
     expect(screen.getByRole('tab')).toHaveClass('ui-tabs__tab');
     expect(screen.getByRole('tabpanel')).toHaveAttribute('data-swapped', 'panel');
-    expect(screen.getByRole('tablist').parentElement).toHaveAttribute('data-swapped', 'horizontal');
+    expect(screen.getByRole('tablist').closest('.ui-tabs')).toHaveAttribute(
+      'data-swapped',
+      'horizontal',
+    );
   });
 });

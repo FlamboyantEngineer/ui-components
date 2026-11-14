@@ -218,14 +218,14 @@ export function LockedChromeEditor() {
   );
 }
 
-/** The block type select drawing each type the way its block looks. */
-export function PreviewLabelsEditor() {
+/** The block type select with glyphs and plain names, in place of the default previews. */
+export function PlainLabelsEditor() {
   return (
     <RichTextEditor
-      label="Previewed block types"
+      label="Plain block types"
       defaultValue={shortNote}
-      data-lab-editor="preview-labels"
-      toolbar={<FormatToolbar blockTypeLabels="preview" />}
+      data-lab-editor="plain-labels"
+      toolbar={<FormatToolbar blockTypeLabels="plain" />}
     />
   );
 }

@@ -17,6 +17,7 @@ import {
 import type { PendingChangeHandler } from './pending-change.js';
 import { Segment } from './segment.js';
 import { segmentedChoiceHooks as hooks } from './segmented-choice-hooks.js';
+import { useSegmentIcons } from './use-icon-fallback.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
@@ -75,8 +76,12 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   size?: ControlSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
   sizing?: SegmentedChoiceSizing | undefined;
-  /** Each segment shows only its icon, named by its label, which its tooltip shows. */
-  iconOnly?: boolean | undefined;
+  /**
+   * Each segment shows only its icon, named by its label, which its tooltip shows. `auto` does so
+   * only while the labels do not fit the width the group's parent gives it, when every option has
+   * an icon. Defaults to `false`.
+   */
+  iconOnly?: boolean | 'auto' | undefined;
   /** Option counts above this show as `<max>+`. Defaults to 99. */
   countMax?: number | undefined;
   /** Show zero counts. Defaults to `false`. */
@@ -164,6 +169,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   const [group, setGroup] = useForwardedRef(ref);
   useNativeReset(group, selection.reset);
   const isDisabled = useScopedDisabled(rest.isDisabled);
+  const showsIcons = useSegmentIcons(group, iconOnly, options);
 
   return (
     <ToggleButtonGroup
@@ -177,7 +183,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
           size,
           sizing,
           selectionMode: selection.selectionMode,
-          iconOnly,
+          iconOnly: showsIcons,
           inherited: isInherited,
           readonly: isReadOnly,
           invalid: isInvalid,
@@ -201,7 +207,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
         <Segment
           key={option.value}
           option={option}
-          {...{ size, iconOnly, countMax, showZero, countVariant }}
+          {...{ size, countMax, showZero, countVariant, iconOnly: showsIcons }}
         />
       ))}
       <FieldFormValue {...{ name, form, isDisabled }} value={selection.selectedKeys} />

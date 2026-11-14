@@ -208,10 +208,23 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overflow"
-      description="Ten long tabs in a 360px column. Selecting a tab scrolls it toward the middle of the strip."
+      description="Ten long tabs in a 360px column. Selecting a tab glides it toward the middle of the strip, and a fade covers each edge that hides tabs."
     >
       <div data-lab-overflow="" style={{ width: 360 }}>
         <CityTabs label="Cities" />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Edge fades"
+      description="Fades are on by default: roll the wheel over the first list and a fade covers each edge that hides tabs, as in the toolbar scroller. The second list passes showEdgeFades={false}."
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        <div data-lab-fades="on" style={{ width: 360 }}>
+          <CityTabs label="Places with fades" />
+        </div>
+        <div data-lab-fades="off" style={{ width: 360 }}>
+          <CityTabs label="Places without fades" showEdgeFades={false} />
+        </div>
       </div>
     </LabSection>
     <LabSection

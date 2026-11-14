@@ -126,7 +126,8 @@
   font-size: var(--ref-font-size-sm);
 }
 
-.ui-menu-item:is([data-focused], [data-open]) .ui-menu-item__description {
+.ui-menu-item:is([data-focused], [data-open])
+  :is(.ui-menu-item__description, .ui-menu-item__shortcut) {
   color: inherit;
 }
 

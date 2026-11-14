@@ -66,7 +66,7 @@ export interface DockPanelProps extends RefProps<HTMLElement>, BaseProps {
   persistKey?: string | undefined;
   /** Below this parent width, in pixels, the selected pane shows in a drawer over the page. */
   overlayBelow?: number | undefined;
-  /** Draws a decorative fade over each edge of the tabs or launchers that hides some. Defaults to `false`. */
+  /** Draws a decorative fade over each edge of the tabs or launchers that hides some. Defaults to `true`; `false` draws none. */
   showEdgeFades?: boolean | undefined;
 }
 
@@ -169,7 +169,7 @@ export function DockPanel({
   maxSize = 640,
   minMainSize,
   overlayBelow,
-  showEdgeFades = false,
+  showEdgeFades = true,
   className,
   id,
   ...rest

@@ -261,22 +261,9 @@
   width: 150px;
 }
 
-/* Block type previews: each name drawn the way its block looks in the document. */
+/* Block type previews: each name in the way its block looks, but for its size, so the options keep the menu's height. */
 .ui-format-toolbar__block-preview:is([data-block^='heading']) {
-  line-height: 1.25;
   font-weight: var(--ref-font-weight-strong);
-}
-
-.ui-format-toolbar__block-preview[data-block='heading-1'] {
-  font-size: 1.6em;
-}
-
-.ui-format-toolbar__block-preview[data-block='heading-2'] {
-  font-size: 1.3em;
-}
-
-.ui-format-toolbar__block-preview[data-block='heading-3'] {
-  font-size: 1.1em;
 }
 
 .ui-format-toolbar__block-preview[data-block='code-block'] {
@@ -390,7 +377,7 @@
 }
 
 .ui-rich-text-editor__scroll-marker[data-severity='warning'] {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 /* A marked block: a tint and an underline, wavy for an error and dotted for a warning. */
@@ -401,6 +388,6 @@
 }
 
 .ui-rich-text-editor__content > [data-severity='warning'] {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
   text-decoration: dotted underline var(--ref-warning);
 }

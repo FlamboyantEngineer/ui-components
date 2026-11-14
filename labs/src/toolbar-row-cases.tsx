@@ -30,7 +30,7 @@ const frameStyle = (width: number): CSSProperties => ({
 function KitchenTools({
   name,
   overflow,
-  showEdgeFades = false,
+  showEdgeFades = true,
 }: {
   name: string;
   overflow: ToolbarRowOverflow;

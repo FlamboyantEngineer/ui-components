@@ -7,9 +7,11 @@
   box-shadow: none;
 }
 
-.ui-state-machine-view .ui-diagram-canvas__node[data-selected] .ui-state-machine-view__state {
-  border-color: var(--ref-accent);
-  box-shadow: 0 0 0 1px var(--ref-accent);
+/* A selected state takes a pale wash of the accent, leaving its frame as it was. */
+.ui-state-machine-view
+  .ui-diagram-canvas__node[data-selected]
+  .ui-state-machine-view__state:not([data-current]) {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), var(--ref-raised));
 }
 
 .ui-state-machine-view[data-orientation='vertical'] .ui-diagram-canvas__edge-label {
@@ -207,11 +209,13 @@
   color: var(--ref-on-fill);
 }
 
-.ui-state-machine-view[data-presentation='sequence'] .ui-state-machine-view__state[data-selected] {
-  --ref-state-machine-view-edge: var(--ref-accent);
-
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.ui-state-machine-view[data-presentation='sequence']
+  .ui-state-machine-view__state[data-selected]:not([data-current]) {
+  --ref-state-machine-view-fill: color-mix(
+    in srgb,
+    var(--ref-accent) var(--ref-tint),
+    var(--ref-raised)
+  );
 }
 
 .ui-state-machine-view__state-position:focus-within {

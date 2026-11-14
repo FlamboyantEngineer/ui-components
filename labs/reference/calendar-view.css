@@ -159,7 +159,7 @@
 
 .ui-calendar-view__event:not([data-tone='neutral']) {
   border-inline-start-color: var(--ref-tone);
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint), var(--ref-canvas));
 }
 
 .ui-calendar-view__event[data-continues-before] {

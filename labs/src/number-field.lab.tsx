@@ -19,16 +19,16 @@ import { NumberFieldPresetsSection } from './number-field-presets.js';
 import { NumberFieldSliderSections } from './number-field-slider.js';
 import { Radices } from './number-radices.js';
 
-const steppers = ['shown', 'hidden'] as const;
+const steppers = ['hidden', 'shown'] as const;
 
 function Sample({
   state,
   layout,
-  hideStepper,
+  showStepper,
 }: {
   state: FieldStateName;
   layout: (typeof fieldLayouts)[number];
-  hideStepper: boolean;
+  showStepper: boolean;
 }) {
   const props = useLabFieldState<number | null>(state, {
     value: 4,
@@ -37,7 +37,7 @@ function Sample({
     warning: 9,
     empty: null,
   });
-  return <NumberField label="Weight" labelLayout={layout} hideStepper={hideStepper} {...props} />;
+  return <NumberField label="Weight" labelLayout={layout} showStepper={showStepper} {...props} />;
 }
 
 function Commit() {
@@ -104,6 +104,7 @@ function Formats() {
       <UiProvider locale="de-DE">
         <NumberField
           label="Distance"
+          showStepper
           defaultValue={1234.5}
           formatOptions={{ style: 'unit', unit: 'kilometer', maximumFractionDigits: 1 }}
           data-lab-field="german"
@@ -121,6 +122,7 @@ function SavedField() {
     <>
       <NumberField
         label="Servings"
+        showStepper
         value={value}
         onChange={setValue}
         committedValue={saved}
@@ -141,6 +143,7 @@ function UnitSwitch() {
     <div data-lab-demo="unit-switch">
       <NumberField
         label="Distance"
+        showStepper
         defaultValue={12}
         endAdornment={
           <Button variant="ghost" size="xs" onPress={() => setUnit(unit === 'km' ? 'mi' : 'km')}>
@@ -161,7 +164,6 @@ function Affixes() {
         defaultValue={1250}
         startAdornment="$"
         endAdornment="/mo"
-        hideStepper
         data-lab-field="rent"
       />
       <UiProvider locale="en-IN">
@@ -169,7 +171,6 @@ function Affixes() {
           label="Budget"
           defaultValue={1250000}
           startAdornment="₹"
-          hideStepper
           data-lab-field="lakh"
         />
       </UiProvider>
@@ -205,6 +206,7 @@ function FastSteps() {
     <>
       <NumberField
         label="Opacity"
+        showStepper
         description="Shift steps by 10, Alt by 0.1, with the arrows or the − and + buttons; drag the handle sideways to scrub. Releasing or cancelling ends the scrub."
         defaultValue={40}
         minValue={0}
@@ -249,12 +251,12 @@ mountLab(
     </LabSection>
     <LabSection
       title="Layouts and states"
-      description="Every label layout against every state, with and without step buttons."
+      description="Every label layout against every state, without step buttons (the default) and with them."
     >
       <StateMatrix
         axes={{ stepper: steppers, state: fieldStates, layout: fieldLayouts }}
         render={({ stepper, state, layout }) => (
-          <Sample state={state} layout={layout} hideStepper={stepper === 'hidden'} />
+          <Sample state={state} layout={layout} showStepper={stepper === 'shown'} />
         )}
       />
     </LabSection>

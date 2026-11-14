@@ -12,5 +12,5 @@
 }
 
 .ui-text-match[data-term='2'] {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
 }

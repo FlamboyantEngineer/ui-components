@@ -71,7 +71,7 @@ describe('NumberField bases', () => {
 it('UIC-NUMBER-FIELD-4.2 names radix step buttons with provider strings', () => {
   render(
     <UiProvider messages={{ numberIncrease: 'Add', numberDecrease: 'Subtract' }}>
-      <NumberField label="Capacity" radix={16} />
+      <NumberField showStepper label="Capacity" radix={16} />
     </UiProvider>,
   );
   expect(screen.getByRole('button', { name: 'Add Capacity' })).toBeEnabled();
