@@ -51,6 +51,3 @@
 .ui-empty-state__spinner {
   --ref-spinner-size: var(--ref-icon-size-md);
 }
-.ui-banner__spinner {
-  margin-block-start: 2px;
-}

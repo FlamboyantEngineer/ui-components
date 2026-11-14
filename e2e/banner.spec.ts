@@ -134,7 +134,8 @@ test.describe('Banner lab', () => {
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await lab.open('banner');
-    const spinner = page.locator('.ui-banner__spinner').first();
+    // The library spinner turns its ring.
+    const spinner = page.locator('.ui-banner__spinner .ui-spinner__ring').first();
     await expect(spinner).toBeVisible();
     expect(
       await spinner.evaluate((node: Element) => getComputedStyle(node).animationDuration),
@@ -147,5 +148,33 @@ test.describe('Banner lab', () => {
     expect(
       await spinner.evaluate((node: Element) => getComputedStyle(node).animationDuration),
     ).toBe('0s');
+  });
+
+  test('UIC-BANNER-1.2 centres the glyph, actions and dismiss on content of any height', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('banner');
+    const banner = matrixCell(page, 'tone=warning content=actions and dismiss').locator(
+      '.ui-banner',
+    );
+    // Measure every part in one frame, after the enter animation, so the banner cannot move between reads.
+    await expect(banner).not.toHaveAttribute('data-entering');
+    const { height, offsets } = await banner.evaluate((node) => {
+      const box = (selector: string) =>
+        (node.querySelector(selector) as Element).getBoundingClientRect();
+      const content = box('.ui-banner__content');
+      const middle = content.top + content.height / 2;
+      return {
+        height: content.height,
+        offsets: ['.ui-banner__icon', '.ui-banner__actions', '.ui-banner__dismiss'].map((part) => {
+          const rect = box(part);
+          return Math.abs(rect.top + rect.height / 2 - middle);
+        }),
+      };
+    });
+    // The content takes several lines, so a top-aligned glyph would sit well above its middle.
+    expect(height).toBeGreaterThan(40);
+    for (const offset of offsets) expect(offset).toBeLessThan(2);
   });
 });

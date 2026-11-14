@@ -164,7 +164,8 @@
   --ref-duration: 0.2s;
   --ref-duration-slow: 0.4s;
   /* One turn of a spinner, and one cycle of a pulse or a sliding bar. */
-  --ref-duration-spin: 0.8s;
+  --ref-duration-spin: 2.4s;
+  --ref-ease-spin: cubic-bezier(0.4, 0.2, 0.6, 0.8);
   --ref-duration-loop: 1.2s;
 }
 
@@ -244,33 +245,69 @@
 }
 
 /*
- * Spinners: every busy ring shares one geometry, a ring open on one side that turns once per
- * --ref-duration-spin in its text color, --ref-spinner-size across. Partials place it, color it
- * and pick its size; reduced motion stills it with every other animation.
+ * Spinners: every busy indicator is the library spinner, the indeterminate circular progress's
+ * arc without its track, drawn in its text color, --ref-spinner-size across. Each cycle starts
+ * at the top, makes two revolutions that speed up and slow down without stopping, so the loop
+ * flows on, and ends at the top again, while the arc grows from nothing to most of the ring and
+ * shrinks back to nothing as its tail catches up. At rest, as under reduced motion, it is a
+ * quarter arc from the top.
+ * Partials place it, color it and pick its size through their own slot class; reduced motion
+ * stills it with every other animation.
  */
-.ui-spinner,
-.ui-button__spinner,
-.ui-combobox__spinner,
-.ui-menu-item__spinner,
-.ui-menu__load-more-spinner,
-.ui-search-field__spinner,
-.ui-inline-error__spinner,
-.ui-banner__spinner,
-.ui-empty-state__spinner,
-.ui-chat-reasoning__spinner,
-.ui-chat-steps__spinner,
-.ui-chat-plan__spinner,
-.ui-chat-status-line__spinner,
-.ui-toast__spinner {
+.ui-spinner {
   display: inline-block;
   flex: none;
-  box-sizing: border-box;
   width: var(--ref-spinner-size);
   height: var(--ref-spinner-size);
-  border: 2px solid currentColor;
-  border-inline-end-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
+}
+
+.ui-spinner__ring,
+.ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {
+  animation: ref-spinner-turn var(--ref-duration-spin) var(--ref-ease-spin) infinite;
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+.ui-spinner__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ui-spinner__fill {
+  stroke: currentColor;
+  stroke-width: 4;
+}
+
+/* Dash lengths are shares of the ring's normalised length of 100, one dash per lap. */
+.ui-spinner__fill,
+.ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__fill {
+  animation: ref-spinner-arc var(--ref-duration-spin) var(--ref-ease-spin) infinite;
+}
+
+@keyframes ref-spinner-arc {
+  0% {
+    stroke-dasharray: 0 100;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 70 30;
+    stroke-dashoffset: -15;
+  }
+  100% {
+    stroke-dasharray: 0 100;
+    stroke-dashoffset: -100;
+  }
+}
+
+@keyframes ref-spinner-turn {
+  from {
+    transform: rotate(0turn);
+  }
+  to {
+    transform: rotate(2turn);
+  }
 }
 
 /* Visually hidden: text kept for assistive technology but not drawn. */
@@ -346,12 +383,6 @@
   :root,
   :root[data-theme='dark'] {
     --ref-border: var(--ref-border-strong);
-  }
-}
-
-@keyframes ref-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

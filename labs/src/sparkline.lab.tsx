@@ -3,7 +3,7 @@ import { Sparkline } from '../../src/components/sparkline/sparkline.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { createTimeScale } from '../../src/utils/time-scale.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
-import { FrameRateTrace } from './frame-rate-trace.js';
+import { RandomTrace } from './random-trace.js';
 
 const series = {
   rising: [2, 3, 3, 5, 4, 7, 8, 11],
@@ -168,10 +168,10 @@ function QuarterWithTicks() {
 mountLab(
   <>
     <LabSection
-      title="Live frame rate"
-      description="The browser's own rendering frame rate, measured from requestAnimationFrame timestamps: every half second the frames drawn since the last sample become one frames-per-second value, and the trace keeps the last 30 seconds on a scale from 0. It measures how often this page draws, not processor load. While the tab is hidden the browser stops drawing, so the trace shows a gap instead of a catch-up spike; Pause trace stops measuring, and resuming starts after a gap."
+      title="Live trace"
+      description="A random signal sampled four times a second: each sample takes a random step, is pulled back toward the middle and now and then jumps, so the trace keeps moving. The trace keeps the last 20 seconds on a fixed scale from 0 to 100, with the last value marked. Pause trace stops sampling; resuming carries on from the last value."
     >
-      <FrameRateTrace />
+      <RandomTrace />
     </LabSection>
     <LabSection
       title="Variants and markers"

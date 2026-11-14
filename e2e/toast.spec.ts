@@ -18,6 +18,27 @@ test.describe('Toast lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TOAST-3.1 centres the glyph, action and close button on the content', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    const toast = matrixCell(page, 'tone=warning content=action').locator('.ui-toast');
+    // Measure every part in one frame, after the enter animation, so the toast cannot move between reads.
+    await expect(toast).not.toHaveAttribute('data-entering');
+    const offsets = await toast.evaluate((node) => {
+      const middle = (selector: string) => {
+        const box = (node.querySelector(selector) as Element).getBoundingClientRect();
+        return box.top + box.height / 2;
+      };
+      const content = middle('.ui-toast__content');
+      return ['.ui-toast__icon', '.ui-toast__action', '.ui-toast__close'].map((part) =>
+        Math.abs(middle(part) - content),
+      );
+    });
+    for (const offset of offsets) expect(offset).toBeLessThan(2);
+  });
+
   test('UIC-TOAST-2.3 shows every toast of a list in place, reachable and uncovered', async ({
     page,
     lab,

@@ -35,7 +35,8 @@
 .ui-toast {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: start;
+  /* The glyph, the action and the close button centre on the content, however many lines it takes. */
+  align-items: center;
   gap: 8px;
   box-sizing: border-box;
   padding: 10px 10px 10px 12px;
@@ -116,7 +117,6 @@
 }
 
 .ui-toast__icon {
-  margin-block-start: 3px;
   color: var(--ref-info);
 }
 
@@ -126,7 +126,6 @@
 
 .ui-toast__spinner {
   --ref-spinner-size: var(--ref-icon-size-lg);
-  margin-block-start: 3px;
   color: var(--ref-info);
 }
 

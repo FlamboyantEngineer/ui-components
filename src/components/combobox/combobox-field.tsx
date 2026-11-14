@@ -20,6 +20,7 @@ import {
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { Button } from '../button/button.js';
 import { FieldFormValue } from '../field/field.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { ComboboxChips, type ComboboxChipsProps } from './combobox-chips.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 import {
@@ -155,7 +156,7 @@ export function ComboboxField({
           onChange={onChange}
         />
       </span>
-      {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
+      {isPending ? <Spinner size="sm" className={hooks.slotClass('spinner')} /> : null}
       {isEditable ? <ClearButton inputRef={inputRef} /> : null}
       <AriaButton className={hooks.slotClass('button')}>
         <Glyph icon={ChevronDownGlyph} />

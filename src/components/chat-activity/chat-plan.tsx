@@ -11,6 +11,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { ActivityAnnouncer, type ActivityAnnouncerProps } from './activity-announcer.js';
 import {
@@ -72,7 +73,7 @@ function ChatPlanItem({ step }: { step: ChatPlanStep }) {
       aria-current={status === 'in-progress' ? 'step' : undefined}
     >
       {status === 'in-progress' ? (
-        <span {...hooks.slot('spinner')} aria-hidden="true" />
+        <Spinner size="sm" className={hooks.slotClass('spinner')} />
       ) : (
         <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('glyph')} />
       )}

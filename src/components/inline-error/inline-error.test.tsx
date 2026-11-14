@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { HistoryGlyph, RefreshGlyph } from '../../core/glyphs.js';
 import { UiProvider } from '../../core/provider.js';
 import { InlineError } from './inline-error.js';
 
@@ -43,7 +44,7 @@ describe('InlineError', () => {
     expect(icon?.nextElementSibling).toHaveClass('ui-inline-error__message');
   });
 
-  it('UIC-INLINE-ERROR-1.3 draws a small secondary recovery button that never submits', async () => {
+  it('UIC-INLINE-ERROR-1.3 draws a Retry link without an icon that never submits', async () => {
     const onRetry = vi.fn();
     const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
     const { container, rerender } = render(
@@ -54,8 +55,10 @@ describe('InlineError', () => {
     const retry = screen.getByRole('button', { name: 'Retry' });
     expect(retry).toHaveClass('ui-button', 'ui-inline-error__retry');
     expect(retry).toHaveAttribute('type', 'button');
-    expect(retry).toHaveAttribute('data-variant', 'secondary');
-    expect(retry).toHaveAttribute('data-size', 'sm');
+    expect(retry).toHaveAttribute('data-variant', 'link');
+    expect(retry).toHaveAttribute('data-size', 'xs');
+    expect(retry).toHaveAttribute('data-underline', 'hover');
+    expect(retry.querySelector('svg')).toBeNull();
     await userEvent.click(retry);
     retry.focus();
     await userEvent.keyboard('{Enter}');
@@ -74,6 +77,15 @@ describe('InlineError', () => {
     );
     expect(screen.getByRole('button', { name: 'Réessayer' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reload versions' })).toBeInTheDocument();
+
+    rerender(
+      <InlineError onRetry={onRetry} retryIcon={RefreshGlyph}>
+        Unavailable
+      </InlineError>,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Retry' }).querySelector('[data-glyph="refresh"]'),
+    ).toBeInTheDocument();
   });
 
   it('UIC-INLINE-ERROR-1.4 refuses disabled recovery and stays pending while a retry runs', async () => {
@@ -134,6 +146,51 @@ describe('InlineError', () => {
     expect(screen.getByRole('alert', { hidden: true }).parentElement).toBe(root);
     expect(root.hidden).toBe(true);
     expect(root).toHaveTextContent('Unavailable');
+  });
+
+  it('UIC-INLINE-ERROR-1.6 draws suggested actions as links after Retry, in order', async () => {
+    const reload = vi.fn();
+    const onError = vi.fn();
+    const failure = new Error('gone');
+    const { container } = render(
+      <InlineError
+        onRetry={() => {}}
+        actions={[
+          {
+            id: 'reload',
+            label: 'Reload the current version',
+            icon: HistoryGlyph,
+            onAction: reload,
+          },
+          { id: 'copy', label: 'Keep a copy', onAction: () => Promise.reject(failure), onError },
+          { id: 'help', label: 'Get help', onAction: () => {}, isDisabled: true },
+        ]}
+      >
+        A newer version was saved elsewhere.
+      </InlineError>,
+    );
+    const links = screen.getAllByRole('button');
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Retry',
+      'Reload the current version',
+      'Keep a copy',
+      'Get help',
+    ]);
+    const [, first, second, third] = links as [HTMLElement, HTMLElement, HTMLElement, HTMLElement];
+    for (const link of [first, second, third]) {
+      expect(link).toHaveClass('ui-button', 'ui-inline-error__action');
+      expect(link).toHaveAttribute('data-variant', 'link');
+    }
+    expect(first.querySelector('[data-glyph="history"]')).toBeInTheDocument();
+    expect(second.querySelector('svg')).toBeNull();
+    await userEvent.click(first);
+    expect(reload).toHaveBeenCalledTimes(1);
+    await userEvent.click(second);
+    await waitFor(() => expect(onError).toHaveBeenCalledWith(failure));
+    expect(third).toBeDisabled();
+    expectHooksMatchSpec(container, 'INLINE-ERROR', {
+      slots: ['icon', 'message', 'retry', 'action'],
+    });
   });
 
   it('UIC-INLINE-ERROR-2.1 draws each tone with its glyph and urgency on one element', () => {

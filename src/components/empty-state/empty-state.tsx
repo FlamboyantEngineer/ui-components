@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 
 /** `empty`: loaded with nothing to show. `loading`: being fetched. `error`: could not load. */
@@ -36,7 +37,7 @@ const loadingRegion = { role: 'status', 'aria-live': 'polite', 'aria-atomic': tr
 
 /** The decorative lead: the spinner while loading, else the icon, if any. */
 function EmptyStateLead({ icon, isLoading }: { icon: IconSource; isLoading: boolean }) {
-  if (isLoading) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
+  if (isLoading) return <Spinner size="sm" className={hooks.slotClass('spinner')} />;
   if (!icon) return null;
   return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
 }

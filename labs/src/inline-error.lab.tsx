@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { HistoryGlyph, RefreshGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -87,11 +88,11 @@ mountLab(
   <>
     <LabSection
       title="Recovery and width"
-      description="Each case in a 280px and a 480px container. The recovery button moves below the message when it cannot fit beside it."
+      description="Each case in a 280px and a 480px container. Suggested actions are links right after the message, with no icon unless one is given; a link that cannot fit on the line wraps to the next one as a whole."
     >
       <StateMatrix
         axes={{
-          recovery: ['none', 'retry', 'long label', 'disabled'],
+          recovery: ['none', 'retry', 'long label', 'two actions', 'icons', 'disabled'],
           width: ['280', '480'],
         }}
         render={({ recovery, width }) => (
@@ -99,7 +100,20 @@ mountLab(
             <InlineError
               onRetry={recovery === 'none' ? undefined : () => {}}
               retryLabel={recovery === 'long label' ? 'Reload the current versions' : undefined}
+              retryIcon={recovery === 'icons' ? RefreshGlyph : undefined}
               isRetryDisabled={recovery === 'disabled'}
+              actions={
+                recovery === 'two actions' || recovery === 'icons'
+                  ? [
+                      {
+                        id: 'reload',
+                        label: 'Reload the current version',
+                        icon: recovery === 'icons' ? HistoryGlyph : undefined,
+                        onAction: () => {},
+                      },
+                    ]
+                  : undefined
+              }
             >
               The file could not be saved.
             </InlineError>

@@ -95,6 +95,7 @@ export {
   Label,
   Meter,
   ProgressBar,
+  ProgressBarContext,
   Text,
   useProgressBar,
   VisuallyHidden,

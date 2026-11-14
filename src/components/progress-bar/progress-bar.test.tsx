@@ -135,6 +135,13 @@ describe('Spinner', () => {
     expect(spinner).toHaveClass('ui-spinner', 'caller');
     expect(spinner).toHaveAttribute('id', 'busy');
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    // The ring is the indeterminate circular progress's quarter arc, without a track.
+    const ring = spinner.querySelector('svg.ui-spinner__ring');
+    expect(ring).toHaveAttribute('aria-hidden', 'true');
+    const arcs = ring?.querySelectorAll('circle') ?? [];
+    expect(arcs).toHaveLength(1);
+    expect(arcs[0]).toHaveClass('ui-spinner__fill');
+    expect(arcs[0]).toHaveAttribute('stroke-dashoffset', '75');
     expectHooksMatchSpec(container, 'PROGRESS-BAR');
   });
 
@@ -170,7 +177,7 @@ describe('Spinner', () => {
     expect(spinner).toHaveAttribute('data-size', 'lg');
     expect(spinner).not.toHaveAttribute('aria-hidden');
     expect(spinner).not.toHaveAttribute('aria-valuenow');
-    expect(spinner).toBeEmptyDOMElement();
+    expect(spinner.querySelector('svg')).toHaveClass('ui-spinner__ring');
     expectHooksMatchSpec(container, 'PROGRESS-BAR');
 
     rerender(<Spinner label="" />);

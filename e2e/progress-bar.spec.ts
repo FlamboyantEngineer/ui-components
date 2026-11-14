@@ -212,4 +212,43 @@ test.describe('Progress Bar lab', () => {
       await expect(meter).toHaveAttribute('data-tone', expected);
     }
   });
+
+  test('UIC-PROGRESS-BAR-2.1 turns and stretches the spinner arc like the circular progress, in the text color', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const section = page.locator('section[data-lab-section="Spinner and circular progress"]');
+    for (const size of ['sm', 'md', 'lg'] as const) {
+      const cell = matrixCell(section, `ring=${size}`);
+      const ring = cell.locator('.ui-spinner .ui-spinner__ring');
+      const circular = cell.locator('.ui-progress-bar__ring');
+      const motion = (node: Element) => {
+        const style = getComputedStyle(node);
+        return [style.animationName, style.animationTimingFunction, style.animationIterationCount];
+      };
+      const expected = ['ref-spinner-turn', 'cubic-bezier(0.4, 0.2, 0.6, 0.8)', 'infinite'];
+      expect(await ring.evaluate(motion)).toEqual(expected);
+      expect(await circular.evaluate(motion)).toEqual(expected);
+      // The arc grows and shrinks as it turns, on the spinner and the progress bar alike.
+      const arc = (node: Element) => getComputedStyle(node).animationName;
+      expect(await ring.locator('.ui-spinner__fill').evaluate(arc)).toBe('ref-spinner-arc');
+      expect(await circular.locator('.ui-progress-bar__fill').evaluate(arc)).toBe(
+        'ref-spinner-arc',
+      );
+      // The spinner is the arc only; the progress bar adds its track.
+      await expect(ring.locator('circle')).toHaveCount(1);
+      await expect(circular.locator('circle')).toHaveCount(2);
+    }
+    const color = page.locator('section[data-lab-section="Spinner color"]');
+    for (const context of ['body text', 'primary', 'danger']) {
+      const spinner = matrixCell(color, `context=${context}`).locator('.ui-spinner');
+      const [stroke, text] = await spinner.evaluate((node) => [
+        getComputedStyle(node.querySelector('circle') as Element).stroke,
+        getComputedStyle(node).color,
+      ]);
+      expect(stroke).toBe(text);
+    }
+    await lab.expectAccessible();
+  });
 });

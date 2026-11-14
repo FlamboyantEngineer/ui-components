@@ -25,6 +25,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
 import { MenuSizeContext } from './menu-context.js';
@@ -236,7 +237,7 @@ function MenuItemContent({
           {state.isSelected ? <Glyph icon={CheckGlyph} /> : null}
         </span>
       )}
-      {isPending ? <span {...itemHooks.slot('spinner')} aria-hidden="true" /> : iconBox}
+      {isPending ? <Spinner size="sm" className={itemHooks.slotClass('spinner')} /> : iconBox}
       <span {...itemHooks.slot('label')}>{children}</span>
       {isEmptyNode(description) ? null : (
         <>

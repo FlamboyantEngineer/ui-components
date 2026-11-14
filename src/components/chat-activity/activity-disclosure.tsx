@@ -16,6 +16,7 @@ import {
 import { mergeProps } from '../../utils/merge-props.js';
 import { DisclosureContentScope } from '../disclosure/disclosure.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 
 /** Whether an activity part is open, which follows its progress until the reader chooses. */
 export interface ActivityExpansionProps {
@@ -112,7 +113,7 @@ export function ActivityDisclosure({
         <Glyph icon={indicator} className={hooks.slotClass('indicator')} />
         {glyph}
         <span {...hooks.slot('label')}>{label}</span>
-        {isActive ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
+        {isActive ? <Spinner size="sm" className={hooks.slotClass('spinner')} /> : null}
       </AriaButton>
       <DisclosurePanel
         className={hooks.slotClass('panel')}

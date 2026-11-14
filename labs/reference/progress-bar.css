@@ -87,16 +87,23 @@
   }
 }
 
-.ui-spinner {
-  --ref-spinner-size: var(--ref-icon-size-lg);
+/*
+ * The spinner's own sizes carry no weight, so a component that draws the spinner in its own slot
+ * sizes it there.
+ */
+:where(.ui-spinner) {
   vertical-align: -0.2em;
 }
 
-.ui-spinner[data-size='sm'] {
+:where(.ui-spinner[data-size='sm']) {
   --ref-spinner-size: var(--ref-icon-size-sm);
 }
 
-.ui-spinner[data-size='lg'] {
+:where(.ui-spinner[data-size='md']) {
+  --ref-spinner-size: var(--ref-icon-size-lg);
+}
+
+:where(.ui-spinner[data-size='lg']) {
   --ref-spinner-size: var(--ref-icon-size-xl);
 }
 
@@ -227,13 +234,6 @@
   stroke: var(--ref-tone);
 }
 
-:is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-indeterminate]
-  :is(.ui-progress-bar__ring, .ui-meter__ring) {
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
-  transform-box: view-box;
-  transform-origin: center;
-}
-
 :is(.ui-progress-bar, .ui-meter)[data-shape='circular']
   :is(.ui-progress-bar__label, .ui-meter__label) {
   font-size: var(--ref-font-size-md);
@@ -250,10 +250,5 @@
   :is(.ui-progress-bar, .ui-meter)[data-shape='circular']
     :is(.ui-progress-bar__fill, .ui-meter__fill) {
     transition: none;
-  }
-
-  :is(.ui-progress-bar, .ui-meter)[data-shape='circular'][data-indeterminate]
-    :is(.ui-progress-bar__ring, .ui-meter__ring) {
-    animation: none;
   }
 }

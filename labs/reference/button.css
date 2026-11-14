@@ -186,8 +186,9 @@
   opacity: 0;
 }
 
+/* The spinner takes the size of the button's icons, so a pending action matches the glyphs around it. */
 .ui-button__spinner {
-  --ref-spinner-size: var(--ref-icon-size-lg);
+  --ref-spinner-size: var(--ref-button-icon);
   position: absolute;
   inset: 0;
   margin: auto;

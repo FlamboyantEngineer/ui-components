@@ -55,6 +55,7 @@ export type {
   ToastTone,
   ToastUpdateOptions,
 } from './toast-queue.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 export type { ToastStackSettings } from './toast-stack.js';
 export type { ToastSwipeDirection } from './use-toast-swipe.js';
 
@@ -195,7 +196,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
       {...toastHooks.root({ data })}
     >
       {isPending ? (
-        <span {...toastHooks.slot('spinner')} aria-hidden="true" />
+        <Spinner size="sm" className={toastHooks.slotClass('spinner')} />
       ) : (
         <Icon
           {...toIconProps(icon ?? getToneGlyph(tone))}
