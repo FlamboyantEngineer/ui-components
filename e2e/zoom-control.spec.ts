@@ -63,6 +63,28 @@ test.describe('Zoom Control lab', () => {
     await expect(control.locator('[data-lab-output="log"]')).toHaveText('150, 50, 75, 50, 100');
   });
 
+  test('UIC-ZOOM-CONTROL-1.11 steps the zoom with the wheel over the control unless opted out', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('zoom-control');
+    const wheel = page.locator('[data-lab-case="wheel"]');
+    await wheel.getByRole('slider', { name: 'Zoom level' }).hover();
+    const scrolled = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, -100);
+    await expect(wheel.locator('[data-lab-output="zoom"]')).toHaveText('125');
+    await page.mouse.wheel(0, 100);
+    await page.mouse.wheel(0, 100);
+    await expect(wheel.locator('[data-lab-output="zoom"]')).toHaveText('75');
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+
+    const optedOut = page.locator('[data-lab-case="no-wheel"]');
+    await optedOut.getByRole('slider', { name: 'Zoom level' }).hover();
+    await page.mouse.wheel(0, -100);
+    await page.mouse.wheel(0, 100);
+    await expect(optedOut.locator('[data-lab-output="zoom"]')).toHaveText('100');
+  });
+
   test('UIC-ZOOM-CONTROL-1.4 steps the slider from a value between levels to an endpoint level', async ({
     page,
     lab,

@@ -137,12 +137,12 @@ describe('FormatToolbar', () => {
     expect(trigger).toHaveTextContent('Heading 3');
   });
 
-  it('UIC-RICH-TEXT-EDITOR-6.2 previews each block type in its option, for the schema at hand', async () => {
+  it('UIC-RICH-TEXT-EDITOR-6.2 previews each block type in its option by default, for the schema at hand', async () => {
     const schema = createRichTextSchema({ nodes: { codeBlock: null } });
     const { user, value } = renderEditor({
       schema,
       defaultValue: note,
-      toolbar: <FormatToolbar blockTypeLabels="preview" />,
+      toolbar: <FormatToolbar />,
       children: <ViewProbe />,
     });
     selectRange(2);

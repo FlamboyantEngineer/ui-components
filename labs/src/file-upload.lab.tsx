@@ -7,6 +7,7 @@ import {
   type FileUploadProps,
   type FileUploadVariant,
 } from '../../src/components/file-upload/file-upload.js';
+import { ExternalLinkGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { formatBytes } from '../../src/utils/index.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
@@ -402,9 +403,13 @@ function ReadOnlyFiles() {
         onRemove={(id) => setFiles((current) => current.filter((file) => file.id !== id))}
         renderFilePreview={(file) => (file.previewUrl ? null : <ExtensionBadge name={file.name} />)}
         renderFileActions={(file) => (
-          <Button size="sm" onPress={() => setOpened(file.name)}>
-            {`Open ${file.name}`}
-          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={ExternalLinkGlyph}
+            label={`Open ${file.name}`}
+            onPress={() => setOpened(file.name)}
+          />
         )}
       />
       <Button onPress={() => setReadOnly(!isReadOnly)}>
@@ -535,7 +540,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Read-only files, previews and actions"
-      description="The host draws a badge for files without a thumbnail and adds an Open action to each. Make the files read-only: the chooser and remove buttons go, the previews and Open actions stay. The description is the host's own, in place of the generated size limit."
+      description="The host draws a badge for files without a thumbnail and adds an icon-only Open action to each. Make the files read-only: the chooser and remove buttons go, the previews and Open actions stay. The description is the host's own, in place of the generated size limit."
     >
       <ReadOnlyFiles />
     </LabSection>

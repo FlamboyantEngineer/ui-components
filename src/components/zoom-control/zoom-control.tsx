@@ -1,12 +1,14 @@
 'use client';
 
-import { type ReactNode, useId, useMemo } from 'react';
+import { type ReactNode, useId, useMemo, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { type GlyphComponent, MinusGlyph, PlusGlyph, RestoreGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, NativeProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useNumberFormatter } from '../../primitives/index.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useWheelSteps } from '../../utils/use-wheel-steps.js';
 import { Button } from '../button/button.js';
 import {
   defaultZoomLevels,
@@ -48,6 +50,11 @@ export interface ZoomControlProps
   presets?: readonly (number | ZoomPreset)[] | undefined;
   /** Called with the id of the named preset chosen in the preset menu. */
   onPresetAction?: ((id: string) => void) | undefined;
+  /**
+   * The wheel over the control steps the zoom one level per notch: rolled up zooms in, down zooms
+   * out. Defaults to `true`; `false` leaves the wheel to the page.
+   */
+  zoomsOnWheel?: boolean | undefined;
 }
 
 interface ZoomButtonProps {
@@ -136,9 +143,52 @@ function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: Zoo
   );
 }
 
+/** The reset button, disabled but focusable while the zoom is already at `resetValue`. */
+function ZoomResetButton({
+  current,
+  resetValue,
+  ...props
+}: Pick<ZoomButtonProps, 'size' | 'isDisabled' | 'onRequest'> & {
+  current: number;
+  resetValue: number;
+}) {
+  const strings = useUiStrings();
+  const isAtReset = Math.abs(current - resetValue) < tolerance;
+  return (
+    <ZoomButton
+      {...props}
+      slot="reset"
+      icon={RestoreGlyph}
+      label={strings.resetZoom}
+      target={isAtReset ? undefined : resetValue}
+    />
+  );
+}
+
+/**
+ * The root's ref, over which the wheel requests the level `targets` holds on each side per notch;
+ * `null` leaves the wheel to the page.
+ */
+function useZoomWheel(
+  ref: ZoomControlProps['ref'],
+  targets: { previous: number | undefined; next: number | undefined } | null,
+  onRequest: (value: number) => void,
+) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  useWheelSteps(
+    rootRef,
+    (direction) => {
+      const target = direction === 1 ? targets?.next : targets?.previous;
+      if (target !== undefined) onRequest(target);
+    },
+    targets === null,
+  );
+  return useMergedRefs(rootRef, ref);
+}
+
 /**
  * Zoom out, a slider over the zoom levels, zoom in and the current percentage, in one named group,
- * with an optional reset button.
+ * with an optional reset button. The wheel over the control steps the zoom.
  */
 export function ZoomControl({
   levels = defaultZoomLevels,
@@ -153,8 +203,10 @@ export function ZoomControl({
   size = 'sm',
   presets,
   onPresetAction,
+  zoomsOnWheel = true,
   'aria-label': ariaLabel,
   className,
+  ref,
   ...rest
 }: ZoomControlProps) {
   const strings = useUiStrings();
@@ -165,11 +217,13 @@ export function ZoomControl({
   const formatter = useZoomFormatter(formatOptions);
   const valueText = formatter.format(current);
   const buttonProps = { size, isDisabled, onRequest: request };
+  const setRootRef = useZoomWheel(ref, isDisabled || !zoomsOnWheel ? null : targets, request);
 
   return (
     <div
       {...rest}
       {...hooks.root({ className, props: rest, data: { size, disabled: isDisabled } })}
+      ref={setRootRef}
       role="group"
       aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.zoom)}
     >
@@ -210,13 +264,7 @@ export function ZoomControl({
         formatter={formatter}
       />
       {resetValue === undefined ? null : (
-        <ZoomButton
-          {...buttonProps}
-          slot="reset"
-          icon={RestoreGlyph}
-          label={strings.resetZoom}
-          target={Math.abs(current - resetValue) < tolerance ? undefined : resetValue}
-        />
+        <ZoomResetButton {...buttonProps} current={current} resetValue={resetValue} />
       )}
     </div>
   );
