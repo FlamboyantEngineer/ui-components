@@ -191,7 +191,7 @@
 }
 
 .ui-avatar[data-status='away'] .ui-avatar__indicator {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 .ui-avatar[data-status='busy'] .ui-avatar__indicator {

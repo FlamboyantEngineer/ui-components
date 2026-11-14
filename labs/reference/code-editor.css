@@ -451,7 +451,7 @@
   pointer-events: none;
 }
 .ui-code-editor__scroll-marker[data-severity='warning'] {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 .ui-code-editor__token[data-token='link'] {
   color: var(--ref-accent-ink);

@@ -390,7 +390,7 @@
 }
 
 .ui-rich-text-editor__scroll-marker[data-severity='warning'] {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 /* A marked block: a tint and an underline, wavy for an error and dotted for a warning. */
@@ -401,6 +401,6 @@
 }
 
 .ui-rich-text-editor__content > [data-severity='warning'] {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
   text-decoration: dotted underline var(--ref-warning);
 }

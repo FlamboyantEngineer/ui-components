@@ -75,7 +75,7 @@ const plotCss = `${baseCss}
   .curve { fill: none; stroke: #0969da; stroke-width: 2; }
   .curve.secondary { stroke: #bf3989; }
   .curve.reference { stroke: #6e7781; stroke-dasharray: 6 4; stroke-width: 1.5; }
-  .marker { stroke: #9a6700; stroke-dasharray: 4 3; }
+  .marker { stroke: #876c00; stroke-dasharray: 4 3; }
   .probe { stroke: #1f2328; }
   .dot { fill: #1f2328; }
   p { margin: 8px 0 0; }

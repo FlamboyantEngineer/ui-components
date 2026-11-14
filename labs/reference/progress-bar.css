@@ -53,7 +53,7 @@
     [data-tone='danger']
   )
   :is(.ui-progress-bar__fill, .ui-meter__fill) {
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 
 :is(.ui-progress-bar, .ui-meter)[data-shape='linear'][data-indeterminate]
@@ -156,7 +156,7 @@
 
 .ui-progress-bar:is([data-tone='success'], [data-tone='warning'], [data-tone='danger'])
   .ui-progress-bar__segment[data-state='complete'] {
-  background: var(--ref-tone);
+  background: var(--ref-tone-fill);
 }
 
 /* Stripes mark the unit under way by shape as well as color. */

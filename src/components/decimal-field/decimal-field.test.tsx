@@ -28,7 +28,7 @@ describe('DecimalField', () => {
   it('UIC-DECIMAL-FIELD-1.1 UIC-DECIMAL-FIELD-3.3 is a field around a spinbutton that starts empty', () => {
     const ref = vi.fn();
     const { container, rerender } = render(
-      <DecimalField label="Amount" ref={ref} className="extra" id="amount" />,
+      <DecimalField showStepper label="Amount" ref={ref} className="extra" id="amount" />,
     );
     const root = container.querySelector('.ui-field');
     expect(root).toHaveClass('ui-decimal-field', 'extra');
@@ -39,7 +39,7 @@ describe('DecimalField', () => {
     expectHooksMatchSpec(container, 'DECIMAL-FIELD', {
       slots: ['box', 'group', 'input', 'decrement', 'increment'],
     });
-    rerender(<DecimalField label="Amount" data-kind="price" />);
+    rerender(<DecimalField showStepper label="Amount" data-kind="price" />);
     expect(container.querySelector('.ui-field')).toHaveAttribute('data-kind', 'price');
   });
 
@@ -140,7 +140,14 @@ describe('DecimalField', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     render(
-      <DecimalField label="Amount" step="0.1" minValue="0" maxValue="0.3" onCommit={onCommit} />,
+      <DecimalField
+        showStepper
+        label="Amount"
+        step="0.1"
+        minValue="0"
+        maxValue="0.3"
+        onCommit={onCommit}
+      />,
     );
     await user.click(spinbutton());
     await user.keyboard('{ArrowUp}');
@@ -209,6 +216,7 @@ describe('DecimalField', () => {
     const onChange = vi.fn();
     const { rerender } = render(
       <DecimalField
+        showStepper
         label="Amount"
         description="In units."
         defaultValue="5"
@@ -229,10 +237,10 @@ describe('DecimalField', () => {
     expect(input).toHaveValue('5');
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Increase Amount' })).toBeDisabled();
-    rerender(<DecimalField label="Amount" defaultValue="5" isDisabled />);
+    rerender(<DecimalField showStepper label="Amount" defaultValue="5" isDisabled />);
     expect(spinbutton()).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Decrease Amount' })).toBeDisabled();
-    rerender(<DecimalField label="Amount" defaultValue="5" hideStepper />);
+    rerender(<DecimalField label="Amount" defaultValue="5" />);
     expect(screen.queryByRole('button', { name: 'Increase Amount' })).not.toBeInTheDocument();
   });
 

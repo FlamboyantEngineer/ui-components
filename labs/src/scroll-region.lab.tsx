@@ -53,7 +53,7 @@ const frame = (width: number, height: number): CSSProperties => ({
 const markers = [
   { top: 0, height: 20, color: '#1a7f37', priority: 1 },
   { top: 180, height: 40, color: '#cf222e', priority: 0 },
-  { top: 400, height: 4, color: '#9a6700', priority: 2 },
+  { top: 400, height: 4, color: '#876c00', priority: 2 },
   { top: 560, height: 30, color: '#0969da', priority: 1 },
 ];
 

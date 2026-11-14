@@ -44,7 +44,7 @@
 }
 
 .ui-user-card[data-status='away'] .ui-user-card__indicator {
-  background: var(--ref-warning);
+  background: var(--ref-warning-fill);
 }
 
 .ui-user-card[data-status='busy'] .ui-user-card__indicator {

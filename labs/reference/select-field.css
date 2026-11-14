@@ -266,6 +266,11 @@
   color: var(--ref-muted);
 }
 
+/* On the focused option's wash the muted shortcut would lose contrast; it takes the row's color. */
+.ui-select-field__option[data-focused] .ui-select-field__option-shortcut {
+  color: inherit;
+}
+
 .ui-select-field__option-shortcut .ui-shortcut__key {
   font-size: var(--ref-font-size-xs);
   line-height: 0.875rem;

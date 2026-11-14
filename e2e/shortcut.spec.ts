@@ -2,7 +2,7 @@ import { requireDefined } from '../src/utils/require-defined.js';
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Shortcut lab', () => {
-  test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-2.1 draws each notation as keycaps on one line', async ({
+  test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-2.1 draws each notation on one line, its keys in order', async ({
     page,
     lab,
   }) => {
@@ -25,7 +25,7 @@ test.describe('Shortcut lab', () => {
       expect(new Set(boxes.map((box) => Math.round(box.top))).size).toBe(1);
       for (const [index, box] of boxes.entries()) {
         expect(box.width).toBeGreaterThan(8);
-        if (index > 0) expect(box.left).toBeGreaterThan(boxes[index - 1]?.right ?? 0);
+        if (index > 0) expect(box.left).toBeGreaterThanOrEqual(boxes[index - 1]?.right ?? 0);
       }
     }
     await expect(

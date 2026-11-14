@@ -71,7 +71,7 @@ Verification: `src/components/decimal-field/decimal-field.test.tsx`
 
 ### UIC-DECIMAL-FIELD-2.5 - Stepping
 
-Arrow Up and Arrow Down, and the increment and decrement buttons, shall step the decimal the input shows (the draft's, or the value while the draft spells none) by one `step` on the grid (by `1` without a `step`), within the bounds, and commit: a value off the grid moves to the next grid value that way, a value at the last grid value inside an end stays, and an empty field starts at `minValue`, or `0` within the bounds. The buttons are named by the provider strings `numberIncrease` and `numberDecrease` followed by the field's label, stay out of the tab order, keep focus in the input and are disabled at the end they point to. `hideStepper` leaves them out (`data-hide-stepper` on the root); the arrows still step.
+Arrow Up and Arrow Down, and the increment and decrement buttons, shall step the decimal the input shows (the draft's, or the value while the draft spells none) by one `step` on the grid (by `1` without a `step`), within the bounds, and commit: a value off the grid moves to the next grid value that way, a value at the last grid value inside an end stays, and an empty field starts at `minValue`, or `0` within the bounds. The buttons are named by the provider strings `numberIncrease` and `numberDecrease` followed by the field's label, stay out of the tab order, keep focus in the input and are disabled at the end they point to. The buttons are drawn only with `showStepper` (`data-show-stepper` on the root); without it, the default, the arrows still step.
 
 Implementation: `src/components/decimal-field/decimal-field.tsx`, `src/components/decimal-field/decimal-stepper.tsx`
 Verification: `src/components/decimal-field/decimal-field.test.tsx`, `e2e/decimal-field.spec.ts`
@@ -109,7 +109,7 @@ Verification: `src/components/decimal-field/decimal-field.test.tsx`
 | `ui-decimal-field__input`     | slot  |        | The spinbutton input.                                 |
 | `ui-decimal-field__decrement` | slot  |        | The decrement button.                                 |
 | `ui-decimal-field__increment` | slot  |        | The increment button.                                 |
-| `data-hide-stepper`           | state | `true` | On the root: the step buttons are left out.           |
+| `data-show-stepper`           | state | `true` | On the root: the step buttons are drawn.              |
 | `data-invalid`                | state | `true` | On the box, the group and the input (React Aria).     |
 | `data-disabled`               | state | `true` | On the box, the group and the input (React Aria).     |
 | `data-focus-within`           | state | `true` | On the group: focus is inside it (React Aria).        |

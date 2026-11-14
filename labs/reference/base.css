@@ -62,7 +62,11 @@
   --ref-success-fill: #1a7f37;
   --ref-danger: var(--ref-danger-fill);
   --ref-success: var(--ref-success-fill);
-  --ref-warning: #9a6700;
+  /* Warning is a gold: the plain tone stays readable on the canvas, the fill is the bright yellow
+     that stars, highlights and warning badges take, under --ref-on-warning-fill. */
+  --ref-warning: #876c00;
+  --ref-warning-fill: #f2b90c;
+  --ref-on-warning-fill: #1f2328;
   --ref-info: var(--ref-accent-ink);
 
   /* Tints: how much of a tone mixes into the canvas (or into transparency) for washes, marks and
@@ -72,10 +76,10 @@
   --ref-tint-strong: 30%;
   --ref-tint-border: 45%;
   --ref-tint-solid: 70%;
-  --ref-highlight: color-mix(in srgb, var(--ref-warning) var(--ref-tint-strong), transparent);
+  --ref-highlight: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint-strong), transparent);
   --ref-highlight-current: color-mix(
     in srgb,
-    var(--ref-warning) var(--ref-tint-border),
+    var(--ref-warning-fill) var(--ref-tint-border),
     transparent
   );
 
@@ -200,8 +204,9 @@
   --ref-accent-ink: #4493f8;
   --ref-danger: #ff7b72;
   --ref-success: #3fb950;
-  --ref-warning: #d29922;
-  --ref-category-1: #d29922;
+  --ref-warning: #e3b341;
+  --ref-warning-fill: #e3b341;
+  --ref-category-1: #e3b341;
   --ref-category-2: #ab7df8;
   --ref-category-5: #39c5cf;
   --ref-category-6: #f778ba;
@@ -218,6 +223,10 @@
  */
 [data-tone] {
   --ref-tone: var(--ref-muted);
+  /* What a tone fills, washes and frames with: the tone itself, but warning's bright gold fill,
+     which takes dark text (--ref-on-tone-fill) where the others take the canvas color. */
+  --ref-tone-fill: var(--ref-tone);
+  --ref-on-tone-fill: var(--ref-canvas);
 }
 [data-tone='info'] {
   --ref-tone: var(--ref-info);
@@ -227,6 +236,8 @@
 }
 [data-tone='warning'] {
   --ref-tone: var(--ref-warning);
+  --ref-tone-fill: var(--ref-warning-fill);
+  --ref-on-tone-fill: var(--ref-on-warning-fill);
 }
 [data-tone='danger'] {
   --ref-tone: var(--ref-danger);

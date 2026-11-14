@@ -257,7 +257,8 @@
   font-size: var(--ref-font-size-sm);
 }
 
-.ui-combobox__option[data-focused] .ui-combobox__option-description {
+.ui-combobox__option[data-focused]
+  :is(.ui-combobox__option-description, .ui-combobox__option-shortcut) {
   color: inherit;
 }
 

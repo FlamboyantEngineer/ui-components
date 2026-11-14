@@ -166,7 +166,7 @@ p.ui-tree-compare__summary {
 }
 
 .ui-tree-compare__row[data-change='changed'] .ui-tree-compare__cell {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
 }
 
 .ui-tree-compare__row[data-change='moved'] .ui-tree-compare__cell:not([data-empty]) {
