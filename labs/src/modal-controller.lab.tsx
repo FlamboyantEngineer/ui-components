@@ -11,7 +11,7 @@ import { ModalControllerCoverageSections } from './modal-controller-coverage-cas
 const controller = createModalController();
 const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg', 'xl', 'full'] as const;
-const colours = ['Teal', 'Plum', 'Amber'] as const;
+const colors = ['Teal', 'Plum', 'Amber'] as const;
 
 function openCity(name: string) {
   return controller.open({
@@ -59,29 +59,29 @@ function RenameBody({ handle }: { handle: ModalHandle<string> }) {
 }
 
 function Results() {
-  const [colour, setColour] = useState('none');
+  const [color, setColor] = useState('none');
   const [name, setName] = useState('none');
   return (
     <div>
       <Button
         size="sm"
-        data-lab-open="colour"
+        data-lab-open="color"
         onPress={async () => {
           const handle = controller.open<string>({
-            title: 'Pick a colour',
-            'data-lab-modal': 'colour',
+            title: 'Pick a color',
+            'data-lab-modal': 'color',
             cancelAction: {},
             content: (current) =>
-              colours.map((entry) => (
+              colors.map((entry) => (
                 <Button key={entry} size="sm" onPress={() => current.close(entry)}>
                   {entry}
                 </Button>
               )),
           });
-          setColour((await handle.result) ?? 'dismissed');
+          setColor((await handle.result) ?? 'dismissed');
         }}
       >
-        Pick a colour
+        Pick a color
       </Button>{' '}
       <Button
         size="sm"
@@ -99,7 +99,7 @@ function Results() {
         Rename Report.pdf
       </Button>
       <p>
-        Colour: <output data-lab-output="colour">{colour}</output>
+        Color: <output data-lab-output="color">{color}</output>
       </p>
       <p>
         Name: <output data-lab-output="name">{name}</output>

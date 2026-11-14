@@ -23,11 +23,11 @@ interface ColorEntryProps {
   control: FieldControlProps;
   state: FieldState<string | null>;
   label: string;
-  /** The value as a CSS colour, or `null` without one. */
+  /** The value as a CSS color, or `null` without one. */
   color: string | null;
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
-  /** Writes and stores the colour with its alpha. */
+  /** Writes and stores the color with its alpha. */
   allowsTransparency: boolean;
   placeholder: string;
   /** The typed input's native text-entry attributes. */
@@ -36,7 +36,7 @@ interface ColorEntryProps {
 
 /**
  * The problem with typed text that cannot become the value: empty text in a required field, or
- * text that is no colour. Untouched text (`null`) is the value itself.
+ * text that is no color. Untouched text (`null`) is the value itself.
  */
 function findDraftIssue(
   draft: string | null,
@@ -69,7 +69,7 @@ interface ColorDraft {
 
 /**
  * The typeable closed control: a swatch button that opens the picker, then a text input showing the
- * colour in its format. Typed text that is a colour in any CSS form sets the value as it is typed,
+ * color in its format. Typed text that is a color in any CSS form sets the value as it is typed,
  * and empty text clears an optional one; the value commits on Enter or once focus leaves the field.
  * Other text blocks the form until it is corrected; Escape, Enter or leaving the input puts back the
  * value the typing started from. A value replaced from outside retires the typed text.
@@ -116,7 +116,7 @@ export function ColorEntry({
     setDraft(null);
     if (current.before !== state.value) state.setValue(current.before);
   };
-  // Leaving the input keeps the colour typed, or puts back the value text that is none started
+  // Leaving the input keeps the color typed, or puts back the value text that is none started
   // from; the field commits once focus leaves it, so Tab reaches its restore button.
   const finish = ({ shouldCommit }: { shouldCommit: boolean }) => {
     if (draftIssue) putBack();

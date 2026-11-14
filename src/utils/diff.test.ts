@@ -224,9 +224,9 @@ describe('diffWords', () => {
   });
 
   it('UIC-DIFF-2.2 compares whole words, spaces and marks, in any script', () => {
-    expect(diffWords('colour', 'color')).toEqual([
-      { kind: 'delete', text: 'colour' },
-      { kind: 'insert', text: 'color' },
+    expect(diffWords('grey', 'gray')).toEqual([
+      { kind: 'delete', text: 'grey' },
+      { kind: 'insert', text: 'gray' },
     ]);
     expect(diffWords('café crème', 'café noir')).toEqual([
       { kind: 'equal', text: 'café ' },

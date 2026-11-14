@@ -142,11 +142,11 @@
   box-sizing: border-box;
   width: 16px;
   height: 16px;
-  border: 2px solid #ffffff; /* token-exempt: a ring that reads over any colour */
+  border: 2px solid #ffffff; /* token-exempt: a ring that reads over any color */
   border-radius: 50%;
   box-shadow:
     0 0 0 1px rgb(0 0 0 / 0.6),
-    inset 0 0 0 1px rgb(0 0 0 / 0.3); /* token-exempt: a ring that reads over any colour */
+    inset 0 0 0 1px rgb(0 0 0 / 0.3); /* token-exempt: a ring that reads over any color */
 }
 
 .ui-color-field__track .ui-color-field__thumb {

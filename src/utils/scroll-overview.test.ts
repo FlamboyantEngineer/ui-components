@@ -54,7 +54,7 @@ describe('scroll overview', () => {
     expect(buildScrollOverviewImage([], 100)).toBe('none');
   });
 
-  it('UIC-SCROLL-REGION-3.2 paints segments in the caller colours over a transparent ground', () => {
+  it('UIC-SCROLL-REGION-3.2 paints segments in the caller colors over a transparent ground', () => {
     expect(buildScrollOverviewImage([{ top: 50, height: 2, color: 'red' }], 100)).toBe(
       'linear-gradient(to bottom, transparent 0%, transparent 50%, red 50% 52%, transparent 52%, transparent 100%)',
     );
@@ -81,7 +81,7 @@ describe('scroll overview', () => {
     );
   });
 
-  it('UIC-SCROLL-REGION-3.3 gives three coincident layers a third each, even with repeated colours', () => {
+  it('UIC-SCROLL-REGION-3.3 gives three coincident layers a third each, even with repeated colors', () => {
     const layers = ['a', 'b', 'c'].map((name, index) => ({
       name,
       markers: [

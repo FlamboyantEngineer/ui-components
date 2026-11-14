@@ -66,7 +66,7 @@ describe('reference token check', () => {
 .ui-card__paper { background: #ffffff; /* token-exempt: paper */ }`,
     });
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('literal colour in color');
+    expect(result.stderr).toContain('literal color in color');
     expect(result.stderr).toContain('border-radius "5px" is not a radius token');
     expect(result.stderr).toContain('font-size "13px" is not a type token');
     expect(result.stderr).toContain('literal duration in transition');
@@ -327,13 +327,13 @@ ${common}`,
     expect(result.stderr).toContain('card.css:1: --min-font-size belongs to a third-party engine');
   });
 
-  it("UIC-LABS-3.5 rejects a literal colour in a partial's own token", () => {
+  it("UIC-LABS-3.5 rejects a literal color in a partial's own token", () => {
     const result = check({
       'card.css': `.ui-card { --ref-card-tone: #ff0000; --ref-card-mask: url("data:image/svg+xml,stroke='black'"); /* token-exempt: a mask's alpha */ color: var(--ref-card-tone); mask: var(--ref-card-mask); }`,
     });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(
-      'card.css:1: literal colour in --ref-card-tone; use a colour token',
+      'card.css:1: literal color in --ref-card-tone; use a color token',
     );
     expect(result.stderr).not.toContain('--ref-card-mask');
   });

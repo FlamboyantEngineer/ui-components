@@ -158,16 +158,16 @@ function RegionDemo() {
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   origin: string;
   price: string;
 }
 
 const fruitRows: Fruit[] = [
-  { id: 'apple', name: 'Apple', colour: 'Red', origin: 'Portugal', price: '1.20' },
-  { id: 'pear', name: 'Pear', colour: 'Green', origin: 'Spain', price: '1.40' },
-  { id: 'plum', name: 'Plum', colour: 'Purple', origin: 'France', price: '2.10' },
-  { id: 'fig', name: 'Fig', colour: 'Purple', origin: 'Greece', price: '3.30' },
+  { id: 'apple', name: 'Apple', color: 'Red', origin: 'Portugal', price: '1.20' },
+  { id: 'pear', name: 'Pear', color: 'Green', origin: 'Spain', price: '1.40' },
+  { id: 'plum', name: 'Plum', color: 'Purple', origin: 'France', price: '2.10' },
+  { id: 'fig', name: 'Fig', color: 'Purple', origin: 'Greece', price: '3.30' },
 ];
 
 /** A table with a sticky header, pinned columns and column groups under a loading region. */
@@ -189,11 +189,11 @@ function PinnedTableDemo() {
             size="sm"
             columns={[
               { id: 'name', header: 'Name', pin: 'start', width: 120 },
-              { id: 'colour', header: 'Colour', width: 140 },
+              { id: 'color', header: 'Color', width: 140 },
               { id: 'origin', header: 'Origin', width: 140 },
               { id: 'price', header: 'Price', width: 120, align: 'end', pin: 'end' },
             ]}
-            columnGroups={[{ id: 'look', header: 'Look', columns: ['colour', 'origin'] }]}
+            columnGroups={[{ id: 'look', header: 'Look', columns: ['color', 'origin'] }]}
           />
         </div>
       </LoadingRegion>

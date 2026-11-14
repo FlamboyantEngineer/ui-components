@@ -22,10 +22,15 @@
 .ui-people-picker__avatar.ui-avatar {
   width: 16px;
   height: 16px;
-  font-size: var(--ref-font-size-2xs);
+  font-size: 0.4375rem;
+  letter-spacing: -0.02em;
 }
 
 .ui-people-picker .ui-combobox__chip-icon:has(.ui-people-picker__avatar) {
   width: 16px;
   height: 16px;
+}
+
+.ui-people-picker .ui-tag-group__label:has(> .ui-combobox__chip-icon .ui-people-picker__avatar) {
+  line-height: 1rem;
 }

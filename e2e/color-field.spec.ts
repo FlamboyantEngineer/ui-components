@@ -15,7 +15,7 @@ function output(page: Page, name: string): Locator {
 }
 
 test.describe('Color Field lab', () => {
-  test('UIC-COLOR-FIELD-1.2 shows a swatch and the colour text for each state and format', async ({
+  test('UIC-COLOR-FIELD-1.2 shows a swatch and the color text for each state and format', async ({
     page,
     lab,
   }) => {
@@ -38,16 +38,16 @@ test.describe('Color Field lab', () => {
     await expect(cell(page, 'disabled').locator('.ui-color-field__trigger')).toBeDisabled();
     const formatValue = (address: string) =>
       matrixCell(page, address).locator('.ui-color-field__value');
-    await expect(formatValue('format=rgb transparency=off colour=opaque')).toHaveText(
+    await expect(formatValue('format=rgb transparency=off color=opaque')).toHaveText(
       'rgb(51, 102, 153)',
     );
-    await expect(formatValue('format=hsb transparency=off colour=opaque')).toHaveText(
+    await expect(formatValue('format=hsb transparency=off color=opaque')).toHaveText(
       'hsb(210, 66.67%, 60%)',
     );
-    await expect(formatValue('format=rgb transparency=off colour=translucent')).toHaveText(
+    await expect(formatValue('format=rgb transparency=off color=translucent')).toHaveText(
       'rgba(51, 102, 153, 0.75)',
     );
-    await expect(formatValue('format=hex transparency=allowed colour=opaque')).toHaveText(
+    await expect(formatValue('format=hex transparency=allowed color=opaque')).toHaveText(
       '#336699FF',
     );
     await lab.expectAccessible();
@@ -139,7 +139,7 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('Escape');
   });
 
-  test('UIC-COLOR-FIELD-2.2 clears an optional colour and keeps a required one', async ({
+  test('UIC-COLOR-FIELD-2.2 clears an optional color and keeps a required one', async ({
     page,
     lab,
   }) => {
@@ -191,7 +191,7 @@ test.describe('Color Field lab', () => {
   }) => {
     await lab.open('color-field');
     await expect(
-      matrixCell(page, 'format=hex transparency=allowed colour=translucent').locator(
+      matrixCell(page, 'format=hex transparency=allowed color=translucent').locator(
         '.ui-color-field__value',
       ),
     ).toHaveText('#336699BF');
@@ -257,7 +257,7 @@ test.describe('Color Field lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-3.2 offers opacity for a translucent colour, with # only beside Alpha', async ({
+  test('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-3.2 offers opacity for a translucent color, with # only beside Alpha', async ({
     page,
     lab,
   }) => {
@@ -297,7 +297,7 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('End');
     await page.keyboard.press('Escape');
     await expect(output(page, 'Transparency committed')).toHaveText('#336699');
-    // Reopened on an opaque colour, it is edited alone again.
+    // Reopened on an opaque color, it is edited alone again.
     await shade.click();
     dialog = page.getByRole('dialog', { name: 'Shade' });
     await expect(dialog.getByRole('slider', { name: 'Hue' })).toBeVisible();
@@ -371,7 +371,7 @@ test.describe('Color Field lab', () => {
     await lab.open('color-field');
     const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
     await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Label colour' });
+    const dialog = page.getByRole('dialog', { name: 'Label color' });
     await expect(dialog).toBeVisible();
     const swatches = dialog.getByRole('listbox', { name: 'Color swatches' });
     const clear = dialog.getByRole('button', { name: 'Clear', exact: true });
@@ -393,10 +393,10 @@ test.describe('Color Field lab', () => {
     await swatches.getByRole('option').nth(3).focus();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
-    await expect(trigger).toHaveAccessibleName('Label colour #7B4FA0');
+    await expect(trigger).toHaveAccessibleName('Label color #7B4FA0');
     await expect(dialog).toBeVisible();
     await eyeDropper.click();
-    await expect(trigger).toHaveAccessibleName('Label colour #E69500');
+    await expect(trigger).toHaveAccessibleName('Label color #E69500');
     await lab.expectAccessible('.ui-color-field__popover');
     await page.keyboard.press('Escape');
     await expect(output(page, 'Preset committed')).toHaveText('#e69500');
@@ -406,7 +406,7 @@ test.describe('Color Field lab', () => {
     page,
     lab,
   }) => {
-    // The first sample is cancelled, the second returns a colour.
+    // The first sample is cancelled, the second returns a color.
     await page.addInitScript(() => {
       let calls = 0;
       Object.assign(window, {
@@ -426,12 +426,12 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Eye dropper')).toHaveText('available');
     const trigger = field(page, 'eye-dropper').locator('.ui-color-field__trigger');
     await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Sampled colour' });
+    const dialog = page.getByRole('dialog', { name: 'Sampled color' });
     const eyeDropper = dialog.getByRole('button', { name: 'Pick a color from the screen' });
     await eyeDropper.click();
-    // Cancelled: the colour stays.
+    // Cancelled: the color stays.
     await expect(output(page, 'Sampled value')).toHaveText('#336699');
-    await expect(trigger).toHaveAccessibleName('Sampled colour #336699');
+    await expect(trigger).toHaveAccessibleName('Sampled color #336699');
     await eyeDropper.click();
     await expect(output(page, 'Sampled value')).toHaveText('#e69500');
     await page.keyboard.press('Escape');
@@ -440,7 +440,7 @@ test.describe('Color Field lab', () => {
     await field(page, 'no-eye-dropper').locator('.ui-color-field__trigger').click();
     await expect(
       page
-        .getByRole('dialog', { name: 'Unsampled colour' })
+        .getByRole('dialog', { name: 'Unsampled color' })
         .getByRole('button', { name: 'Pick a color from the screen' }),
     ).toHaveCount(0);
   });
@@ -456,7 +456,7 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Eye dropper')).toHaveText(/^unavailable: /);
     const trigger = field(page, 'eye-dropper').locator('.ui-color-field__trigger');
     await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Sampled colour' });
+    const dialog = page.getByRole('dialog', { name: 'Sampled color' });
     await expect(dialog.getByRole('button', { name: 'Pick a color from the screen' })).toHaveCount(
       0,
     );
@@ -466,17 +466,17 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Sampled value')).toHaveText('#2e8b57');
   });
 
-  test('UIC-COLOR-FIELD-4.1 picks either place of a colour listed twice', async ({ page, lab }) => {
+  test('UIC-COLOR-FIELD-4.1 picks either place of a color listed twice', async ({ page, lab }) => {
     await lab.open('color-field');
     const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
     await trigger.click();
     const swatches = page
-      .getByRole('dialog', { name: 'Label colour' })
+      .getByRole('dialog', { name: 'Label color' })
       .getByRole('listbox', { name: 'Color swatches' });
     const options = swatches.getByRole('option');
     await expect(options).toHaveCount(7);
     await options.nth(6).click();
-    await expect(trigger).toHaveAccessibleName('Label colour #CC3300');
+    await expect(trigger).toHaveAccessibleName('Label color #CC3300');
     await expect(options.nth(6)).toHaveAttribute('aria-selected', 'true');
     await options.nth(2).click();
     await options.nth(0).click();
@@ -501,7 +501,7 @@ test.describe('Color Field lab', () => {
     await lab.open('color-field');
     const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
     await trigger.click();
-    const dialog = page.getByRole('dialog', { name: 'Label colour' });
+    const dialog = page.getByRole('dialog', { name: 'Label color' });
     await dialog.getByRole('button', { name: 'Pick a color from the screen' }).click();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -511,18 +511,18 @@ test.describe('Color Field lab', () => {
     });
     await trigger.click();
     await expect(dialog).toBeVisible();
-    await expect(trigger).toHaveAccessibleName('Label colour #336699');
+    await expect(trigger).toHaveAccessibleName('Label color #336699');
     await page.keyboard.press('Escape');
     // Nothing changed, so closing the picker commits nothing.
     await expect(output(page, 'Preset committed')).toHaveText('none');
   });
 
-  test('UIC-COLOR-FIELD-4.3 types a colour into the closed field', async ({ page, lab }) => {
+  test('UIC-COLOR-FIELD-4.3 types a color into the closed field', async ({ page, lab }) => {
     await lab.open('color-field');
     const typing = field(page, 'typing');
-    const input = typing.getByRole('textbox', { name: 'Text colour' });
+    const input = typing.getByRole('textbox', { name: 'Text color' });
     await expect(input).toHaveValue('#2E8B57');
-    const button = typing.getByRole('button', { name: 'Text colour picker' });
+    const button = typing.getByRole('button', { name: 'Text color picker' });
     const frame = await typing.locator('.ui-color-field__group').boundingBox();
     expect(frame?.height).toBe(await controlHeight(page, 'md'));
     expect((await button.boundingBox())?.y).toBeGreaterThanOrEqual(frame?.y ?? 0);
@@ -538,29 +538,29 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('ControlOrMeta+z');
     await expect(input).toHaveValue('#2E8B57');
     await button.click();
-    await expect(page.getByRole('dialog', { name: 'Text colour' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Text color' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(button).toBeFocused();
     await lab.expectAccessible();
   });
 
-  test('UIC-FIELD-1.11 UIC-COLOR-FIELD-4.3 keeps a typed colour uncommitted until focus leaves the field', async ({
+  test('UIC-FIELD-1.11 UIC-COLOR-FIELD-4.3 keeps a typed color uncommitted until focus leaves the field', async ({
     page,
     lab,
   }) => {
     await lab.open('color-field');
     const typing = field(page, 'typing');
-    const input = typing.getByRole('textbox', { name: 'Text colour' });
+    const input = typing.getByRole('textbox', { name: 'Text color' });
     await input.fill('#ff0000');
     // Leaving the input for the swatch button applies the text; the field stays dirty.
     await page.keyboard.press('Shift+Tab');
-    await expect(typing.getByRole('button', { name: 'Text colour picker' })).toBeFocused();
+    await expect(typing.getByRole('button', { name: 'Text color picker' })).toBeFocused();
     await expect(input).toHaveValue('#FF0000');
     await expect(typing).toHaveAttribute('data-dirty', 'true');
     await page.keyboard.press('Tab');
     await expect(input).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(typing.getByRole('button', { name: 'Restore Text colour' })).toBeFocused();
+    await expect(typing.getByRole('button', { name: 'Restore Text color' })).toBeFocused();
     await expect(output(page, 'Typed committed')).toHaveText('none');
     await page.keyboard.press('Tab');
     await expect(output(page, 'Typed committed')).toHaveText('#ff0000');
@@ -573,7 +573,7 @@ test.describe('Color Field lab', () => {
     lab,
   }) => {
     await lab.open('color-field');
-    const input = field(page, 'typing').getByRole('textbox', { name: 'Text colour' });
+    const input = field(page, 'typing').getByRole('textbox', { name: 'Text color' });
     await input.fill('rgb(12');
     await input.dispatchEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true });
     await expect(input).toHaveValue('rgb(12');
@@ -584,7 +584,7 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Typed committed')).toHaveText('#0c0000');
   });
 
-  test('UIC-COLOR-FIELD-2.4 submits each named colour once in its stored format', async ({
+  test('UIC-COLOR-FIELD-2.4 submits each named color once in its stored format', async ({
     page,
     lab,
   }) => {
@@ -605,12 +605,12 @@ test.describe('Color Field lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-COLOR-FIELD-4.3 makes a typed colour the value before it commits', async ({
+  test('UIC-COLOR-FIELD-4.3 makes a typed color the value before it commits', async ({
     page,
     lab,
   }) => {
     await lab.open('color-field');
-    const input = field(page, 'typing').getByRole('textbox', { name: 'Text colour' });
+    const input = field(page, 'typing').getByRole('textbox', { name: 'Text color' });
     await input.fill('#aabbcc');
     await expect(output(page, 'Typed value')).toHaveText('#aabbcc');
     await expect(output(page, 'Typed committed')).toHaveText('none');
@@ -620,7 +620,7 @@ test.describe('Color Field lab', () => {
     await expect(input).toHaveValue('#2E8B57');
   });
 
-  test('UIC-COLOR-FIELD-2.4 reports a stored value that is no colour', async ({ page, lab }) => {
+  test('UIC-COLOR-FIELD-2.4 reports a stored value that is no color', async ({ page, lab }) => {
     await lab.open('color-field');
     const unreadable = field(page, 'unreadable');
     await expect(unreadable).toHaveAttribute('data-validation', 'invalid');
@@ -632,8 +632,8 @@ test.describe('Color Field lab', () => {
   }) => {
     await lab.open('color-field');
     for (const size of ['xs', 'sm', 'md', 'lg']) {
-      const swatch = (colour: string) =>
-        matrixCell(page, `colour=${colour} size=${size}`).locator('.ui-color-swatch');
+      const swatch = (color: string) =>
+        matrixCell(page, `color=${color} size=${size}`).locator('.ui-color-swatch');
       expect(await swatchInkCount(page, swatch('opaque')), size).toBe(1);
       expect(await swatchInkCount(page, swatch('half')), size).toBeGreaterThan(1);
       expect(await swatchInkCount(page, swatch('clear')), size).toBeGreaterThan(1);

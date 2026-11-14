@@ -30,7 +30,7 @@ test.describe('Property Scope lab', () => {
     );
     await expect(row(label, 'Height')).toBeVisible();
     await expect(row(label, 'Width')).toBeHidden();
-    await expect(label.getByRole('button', { name: /^Colours/ })).toBeHidden();
+    await expect(label.getByRole('button', { name: /^Colors/ })).toBeHidden();
     await expect(label.getByRole('button', { name: /^Shadow/ })).toBeHidden();
 
     const title = cell(page, 'title');
@@ -50,8 +50,8 @@ test.describe('Property Scope lab', () => {
   test('UIC-PROPERTY-SCOPE-1.3 marks matched text in place', async ({ page, lab }) => {
     await lab.open('property-scope');
     const mark = cell(page, 'title').locator('.ui-property-section__title mark.ui-text-match');
-    await expect(mark).toHaveText('Colour');
-    await expect(cell(page, 'title').getByRole('button', { name: /^Colours/ })).toBeVisible();
+    await expect(mark).toHaveText('Color');
+    await expect(cell(page, 'title').getByRole('button', { name: /^Colors/ })).toBeVisible();
     const background = await mark.evaluate((element) => getComputedStyle(element).backgroundColor);
     expect(background).not.toBe('rgba(0, 0, 0, 0)');
   });

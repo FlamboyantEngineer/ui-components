@@ -46,7 +46,7 @@ function tracePath(modules: ReadonlyArray<readonly boolean[]>, offset: number): 
 
 /**
  * A QR code for `value`, drawn as an SVG image of its dark modules with a quiet zone around them.
- * The host stylesheet colours the modules and the ground; unstyled, they are black on the page.
+ * The host stylesheet colors the modules and the ground; unstyled, they are black on the page.
  */
 export function QrCode({
   value,

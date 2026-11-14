@@ -1,6 +1,6 @@
 // The lab bar's own stylesheet, adopted by the shadow root `mountLabBar` draws it in, so neither the
-// stylesheet a lab page loads nor the lab itself changes how the bar looks. It uses system colours
-// only, so it reads in either colour scheme with no tokens of its own.
+// stylesheet a lab page loads nor the lab itself changes how the bar looks. It uses system colors
+// only, so it reads in either color scheme with no tokens of its own.
 
 /**
  * The bar stays above the lab's content as the page scrolls (in-page z-indexes reach 4), and below

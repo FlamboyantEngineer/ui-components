@@ -97,7 +97,7 @@
   margin-block: 1em;
 }
 
-/* A find mark inside a link keeps the text colour, which holds its contrast on the mark tint. */
+/* A find mark inside a link keeps the text color, which holds its contrast on the mark tint. */
 .ui-markdown .ui-link .ui-text-match {
   color: var(--ref-text);
 }

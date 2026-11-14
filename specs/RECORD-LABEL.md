@@ -66,7 +66,7 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/componen
 
 ### UIC-RECORD-LABEL-11.1 - Label and parts
 
-`RecordLabel` shall render a `ui-record-label` `<span>` whose first line, a `ui-record-label__header` `<span>` in every layout, holds a `RecordLabel` (`ui-record-label__label`) built from `identifier`, `name`, `icon`, `size`, `href`, `isExternal` and `unavailable`, then, when given, `version` (`ui-record-label__version`), `type` (`ui-record-label__type`) and the `state` node (`ui-record-label__state`), usually a [Badge](BADGE.md) or [Status Light](STATUS-LIGHT.md). It publishes `data-size` (`sm`, `md` by default, `lg`).
+`RecordLabel` shall render a `ui-record-label` `<span>` whose first line, a `ui-record-label__header` `<span>` in every layout, holds a `RecordLabel` (`ui-record-label__label`) built from `identifier`, `name`, `icon`, `size`, `href`, `isExternal` and `unavailable`, then, when given, `version` (`ui-record-label__version`), `type` (`ui-record-label__type`) and the `state` node (`ui-record-label__state`), usually a [Badge](BADGE.md) or [Status Light](STATUS-LIGHT.md). It publishes `data-size` (`sm`, `md` by default, `lg`), which the reference stylesheet sizes the chip's frame, gaps, version and type from, so the whole chip tracks its label's size; the caller gives the state node the same `size`.
 
 Implementation: `src/components/record-label/record-chip-parts.tsx`, `src/components/record-label/record-label.tsx`
 Verification: `src/components/record-label/record-chip.test.tsx`, `e2e/record-label-chip.spec.ts`

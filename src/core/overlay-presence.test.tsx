@@ -110,7 +110,7 @@ describe('Overlay presence', () => {
     const { status, count } = renderWithProbe(
       <>
         <SelectField label="Fruit" options={[{ id: 1, label: 'Apple' }]} />
-        <Combobox label="Colour" defaultItems={[{ id: 1, label: 'Red' }]} />
+        <Combobox label="Color" defaultItems={[{ id: 1, label: 'Red' }]} />
         <DateTimeField label="Due" defaultValue="2026-04-13" />
       </>,
     );
@@ -123,7 +123,7 @@ describe('Overlay presence', () => {
     await user.keyboard('{Escape}');
     await waitFor(() => expect(status()).toHaveTextContent('idle'));
 
-    await user.click(screen.getByRole('combobox', { name: 'Colour' }));
+    await user.click(screen.getByRole('combobox', { name: 'Color' }));
     await user.keyboard('{ArrowDown}');
     await waitFor(() => expect(status()).toHaveTextContent('active'));
     expect(count()).toBe(1);

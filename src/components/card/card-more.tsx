@@ -54,14 +54,18 @@ function MoreButton({
   );
 }
 
-/** The regions a presentation moves behind More: they stay where they are, hidden until opened. */
+/** The header regions a presentation may move behind More. */
+export type MovableRegion = 'leading' | 'description' | 'meta' | 'actions' | 'toggle' | 'heading';
+
+/**
+ * The regions a presentation moves behind More: they stay where they are, hidden until opened. The
+ * leading content stays on the row in every presentation, where a badge collapses to its dot.
+ */
 const movedRegions = {
   full: [],
   compact: ['description', 'meta', 'actions'],
-  minimal: ['leading', 'description', 'meta', 'actions', 'toggle', 'heading'],
-} as const satisfies Record<CardPresentation, readonly string[]>;
-
-export type MovableRegion = (typeof movedRegions)['minimal'][number];
+  minimal: ['description', 'meta', 'actions', 'toggle', 'heading'],
+} as const satisfies Record<CardPresentation, readonly MovableRegion[]>;
 
 /**
  * The ids of a header's regions, and which a presentation moved: a moved region keeps its place

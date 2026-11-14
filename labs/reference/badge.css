@@ -148,3 +148,38 @@
 [dir='rtl'] .ui-badge[data-placement='overlay'] {
   transform: translate(-40%, -40%);
 }
+
+/*
+ * A label badge whose room is narrower than its first letter and an ellipsis draws only a small round
+ * chip (UIC-BADGE-1.9): the variant's own fill and border, without text; its text stays in the page,
+ * visually hidden.
+ */
+.ui-badge[data-collapsed][data-variant] {
+  flex: none;
+  width: 10px;
+  min-width: 0;
+  height: 10px;
+  min-height: 0;
+  padding: 0;
+}
+.ui-badge[data-collapsed][data-variant][data-size='sm'] {
+  width: 8px;
+  height: 8px;
+}
+.ui-badge[data-collapsed][data-variant][data-size='lg'] {
+  width: 12px;
+  height: 12px;
+}
+/* A status badge is a neutral pill with a tone dot, so its collapsed chip takes the tone. */
+.ui-badge[data-collapsed][data-variant='status'] {
+  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+}
+.ui-badge[data-collapsed] > :not(.ui-badge__label, .ui-badge__accessible-label) {
+  display: none;
+}
+.ui-badge[data-collapsed] > .ui-badge__label {
+  /* Visually hidden by the shared list in base.css; these drop the label's clip-box padding. */
+  margin: 0;
+  padding: 0;
+}

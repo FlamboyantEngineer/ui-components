@@ -408,7 +408,7 @@ describe('ConditionBuilder', () => {
           type: 'group',
           id: 'root',
           combinator: 'and',
-          rules: [{ type: 'rule', id: 'a', field: 'colour', operator: 'equals', value: 'red' }],
+          rules: [{ type: 'rule', id: 'a', field: 'color', operator: 'equals', value: 'red' }],
         }}
       />,
     );

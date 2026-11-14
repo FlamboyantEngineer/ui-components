@@ -40,7 +40,7 @@ function adoptBarStyles(shadow: ShadowRoot) {
 }
 
 /**
- * Applies `initial` now and again whenever the reader's colour scheme changes, which a system theme
+ * Applies `initial` now and again whenever the reader's color scheme changes, which a system theme
  * follows, and draws the bar in the scheme a light or dark theme sets. Returns the setter for the
  * settings it applies.
  */

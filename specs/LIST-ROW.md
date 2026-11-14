@@ -78,7 +78,7 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 
 ### UIC-LIST-ROW-2.4 - Row text
 
-A row shall draw its `title` and, when it has content, its `meta` below it. An `icon` (an imported icon component or rendered element) shall be drawn through `IconLabel`, beside both lines and taking the row's free width; it takes precedence over `leading`, decorative media drawn before the text and hidden from assistive technology.
+A row shall draw its `title` and, when it has content, its `meta` below it. An `icon` (an imported icon component or rendered element) shall be drawn through `Label`, beside both lines and taking the row's free width; it takes precedence over `leading`, decorative media drawn before the text and hidden from assistive technology.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`
@@ -195,7 +195,7 @@ Verification: `e2e/list-row.spec.ts`
 | `data-focus-visible`             | state     | `true`                     | An action row's button has keyboard focus (React Aria).            |
 | `ui-list-row-content`            | root      |                            | The row text: leading media or icon, title and meta.               |
 | `ui-list-row-content__leading`   | slot      |                            | Decorative leading media.                                          |
-| `ui-list-row-content__text`      | slot      |                            | The title and meta lines (the `IconLabel` label with `icon`).      |
+| `ui-list-row-content__text`      | slot      |                            | The title and meta lines (the `Label` label with `icon`).          |
 | `ui-list-row-content__title`     | slot      |                            | The title line.                                                    |
 | `ui-list-row-content__meta`      | slot      |                            | The meta line.                                                     |
 | `ui-list-view`                   | root      |                            | The grid list (`role="grid"`).                                     |

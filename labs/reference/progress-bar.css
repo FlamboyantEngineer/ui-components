@@ -159,7 +159,7 @@
   background: var(--ref-tone-fill);
 }
 
-/* Stripes mark the unit under way by shape as well as colour. */
+/* Stripes mark the unit under way by shape as well as color. */
 .ui-progress-bar__segment[data-state='current'] {
   background: repeating-linear-gradient(
     -45deg,

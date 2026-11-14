@@ -232,6 +232,29 @@
   min-width: 0;
   overflow: hidden;
 }
+/* A leading badge that collapsed to its dot keeps the dot whole (UIC-BADGE-1.9). */
+.ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
+  > .ui-card__header
+  > .ui-card__leading:has(> .ui-badge[data-collapsed]:only-child) {
+  flex: none;
+}
+/*
+ * A minimal card keeps that dot inside its title row: the dot is a size smaller and More gives up
+ * its spare width, so the dot, the abbreviation and More fit the narrowest card.
+ */
+.ui-card[data-presentation='minimal']
+  > .ui-card__header
+  > .ui-card__leading
+  > .ui-badge[data-collapsed][data-variant] {
+  width: 8px;
+  height: 8px;
+}
+.ui-card[data-presentation='minimal']
+  > .ui-card__header:has(> .ui-card__leading > .ui-badge[data-collapsed]:only-child)
+  > .ui-card__more {
+  width: 20px;
+}
+
 .ui-card:is([data-presentation='compact'], [data-presentation='minimal'])
   .ui-card__title
   > .ui-truncation-tooltip {
@@ -275,7 +298,7 @@
     to right,
     #000 85%,
     transparent
-  ); /* token-exempt: an alpha mask, not a colour */
+  ); /* token-exempt: an alpha mask, not a color */
 }
 
 [dir='rtl'] .ui-card__skeleton {
@@ -283,7 +306,7 @@
     to left,
     #000 85%,
     transparent
-  ); /* token-exempt: an alpha mask, not a colour */
+  ); /* token-exempt: an alpha mask, not a color */
 }
 
 .ui-card-grid {

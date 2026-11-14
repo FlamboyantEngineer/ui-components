@@ -1,6 +1,6 @@
 'use client';
 
-// Colour fields, pickers, sliders and swatches. The colour values they edit are server-safe and
+// Color fields, pickers, sliders and swatches. The color values they edit are server-safe and
 // live in color-values.ts.
 
 export {

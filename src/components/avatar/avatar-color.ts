@@ -1,7 +1,7 @@
 import { getColorIndex } from '../../utils/color-index.js';
 import type { AvatarIdentity } from './avatar.js';
 
-/** The number of colour slots a derived colour is spread over unless `colorCount` says otherwise. */
+/** The number of color slots a derived color is spread over unless `colorCount` says otherwise. */
 export const DEFAULT_AVATAR_COLOR_COUNT = 8;
 
 function paletteSize(colorCount: number | undefined): number {
@@ -11,8 +11,8 @@ function paletteSize(colorCount: number | undefined): number {
 }
 
 /**
- * The colour slot an avatar publishes: the explicit `colorIndex` wrapped into the palette, otherwise
- * the slot derived from `colorKey` (or `name` when the key is blank). Groups have no derived colour.
+ * The color slot an avatar publishes: the explicit `colorIndex` wrapped into the palette, otherwise
+ * the slot derived from `colorKey` (or `name` when the key is blank). Groups have no derived color.
  */
 export function resolveAvatarColor(
   identity: Pick<AvatarIdentity, 'name' | 'colorKey' | 'colorIndex' | 'kind'>,

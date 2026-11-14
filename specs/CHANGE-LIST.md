@@ -66,7 +66,7 @@ Verification: `src/components/change-list/change-list.test.tsx`
 
 ### UIC-CHANGE-LIST-2.1 - Changes in the markup
 
-Every change shall be readable without colour: removed content in native `<del>` elements, added content in native `<ins>` elements, and the sides of a detailed change captioned in text. The list adds no role, live region or tab stop of its own; its only tab stops are those of its attributions and of the content `renderValue` draws.
+Every change shall be readable without color: removed content in native `<del>` elements, added content in native `<ins>` elements, and the sides of a detailed change captioned in text. The list adds no role, live region or tab stop of its own; its only tab stops are those of its attributions and of the content `renderValue` draws.
 
 Implementation: `src/components/change-list/change-values.tsx`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`

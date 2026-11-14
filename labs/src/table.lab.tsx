@@ -67,33 +67,33 @@ function TrailingActions() {
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   origin: string;
   weight: number;
   isFixed?: boolean;
 }
 
 const fruit: Fruit[] = [
-  { id: 'apple', name: 'Apple', colour: 'Red', origin: 'Lisbon', weight: 180 },
-  { id: 'banana', name: 'Banana', colour: 'Yellow', origin: 'Quito', weight: 120 },
-  { id: 'cherry', name: 'Cherry', colour: 'Red', origin: 'Oslo', weight: 8 },
-  { id: 'date', name: 'Date', colour: 'Brown', origin: 'Cairo', weight: 24 },
-  { id: 'fig', name: 'Fig', colour: 'Purple', origin: 'Izmir', weight: 50 },
-  { id: 'grape', name: 'Grape', colour: 'Green', origin: 'Porto', weight: 5 },
-  { id: 'kiwi', name: 'Kiwi', colour: 'Brown', origin: 'Napier', weight: 75 },
-  { id: 'lemon', name: 'Lemon', colour: 'Yellow', origin: 'Seville', weight: 100 },
+  { id: 'apple', name: 'Apple', color: 'Red', origin: 'Lisbon', weight: 180 },
+  { id: 'banana', name: 'Banana', color: 'Yellow', origin: 'Quito', weight: 120 },
+  { id: 'cherry', name: 'Cherry', color: 'Red', origin: 'Oslo', weight: 8 },
+  { id: 'date', name: 'Date', color: 'Brown', origin: 'Cairo', weight: 24 },
+  { id: 'fig', name: 'Fig', color: 'Purple', origin: 'Izmir', weight: 50 },
+  { id: 'grape', name: 'Grape', color: 'Green', origin: 'Porto', weight: 5 },
+  { id: 'kiwi', name: 'Kiwi', color: 'Brown', origin: 'Napier', weight: 75 },
+  { id: 'lemon', name: 'Lemon', color: 'Yellow', origin: 'Seville', weight: 100 },
 ];
 
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name', allowsSorting: true },
-  { id: 'colour', header: 'Colour', allowsSorting: true },
+  { id: 'color', header: 'Color', allowsSorting: true },
   { id: 'origin', header: 'Origin' },
   { id: 'weight', header: 'Weight (g)', align: 'end', allowsSorting: true },
 ];
 
 const resizableColumns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name', width: 160, minWidth: 100, maxWidth: 240, allowsResizing: true },
-  { id: 'colour', header: 'Colour', width: '1fr', minWidth: 90, allowsResizing: true },
+  { id: 'color', header: 'Color', width: '1fr', minWidth: 90, allowsResizing: true },
   { id: 'weight', header: 'Weight (g)', width: 120, minWidth: 90, align: 'end' },
 ];
 
@@ -248,13 +248,13 @@ function Reordering() {
         Arrange
       </Button>
       <Button size="sm" isSelected={grouped} onPress={() => setGrouped(!grouped)}>
-        Group by colour
+        Group by color
       </Button>
       <Table
         aria-label="Fruit, reorderable"
         rows={rows}
         columns={columns.slice(0, 2)}
-        groupBy={grouped ? ['colour'] : []}
+        groupBy={grouped ? ['color'] : []}
         reorder={
           arranging
             ? {
@@ -504,7 +504,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Column filters"
-      description="Text, set, number and date filters from each header, beside the search box. The caller below owns the filter and filters its rows with filterTableRows, as the table would. The last table starts with defaultFilter (search e, Kind Fruit) and defaultColumnLayout (Colour first, Weight hidden), then owns both."
+      description="Text, set, number and date filters from each header, beside the search box. The caller below owns the filter and filters its rows with filterTableRows, as the table would. The last table starts with defaultFilter (search e, Kind Fruit) and defaultColumnLayout (Color first, Weight hidden), then owns both."
     >
       <ColumnFilters />
       <h3>Filtered by the caller</h3>

@@ -107,7 +107,7 @@ Verification: `src/components/segmented-bar/segmented-animation.test.tsx`, `e2e/
 | `ui-segmented-bar__segment`    | slot      |                                                   | One segment; inline `width` is its share of the whole.   |
 | `ui-segmented-bar__legend`     | slot      |                                                   | The list of segments, visible with `showLegend`.         |
 | `ui-segmented-bar__item`       | slot      |                                                   | One segment's entry in the list.                         |
-| `ui-segmented-bar__swatch`     | slot      |                                                   | The entry's decorative colour mark.                      |
+| `ui-segmented-bar__swatch`     | slot      |                                                   | The entry's decorative color mark.                       |
 | `ui-segmented-bar__item-label` | slot      |                                                   | The segment's label.                                     |
 | `ui-segmented-bar__item-value` | slot      |                                                   | The segment's count.                                     |
 | `ui-segmented-bar__item-share` | slot      |                                                   | The segment's share of the whole, as a percentage.       |

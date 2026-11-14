@@ -1,6 +1,6 @@
 // The lab page's own layout: the page padding and the state matrix grid. It belongs to the labs,
 // not to the reference stylesheet the package ships, so it applies whichever stylesheet is chosen
-// and falls back to the text colour where the stylesheet defines no reference tokens.
+// and falls back to the text color where the stylesheet defines no reference tokens.
 
 const pageStyleId = 'ui-lab-page-style';
 
@@ -33,7 +33,7 @@ body {
 
 /**
  * Adds the lab page style, with the lab fonts, to the head once, and marks the root so the reference stylesheet draws
- * its document base (type, text colour, canvas and colour scheme) on the lab page.
+ * its document base (type, text color, canvas and color scheme) on the lab page.
  */
 export function applyPageStyle(doc: Document = document): void {
   doc.documentElement.toggleAttribute('data-reference-document', true);

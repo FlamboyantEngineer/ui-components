@@ -216,7 +216,7 @@ describe('PropertyScope', () => {
     const onClear = vi.fn();
     const panel = (query: string, clear?: () => void) => (
       <PropertyScope query={query} onClear={clear}>
-        <PropertyRow label="Colour">red</PropertyRow>
+        <PropertyRow label="Color">red</PropertyRow>
       </PropertyScope>
     );
     const { container, rerender } = render(panel('', onClear));
@@ -241,7 +241,7 @@ describe('PropertyScope', () => {
   it('UIC-PROPERTY-SCOPE-1.5 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
       <PropertyScope query="" className="caller" id="scope-1" data-probe="scope">
-        <PropertyRow label="Colour">red</PropertyRow>
+        <PropertyRow label="Color">red</PropertyRow>
       </PropertyScope>,
     );
     const root = container.firstElementChild as HTMLElement;

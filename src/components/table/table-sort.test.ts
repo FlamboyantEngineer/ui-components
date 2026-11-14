@@ -5,19 +5,19 @@ import { nextSortDescriptors, sortTableRows } from './table-sort.js';
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   weight: number;
 }
 
 const fruit: readonly Fruit[] = Object.freeze([
-  { id: 'banana', name: 'Banana', colour: 'Yellow', weight: 120 },
-  { id: 'apple', name: 'Apple', colour: 'Red', weight: 30 },
-  { id: 'cherry', name: 'Cherry', colour: 'Red', weight: 100 },
-  { id: 'lemon', name: 'Lemon', colour: 'Yellow', weight: 100 },
+  { id: 'banana', name: 'Banana', color: 'Yellow', weight: 120 },
+  { id: 'apple', name: 'Apple', color: 'Red', weight: 30 },
+  { id: 'cherry', name: 'Cherry', color: 'Red', weight: 100 },
+  { id: 'lemon', name: 'Lemon', color: 'Yellow', weight: 100 },
 ]);
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name' },
-  { id: 'colour', header: 'Colour' },
+  { id: 'color', header: 'Color' },
   { id: 'weight', header: 'Weight' },
 ];
 const ids = (rows: readonly Fruit[]) => rows.map((row) => row.id);
@@ -27,7 +27,7 @@ describe('table sort helpers', () => {
     const sorted = sortTableRows(fruit, {
       columns,
       sort: [
-        { column: 'colour', direction: 'ascending' },
+        { column: 'color', direction: 'ascending' },
         { column: 'weight', direction: 'descending' },
       ],
       locale: 'en-US',
@@ -52,9 +52,9 @@ describe('table sort helpers', () => {
   it('UIC-TABLE-2.6 reads each value once per row and column', () => {
     const getValue = vi.fn((row: Fruit) => row.weight);
     sortTableRows(fruit, {
-      columns: [{ id: 'colour' }, { id: 'weight', getValue }],
+      columns: [{ id: 'color' }, { id: 'weight', getValue }],
       sort: [
-        { column: 'colour', direction: 'ascending' },
+        { column: 'color', direction: 'ascending' },
         { column: 'weight', direction: 'ascending' },
       ],
       locale: 'en-US',
@@ -63,26 +63,26 @@ describe('table sort helpers', () => {
   });
 
   it('UIC-TABLE-2.6 steps a column alone on a plain press and beside the others with Shift', () => {
-    const colour = { column: 'colour', direction: 'ascending' } as const;
+    const color = { column: 'color', direction: 'ascending' } as const;
     expect(nextSortDescriptors([], 'name', false)).toEqual([
       { column: 'name', direction: 'ascending' },
     ]);
-    expect(nextSortDescriptors([colour], 'name', false)).toEqual([
+    expect(nextSortDescriptors([color], 'name', false)).toEqual([
       { column: 'name', direction: 'ascending' },
     ]);
-    expect(nextSortDescriptors([colour], 'colour', false)).toEqual([
-      { column: 'colour', direction: 'descending' },
+    expect(nextSortDescriptors([color], 'color', false)).toEqual([
+      { column: 'color', direction: 'descending' },
     ]);
-    expect(nextSortDescriptors([{ ...colour, direction: 'descending' }], 'colour', false)).toEqual(
+    expect(nextSortDescriptors([{ ...color, direction: 'descending' }], 'color', false)).toEqual(
       [],
     );
-    const added = nextSortDescriptors([colour], 'weight', true);
-    expect(added).toEqual([colour, { column: 'weight', direction: 'ascending' }]);
+    const added = nextSortDescriptors([color], 'weight', true);
+    expect(added).toEqual([color, { column: 'weight', direction: 'ascending' }]);
     const stepped = nextSortDescriptors(added, 'weight', true);
-    expect(stepped).toEqual([colour, { column: 'weight', direction: 'descending' }]);
-    expect(nextSortDescriptors(stepped, 'weight', true)).toEqual([colour]);
-    expect(nextSortDescriptors(stepped, 'colour', true)).toEqual([
-      { column: 'colour', direction: 'descending' },
+    expect(stepped).toEqual([color, { column: 'weight', direction: 'descending' }]);
+    expect(nextSortDescriptors(stepped, 'weight', true)).toEqual([color]);
+    expect(nextSortDescriptors(stepped, 'color', true)).toEqual([
+      { column: 'color', direction: 'descending' },
       { column: 'weight', direction: 'descending' },
     ]);
   });

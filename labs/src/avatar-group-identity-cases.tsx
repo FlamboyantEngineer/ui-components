@@ -56,7 +56,7 @@ function IdentityGroup() {
           data-lab-group="identity-list"
         />
       </p>
-      <ul aria-label="Expected colour slots" data-lab-output="slots">
+      <ul aria-label="Expected color slots" data-lab-output="slots">
         {ordered.map((person) => (
           <li key={person.id} data-lab-person={person.id}>
             {`${person.name}: ${String(resolveAvatarColor(person, colorCount))}`}
@@ -71,7 +71,7 @@ export function AvatarGroupIdentityCases() {
   return (
     <LabSection
       title="Identity overrides and palette size"
-      description="Each person may set initials, shape, imageProps, colorKey and colorIndex, and the group spreads colours over colorCount 12 slots. Rename the first person or reverse the order, then open the overflow menu and the full list: every avatar keeps its initials, shape, picture attributes and the colour slot listed below."
+      description="Each person may set initials, shape, imageProps, colorKey and colorIndex, and the group spreads colors over colorCount 12 slots. Rename the first person or reverse the order, then open the overflow menu and the full list: every avatar keeps its initials, shape, picture attributes and the color slot listed below."
     >
       <IdentityGroup />
     </LabSection>

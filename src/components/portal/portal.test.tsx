@@ -343,7 +343,7 @@ describe('Portal', () => {
         </Portal>
         <ModalOverlay isOpen isDismissable onOpenChange={onOpenChange}>
           <Modal>
-            <Dialog aria-label="Pick a colour">
+            <Dialog aria-label="Pick a color">
               <Suggestions>
                 <Portal>
                   <button type="button">Teal</button>

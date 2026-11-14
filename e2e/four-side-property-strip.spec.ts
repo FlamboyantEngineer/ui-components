@@ -32,7 +32,7 @@ test.describe('Four Side Property Strip lab', () => {
     const filtered = page.locator('[data-lab-filtered]');
     const strip = filtered.locator('.ui-four-side-property-strip');
     await expect(strip).toBeVisible();
-    await filtered.getByLabel('Query').fill('colour');
+    await filtered.getByLabel('Query').fill('color');
     await expect(strip).toBeHidden();
     await filtered.getByLabel('Query').fill('bottom');
     await expect(strip).toBeVisible();
@@ -194,7 +194,7 @@ test.describe('Four Side Property Strip lab', () => {
     // The bends are rounder than the smallest radius.
     expect((await bracketStyle('link=pairs start=both', 0)).radius).toBeGreaterThan(2);
 
-    // Every toggle has the same geometry; a linked one is a coloured glyph on no background.
+    // Every toggle has the same geometry; a linked one is a colored glyph on no background.
     const toggles = matrixCell(page, 'link=pairs start=horizontal').getByRole('button');
     const look = (index: number) =>
       toggles.nth(index).evaluate((node) => {

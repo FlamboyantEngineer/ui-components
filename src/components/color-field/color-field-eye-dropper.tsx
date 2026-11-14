@@ -48,10 +48,10 @@ function useSampleScope() {
 }
 
 /**
- * Samples a colour from the screen with the browser's eye dropper and sets it on the picker. It
+ * Samples a color from the screen with the browser's eye dropper and sets it on the picker. It
  * draws nothing where the browser has no eye dropper; a cancelled sample changes nothing. A sample
  * belongs to the open picker: a newer sample, or the picker closing, aborts it through the API's
- * signal, and its colour is ignored should it arrive anyway.
+ * signal, and its color is ignored should it arrive anyway.
  */
 export function ColorFieldEyeDropper() {
   const strings = useUiStrings();

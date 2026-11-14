@@ -1,6 +1,6 @@
 # Barcode
 
-`Barcode` draws a value as a linear barcode, beside [QR Code](QR-CODE.md): an SVG image of the symbol's bars between light quiet zones, named for assistive technology, with the human-readable value under it on request. It supports Code 128, for any short ASCII text, and the retail formats EAN-13, UPC-A and EAN-8, for digits with a check digit. The bars come from `encodeBarcode`, a pure encoder in the library that a host can also call to draw symbols its own way. The component never writes a colour: unstyled, the bars are black on the page's ground, and the host stylesheet colours the bars and the ground behind them.
+`Barcode` draws a value as a linear barcode, beside [QR Code](QR-CODE.md): an SVG image of the symbol's bars between light quiet zones, named for assistive technology, with the human-readable value under it on request. It supports Code 128, for any short ASCII text, and the retail formats EAN-13, UPC-A and EAN-8, for digits with a check digit. The bars come from `encodeBarcode`, a pure encoder in the library that a host can also call to draw symbols its own way. The component never writes a color: unstyled, the bars are black on the page's ground, and the host stylesheet colors the bars and the ground behind them.
 
 ## UIC-BARCODE-1 - Encoder
 

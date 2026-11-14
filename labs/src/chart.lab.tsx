@@ -285,7 +285,7 @@ mountLab(
   <>
     <LabSection
       title="Typed identities"
-      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered. A focused or hovered bar keeps its series through the reorder, though its colour slot follows the new position."
+      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered. A focused or hovered bar keeps its series through the reorder, though its color slot follows the new position."
     >
       <TypedKeys />
     </LabSection>
@@ -311,7 +311,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Tones"
-      description="Series with tones (passed, failed, skipped) keep their meaning in every chart; the colour slot falls back to the series position."
+      description="Series with tones (passed, failed, skipped) keep their meaning in every chart; the color slot falls back to the series position."
     >
       <div style={box(560)} data-lab-demo="tones">
         <BarChart

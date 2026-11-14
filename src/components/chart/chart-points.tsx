@@ -215,7 +215,7 @@ interface ChartTooltipProps {
   anchor: RefObject<SVGElement | null>;
   /** Where the value sits on the other axis: its category or date. */
   title?: string | undefined;
-  /** The series' name, beside a swatch in its colour slot. */
+  /** The series' name, beside a swatch in its color slot. */
   label: string;
   series: number;
   tone: Tone | undefined;

@@ -13,20 +13,20 @@ interface Fruit {
   id: string;
   name: string;
   weight: number;
-  colour: string;
+  color: string;
 }
 
 const fruit: Fruit[] = [
-  { id: 'apple', name: 'Apple', weight: 30, colour: 'Red' },
-  { id: 'pear', name: 'Pear', weight: 60, colour: 'Green' },
+  { id: 'apple', name: 'Apple', weight: 30, color: 'Red' },
+  { id: 'pear', name: 'Pear', weight: 60, color: 'Green' },
 ];
 
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name' },
   { id: 'weight', header: 'Weight', allowsEditing: true },
   {
-    id: 'colour',
-    header: 'Colour',
+    id: 'color',
+    header: 'Color',
     allowsEditing: true,
     renderEditor: (row, editor) => (
       <span>
@@ -36,7 +36,7 @@ const columns: TableColumn<Fruit>[] = [
         >{`Blue for ${editor.label}`}</button>
         <button type="button" onClick={editor.cancel}>{`Keep ${String(editor.value)}`}</button>
         <input
-          aria-label={`${row.name} colour`}
+          aria-label={`${row.name} color`}
           autoFocus
           onKeyDown={(event) => {
             // The editor's own Escape clears its draft first.
@@ -163,11 +163,11 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
         columns={[
           { id: 'name', header: 'Name' },
           {
-            id: 'colour',
-            header: 'Colour',
+            id: 'color',
+            header: 'Color',
             allowsEditing: true,
             renderCell: (row) => (
-              <button type="button" onClick={onOpen}>{`Open ${row.colour}`}</button>
+              <button type="button" onClick={onOpen}>{`Open ${row.color}`}</button>
             ),
           },
         ]}
@@ -195,7 +195,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     cell('Red').focus();
     await user.keyboard('{F2}');
     const row = screen.getByRole('row', { name: 'Apple' });
-    const draft = within(row).getByRole('textbox', { name: 'Apple colour' });
+    const draft = within(row).getByRole('textbox', { name: 'Apple color' });
     expect(draft).toHaveFocus();
     await user.keyboard('Teal{Escape}');
     expect(draft).toHaveFocus();
@@ -206,9 +206,9 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     await user.click(screen.getByRole('button', { name: 'Keep Red' }));
     expect(onCellsChange).not.toHaveBeenCalled();
     await user.dblClick(cell('Red'));
-    await user.click(screen.getByRole('button', { name: 'Blue for Colour' }));
+    await user.click(screen.getByRole('button', { name: 'Blue for Color' }));
     expect(onCellsChange).toHaveBeenCalledWith([
-      { row: fruit[0], columnId: 'colour', value: 'Blue' },
+      { row: fruit[0], columnId: 'color', value: 'Blue' },
     ]);
     expect(cell('Blue')).toBeInTheDocument();
   });
@@ -241,11 +241,11 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(cell('30')).toHaveFocus();
     await user.dblClick(cell('Red'));
-    expect(screen.queryByRole('textbox', { name: 'Apple colour' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Apple color' })).not.toBeInTheDocument();
     rerender(<Fruits onCellsChange={onCellsChange} />);
     await user.dblClick(cell('Red'));
     rerender(<Fruits onCellsChange={onCellsChange} disabledKeys={['apple']} />);
-    expect(screen.queryByRole('button', { name: 'Blue for Colour' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Blue for Color' })).not.toBeInTheDocument();
     expect(onCellsChange).not.toHaveBeenCalled();
   });
 
@@ -368,8 +368,8 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     await user.keyboard('{Enter}');
     expect(onCellsChange).toHaveBeenCalledWith([{ row: fruit[0], columnId: 'weight', value: 45 }]);
     await user.dblClick(cell('Red'));
-    pressComposingKeys(screen.getByRole('textbox', { name: 'Apple colour' }));
-    expect(screen.getByRole('textbox', { name: 'Apple colour' })).toBeInTheDocument();
+    pressComposingKeys(screen.getByRole('textbox', { name: 'Apple color' }));
+    expect(screen.getByRole('textbox', { name: 'Apple color' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });

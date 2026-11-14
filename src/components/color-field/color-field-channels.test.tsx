@@ -118,7 +118,7 @@ describe('ColorField formats and channels', () => {
     await user.clear(alpha);
     await user.type(alpha, '100{Enter}');
     await user.keyboard('{Escape}');
-    // Closed on an opaque colour, the picker offers the colour alone again.
+    // Closed on an opaque color, the picker offers the color alone again.
     expect(trigger()).toHaveAccessibleName('Stroke #FF0000');
     dialog = await openPicker(user);
     expect(within(dialog).queryByRole('slider', { name: 'Alpha' })).not.toBeInTheDocument();
@@ -131,7 +131,7 @@ describe('ColorField formats and channels', () => {
     ['hsl', 'hsla(210, 50%, 40%, 0.8)', 'hsla(210, 50%, 40%, 0.8)'],
     ['hsb', 'hsba(210, 67%, 60%, 0.8)', 'hsba(210, 67%, 60%, 0.8)'],
   ] as const)(
-    'UIC-COLOR-FIELD-3.1 offers opacity for a %s colour shown with alpha',
+    'UIC-COLOR-FIELD-3.1 offers opacity for a %s color shown with alpha',
     async (format, value, shown) => {
       const user = userEvent.setup();
       const onChange = vi.fn();
@@ -154,7 +154,7 @@ describe('ColorField formats and channels', () => {
     },
   );
 
-  it('UIC-COLOR-FIELD-3.1 offers opacity once a typed colour turns translucent', async () => {
+  it('UIC-COLOR-FIELD-3.1 offers opacity once a typed color turns translucent', async () => {
     const user = userEvent.setup();
     render(<ColorField label="Tint" allowsTyping defaultValue="#336699" />);
     const entry = screen.getByRole('textbox', { name: 'Tint' });

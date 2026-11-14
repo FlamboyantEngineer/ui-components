@@ -89,7 +89,7 @@ describe('condition tree', () => {
           ],
         },
         { type: 'group', id: 'empty', combinator: 'or', rules: [] },
-        { type: 'rule', id: 'unknown', field: 'colour', operator: 'equals', value: 'red' },
+        { type: 'rule', id: 'unknown', field: 'color', operator: 'equals', value: 'red' },
       ],
     };
     const options = {
@@ -135,7 +135,7 @@ describe('condition tree', () => {
           rules: [
             { type: 'rule', id: 'h', field: 'genre', operator: 'any-of', value: ['history'] },
             { type: 'rule', id: 'blank', field: 'title', operator: 'contains', value: '' },
-            { type: 'rule', id: 'unknown', field: 'colour', operator: 'equals', value: 'red' },
+            { type: 'rule', id: 'unknown', field: 'color', operator: 'equals', value: 'red' },
           ],
         },
       ],

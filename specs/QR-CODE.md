@@ -1,6 +1,6 @@
 # QR Code
 
-`QrCode` draws text, usually a URL, as a QR code: an SVG image of the symbol's dark modules inside a light quiet zone, named for assistive technology. The symbol comes from `encodeQr`, a pure encoder in the library (byte mode, versions 1 to 40, Reed–Solomon error correction and masking) that a host can also call to draw symbols its own way. The code never writes a colour: unstyled, the modules are black on the page's ground, and the host stylesheet colours the modules and the ground behind them.
+`QrCode` draws text, usually a URL, as a QR code: an SVG image of the symbol's dark modules inside a light quiet zone, named for assistive technology. The symbol comes from `encodeQr`, a pure encoder in the library (byte mode, versions 1 to 40, Reed–Solomon error correction and masking) that a host can also call to draw symbols its own way. The code never writes a color: unstyled, the modules are black on the page's ground, and the host stylesheet colors the modules and the ground behind them.
 
 ## UIC-QR-CODE-1 - Encoder
 
@@ -20,7 +20,7 @@ Verification: `src/components/qr-code/qr-reed-solomon.test.ts`, `src/components/
 
 ### UIC-QR-CODE-1.3 - Patterns, placement and mask
 
-The encoder shall draw the finder patterns with their separators, the timing patterns, the alignment patterns, the dark module, the format information (level and mask with their BCH code, in both copies) and, from version 7, the version information; place the codeword bits in two-module columns from the lower right corner, alternately upward and downward, skipping function modules; and apply the one of the eight masks whose symbol scores the lowest penalty (runs of five or more modules of one colour, 2 × 2 blocks of one colour, finder-like patterns with the quiet zone counted as light, and the dark share away from one half), the first mask winning a tie. The result matches a reference encoder module for module.
+The encoder shall draw the finder patterns with their separators, the timing patterns, the alignment patterns, the dark module, the format information (level and mask with their BCH code, in both copies) and, from version 7, the version information; place the codeword bits in two-module columns from the lower right corner, alternately upward and downward, skipping function modules; and apply the one of the eight masks whose symbol scores the lowest penalty (runs of five or more modules of one color, 2 × 2 blocks of one color, finder-like patterns with the quiet zone counted as light, and the dark share away from one half), the first mask winning a tie. The result matches a reference encoder module for module.
 
 Implementation: `src/components/qr-code/encode-qr.ts`, `src/components/qr-code/qr-matrix.ts`, `src/components/qr-code/qr-penalty.ts`
 Verification: `src/components/qr-code/encode-qr.test.ts`

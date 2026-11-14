@@ -13,13 +13,13 @@ import { LabOutput } from './lab-output.js';
 
 const column: CSSProperties = { width: 380 };
 
-const colours = [
+const colors = [
   { id: 'red', label: 'Red' },
   { id: 'green', label: 'Green' },
   { id: 'blue', label: 'Blue' },
 ];
 
-/** Neutral schema fields: a name, an exact quantity, a start date and a colour list. */
+/** Neutral schema fields: a name, an exact quantity, a start date and a color list. */
 const samples: Readonly<Record<ConstraintEditorKind, { title: string; set: ConstraintSet }>> = {
   text: {
     title: 'Display name',
@@ -30,7 +30,7 @@ const samples: Readonly<Record<ConstraintEditorKind, { title: string; set: Const
     set: { required: false, minimum: '0', maximum: '9007199254740993.5', default: '1' },
   },
   date: { title: 'Start date', set: { minimum: '2026-01-01', maximum: '2026-12-31' } },
-  options: { title: 'Colours', set: { default: 'red', minCount: 1, maxCount: 2 } },
+  options: { title: 'Colors', set: { default: 'red', minCount: 1, maxCount: 2 } },
 };
 
 /** The host's own number type: hexadecimal, which decimal text would order wrongly. */
@@ -71,7 +71,7 @@ function SchemaDemo({ kind }: { kind: ConstraintEditorKind }) {
         kind={kind}
         aria-label={`${sample.title} constraints`}
         value={set}
-        options={colours}
+        options={colors}
         onChange={(next, found) => {
           setSet(next);
           setIssues(found);
@@ -119,7 +119,7 @@ mountLab(
               kind={kind as ConstraintEditorKind}
               aria-label={`${kind} ${state}`}
               defaultValue={samples[kind as ConstraintEditorKind].set}
-              options={colours}
+              options={colors}
               isReadOnly={state === 'read-only'}
               isDisabled={state === 'disabled'}
             />

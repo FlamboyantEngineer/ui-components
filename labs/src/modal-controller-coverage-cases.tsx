@@ -16,41 +16,41 @@ import { LabOutput } from './lab-output.js';
 
 const controller = createModalController();
 
-const firstColours = ['Teal', 'Plum'] as const;
-const moreColours = ['Teal', 'Plum', 'Amber', 'Olive'] as const;
+const firstColors = ['Teal', 'Plum'] as const;
+const moreColors = ['Teal', 'Plum', 'Amber', 'Olive'] as const;
 
-/** A host composition drawn by `render`: a colour picker that answers with a typed result. */
-function ColourPicker({
+/** A host composition drawn by `render`: a color picker that answers with a typed result. */
+function ColorPicker({
   isOpen,
   onOpenChange,
   close,
   handle,
-  colours,
-}: ModalEntryRenderProps<string> & { colours: readonly string[] }) {
+  colors,
+}: ModalEntryRenderProps<string> & { colors: readonly string[] }) {
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={`Pick a colour (${String(colours.length)} shown)`}
+      title={`Pick a color (${String(colors.length)} shown)`}
       data-lab-modal="render"
     >
       <p>Entry {handle.id}, drawn by its own render function.</p>
-      {colours.map((colour) => (
-        <Button key={colour} size="sm" onPress={() => close(colour)}>
-          {colour}
+      {colors.map((color) => (
+        <Button key={color} size="sm" onPress={() => close(color)}>
+          {color}
         </Button>
       ))}{' '}
-      {colours.length < moreColours.length ? (
+      {colors.length < moreColors.length ? (
         <Button
           size="sm"
           variant="secondary"
           onPress={() =>
             handle.update({
-              render: (props) => <ColourPicker {...props} colours={moreColours} />,
+              render: (props) => <ColorPicker {...props} colors={moreColors} />,
             })
           }
         >
-          Show more colours
+          Show more colors
         </Button>
       ) : null}
     </Modal>
@@ -75,17 +75,17 @@ function RenderEntry() {
         size="sm"
         onPress={async () => {
           const handle = controller.open<string>({
-            render: (props) => <ColourPicker {...props} colours={firstColours} />,
+            render: (props) => <ColorPicker {...props} colors={firstColors} />,
           });
-          const [colour, place] = await Promise.all([
+          const [color, place] = await Promise.all([
             handle.result,
             onPageAfterClose(handle, 'render'),
           ]);
-          setResult(colour ?? 'dismissed');
+          setResult(color ?? 'dismissed');
           setLeaving((list) => [...list, `render entry: ${place}`]);
         }}
       >
-        Pick a colour
+        Pick a color
       </Button>{' '}
       <Button
         size="sm"
@@ -104,7 +104,7 @@ function RenderEntry() {
       >
         Open a content entry
       </Button>
-      <LabOutput name="Picked colour">{result}</LabOutput>
+      <LabOutput name="Picked color">{result}</LabOutput>
       <LabOutput name="After closing">{leaving.join(', ') || 'none'}</LabOutput>
       <LabOutput name="Content exits">{exits}</LabOutput>
     </div>
@@ -170,7 +170,7 @@ export function ModalControllerCoverageSections() {
     <>
       <LabSection
         title="Drawn by render"
-        description="open({ render }) draws a host composition with isOpen, onOpenChange, close and handle: pick a colour to close it with a typed result, or Show more colours to replace its renderer through handle.update. A render entry leaves the page as soon as it closes; a content entry stays until its Modal ends its exit, counted by onExitComplete."
+        description="open({ render }) draws a host composition with isOpen, onOpenChange, close and handle: pick a color to close it with a typed result, or Show more colors to replace its renderer through handle.update. A render entry leaves the page as soon as it closes; a content entry stays until its Modal ends its exit, counted by onExitComplete."
       >
         <RenderEntry />
       </LabSection>

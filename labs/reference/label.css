@@ -1,6 +1,6 @@
-/* Icon Label */
+/* Label */
 
-.ui-icon-label {
+.ui-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -8,30 +8,30 @@
   max-width: 100%;
 }
 
-.ui-icon-label[data-size='sm'] {
+.ui-label[data-size='sm'] {
   gap: 4px;
 }
 
-.ui-icon-label[data-size='lg'] {
+.ui-label[data-size='lg'] {
   gap: 12px;
 }
 
-.ui-icon-label[data-grow] {
+.ui-label[data-grow] {
   display: flex;
   flex: 1 1 auto;
 }
 
-.ui-icon-label[data-truncate] .ui-icon-label__label {
+.ui-label[data-truncate] .ui-label__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ui-icon-label__icon {
+.ui-label__icon {
   flex: none;
 }
 
-.ui-icon-label__label {
+.ui-label__label {
   min-width: 0;
 }
 
@@ -39,14 +39,14 @@
  * A collapsible label is its own container: it takes the room it is given, 12rem where nothing
  * constrains it, and hides its text, kept for assistive technology, when that room is under 8rem.
  */
-.ui-icon-label[data-collapsible] {
-  container: ui-icon-label / inline-size;
+.ui-label[data-collapsible] {
+  container: ui-label / inline-size;
   display: flex;
   contain-intrinsic-inline-size: 12rem;
 }
 
-@container ui-icon-label (width < 8rem) {
-  .ui-icon-label[data-collapsible] .ui-icon-label__label {
+@container ui-label (width < 8rem) {
+  .ui-label[data-collapsible] .ui-label__label {
     position: absolute;
     width: 1px;
     height: 1px;

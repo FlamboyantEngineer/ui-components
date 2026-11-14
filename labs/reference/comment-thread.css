@@ -185,7 +185,7 @@
   box-decoration-break: clone;
 }
 
-/* Activity rows after the comments: a quiet line per row, an error in the danger colour. */
+/* Activity rows after the comments: a quiet line per row, an error in the danger color. */
 .ui-comment-thread__activity {
   display: grid;
   gap: 4px;

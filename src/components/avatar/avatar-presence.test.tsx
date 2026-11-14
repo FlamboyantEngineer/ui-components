@@ -33,7 +33,7 @@ describe('Avatar', () => {
     expect(container.querySelector('.ui-avatar__indicator')).toBeNull();
   });
 
-  it('UIC-AVATAR-11.1 passes picture, initials and colour to the avatar', () => {
+  it('UIC-AVATAR-11.1 passes picture, initials and color to the avatar', () => {
     const { container, rerender } = render(
       <Avatar name="Jon Berg" src="/jon.png" colorIndex={4} />,
     );

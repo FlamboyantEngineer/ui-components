@@ -29,7 +29,7 @@ interface ColorFieldPanelProps {
   onFormatChange: (format: ColorFieldFormat) => void;
   /** Adds the alpha slider and input, and the hex input's visible `#`. */
   showsAlpha: boolean;
-  /** Preset colours, offered as swatches. */
+  /** Preset colors, offered as swatches. */
   swatches: readonly string[];
   /** Draws the eye dropper where the browser has one. */
   allowsEyeDropper: boolean;
@@ -37,7 +37,7 @@ interface ColorFieldPanelProps {
   hueControl: ColorFieldHueControl;
 }
 
-/** How a colour field's picker edits the hue: a straight slider or a ring around a centre. */
+/** How a color field's picker edits the hue: a straight slider or a ring around a centre. */
 export type ColorFieldHueControl = 'slider' | 'wheel';
 
 /** The hue wheel's outer radius and ring width in pixels: geometry the wheel's thumb follows. */
@@ -86,7 +86,7 @@ function HueWheel() {
 /**
  * The picker popover: the format choice, a saturation and brightness area, the hue slider or wheel (and the
  * alpha slider while it offers opacity), the format's inputs, the eye dropper, the preset
- * swatches and Clear, which closes the picker once the colour is gone.
+ * swatches and Clear, which closes the picker once the color is gone.
  */
 export function ColorFieldPanel({
   label,
@@ -129,7 +129,7 @@ export function ColorFieldPanel({
               {swatches.length > 0 ? (
                 <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
                   {swatches.map((swatch, index) => (
-                    // Swatches may repeat a colour: each place is its own option.
+                    // Swatches may repeat a color: each place is its own option.
                     <ColorSwatchPickerItem key={`${index} ${swatch}`} color={swatch} />
                   ))}
                 </ColorSwatchPicker>

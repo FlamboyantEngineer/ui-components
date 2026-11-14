@@ -19,18 +19,18 @@ const food: Food[] = [
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   weight: number;
 }
 
 const fruit: Fruit[] = [
-  { id: 'banana', name: 'Banana', colour: 'Yellow', weight: 120 },
-  { id: 'apple', name: 'Apple', colour: 'Red', weight: 30 },
+  { id: 'banana', name: 'Banana', color: 'Yellow', weight: 120 },
+  { id: 'apple', name: 'Apple', color: 'Red', weight: 30 },
 ];
 
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name' },
-  { id: 'colour', header: 'Colour' },
+  { id: 'color', header: 'Color' },
   { id: 'weight', header: 'Weight', align: 'end' },
 ];
 
@@ -52,7 +52,7 @@ describe('testing collections', () => {
   it('UIC-TESTING-2.6 finds a table cell by row and column names', () => {
     render(<Table aria-label="Fruit" rows={fruit} columns={columns} />);
     const table = screen.getByRole('grid', { name: 'Fruit' });
-    expect(getTableCell(table, 'Apple', 'Colour')).toHaveTextContent('Red');
+    expect(getTableCell(table, 'Apple', 'Color')).toHaveTextContent('Red');
     expect(getTableCell(table, 'Banana', /^Weight/)).toHaveTextContent('120');
     expect(getTableCell(table, 'Banana', 'Name')).toHaveAttribute('role', 'rowheader');
   });
@@ -63,7 +63,7 @@ describe('testing collections', () => {
         <thead>
           <tr>
             <th scope="col">Name</th>
-            <th scope="col">Colour</th>
+            <th scope="col">Color</th>
             <th scope="col">Weight</th>
           </tr>
         </thead>
@@ -76,7 +76,7 @@ describe('testing collections', () => {
       </table>,
     );
     const table = screen.getByRole('table', { name: 'Native fruit' });
-    expect(getTableCell(table, 'Apple', 'Colour')).toHaveTextContent('Red');
+    expect(getTableCell(table, 'Apple', 'Color')).toHaveTextContent('Red');
     expect(getTableCell(table, 'Apple', 'Name')).toBe(screen.getByRole('rowheader'));
     expect(() => getTableCell(table, 'Apple', 'Weight')).toThrow(
       'No cell in row Apple under Weight.',

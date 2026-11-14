@@ -5,23 +5,23 @@ import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
 import { Table, type TableProps } from './table.js';
 
-interface Colour {
+interface Color {
   id: string;
   name: string;
   hex: string;
 }
 
-const colours: Colour[] = [
+const colors: Color[] = [
   { id: 'red', name: 'Red', hex: '#f00' },
   { id: 'blue', name: 'Blue', hex: '#00f' },
 ];
 
-function renderColours(storage: UiStorage, props: Partial<TableProps<Colour>> = {}) {
+function renderColors(storage: UiStorage, props: Partial<TableProps<Color>> = {}) {
   return render(
     <UiProvider storage={storage}>
       <Table
-        aria-label="Colours"
-        rows={colours}
+        aria-label="Colors"
+        rows={colors}
         columns={[
           {
             id: 'name',
@@ -58,7 +58,7 @@ async function resizeName(keys: string) {
 describe('Table column widths', { timeout: 15_000 }, () => {
   it('UIC-TABLE-4.2 resizes by keyboard and reports the widths once at the end', async () => {
     const onColumnWidthsChange = vi.fn();
-    renderColours(createMemoryStorage(), { onColumnWidthsChange });
+    renderColors(createMemoryStorage(), { onColumnWidthsChange });
     await resizeName('{ArrowRight}');
     expect(tracks()).toBe('44px 130px minmax(75px, 1fr)');
     expect(onColumnWidthsChange).toHaveBeenCalledTimes(1);
@@ -66,14 +66,14 @@ describe('Table column widths', { timeout: 15_000 }, () => {
   });
 
   it('UIC-TABLE-4.2 keeps a keyboard resize inside the column bounds', async () => {
-    renderColours(createMemoryStorage());
+    renderColors(createMemoryStorage());
     await resizeName('{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}');
     expect(tracks()).toBe('44px 150px minmax(75px, 1fr)');
   });
 
   it('UIC-TABLE-4.2 resizes to a value assistive technology sets on the slider and reports it once', () => {
     const onColumnWidthsChange = vi.fn();
-    renderColours(createMemoryStorage(), { onColumnWidthsChange });
+    renderColors(createMemoryStorage(), { onColumnWidthsChange });
     const slider = screen.getByRole('slider', { name: /^Resize Name/ });
     // eslint-disable-next-line testing-library/prefer-user-event -- a touch screen reader sets the value without key events, which user-event cannot do
     fireEvent.change(slider, { target: { value: '140' } });
@@ -87,24 +87,24 @@ describe('Table column widths', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-4.3 persists resized widths under the key and restores them on mount', async () => {
     const storage = createMemoryStorage();
-    const view = renderColours(storage, { persistKey: 'colours.widths' });
+    const view = renderColors(storage, { persistKey: 'colors.widths' });
     await resizeName('{ArrowLeft}');
-    expect(JSON.parse(storage.getItem('colours.widths') ?? '{}')).toMatchObject({ name: 110 });
+    expect(JSON.parse(storage.getItem('colors.widths') ?? '{}')).toMatchObject({ name: 110 });
     view.unmount();
-    renderColours(storage, { persistKey: 'colours.widths' });
+    renderColors(storage, { persistKey: 'colors.widths' });
     expect(tracks()).toBe('44px 110px minmax(75px, 1fr)');
   });
 
   it('UIC-TABLE-4.3 stores only the widths the reader set, so a later declared width shows', async () => {
     const storage = createMemoryStorage();
     const onColumnWidthsChange = vi.fn();
-    const view = renderColours(storage, { persistKey: 'colours.widths', onColumnWidthsChange });
+    const view = renderColors(storage, { persistKey: 'colors.widths', onColumnWidthsChange });
     await resizeName('{ArrowLeft}');
-    expect(JSON.parse(storage.getItem('colours.widths') ?? '{}')).toEqual({ name: 110 });
+    expect(JSON.parse(storage.getItem('colors.widths') ?? '{}')).toEqual({ name: 110 });
     expect(onColumnWidthsChange).toHaveBeenCalledWith({ name: 110, hex: '1fr' });
     view.unmount();
-    renderColours(storage, {
-      persistKey: 'colours.widths',
+    renderColors(storage, {
+      persistKey: 'colors.widths',
       columns: [
         { id: 'name', header: 'Name', width: 120, allowsResizing: true },
         { id: 'hex', header: 'Hex', width: 90 },
@@ -115,11 +115,11 @@ describe('Table column widths', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-4.3 ignores unusable stored widths', () => {
     const storage = createMemoryStorage();
-    storage.setItem('colours.widths', JSON.stringify({ name: 'wide', hex: 0, other: 90 }));
-    renderColours(storage, { persistKey: 'colours.widths' });
+    storage.setItem('colors.widths', JSON.stringify({ name: 'wide', hex: 0, other: 90 }));
+    renderColors(storage, { persistKey: 'colors.widths' });
     expect(tracks()).toBe('44px 120px minmax(75px, 1fr)');
     storage.setItem('broken', '{not json');
-    renderColours(storage, { persistKey: 'broken' });
+    renderColors(storage, { persistKey: 'broken' });
     expect(tracks(1)).toBe('44px 120px minmax(75px, 1fr)');
   });
 });

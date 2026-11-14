@@ -35,7 +35,7 @@
 }
 
 /*
- * Keyboard focus draws the editing control's own focus frame (a focus-coloured border and a thin
+ * Keyboard focus draws the editing control's own focus frame (a focus-colored border and a thin
  * ring), so the frame keeps its size between editing and the read state focus returns to on Enter.
  */
 .ui-inline-edit__read[data-focus-visible] {

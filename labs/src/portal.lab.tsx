@@ -20,7 +20,7 @@ const card: CSSProperties = {
   color: 'CanvasText',
 };
 
-const colours = ['Teal', 'Plum', 'Amber'] as const;
+const colors = ['Teal', 'Plum', 'Amber'] as const;
 
 const topLayerOf = { default: undefined, on: true, off: false } as const;
 
@@ -150,15 +150,15 @@ function BodyNotice() {
   );
 }
 
-function ColourDialog() {
+function ColorDialog() {
   const [listOpen, setListOpen] = useState(false);
   const [chosen, setChosen] = useState<string>('none');
   const toggle = useRef<HTMLButtonElement>(null);
   return (
     <ModalTrigger>
-      <Button>Choose a colour</Button>
+      <Button>Choose a color</Button>
       <Modal
-        title="Colour"
+        title="Color"
         size="sm"
         isDismissable
         cancelAction={null}
@@ -166,12 +166,12 @@ function ColourDialog() {
       >
         <p data-lab-chosen="">Chosen: {chosen}</p>
         <button ref={toggle} type="button" onClick={() => setListOpen((value) => !value)}>
-          {listOpen ? 'Hide colours' : 'Show colours'}
+          {listOpen ? 'Hide colors' : 'Show colors'}
         </button>
         {listOpen ? (
-          <Portal layer="dropdown" data-lab-colours="">
+          <Portal layer="dropdown" data-lab-colors="">
             <ul
-              aria-label="Colours"
+              aria-label="Colors"
               style={{
                 ...card,
                 position: 'fixed',
@@ -182,17 +182,17 @@ function ColourDialog() {
                 listStyle: 'none',
               }}
             >
-              {colours.map((colour) => (
-                <li key={colour}>
+              {colors.map((color) => (
+                <li key={color}>
                   <button
                     type="button"
                     onClick={() => {
-                      setChosen(colour);
+                      setChosen(color);
                       setListOpen(false);
                       toggle.current?.focus();
                     }}
                   >
-                    {colour}
+                    {color}
                   </button>
                 </li>
               ))}
@@ -495,9 +495,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="With a modal"
-      description="A dropdown-layer portal opened from a modal stays usable: choosing a colour keeps the dialog open."
+      description="A dropdown-layer portal opened from a modal stays usable: choosing a color keeps the dialog open."
     >
-      <ColourDialog />
+      <ColorDialog />
     </LabSection>
     <LabSection
       title="Host helpers"

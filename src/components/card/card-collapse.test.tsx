@@ -500,7 +500,7 @@ describe('Card adaptive presentation', () => {
     expect(screen.getAllByRole('textbox', { name: 'Draft' })).toHaveLength(1);
   });
 
-  it('UIC-CARD-7.2 shows the abbreviation and moves the rest, the toggle too, when minimal', async () => {
+  it('UIC-CARD-7.2 shows the abbreviation and leading content and moves the rest, the toggle too, when minimal', async () => {
     const user = userEvent.setup();
     const { container } = render(
       <RecordCard presentationSteps={steps} abbreviation="OR" isExpanded={false} />,
@@ -513,12 +513,12 @@ describe('Card adaptive presentation', () => {
     );
     expect(screen.getByRole('heading', { name: 'Orchard row' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Orchard row' })).toBe(cardRoot());
-    expect(container.querySelector('.ui-card__leading')).toHaveAttribute('hidden');
+    expect(container.querySelector('.ui-card__leading')).not.toHaveAttribute('hidden');
+    expect(screen.getByText('Active')).toBeVisible();
     expect(container.querySelector('.ui-card__summary')).toHaveAttribute('hidden');
     expect(screen.queryByRole('button', { name: 'Details Orchard row' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show more Orchard row' }));
     expect(screen.getByText('Harvest 40% done')).toBeVisible();
-    expect(screen.getByText('Active')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Details Orchard row' })).toHaveAttribute(
       'aria-expanded',
       'false',

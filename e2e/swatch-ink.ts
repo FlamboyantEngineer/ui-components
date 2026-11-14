@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** The distinct colours drawn inside a swatch's border, read from a screenshot of it. */
+/** The distinct colors drawn inside a swatch's border, read from a screenshot of it. */
 export async function swatchInkCount(page: Page, swatch: Locator): Promise<number> {
   const png = (await swatch.screenshot({ animations: 'disabled' })).toString('base64');
   return page.evaluate(async (data) => {

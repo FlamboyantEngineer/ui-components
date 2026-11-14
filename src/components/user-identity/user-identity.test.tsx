@@ -83,7 +83,7 @@ describe('UserIdentity', () => {
     }
   });
 
-  it('UIC-USER-IDENTITY-1.4 passes picture, initials, colour and kind to the avatar', () => {
+  it('UIC-USER-IDENTITY-1.4 passes picture, initials, color and kind to the avatar', () => {
     const { container, rerender } = render(
       <UserIdentity name="Lena Ortiz" src="/lena.png" colorKey="user-7" colorCount={50} />,
     );

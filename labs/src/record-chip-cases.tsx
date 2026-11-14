@@ -137,7 +137,7 @@ export function RecordChipCases() {
         </LabSection>
         <LabSection
           title="Chip: Sizes and states"
-          description="Every size with a status badge or a status light as the state node."
+          description="Every size with a status badge or a status light as the state node, each given the chip's size: the frame, gaps, type and state grow and shrink with the label."
         >
           <StateMatrix
             axes={{ state: ['badge', 'status light'], size: sizes }}
@@ -151,9 +151,13 @@ export function RecordChipCases() {
                 type="Test"
                 state={
                   state === 'badge' ? (
-                    <Badge tone="warning">In review</Badge>
+                    <Badge tone="warning" size={size}>
+                      In review
+                    </Badge>
                   ) : (
-                    <StatusLight tone="danger">Failed</StatusLight>
+                    <StatusLight tone="danger" size={size}>
+                      Failed
+                    </StatusLight>
                   )
                 }
               />

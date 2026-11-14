@@ -95,12 +95,12 @@
 @import url('reference/hover-card.css') layer(ui-reference);
 @import url('reference/html-markup.css') layer(ui-reference);
 @import url('reference/icon.css') layer(ui-reference);
-@import url('reference/icon-label.css') layer(ui-reference);
 @import url('reference/image.css') layer(ui-reference);
 @import url('reference/inline-edit.css') layer(ui-reference);
 @import url('reference/inline-error.css') layer(ui-reference);
 @import url('reference/inline-text-diff.css') layer(ui-reference);
 @import url('reference/inline-text-field.css') layer(ui-reference);
+@import url('reference/label.css') layer(ui-reference);
 @import url('reference/layout.css') layer(ui-reference);
 @import url('reference/link.css') layer(ui-reference);
 @import url('reference/list-filter.css') layer(ui-reference);

@@ -534,15 +534,15 @@ describe('ListRow', () => {
     expect(pressed).toEqual(['press', 'middle']);
   });
 
-  it('UIC-LIST-ROW-2.4 draws title, meta, an icon through IconLabel and decorative leading media', () => {
+  it('UIC-LIST-ROW-2.4 draws title, meta, an icon through Label and decorative leading media', () => {
     const { container, rerender } = render(
       <ListRow title="Report.pdf" meta="4 KB" icon={InfoGlyph} />,
     );
-    const label = container.querySelector('.ui-icon-label') as HTMLElement;
+    const label = container.querySelector('.ui-label') as HTMLElement;
     expect(label).toHaveAttribute('data-grow', 'true');
-    expect(
-      label.querySelector('.ui-icon-label__label .ui-list-row-content__title'),
-    ).toHaveTextContent('Report.pdf');
+    expect(label.querySelector('.ui-label__label .ui-list-row-content__title')).toHaveTextContent(
+      'Report.pdf',
+    );
     expect(container.querySelector('.ui-list-row-content__meta')).toHaveTextContent('4 KB');
     expectHooksMatchSpec(container, 'LIST-ROW');
 
@@ -552,7 +552,7 @@ describe('ListRow', () => {
     rerender(<ListRow title="Report.pdf" meta={null} leading={<svg aria-label="Media" />} />);
     expect(screen.getByLabelText('Media').parentElement).toHaveAttribute('aria-hidden', 'true');
     expect(container.querySelector('.ui-list-row-content__meta')).toBeNull();
-    expect(container.querySelector('.ui-icon-label')).toBeNull();
+    expect(container.querySelector('.ui-label')).toBeNull();
   });
 
   it('UIC-LIST-ROW-2.5 marks the current row with aria-current and data-current', () => {

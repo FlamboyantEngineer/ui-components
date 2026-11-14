@@ -163,7 +163,7 @@ test.describe('Form lab', () => {
     await page.keyboard.type('20');
     await expect(blocking).toHaveText('nothing');
     await save.click();
-    await expect(saved).toHaveText('{"title":"Spring fair","day":"2026-04-20","colour":"#336699"}');
+    await expect(saved).toHaveText('{"title":"Spring fair","day":"2026-04-20","color":"#336699"}');
 
     await stay
       .getByRole('spinbutton', { name: /^month/ })
@@ -178,15 +178,15 @@ test.describe('Form lab', () => {
     await page.keyboard.type('05042026');
     await expect(blocking).toHaveText('nothing');
 
-    const colour = record.getByRole('textbox', { name: 'Badge colour' });
-    await colour.fill('not a colour');
-    await expect(blocking).toHaveText('Badge colour (invalid)');
+    const color = record.getByRole('textbox', { name: 'Badge color' });
+    await color.fill('not a color');
+    await expect(blocking).toHaveText('Badge color (invalid)');
     await expect(record.locator('.ui-color-field')).toHaveAttribute('data-validation', 'valid');
-    // Leaving the input puts back text that does not read, so the save takes the colour shown.
+    // Leaving the input puts back text that does not read, so the save takes the color shown.
     await save.click();
-    await expect(colour).toHaveValue('#336699');
+    await expect(color).toHaveValue('#336699');
     await expect(blocking).toHaveText('nothing');
-    await expect(saved).toContainText('"colour":"#336699"');
+    await expect(saved).toContainText('"color":"#336699"');
 
     await day.getByRole('spinbutton', { name: /^year/ }).click();
     for (let count = 0; count < 4; count += 1) await page.keyboard.press('Backspace');
@@ -196,7 +196,7 @@ test.describe('Form lab', () => {
     await expect
       .poll(() => day.evaluate((element) => element.contains(document.activeElement)))
       .toBe(true);
-    await expect(saved).toContainText('"colour":"#336699"');
+    await expect(saved).toContainText('"color":"#336699"');
     await lab.expectAccessible();
   });
 
@@ -215,7 +215,7 @@ test.describe('Form lab', () => {
     await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('cancelled');
     await expect(shelf).toHaveValue('Baking');
     await expect(jars).toHaveValue('7');
-    // A date typed in part and a colour's typed text are drafts the building blocks clear on the
+    // A date typed in part and a color's typed text are drafts the building blocks clear on the
     // form's own reset listener; a cancelled reset keeps them.
     const bestBefore = page.locator('[data-lab-field="best-before"]');
     const month = bestBefore.getByRole('spinbutton', { name: /month/i });
@@ -223,7 +223,7 @@ test.describe('Form lab', () => {
     await page.keyboard.type('4');
     await form.getByRole('button', { name: 'Reset' }).click();
     await expect(month).toHaveText('4');
-    const lid = form.getByRole('textbox', { name: 'Lid colour' });
+    const lid = form.getByRole('textbox', { name: 'Lid color' });
     await lid.fill('#12');
     await form.evaluate((node) => (node as HTMLFormElement).reset());
     await expect(page.locator('[data-lab-output="Reset"]')).toHaveText('cancelled');

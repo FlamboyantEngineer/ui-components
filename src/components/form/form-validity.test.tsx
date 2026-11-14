@@ -86,7 +86,7 @@ describe('Form validity', () => {
     await waitFor(() => expect(verdict()).toHaveTextContent('Stay: invalid'));
   });
 
-  it('UIC-FORM-2.1 UIC-COLOR-FIELD-4.4 blocks on typed text that is no colour until it is fixed or put back', async () => {
+  it('UIC-FORM-2.1 UIC-COLOR-FIELD-4.4 blocks on typed text that is no color until it is fixed or put back', async () => {
     const user = userEvent.setup();
     const { verdict } = renderForm(
       <ColorField label="Accent" allowsTyping defaultValue="#336699" />,

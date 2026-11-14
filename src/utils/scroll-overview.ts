@@ -5,7 +5,7 @@
 export interface ScrollOverviewMarker {
   top: number;
   height: number;
-  /** Any CSS colour the caller chooses, for example a custom property of the host stylesheet. */
+  /** Any CSS color the caller chooses, for example a custom property of the host stylesheet. */
   color: string;
   /** Where markers share an overview pixel, the lowest priority wins. */
   priority: number;
@@ -17,7 +17,7 @@ export interface ScrollOverviewLayer {
   markers: readonly ScrollOverviewMarker[];
 }
 
-/** A run of overview pixels with one colour. */
+/** A run of overview pixels with one color. */
 export interface ScrollOverviewSegment {
   top: number;
   height: number;
@@ -36,7 +36,7 @@ function appendPixel(segments: ScrollOverviewSegment[], top: number, color: stri
 /**
  * Projects markers onto `viewportHeight` overview pixels for content `scrollHeight` pixels tall.
  * Every marker covers at least two pixels, the lowest priority wins a shared pixel whatever the
- * marker order, and adjacent pixels of one colour merge into one segment. Content that fits the
+ * marker order, and adjacent pixels of one color merge into one segment. Content that fits the
  * viewport has no overview.
  */
 export function resolveScrollOverviewSegments(
@@ -101,7 +101,7 @@ export function resolveLayeredScrollOverviewSegments(
   const segments: ScrollOverviewSegment[] = [];
   pixels.forEach((colors, pixel) => {
     if (colors.length === 0) return;
-    // Mixing the n-th colour in at 1/n keeps every layer's share equal.
+    // Mixing the n-th color in at 1/n keeps every layer's share equal.
     const color = colors.reduce((mixed, next, index) =>
       index === 0 ? next : `color-mix(in srgb, ${mixed} ${(index / (index + 1)) * 100}%, ${next})`,
     );
@@ -111,7 +111,7 @@ export function resolveLayeredScrollOverviewSegments(
 }
 
 /**
- * A vertical `linear-gradient` painting each segment in its colour over a transparent ground, for a
+ * A vertical `linear-gradient` painting each segment in its color over a transparent ground, for a
  * box `height` pixels tall, or `none` when there is nothing to paint. Opacity is left to the
  * stylesheet.
  */

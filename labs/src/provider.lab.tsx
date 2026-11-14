@@ -82,7 +82,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   copyIdentifier: ['REQ-12'],
   stateTrigger: ['Status', 'In review'],
   transitionTo: ['Approved'],
-  groupHeading: ['Colour', 'Red'],
+  groupHeading: ['Color', 'Red'],
   cardCount: [6, 5],
   moveColumn: ['In progress'],
   previousRange: ['month'],

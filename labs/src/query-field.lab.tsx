@@ -112,7 +112,7 @@ const grammar: QueryGrammar = {
 const samples = {
   empty: '',
   valid: 'genre:history AND NOT reader:jon',
-  invalid: 'colour:red OR pages:',
+  invalid: 'color:red OR pages:',
   'read-only': 'genre:travel OR genre:cooking',
   disabled: 'title:"salt road"',
 } as const;

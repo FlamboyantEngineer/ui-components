@@ -3,15 +3,19 @@
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSize, type IconSource, toIconProps } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
-export interface IconLabelProps
+export interface LabelProps
   extends BaseProps, RefProps<HTMLSpanElement>, Pick<NativeProps<'span'>, 'hidden'> {
-  /** An imported icon component or rendered element. The icon is decorative; the label names it. */
-  icon: IconSource;
-  /** The text after the icon. */
-  label: ReactNode;
+  /**
+   * An imported icon component or rendered element before the label. The icon is decorative: the
+   * label names it, or, without one, the host does. Omit it for text alone.
+   */
+  icon?: IconSource;
+  /** The text, after the icon. Omit it for an icon alone, which the host names. */
+  label?: ReactNode;
   /** Icon box size; the host stylesheet sizes the gap from it. Defaults to `md`. */
   size?: Exclude<IconSize, 'inherit'> | undefined;
   /**
@@ -29,10 +33,13 @@ export interface IconLabelProps
   live?: 'polite' | 'assertive' | undefined;
 }
 
-const hooks = createHooks('icon-label', ['icon', 'label']);
+const hooks = createHooks('label', ['icon', 'label']);
 
-/** A decorative leading icon followed by text, inheriting the host's typography. */
-export function IconLabel({
+/**
+ * Text with an optional decorative leading icon, or an icon alone, inheriting the host's typography.
+ * An empty icon or label draws no slot.
+ */
+export function Label({
   icon,
   label,
   size = 'md',
@@ -43,15 +50,17 @@ export function IconLabel({
   live,
   className,
   ...rest
-}: IconLabelProps) {
+}: LabelProps) {
   return (
     <span
       {...rest}
       {...hooks.root({ className, data: { size, truncate, grow, collapsible } })}
       aria-live={live}
     >
-      <Icon {...toIconProps(icon)} size={size} className={hooks.slotClass('icon')} />
-      {truncate ? (
+      {icon ? (
+        <Icon {...toIconProps(icon)} size={size} className={hooks.slotClass('icon')} />
+      ) : null}
+      {isEmptyNode(label) ? null : truncate ? (
         <TruncationTooltip className={hooks.slotClass('label')} hidden={hideLabel}>
           {label}
         </TruncationTooltip>

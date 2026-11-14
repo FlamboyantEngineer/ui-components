@@ -85,6 +85,40 @@
   vertical-align: middle;
 }
 
+/* The chip's frame, gaps and details follow its size, as its label does. */
+.ui-record-label[data-mode='chip'][data-size='sm'] {
+  gap: 4px;
+  padding: 1px 2px 1px 6px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-record-label[data-mode='chip'][data-size='lg'] {
+  gap: 8px;
+  padding: 4px 6px 4px 10px;
+  font-size: var(--ref-font-size-lg);
+}
+
+.ui-record-label[data-mode='chip'][data-size='sm'] .ui-record-label__header {
+  gap: 4px;
+}
+
+.ui-record-label[data-mode='chip'][data-size='lg'] .ui-record-label__header {
+  gap: 8px;
+}
+
+.ui-record-label[data-mode='chip'][data-size='sm']
+  :is(.ui-record-label__type, .ui-record-label__version) {
+  font-size: var(--ref-font-size-2xs);
+}
+
+.ui-record-label[data-mode='chip'][data-size='lg'] .ui-record-label__type {
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-record-label[data-mode='chip'][data-size='lg'] .ui-record-label__version {
+  font-size: var(--ref-font-size-sm);
+}
+
 .ui-record-label[data-mode='chip'][data-layout='stacked'] {
   flex-direction: column;
   align-items: stretch;

@@ -38,7 +38,7 @@ export interface ScatterChartProps
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
-  /** The series, in the order of their colour slots. */
+  /** The series, in the order of their color slots. */
   series: readonly ScatterChartSeries[];
   /** Names the x axis in each observation's name, its tooltip and the table. Defaults to `x`. */
   xLabel?: string | undefined;

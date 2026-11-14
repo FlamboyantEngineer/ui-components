@@ -1,6 +1,6 @@
 # Badge
 
-`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the colour family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)); `variant="dot"` makes it a marker with no text. A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge. A set of values the reader moves through or removes is a [Tag Group](TAG-GROUP.md).
+`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the color family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)); `variant="dot"` makes it a marker with no text. A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge. A set of values the reader moves through or removes is a [Tag Group](TAG-GROUP.md).
 
 ## UIC-BADGE-1 - Contract
 
@@ -59,6 +59,13 @@ A label badge's `aria-label` shall be read in place of its visible label. An ann
 
 Implementation: `src/components/badge/badge.tsx`
 Verification: `src/components/badge/badge.test.tsx`
+
+### UIC-BADGE-1.9 - Collapsing to a dot
+
+A label badge whose room, with the badge drawn whole, is narrower than its label's first character (a whole grapheme) followed by an ellipsis, measured in the label's font, shall publish `data-collapsed`, and the reference sheet draws it as a small round chip (8, 10 or 12 pixels by size) with the variant's own fill and border, a status badge's in its tone, with its label visually hidden and still read by assistive technology. It measures again when its label changes, when fonts load and when it, its host or the host's container resizes, and drops `data-collapsed` once the room fits the letter and the ellipsis. This is the default; `collapse="none"` keeps the cut label. While the label is cut, by an ellipsis or by collapsing, resting the pointer on it shows the whole label in a [Truncation Tooltip](TRUNCATION-TOOLTIP.md). Count and dot badges never collapse.
+
+Implementation: `src/components/badge/badge.tsx`, `src/components/badge/badge-collapse.ts`, `labs/reference/badge.css`
+Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ## UIC-BADGE-2 - Status
 
@@ -125,3 +132,4 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 | `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner.                         |
 | `data-bare`                  | state     | `true`                                            | No pill.                                                                    |
 | `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                                              |
+| `data-collapsed`             | state     | `true`                                            | A label badge too narrow for a letter and an ellipsis, drawn as a dot.      |

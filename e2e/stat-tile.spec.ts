@@ -20,7 +20,7 @@ test.describe('Stat Tile lab', () => {
       'goal=none delta=rise': ['up', 'neutral', '+12'],
       'goal=increase delta=flat': ['flat', 'neutral', '0'],
     } as const;
-    const colours = new Map<string, string>();
+    const colors = new Map<string, string>();
     for (const [cell, [trend, tone, text]] of Object.entries(judged)) {
       await expect(tile(cell)).toHaveAttribute('data-trend', trend);
       await expect(tile(cell)).toHaveAttribute('data-tone', tone);
@@ -30,9 +30,9 @@ test.describe('Stat Tile lab', () => {
         'data-glyph',
         `trend-${trend}`,
       );
-      colours.set(tone, await delta.evaluate((node) => getComputedStyle(node).color));
+      colors.set(tone, await delta.evaluate((node) => getComputedStyle(node).color));
     }
-    expect(new Set(colours.values()).size).toBe(3);
+    expect(new Set(colors.values()).size).toBe(3);
     await lab.expectAccessible();
   });
 

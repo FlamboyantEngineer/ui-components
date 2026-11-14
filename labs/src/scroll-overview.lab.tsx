@@ -113,7 +113,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Layers"
-      description="Two named layers of content ranges; where they meet, their colours mix. Without onMarkerActivate a press on the track pages toward it, as a native scrollbar does."
+      description="Two named layers of content ranges; where they meet, their colors mix. Without onMarkerActivate a press on the track pages toward it, as a native scrollbar does."
     >
       <LayeredRanges />
     </LabSection>

@@ -281,7 +281,7 @@ test.describe('Emoji Picker lab', () => {
     await expect(drawn.getByRole('row', { name: 'flag: Japan' })).toHaveText('JP');
   });
 
-  test('UIC-EMOJI-PICKER-5.1 keeps the emoji a colour emoji font draws', async ({ page, lab }) => {
+  test('UIC-EMOJI-PICKER-5.1 keeps the emoji a color emoji font draws', async ({ page, lab }) => {
     const picker = await openPopover(page, lab);
     await picker.getByRole('tab', { name: 'Flags' }).click();
     await expect(picker.getByRole('row', { name: 'flag: Japan' })).toBeVisible();

@@ -8,7 +8,7 @@ import { Button as AriaButton } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
 import type { IconSource } from '../icon/icon.js';
-import { IconLabel } from '../icon-label/icon-label.js';
+import { Label } from '../label/label.js';
 import {
   RowRegistryContext,
   type RowTabStop,
@@ -41,7 +41,7 @@ export interface ListRowContentProps
   title: ReactNode;
   /** Secondary text below the title, such as a `MetaLine`. */
   meta?: ReactNode;
-  /** An imported icon component or rendered element beside the title and meta, drawn through `IconLabel`. */
+  /** An imported icon component or rendered element beside the title and meta, drawn through `Label`. */
   icon?: IconSource;
   /** Decorative leading media (an avatar, a thumbnail). Ignored when `icon` is set. */
   leading?: ReactNode;
@@ -222,7 +222,7 @@ export function ListRowContent({
           {text}
         </>
       ) : (
-        <IconLabel icon={icon} label={text} grow />
+        <Label icon={icon} label={text} grow />
       )}
     </span>
   );
