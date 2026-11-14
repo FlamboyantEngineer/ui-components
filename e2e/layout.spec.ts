@@ -297,7 +297,7 @@ test.describe('Layout lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws no fades unless asked, and the chevrons on the canvas without them', async ({
+  test('UIC-LAYOUT-3.8 UIC-SCROLL-STRIP-2.1 draws no fades when opted out, and the chevrons on the canvas without them', async ({
     page,
     lab,
   }) => {

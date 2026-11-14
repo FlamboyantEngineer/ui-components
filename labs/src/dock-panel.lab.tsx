@@ -489,8 +489,8 @@ function Overflowing({
     >
       <p>
         {showEdgeFades
-          ? 'Wheel over the tabs to scroll them; with showEdgeFades, fades mark the edges that hide tabs, and the selected tab shows clear of them when the panel expands or resizes.'
-          : 'Edge fades are opt-in: without showEdgeFades the strip draws none, and the selected tab only needs to be inside the strip.'}
+          ? 'Wheel over the tabs to scroll them; fades mark the edges that hide tabs, and the selected tab shows clear of them when the panel expands or resizes.'
+          : 'With showEdgeFades={false} the strip draws no fades, and the selected tab only needs to be inside the strip.'}
       </p>
     </Frame>
   );
@@ -621,7 +621,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overflow"
-      description="Seven panes with long labels. Expanded, the tabs scroll freely by wheel or swipe, without snapping or steppers; collapsed, the short rail keeps its labels and scrolls natively. The first two pass showEdgeFades; the last draws no fades, as by default."
+      description="Seven panes with long labels. Expanded, the tabs scroll freely by wheel or swipe, without snapping or steppers; collapsed, the short rail keeps its labels and scrolls natively. The first two draw edge fades, as by default; the last passes showEdgeFades={false}."
     >
       <Overflowing state="expanded" />
       <Overflowing state="collapsed" />

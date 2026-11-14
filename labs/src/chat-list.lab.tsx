@@ -67,7 +67,7 @@ function HistoryDemo() {
   const [removed, setRemoved] = useState<readonly string[]>([]);
   const [added, setAdded] = useState<readonly ChatConversation[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>('history-1');
-  const [showEdgeFades, setShowEdgeFades] = useState(false);
+  const [showEdgeFades, setShowEdgeFades] = useState(true);
   const all = [...added, ...historyConversations].filter((item) => !removed.includes(item.id));
   const remove = (id: string) => setRemoved((list) => [...list, id]);
   const start = () => {
@@ -309,7 +309,7 @@ mountLab(
   <>
     <LabSection
       title="History"
-      description="An assistant's chat history: a New chat row, the Recents heading and titles only. The first conversation's assistant is working: its dots pulse and its name says Working. Every row but the second carries the history mark, read in its name as Earlier versions. A row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) renames or deletes it. The Load more row adds ten conversations at a time. Fading the last rows is opt-in: with Fade the last rows on (showEdgeFades), the last two rows fade above the Load more row while more can load."
+      description="An assistant's chat history: a New chat row, the Recents heading and titles only. The first conversation's assistant is working: its dots pulse and its name says Working. Every row but the second carries the history mark, read in its name as Earlier versions. A row's context menu (a secondary click, a long touch, the Context Menu key or Shift+F10) renames or deletes it. The Load more row adds ten conversations at a time. While more can load, the last two rows fade above the Load more row by default; turn Fade the last rows off to pass showEdgeFades={false}."
     >
       <HistoryDemo />
     </LabSection>

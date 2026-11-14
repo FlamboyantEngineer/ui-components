@@ -15,7 +15,7 @@ const lines = Array.from(
 const matched = [4, 17, 31];
 
 /**
- * A plain scrolling list with an overview beside it: each matched step is an element marker, and
+ * A plain scrolling list with the overview as its scrollbar: each matched step is an element marker, and
  * Mark step 25 adds one; pressing a marker scrolls to its step.
  */
 function MarkedSteps() {
@@ -54,7 +54,8 @@ function MarkedSteps() {
           tabIndex={0}
           role="region"
           aria-label="Steps"
-          style={{ height: 240, overflow: 'auto', flex: 1 }}
+          // The overview is this list's scrollbar, so the native one is hidden.
+          style={{ height: 240, overflow: 'auto', flex: 1, scrollbarWidth: 'none' }}
         >
           {lines.map((line, index) => (
             <p key={line} ref={register(index)} data-marked={marked.includes(index) || undefined}>
@@ -87,7 +88,7 @@ function LayeredRanges() {
         tabIndex={0}
         role="region"
         aria-label="Layered steps"
-        style={{ height: 160, overflow: 'auto', flex: 1 }}
+        style={{ height: 160, overflow: 'auto', flex: 1, scrollbarWidth: 'none' }}
       >
         <div style={{ height: 1600 }}>A tall page of steps.</div>
       </div>
@@ -106,13 +107,13 @@ mountLab(
   <>
     <LabSection
       title="Element markers"
-      description="Each matched step is marked by its element; the marks follow the steps when one is added. Press a mark to scroll to its step."
+      description="The overview is the list's scrollbar: its thumb lies over the marks and follows the scroll, and dragging it scrolls the list, whose native scrollbar is hidden. Each matched step is marked by its element; the marks follow the steps when one is added. Press a mark to scroll to its step, or the track elsewhere to page toward it."
     >
       <MarkedSteps />
     </LabSection>
     <LabSection
       title="Layers"
-      description="Two named layers of content ranges; where they meet, their colors mix. Without onMarkerActivate the strip lets presses through."
+      description="Two named layers of content ranges; where they meet, their colors mix. Without onMarkerActivate a press on the track pages toward it, as a native scrollbar does."
     >
       <LayeredRanges />
     </LabSection>

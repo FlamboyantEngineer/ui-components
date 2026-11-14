@@ -53,7 +53,7 @@ export interface ChatListProps
    * are no more. A returned promise keeps the row pending until it settles.
    */
   onLoadMore?: LoadMoreProps['onLoadMore'];
-  /** Asks the stylesheet to fade the last rows toward the Load more row (`data-edge-fades`). Defaults to `false`. */
+  /** Asks the stylesheet to fade the last rows toward the Load more row (`data-edge-fades`). Defaults to `true`; `false` draws none. */
   showEdgeFades?: boolean | undefined;
   /** Receives a failed `onLoadMore`, a throw or a rejected promise; without it the error is rethrown. */
   onLoadMoreError?: LoadMoreProps['onError'];
@@ -263,7 +263,7 @@ export function ChatList({
   heading,
   onLoadMore,
   onLoadMoreError,
-  showEdgeFades = false,
+  showEdgeFades = true,
   isLoading = false,
   isLoadingMore: isHostLoadingMore = false,
   loadingRows = 'titles',

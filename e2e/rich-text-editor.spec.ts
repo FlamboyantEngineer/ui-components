@@ -577,28 +577,35 @@ test.describe('Rich Text Editor lab', () => {
     }
   });
 
-  test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select and applies one', async ({
+  test('UIC-RICH-TEXT-EDITOR-6.2 previews block types in the select at one size and applies one', async ({
     page,
     lab,
   }) => {
     await lab.open('rich-text-editor');
-    const box = content(page, 'preview-labels');
+    const box = content(page, 'form');
     await box.locator('p').first().click();
-    const trigger = editor(page, 'preview-labels').getByRole('button', { name: /Block type/ });
+    const trigger = editor(page, 'form').getByRole('button', { name: /Block type/ });
     await expect(trigger).toHaveText(/Text/);
     await trigger.click();
     const list = page.getByRole('listbox');
-    const size = (name: string) =>
-      list
-        .getByRole('option', { name })
-        .locator('.ui-format-toolbar__block-preview')
-        .evaluate((node) => parseFloat(getComputedStyle(node).fontSize));
-    const text = await size('Text');
-    expect(await size('Heading 1')).toBeGreaterThan(await size('Heading 2'));
-    expect(await size('Heading 3')).toBeGreaterThan(text);
-    await expect(
-      list.getByRole('option', { name: 'Code block' }).locator('.ui-format-toolbar__block-preview'),
-    ).toHaveCSS('font-family', /mono/i);
+    const preview = (name: string) =>
+      list.getByRole('option', { name }).locator('.ui-format-toolbar__block-preview');
+    const style = (name: string) =>
+      preview(name).evaluate((node) => {
+        const computed = getComputedStyle(node);
+        return { size: computed.fontSize, weight: Number(computed.fontWeight) };
+      });
+    const text = await style('Text');
+    for (const name of ['Heading 1', 'Heading 2', 'Heading 3', 'Code block']) {
+      expect((await style(name)).size).toBe(text.size);
+    }
+    expect((await style('Heading 1')).weight).toBeGreaterThan(text.weight);
+    await expect(preview('Code block')).toHaveCSS('font-family', /mono/i);
+    await expect(list.locator('.ui-glyph')).toHaveCount(0);
+    const heights = await list
+      .getByRole('option')
+      .evaluateAll((options) => options.map((option) => option.getBoundingClientRect().height));
+    expect(new Set(heights).size).toBe(1);
     await expect(list.getByRole('option', { name: 'Text' })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -608,6 +615,17 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box.locator('h1')).toHaveCount(1);
     await expect(trigger).toHaveText(/Heading 1/);
     await expect(trigger.locator('.ui-format-toolbar__block-preview')).toHaveCount(0);
+
+    await content(page, 'plain-labels').locator('p').first().click();
+    await editor(page, 'plain-labels')
+      .getByRole('button', { name: /Block type/ })
+      .click();
+    await expect(
+      page.getByRole('listbox').locator('.ui-format-toolbar__block-preview'),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('listbox').getByRole('option', { name: 'Heading 1' }).locator('.ui-glyph'),
+    ).toHaveCount(1);
   });
 
   test('UIC-RICH-TEXT-EDITOR-2.3 ticks tasks', async ({ page, lab }) => {

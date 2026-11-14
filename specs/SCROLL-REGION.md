@@ -149,7 +149,7 @@ Verification: `src/components/scroll-region/use-scroll-spy.test.tsx`, `src/utils
 
 ### UIC-SCROLL-REGION-4.6 - Edge fades
 
-Edge fades shall be opt-in. With `showEdgeFades`, a region that scrolls on some axis publishes `data-edge-fades` on the root, and the reference stylesheet then fades each edge the content reaches past as deep as its distance, up to 8 pixels, mirrored right to left. By default, and with `axis="none"`, the root carries no `data-edge-fades` and the reference stylesheet draws no fade; the edge distances and states ([UIC-SCROLL-REGION-4.1](#uic-scroll-region-41---edge-distances)) are published either way.
+Edge fades shall be on by default. A region that scrolls on some axis publishes `data-edge-fades` on the root, and the reference stylesheet then fades each edge the content reaches past as deep as its distance, up to 8 pixels, mirrored right to left. With `showEdgeFades={false}`, and with `axis="none"`, the root carries no `data-edge-fades` and the reference stylesheet draws no fade; the edge distances and states ([UIC-SCROLL-REGION-4.1](#uic-scroll-region-41---edge-distances)) are published either way.
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`

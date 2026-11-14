@@ -54,10 +54,10 @@ describe('DockPanel structure', () => {
     });
   });
 
-  it('UIC-DOCK-PANEL-2.5 draws strip fades only with showEdgeFades', () => {
-    const { container, rerender } = render(<Panel />);
+  it('UIC-DOCK-PANEL-2.5 draws strip fades by default, and none with showEdgeFades={false}', () => {
+    const { container, rerender } = render(<Panel showEdgeFades={false} />);
     expect(container.querySelector('.ui-dock-panel__fade')).toBeNull();
-    rerender(<Panel showEdgeFades />);
+    rerender(<Panel />);
     expect(container.querySelectorAll('.ui-dock-panel__fade')).toHaveLength(2);
   });
 
