@@ -89,7 +89,7 @@ Verification: `src/components/button/button.test.tsx`, `src/components/button/bu
 
 ### UIC-BUTTON-2.2 - Pending
 
-`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot, named by `pendingLabel` or the provider's `loading` string, keep its icons and label in place so the button keeps its size (a stylesheet draws the spinner over them), and never submit a form. React Aria names a pending button that has `aria-label` by that label followed by the busy indicator's name ("More Loading"). The change to and from pending is announced while the button has focus.
+`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot, named by `pendingLabel` or the provider's `loading` string, keep its icons and label in place so the button keeps its size (a stylesheet draws the spinner over them; the reference sheet draws it at the size of the button's icons, 12 pixels on an `xs` button up to 20 on an `lg` one), and never submit a form. React Aria names a pending button that has `aria-label` by that label followed by the busy indicator's name ("More Loading"). The change to and from pending is announced while the button has focus.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`

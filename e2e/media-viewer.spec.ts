@@ -445,4 +445,25 @@ test.describe('Media Viewer lab', () => {
     await expect(value).toHaveText('100%');
     await lab.expectAccessible('.ui-media-viewer');
   });
+
+  test('UIC-MEDIA-VIEWER-2.2 opens the gallery thumbnails and turns an image with the arrow-turn glyph', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    const gallery = page.locator('[data-lab-gallery="photos"]');
+    for (const opener of await gallery.getByRole('button').all()) {
+      const button = await opener.boundingBox();
+      const image = await opener.locator('img').boundingBox();
+      expect(image && button && image.y + image.height).toBeLessThanOrEqual(
+        (button?.y ?? 0) + (button?.height ?? 0),
+      );
+    }
+    await gallery.getByRole('button').first().click();
+    const rotate = page.getByRole('dialog').locator('.ui-media-viewer__rotate');
+    await expect(rotate.locator('[data-glyph="rotate"] path')).toHaveAttribute(
+      'd',
+      'm16.49 12 3.75-3.751m0 0-3.75-3.75m3.75 3.75H3.74V19.5',
+    );
+  });
 });

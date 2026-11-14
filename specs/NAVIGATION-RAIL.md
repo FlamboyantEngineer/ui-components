@@ -6,14 +6,14 @@
 
 ### UIC-NAVIGATION-RAIL-1.1 - Structure
 
-`NavigationRail` shall render a `ui-navigation-rail` `<nav>` named by `aria-label` or `aria-labelledby`, holding in order a `ui-navigation-rail__header` holding `header` and the collapse button, a `ui-navigation-rail__body` holding the children (`NavigationRailSection`s), a `ui-navigation-rail__footer` holding `footer` when it has content, and the resize handle when the rail is resizable and expanded.
+`NavigationRail` shall render a `ui-navigation-rail` `<nav>` named by `aria-label` or `aria-labelledby`, holding in order a `ui-navigation-rail__header` holding the collapse button and `header`, a `ui-navigation-rail__body` holding the children (`NavigationRailSection`s), a `ui-navigation-rail__footer` holding `footer` when it has content, and the resize handle when the rail is resizable and expanded.
 
 Implementation: `src/components/navigation-rail/navigation-rail.tsx`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`
 
 ### UIC-NAVIGATION-RAIL-1.2 - Collapse
 
-The header shall end with a small [Icon Button](BUTTON.md) in the `ui-navigation-rail__toggle` slot, labelled and hinted by the provider's `toggleNavigation` string (`Collapse navigation`, `Expand navigation` while collapsed), with `aria-expanded` and `aria-controls` naming the body. Its glyph points to the inline start while the rail is expanded (`chevron-double-left` left to right) and to the inline end while collapsed. Pressing it collapses or expands the rail, published as `data-collapsed`; `isCollapsed`, `defaultCollapsed` (false) and `onCollapsedChange` make the state controllable. The button keeps focus across the change.
+The header shall start with a small [Icon Button](BUTTON.md) in the `ui-navigation-rail__toggle` slot, labelled and hinted by the provider's `toggleNavigation` string (`Collapse navigation`, `Expand navigation` while collapsed), with `aria-expanded` and `aria-controls` naming the body. Its glyph points to the inline start while the rail is expanded (`chevron-double-left` left to right) and to the inline end while collapsed. Pressing it collapses or expands the rail, published as `data-collapsed`; `isCollapsed`, `defaultCollapsed` (false) and `onCollapsedChange` make the state controllable. The button keeps focus across the change. In the reference sheet the button stays in the same place in both states, 16 pixels from the inline start edge and centred on the 56-pixel collapsed rail, so it can be pressed again without moving the pointer.
 
 Implementation: `src/components/navigation-rail/navigation-rail.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`, `src/core/strings/common.ts`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`

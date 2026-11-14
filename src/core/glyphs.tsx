@@ -8,7 +8,6 @@ import {
   arrowLeftPath,
   arrowLongRightPath,
   arrowPathPath,
-  arrowPathRoundedSquarePath,
   arrowRightPath,
   arrowsDiagonalPath,
   arrowsPointingInPath,
@@ -18,6 +17,7 @@ import {
   arrowTopRightOnSquarePath,
   arrowTrendingDownPath,
   arrowTrendingUpPath,
+  arrowTurnUpRightPath,
   arrowUpPath,
   arrowUpTrayPath,
   arrowUturnLeftPath,
@@ -191,7 +191,7 @@ export const SendGlyph = /* @__PURE__ */ createGlyph('send', paperAirplanePath);
 export const AttachGlyph = /* @__PURE__ */ createGlyph('attach', paperClipPath);
 export const StopGlyph = /* @__PURE__ */ createGlyph('stop', stopPath);
 export const DownloadGlyph = /* @__PURE__ */ createGlyph('download', arrowDownTrayPath);
-export const RotateGlyph = /* @__PURE__ */ createGlyph('rotate', arrowPathRoundedSquarePath);
+export const RotateGlyph = /* @__PURE__ */ createGlyph('rotate', arrowTurnUpRightPath);
 export const FileGlyph = /* @__PURE__ */ createGlyph('file', fileBadgePath);
 export const ImageGlyph = /* @__PURE__ */ createGlyph('image', photoPath);
 export const VideoGlyph = /* @__PURE__ */ createGlyph('video', filmPath);

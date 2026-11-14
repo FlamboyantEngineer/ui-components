@@ -17,6 +17,10 @@
   /* The selection indicator must not make the row scroll vertically, which would take the wheel. */
   overflow: auto hidden;
 }
+/* A row of tabs keeps its height in a tabs box whose height is set: its panel, not the row, gives way. */
+.ui-tabs:not([data-orientation='vertical']) > :is(.ui-tabs__list, .ui-tabs__bar) {
+  flex-shrink: 0;
+}
 .ui-tabs__list[data-orientation='vertical'] {
   flex-direction: column;
   flex: none;

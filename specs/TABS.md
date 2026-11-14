@@ -29,7 +29,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.4 - Orientation and sizes
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the tabs out in a row or a column and publish `data-orientation` on the root and the list. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet draws 30, 36 and 42 pixel tabs.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the tabs out in a row or a column and publish `data-orientation` on the root and the list. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet draws 30, 36 and 42 pixel tabs. In the reference sheet a row of tabs never shrinks below its tabs' height inside a tabs root whose height is set; the panel gives way instead.
 
 Implementation: `src/components/tabs/tabs.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`

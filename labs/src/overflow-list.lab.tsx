@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
@@ -23,11 +23,42 @@ function Frame({ width, children }: { width: number; children: ReactNode }) {
   );
 }
 
+// Lab-only frame: a transform does not change layout, so the frame takes the scaled size of its
+// content to keep it inside the table cell.
+function ScaledFrame({ scale, children }: { scale: number; children: ReactNode }) {
+  const content = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<{ width: number; height: number }>();
+  useLayoutEffect(() => {
+    const element = content.current;
+    if (!element) return;
+    const measure = () => setSize({ width: element.offsetWidth, height: element.offsetHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div
+      data-lab-frame="scaled"
+      style={size ? { width: size.width * scale, height: size.height * scale } : undefined}
+    >
+      <div
+        ref={content}
+        style={{ width: 'max-content', transform: `scale(${scale})`, transformOrigin: '0 0' }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function MoreFruit({ hidden }: { hidden: readonly string[] }) {
+  // When nothing is left in the row the menu holds every item, so it names them instead of "more".
+  const label = hidden.length === fruit.length ? 'Fruit' : `${hidden.length} more`;
   return (
     <DropdownMenu
       size="sm"
-      label={`${hidden.length} more`}
+      label={label}
       aria-label="More fruit"
       items={hidden.map((name) => ({ id: name, label: name }))}
     />
@@ -132,11 +163,11 @@ mountLab(
       <StateMatrix
         axes={{ scale: ['0.75', '1.5'] }}
         render={({ scale }) => (
-          <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+          <ScaledFrame scale={Number(scale)}>
             <Frame width={widths.medium}>
               <FruitRow collapseFrom="end" />
             </Frame>
-          </div>
+          </ScaledFrame>
         )}
       />
     </LabSection>

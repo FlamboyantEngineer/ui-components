@@ -129,3 +129,21 @@ test('UIC-FILTER-BAR-1.2 UIC-FILTER-BAR-3.2 reports which conditions are complet
   await expect(demo.locator('[data-lab-output="books"]')).not.toHaveText(requireDefined(before));
   await lab.expectAccessible('[data-lab-demo="completeness"]');
 });
+
+test('UIC-FILTER-BAR-2.2 fits the two fields of a range filter inside its editor', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('filter-bar');
+  await matrixCell(page, { type: 'number', state: 'complete' })
+    .getByRole('button', { name: /^Pages/ })
+    .click();
+  const dialog = page.getByRole('dialog', { name: 'Pages' });
+  const body = await dialog.locator('.ui-popover__body').boundingBox();
+  const from = await dialog.locator('.ui-number-field').first().boundingBox();
+  const to = await dialog.locator('.ui-number-field').last().boundingBox();
+  expect(body && from && to).toBeTruthy();
+  if (!body || !from || !to) return;
+  expect(to.x).toBeGreaterThan(from.x + from.width);
+  expect(to.x + to.width).toBeLessThanOrEqual(body.x + body.width);
+});
