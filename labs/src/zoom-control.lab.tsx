@@ -60,6 +60,25 @@ function Requested() {
   );
 }
 
+/** The wheel over a control steps its zoom; the second control opts out and the page scrolls. */
+function WheelZoom({ name, zoomsOnWheel }: { name: string; zoomsOnWheel: boolean }) {
+  const [zoom, setZoom] = useState(100);
+  return (
+    <div data-lab-case={name}>
+      <ZoomControl
+        aria-label={zoomsOnWheel ? 'Wheel zoom' : 'Zoom without the wheel'}
+        levels={levels}
+        value={zoom}
+        onChange={setZoom}
+        zoomsOnWheel={zoomsOnWheel}
+      />
+      <p>
+        Applied zoom: <output data-lab-output="zoom">{zoom}</output>
+      </p>
+    </div>
+  );
+}
+
 /** A fit-to-width zoom between levels, one stop from the first or the last level. */
 function NearEndpoint({ start, name }: { start: number; name: string }) {
   const [zoom, setZoom] = useState(start);
@@ -176,6 +195,13 @@ mountLab(
       description="A controlled control: unordered levels, duplicates and non-finite entries share one normalised ladder. The buttons, slider (arrow keys, Home, End) and reset request levels that the lab applies."
     >
       <Requested />
+    </LabSection>
+    <LabSection
+      title="Mouse wheel"
+      description="Hover a control and roll the wheel: up zooms in one level per notch, down zooms out, and the page stays still. The second control passes zoomsOnWheel={false}, so the wheel scrolls the page."
+    >
+      <WheelZoom name="wheel" zoomsOnWheel />
+      <WheelZoom name="no-wheel" zoomsOnWheel={false} />
     </LabSection>
     <LabSection
       title="Between levels near an endpoint"

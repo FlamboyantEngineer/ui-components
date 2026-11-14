@@ -6,6 +6,7 @@ import { getOwnerWindow } from '../../utils/owner-window.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { scrollStripTo } from '../../utils/use-scroll-strip-overflow.js';
 import { Tab, TabList } from '../tabs/tabs.js';
 import { DockPanelFades, useDockPanelFades } from './dock-panel-fades.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
@@ -48,7 +49,8 @@ function revealSelectedTab(list: HTMLElement, fadeSize: number) {
   else if (right > end) target = alignRight;
   const [min, max] = rtl ? [-range, 0] : [0, range];
   const next = clamp(target, min, max);
-  if (next !== position) list.scrollLeft = next;
+  // A reveal places the strip at once, whatever `scroll-behavior` the stylesheet gives it.
+  if (next !== position) scrollStripTo(list, next, 'instant');
 }
 
 /**
@@ -102,7 +104,14 @@ export function DockPanelTabList({
   listRef?: Ref<HTMLDivElement> | undefined;
 }) {
   return (
-    <TabList ref={listRef} aria-label={label} overflow="scroll" {...hooks.slot('tab-list')}>
+    <TabList
+      ref={listRef}
+      aria-label={label}
+      overflow="scroll"
+      // The panel draws its own fades around the strip.
+      showEdgeFades={false}
+      {...hooks.slot('tab-list')}
+    >
       {panes.map((pane) => (
         <Tab
           key={toKeyIdentity(pane.id)}

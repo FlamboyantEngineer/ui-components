@@ -386,4 +386,40 @@ describe('ZoomControl', () => {
     expect(trigger).toBeDisabled();
     expect(trigger).toHaveAttribute('data-size', 'lg');
   });
+
+  it('UIC-ZOOM-CONTROL-1.11 steps one level per wheel notch over the control and keeps the page still', () => {
+    const onChange = vi.fn();
+    render(<ZoomControl levels={levels} value={100} onChange={onChange} />);
+    const group = screen.getByRole('group', { name: 'Zoom' });
+    const up = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
+    slider().dispatchEvent(up);
+    expect(onChange).toHaveBeenLastCalledWith(125);
+    expect(up.defaultPrevented).toBe(true);
+    fireEvent.wheel(group, { deltaY: 100 });
+    expect(onChange).toHaveBeenLastCalledWith(75);
+    fireEvent.wheel(group, { deltaY: 20 });
+    expect(onChange).toHaveBeenCalledTimes(2);
+    fireEvent.wheel(group, { deltaY: 40 });
+    expect(onChange).toHaveBeenCalledTimes(3);
+    const pinch = new WheelEvent('wheel', { deltaY: -100, ctrlKey: true, cancelable: true });
+    group.dispatchEvent(pinch);
+    expect(pinch.defaultPrevented).toBe(false);
+    expect(onChange).toHaveBeenCalledTimes(3);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.11 leaves the wheel to the page when opted out or disabled', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <ZoomControl levels={levels} value={100} onChange={onChange} zoomsOnWheel={false} />,
+    );
+    const notch = () => {
+      const event = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
+      screen.getByRole('group', { name: 'Zoom' }).dispatchEvent(event);
+      return event;
+    };
+    expect(notch().defaultPrevented).toBe(false);
+    rerender(<ZoomControl levels={levels} value={100} onChange={onChange} isDisabled />);
+    expect(notch().defaultPrevented).toBe(false);
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

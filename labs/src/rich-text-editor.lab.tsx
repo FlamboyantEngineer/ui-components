@@ -15,7 +15,7 @@ import {
   FullEditor,
   LockedChromeEditor,
   LongDocumentEditor,
-  PreviewLabelsEditor,
+  PlainLabelsEditor,
   RequiredEditor,
   ShiftingEditor,
   shortNote,
@@ -83,10 +83,10 @@ mountLab(
     <LabSection
       title="Block type labels"
       description={
-        'FormatToolbar blockTypeLabels="preview" draws each block type in the select the way its block looks; the editor above keeps the plain labels with glyphs. Open the select: Heading 1 is largest, Code block is monospaced, and the button still names the current type in plain text.'
+        'By default FormatToolbar draws each block type in the select the way its block looks, at the menu\'s own size: headings bold, Code block monospaced, and no glyphs. This editor passes blockTypeLabels="plain" for glyphs and plain names instead; the button names the current type in plain text either way.'
       }
     >
-      <PreviewLabelsEditor />
+      <PlainLabelsEditor />
     </LabSection>
     <LabSection
       title="Block handle controls"

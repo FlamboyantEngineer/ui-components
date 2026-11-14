@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { ActionRow, type ActionRowAction } from '../action-row/action-row.js';
+import type { IconSource } from '../icon/icon.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { useFilterChange } from './use-filter-change.js';
 
@@ -12,6 +13,8 @@ export interface ListFilterOption<V extends string = string> {
   value: V;
   /** The visible text and accessible name. */
   label: string;
+  /** A decorative icon before the label, which stands for the option when the row is narrow. */
+  icon?: IconSource;
   /** Optional count, including zero when `showZero` is set. */
   count?: number | null | undefined;
   /** This option's count cap, overriding the row's `countMax`. */
@@ -40,6 +43,11 @@ export interface ListFilterProps<V extends string = string>
   countMax?: number | undefined;
   /** Refuses all filters; actions keep their own disabled state. */
   isDisabled?: boolean | undefined;
+  /**
+   * The filters show only their icons, named by their labels: `auto`, the default, while the labels
+   * do not fit the row and every option has an icon; `true` always; `false` never.
+   */
+  iconOnly?: boolean | 'auto' | undefined;
 }
 
 const hooks = createHooks('list-filter', ['row', 'filters']);
@@ -56,6 +64,7 @@ export function ListFilter<V extends string = string>({
   showZero = true,
   countMax = 99,
   isDisabled,
+  iconOnly = 'auto',
   className,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -87,6 +96,7 @@ export function ListFilter<V extends string = string>({
             countMax={countMax}
             countVariant="subtle"
             isDisabled={isDisabled}
+            iconOnly={iconOnly}
           />
         }
       />

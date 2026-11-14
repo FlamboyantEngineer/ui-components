@@ -16,6 +16,8 @@
   border-bottom: 1px solid var(--ref-border);
   /* The selection indicator must not make the row scroll vertically, which would take the wheel. */
   overflow: auto hidden;
+  /* The wheel and the scroll buttons glide the tabs along rather than jump. */
+  scroll-behavior: smooth;
 }
 .ui-tabs__list[data-orientation='vertical'] {
   flex-direction: column;
@@ -127,13 +129,47 @@
   box-shadow: var(--ref-focus-inset);
 }
 
-/* The bar holds a list with its scroll buttons, its "more" menu or its add button on one line. */
+/*
+ * The bar holds a list with its scroll buttons, edge fades, "more" menu or add button on one line.
+ * Each fade lies over its edge of the list: a negative margin of its width and the gap pulls it
+ * over the list without moving anything else.
+ */
 .ui-tabs__bar {
+  --ref-tabs-fade: 40px;
+  --ref-tabs-gap: 4px;
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: var(--ref-tabs-gap);
   min-width: 0;
   border-bottom: 1px solid var(--ref-border);
+}
+.ui-tabs__bar > :not(.ui-tabs__list, .ui-tabs__fade) {
+  align-self: center;
+}
+
+.ui-tabs__fade {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: var(--ref-tabs-fade);
+  pointer-events: none;
+}
+.ui-tabs__fade[data-edge='start'] {
+  margin-inline-end: calc(-1 * (var(--ref-tabs-fade) + var(--ref-tabs-gap)));
+  background: linear-gradient(to right, var(--ref-canvas) 30%, transparent);
+}
+.ui-tabs__fade[data-edge='end'] {
+  margin-inline-start: calc(-1 * (var(--ref-tabs-fade) + var(--ref-tabs-gap)));
+  background: linear-gradient(to left, var(--ref-canvas) 30%, transparent);
+}
+[dir='rtl'] .ui-tabs__fade[data-edge='start'] {
+  background: linear-gradient(to left, var(--ref-canvas) 30%, transparent);
+}
+[dir='rtl'] .ui-tabs__fade[data-edge='end'] {
+  background: linear-gradient(to right, var(--ref-canvas) 30%, transparent);
+}
+.ui-tabs__fade[hidden] {
+  display: none;
 }
 .ui-tabs__bar > .ui-tabs__list {
   flex: 0 1 auto;

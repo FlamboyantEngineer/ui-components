@@ -20,7 +20,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import { type TabActions, TabActionsContext, TabsSharedContext } from './tab-actions.js';
 import { TabBar } from './tab-bar.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import { useTabListLayout } from './tab-list-layout.js';
+import { resolveTabListParts, useTabListLayout } from './tab-list-layout.js';
 import {
   TabListCollection,
   TabListParts,
@@ -64,6 +64,11 @@ export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HT
    * The list takes the mouse wheel with or without them.
    */
   scrollButtons?: boolean | undefined;
+  /**
+   * Draws a decorative fade over each edge of a horizontal list that scrolls while that edge hides
+   * tabs. Defaults to `true`; `false` draws none.
+   */
+  showEdgeFades?: boolean | undefined;
   /** Makes the tabs removable: a close mark on each and Delete or Backspace on the focused one. */
   onRemove?: ((keys: Set<Key>) => void) | undefined;
   /** Ordinary content after a tab, outside selection and panel keys. Null adds nothing. */
@@ -99,28 +104,6 @@ interface ListKeyOptions {
 }
 
 type ListKeyHandlers = Pick<JSX.IntrinsicElements['div'], 'onKeyDown' | 'onKeyDownCapture'>;
-
-/**
- * Menus, the wheel and scroll buttons serve horizontal lists; a vertical list scrolls. A horizontal
- * `scroll` list is a scroll strip that takes the wheel, buttons or not.
- */
-function resolveParts({
-  orientation,
-  overflow,
-  scrollButtons,
-}: {
-  orientation: Orientation;
-  overflow: TabListOverflow;
-  scrollButtons: boolean;
-}) {
-  const horizontal = orientation === 'horizontal';
-  const isStrip = horizontal && overflow === 'scroll';
-  return {
-    isMenu: horizontal && overflow === 'menu',
-    isStrip,
-    hasButtons: isStrip && scrollButtons,
-  };
-}
 
 /** Adds the list's keys to its element, which React Aria keeps its own keyboard handling on. */
 function renderListKeys(
@@ -285,6 +268,7 @@ function useTabActions(
 export function TabList({
   overflow = 'scroll',
   scrollButtons = false,
+  showEdgeFades = true,
   onRemove,
   onAdd,
   renderAfterTab,
@@ -300,7 +284,8 @@ export function TabList({
 }: TabListProps) {
   const state = useContext(TabListStateContext);
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
-  const { isMenu, isStrip, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });
+  const shape = resolveTabListParts({ orientation, overflow, scrollButtons, showEdgeFades });
+  const { isMenu, isStrip, hasButtons, hasFades, hasEdges } = shape;
   const [listRef, setListRef] = useForwardedRef(ref);
   const { editingKey } = useContext(TabsSharedContext);
   const parts = useTabListParts(state, renderAfterTab);
@@ -331,7 +316,7 @@ export function TabList({
       label={rest}
     >
       <AriaTabList
-        {...mergeProps(rest, { onScroll: hasButtons ? scroll.syncOverflow : undefined })}
+        {...mergeProps(rest, { onScroll: hasEdges ? scroll.syncOverflow : undefined })}
         render={
           keys || parts ? renderListKeys(rest.render, keys ?? {}, Boolean(parts)) : rest.render
         }
@@ -344,9 +329,9 @@ export function TabList({
   // that adds or drops the bar keeps a rename's draft, message and focus.
   return (
     <TabActionsContext value={actions}>
-      {isMenu || hasButtons || onAdd ? (
+      {isMenu || hasEdges || onAdd ? (
         <TabBar
-          {...{ state, orientation, hasButtons, menu, onAdd }}
+          {...{ state, orientation, hasButtons, hasFades, menu, onAdd }}
           scroll={scroll}
           isMenu={menuMode}
           hasActions={Boolean(parts)}

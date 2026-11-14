@@ -97,13 +97,29 @@
   box-shadow: var(--ref-focus-inset);
 }
 
-/* With the opt-in edge fades, while more can load, the last rows fade toward the Load more row. */
+/*
+ * With the edge fades (on by default), while more can load, the last rows fade toward the Load
+ * more row: a veil of the canvas over each, so the rows keep their own colours underneath.
+ */
+.ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(-n + 2) {
+  position: relative;
+}
+
+.ui-chat-list[data-has-more][data-edge-fades]
+  .ui-chat-list__conversation:nth-last-child(-n + 2)::after {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ref-canvas) var(--ref-chat-list-veil), transparent);
+  content: '';
+  pointer-events: none;
+}
+
 .ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(2) {
-  opacity: 0.8;
+  --ref-chat-list-veil: 20%;
 }
 
 .ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(1) {
-  opacity: 0.62;
+  --ref-chat-list-veil: 38%;
 }
 
 .ui-chat-list__avatar {

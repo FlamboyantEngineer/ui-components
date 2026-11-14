@@ -161,7 +161,8 @@ test.describe('Dock Panel lab', () => {
     await expect(fades.first()).toHaveCSS('width', '26px');
     // A vertical wheel scrolls it sideways, with no snapping, and keeps the offset.
     await list.evaluate((node) => {
-      node.scrollLeft = 0;
+      // The stylesheet glides the list; the test puts it back at once.
+      node.scrollTo({ left: 0, behavior: 'instant' });
     });
     await expect(panel.locator('.ui-dock-panel__fade[data-edge="start"]')).toBeHidden();
     await list.hover();
@@ -174,7 +175,7 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.locator('.ui-tabs__scroll-button')).toHaveCount(0);
   });
 
-  test('UIC-DOCK-PANEL-2.5 draws no fades without showEdgeFades', async ({ page, lab }) => {
+  test('UIC-DOCK-PANEL-2.5 draws no fades with showEdgeFades={false}', async ({ page, lab }) => {
     await lab.open('dock-panel');
     const panel = frame(page, 'overflow-expanded-plain').locator('.ui-dock-panel');
     const list = panel.getByRole('tablist');
@@ -204,10 +205,14 @@ test.describe('Dock Panel lab', () => {
     const list = panel.getByRole('tablist');
     const selected = panel.getByRole('tab', { selected: true });
     await expect(selected).toContainText('Change history');
-    const tab = await box(selected);
-    const strip = await box(list);
-    expect(tab.x).toBeGreaterThanOrEqual(strip.x + 25);
-    expect(tab.x + tab.width).toBeLessThanOrEqual(strip.x + strip.width - 25);
+    // The strip glides to the tab (scroll-behavior: smooth), so the place is read once it settles.
+    await expect
+      .poll(async () => {
+        const tab = await box(selected);
+        const strip = await box(list);
+        return tab.x >= strip.x + 25 && tab.x + tab.width <= strip.x + strip.width - 25;
+      })
+      .toBe(true);
   });
 
   test('UIC-DOCK-PANEL-3.1 UIC-DOCK-PANEL-3.2 UIC-DOCK-PANEL-3.4 resizes the main content in the same frame and saves once', async ({

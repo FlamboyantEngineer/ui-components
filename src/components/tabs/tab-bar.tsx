@@ -21,6 +21,8 @@ interface TabBarProps {
   orientation: Orientation;
   isMenu: boolean;
   hasButtons: boolean;
+  /** Draws a fade over each edge of a scrolling list while that edge hides tabs. */
+  hasFades: boolean;
   hasActions: boolean;
   menu: TabOverflow;
   /** The edges past which the list hides tabs, and paging toward one. */
@@ -84,12 +86,13 @@ export function useTabOverflow(
   };
 }
 
-/** The parts around a list: scroll buttons, the "more" menu of hidden tabs and the add button. */
+/** The parts around a list: scroll buttons and edge fades, the "more" menu of hidden tabs and the add button. */
 export function TabBar({
   state,
   orientation,
   isMenu,
   hasButtons,
+  hasFades,
   hasActions,
   menu,
   scroll,
@@ -113,6 +116,7 @@ export function TabBar({
         edges={scroll.edges}
         onPage={scroll.pageToward}
         hasButtons={hasButtons}
+        fadeHooks={hasFades && !isMenu ? hooks : undefined}
       >
         {children}
       </ScrollStrip>

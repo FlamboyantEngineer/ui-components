@@ -35,7 +35,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Narrow panel"
-      description="Filters scroll within the row while trailing actions keep their room."
+      description="The filters have icons, so where their labels do not fit the 220px row they fold to icons, named by their labels and shown in tooltips; trailing actions keep their room. Widen the row and the labels come back."
     >
       <div data-lab-demo="narrow-filter" style={{ width: 220, maxWidth: '100%' }}>
         <ListFilterExample label="Narrow" />
