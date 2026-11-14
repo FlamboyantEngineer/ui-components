@@ -15,9 +15,11 @@ import {
 import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
 import { EmptyState } from '../../src/components/empty-state/empty-state.js';
 import { Cluster } from '../../src/components/layout/layout.js';
+import { MessageComposerMenuButton } from '../../src/components/message-composer/index.js';
 import { SparklesGlyph } from '../../src/core/glyphs.js';
 import { agents, fakeUpload, withModelNote } from './chat-agent.js';
 import { type AgentConversationSample, lisbonPhotos } from './chat-agent-app-samples.js';
+import { createAgentMenu } from './chat-agent-menu.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { createReplyHandlers } from './chat-assistant-host.js';
 import { plannerCommands } from './chat-everything-samples.js';
@@ -127,6 +129,9 @@ function Welcome({ onPick }: { onPick: (text: string) => void }) {
 /** What every conversation of the app shares: the model choice, approvals and the host's log. */
 export interface AgentAppShared {
   modelPicker: ChatModelPickerProps;
+  /** The tools the agent may use, chosen in the "+" menu. */
+  tools: readonly string[];
+  onToolsChange: (tools: readonly string[]) => void;
   choice: string;
   allowed: readonly string[];
   onAllowedChange: (allowed: readonly string[]) => void;
@@ -168,6 +173,12 @@ export function AgentConversation({ sample, isOpen, shared, onSummary }: AgentCo
       showSearch
       placeholder="Ask the trip planner, or type / for a command…"
       commands={plannerCommands}
+      composerStartControls={
+        <MessageComposerMenuButton
+          sections={createAgentMenu({ enabled: shared.tools, onChange: shared.onToolsChange })}
+        />
+      }
+      showSendOptions
       composerEndControls={<ChatModelPicker {...shared.modelPicker} />}
       toolRenderers={{ get_weather: forecastRenderer }}
       renderPart={renderLabPart}

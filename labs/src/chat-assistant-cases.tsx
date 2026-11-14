@@ -40,10 +40,19 @@ function AssistantDemo() {
   const [samples, setSamples] = useState(agentConversations);
   const [openId, setOpenId] = useState('agent-lisbon');
   const [allowed, setAllowed] = useState<readonly string[]>([]);
+  const [tools, setTools] = useState<readonly string[]>(['web', 'maps']);
   const { modelPicker, choice } = useLabModelChoice();
   const [log, record] = useCallbackLog();
   const { rows, onSummary } = useConversationRows(samples);
-  const shared = { modelPicker, choice, allowed, onAllowedChange: setAllowed, record };
+  const shared = {
+    modelPicker,
+    choice,
+    tools,
+    onToolsChange: setTools,
+    allowed,
+    onAllowedChange: setAllowed,
+    record,
+  };
   const startNew = () => {
     const id = nextLabId('agent-new');
     setSamples((current) => [{ id, title: 'New chat', messages: [] }, ...current]);
@@ -81,6 +90,8 @@ function AssistantDemo() {
         </div>
       </div>
       <p>
+        Tools: <output data-lab-output="tools">{tools.join(', ') || 'none'}</output>
+        {' · '}
         Always allowed: <output data-lab-output="allowed">{allowed.join(', ') || 'nothing'}</output>
         {' · '}
         Host callbacks: <output data-lab-output="assistant-log">{log.join(' · ') || 'none'}</output>
@@ -93,7 +104,7 @@ export function ChatAssistantCases() {
   return (
     <LabSection
       title="Assistant, live"
-      description="A full agent chat: earlier conversations with a fake trip planner in a list beside the open one, each holding what an agent writes. Two days in Lisbon has photos the reader shared, reasoning, tool calls with their sources' letters, a custom forecast, a cited table with its sources, photos the planner found and an approved booking; Packing list an answered card of questions, a finished plan and a diff; Weekend budget a file read, a command, code and terminal output; Museums on Monday a failed search tried again and a denied cancellation. Send a message for the full answer streamed through useChatController: steps with a live status line, Markdown with a table, code (Copy and Apply) and citations, then photos. Type / for the other behaviours: book (an approval awaited in the stream: Approve, Deny with a reason, Always allow), cancel (an approval answered by a new turn), ask (questions with previews), plan (a plan, a diff and a terminal block), ferry (fails once: Retry) or summarize. A reply goes on streaming while another conversation is open, and its row says it is working. New chat opens an empty conversation with starters; its first message names it. Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer. Attach files (a file named broken… fails its first upload, and one named huge… is refused before it starts), press Up in the empty composer to recall earlier prompts, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with; choosing leaves the composer at rest."
+      description="A full agent chat: earlier conversations with a fake trip planner in a list beside the open one, each holding what an agent writes. Two days in Lisbon has photos the reader shared, reasoning, tool calls with their sources' letters, a custom forecast, a cited table with its sources, photos the planner found and an approved booking; Packing list an answered card of questions, a finished plan and a diff; Weekend budget a file read, a command, code and terminal output; Museums on Monday a failed search tried again and a denied cancellation. Send a message for the full answer streamed through useChatController: steps with a live status line, Markdown with a table, code (Copy and Apply) and citations, then photos. Type / for the other behaviours: book (an approval awaited in the stream: Approve, Deny with a reason, Always allow), cancel (an approval answered by a new turn), ask (questions with previews), plan (a plan, a diff and a terminal block), ferry (fails once: Retry) or summarize. A reply goes on streaming while another conversation is open, and its row says it is working. New chat opens an empty conversation with starters; its first message names it. Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer. The + menu at the composer's start attaches files, adds a saved place, turns the agent's tools on or off, inserts a command, and holds the composer's own Sending options (steer automatically, send with Ctrl+Enter). Attach files from it (a file named broken… fails its first upload, and one named huge… is refused before it starts), press Up in the empty composer to recall earlier prompts, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with; choosing leaves the composer at rest."
     >
       <AssistantDemo />
     </LabSection>

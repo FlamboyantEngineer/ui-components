@@ -31,6 +31,12 @@ async function ask(page: Page, command: string | undefined, text: string) {
   return assistant;
 }
 
+/** Opens the "+" menu of the composer in `scope` and chooses Attach files. */
+async function attachFromMenu(page: Page, scope: Locator) {
+  await scope.getByRole('button', { name: 'Add and more' }).click();
+  await page.getByRole('menuitem', { name: /^Attach files/ }).click();
+}
+
 /** How far the transcript of `scope` is scrolled from its bottom, in pixels. */
 function distanceToBottom(scope: Locator) {
   return scope.locator('.ui-chat-transcript__log').evaluate((log) => {
@@ -414,6 +420,28 @@ test.describe('Chat lab', () => {
     await expect(assistant.locator('.ui-chat-header')).toContainText('Find a quiet beach');
   });
 
+  test("UIC-MESSAGE-COMPOSER-5.4 UIC-MESSAGE-COMPOSER-5.6 UIC-CHAT-3.14 offers the agent app's tools, commands and sending options in the + menu", async ({
+    page,
+  }) => {
+    await openChat(page, 8);
+    const assistant = section(page, 'Assistant, live');
+    const plus = assistant.getByRole('button', { name: 'Add and more' });
+    await plus.click();
+    const menu = page.getByRole('menu');
+    for (const title of ['Add', 'Tools', 'Commands', 'Sending']) {
+      await expect(menu.getByRole('group', { name: title })).toBeVisible();
+    }
+    await menu.getByRole('menuitemcheckbox', { name: /^Bookings/ }).click();
+    await expect(assistant.locator('[data-lab-output="tools"]')).toHaveText('web, maps, bookings');
+    // A toggle leaves the menu open, so the command is chosen from the same menu.
+    await expect(menu).toBeVisible();
+    await page.getByRole('menuitem', { name: /^\/plan/ }).click();
+    await expect(composer(assistant).locator('.ui-message-composer__pill')).toHaveText('/plan');
+    await page.keyboard.type('the day');
+    await page.keyboard.press('Enter');
+    await expect(lastReply(assistant)).toContainText('All set: the plan is saved');
+  });
+
   test('UIC-CHAT-3.6 sends each message with the model and effort the picker shows', async ({
     page,
   }) => {
@@ -525,7 +553,7 @@ test.describe('Chat lab', () => {
     await page.keyboard.press('ArrowUp');
     await expect(composer(assistant)).toHaveText('Yes please, for two at eight.');
     const chooser = page.waitForEvent('filechooser');
-    await assistant.getByRole('button', { name: 'Attach files' }).click();
+    await attachFromMenu(page, assistant);
     const file = { name: 'broken-map.png', mimeType: 'image/png', buffer: Buffer.from('png') };
     await (await chooser).setFiles(file);
     const files = assistant
@@ -536,7 +564,7 @@ test.describe('Chat lab', () => {
     await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toBeVisible();
 
     const refused = page.waitForEvent('filechooser');
-    await assistant.getByRole('button', { name: 'Attach files' }).click();
+    await attachFromMenu(page, assistant);
     await (
       await refused
     ).setFiles([
