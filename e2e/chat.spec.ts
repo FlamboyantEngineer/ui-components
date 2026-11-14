@@ -13,15 +13,28 @@ async function openChat(page: Page, pause?: number) {
   await waitForLab(page);
 }
 
-/** Picks what the lab's agent does with the next message, then sends `text`. */
-async function ask(page: Page, behaviour: string, text: string) {
+/**
+ * Sends `text` to the agent app's open conversation, after the slash `command` that picks what the
+ * agent does with it; without a command the agent gives its full answer.
+ */
+async function ask(page: Page, command: string | undefined, text: string) {
   const assistant = section(page, 'Assistant, live');
-  await assistant.locator('label', { hasText: behaviour }).click();
-  await expect(assistant.getByRole('radio', { name: behaviour })).toBeChecked();
   await composer(assistant).click();
+  if (command) {
+    await page.keyboard.type(`/${command}`);
+    const suggestions = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(suggestions.getByRole('option')).toHaveText([new RegExp(`^/${command}`)]);
+    await page.keyboard.press('Enter');
+  }
   await page.keyboard.type(text);
   await page.keyboard.press('Enter');
   return assistant;
+}
+
+/** Opens the "+" menu of the composer in `scope` and chooses Attach files. */
+async function attachFromMenu(page: Page, scope: Locator) {
+  await scope.getByRole('button', { name: 'Add and more' }).click();
+  await page.getByRole('menuitem', { name: /^Attach files/ }).click();
 }
 
 /** How far the transcript of `scope` is scrolled from its bottom, in pixels. */
@@ -158,14 +171,14 @@ test.describe('Chat lab', () => {
     page,
   }) => {
     await openChat(page);
-    const assistant = await ask(page, 'Answer with tools and sources', 'Plan a weekend in Lisbon');
+    const assistant = await ask(page, undefined, 'Plan a weekend in Lisbon');
     await expect(assistant.locator('.ui-chat__status')).toHaveText(/…$/);
     await expect(assistant.locator('.ui-chat-header__status')).toHaveText(/…$/);
     await page.keyboard.type('And the budget?');
     await page.keyboard.press('Enter');
     const queue = assistant.getByRole('list', { name: '1 queued message' });
     await expect(queue).toContainText('And the budget?');
-    await expect(assistant.getByText('Two days in Lisbon')).toBeVisible();
+    await expect(lastReply(assistant).getByText('Two days in Lisbon')).toBeVisible();
     await assistant.getByRole('button', { name: 'Stop' }).click();
     const reply = assistant.locator('article[data-status="cancelled"]');
     await expect(reply.locator('.ui-chat-message__stopped')).toHaveText('Stopped');
@@ -363,7 +376,7 @@ test.describe('Chat lab', () => {
     page,
   }) => {
     await openChat(page, 8);
-    const assistant = await ask(page, 'Answer with tools and sources', 'Plan a weekend');
+    const assistant = await ask(page, undefined, 'Plan a weekend');
     const reply = assistant.locator('article[data-status="complete"]').last();
     await expect(reply.getByRole('button', { name: 'Fetched a page, ran a search' })).toBeVisible();
     await expect(
@@ -372,6 +385,61 @@ test.describe('Chat lab', () => {
     await expect(reply.getByRole('table')).toBeVisible();
     await expect(reply.locator('.ui-code-block')).toBeVisible();
     await rateAndCopy(page, reply);
+  });
+
+  test('UIC-CHAT-1.1 UIC-CHAT-LIST-1.1 opens earlier agent conversations and keeps a reply running behind another', async ({
+    page,
+  }) => {
+    await openChat(page, 30);
+    const assistant = section(page, 'Assistant, live');
+    const list = assistant.getByRole('grid', { name: 'Conversations' });
+    const row = (title: string) => list.getByRole('row', { name: new RegExp(`^${title}`) });
+    await expect(assistant.locator('.ui-chat-header')).toContainText('Two days in Lisbon');
+    await expect(assistant.locator('.ui-chat-attachment[data-kind="image"]')).toHaveCount(5);
+    await expect(assistant.getByRole('link', { name: /^Source 1:/ })).toBeVisible();
+    await expect(
+      assistant.locator('.ui-chat-tool-call', { hasText: 'Book a table for two' }),
+    ).toContainText('Approved');
+
+    await ask(page, undefined, 'Plan our Saturday');
+    await row('Packing list').click();
+    await expect(assistant.locator('.ui-chat-header')).toContainText('Packing list');
+    await expect(assistant.locator('.ui-chat-plan')).toContainText('3 of 3 done');
+    await expect(assistant.locator('.ui-text-diff')).toBeVisible();
+    await expect(row('Two days in Lisbon')).toHaveAccessibleName(/Working/);
+    await row('Two days in Lisbon').click();
+    const reply = lastReply(assistant);
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply).toContainText('Here is how the places look.');
+    await expect(reply.locator('.ui-chat-attachment[data-kind="image"]')).toHaveCount(3);
+    await expect(row('Two days in Lisbon')).not.toHaveAccessibleName(/Working/);
+
+    await assistant.getByRole('button', { name: 'New chat' }).click();
+    await assistant.getByRole('button', { name: 'Find a quiet beach' }).click();
+    await expect(row('Find a quiet beach')).toBeVisible();
+    await expect(assistant.locator('.ui-chat-header')).toContainText('Find a quiet beach');
+  });
+
+  test("UIC-MESSAGE-COMPOSER-5.4 UIC-MESSAGE-COMPOSER-5.6 UIC-CHAT-3.14 offers the agent app's tools, commands and sending options in the + menu", async ({
+    page,
+  }) => {
+    await openChat(page, 8);
+    const assistant = section(page, 'Assistant, live');
+    const plus = assistant.getByRole('button', { name: 'Add and more' });
+    await plus.click();
+    const menu = page.getByRole('menu');
+    for (const title of ['Add', 'Tools', 'Commands', 'Sending']) {
+      await expect(menu.getByRole('group', { name: title })).toBeVisible();
+    }
+    await menu.getByRole('menuitemcheckbox', { name: /^Bookings/ }).click();
+    await expect(assistant.locator('[data-lab-output="tools"]')).toHaveText('web, maps, bookings');
+    // A toggle leaves the menu open, so the command is chosen from the same menu.
+    await expect(menu).toBeVisible();
+    await page.getByRole('menuitem', { name: /^\/plan/ }).click();
+    await expect(composer(assistant).locator('.ui-message-composer__pill')).toHaveText('/plan');
+    await page.keyboard.type('the day');
+    await page.keyboard.press('Enter');
+    await expect(lastReply(assistant)).toContainText('All set: the plan is saved');
   });
 
   test('UIC-CHAT-3.6 sends each message with the model and effort the picker shows', async ({
@@ -387,7 +455,7 @@ test.describe('Chat lab', () => {
     await picker.click();
     await page.getByRole('menuitemradio', { name: /^High/ }).click();
     await expect(picker).toHaveAccessibleName('Model: Deep, High effort');
-    await ask(page, 'Fails once', 'Ferry times?');
+    await ask(page, 'ferry', 'Ferry times?');
     await expect(lastReply(assistant)).toContainText('Sent to Deep, high effort.');
     await picker.click();
     await page.getByRole('menuitemradio', { name: /^Classic/ }).click();
@@ -404,7 +472,7 @@ test.describe('Chat lab', () => {
     lab,
   }) => {
     await openChat(page, 8);
-    const assistant = await ask(page, 'Approval, awaited', 'Book dinner');
+    const assistant = await ask(page, 'book', 'Book dinner');
     const approve = assistant.getByRole('button', { name: 'Approve' });
     await expect(approve).toBeVisible();
     const reply = assistant.locator('article').last();
@@ -425,7 +493,7 @@ test.describe('Chat lab', () => {
     page,
   }) => {
     await openChat(page, 8);
-    const assistant = await ask(page, 'Approval, next turn', 'Tidy my bookings');
+    const assistant = await ask(page, 'cancel', 'Tidy my bookings');
     await assistant.getByRole('button', { name: 'Deny' }).click();
     await page.keyboard.type('I still need it');
     await page.keyboard.press('Enter');
@@ -433,7 +501,7 @@ test.describe('Chat lab', () => {
     await expect(lastReply(assistant).locator('.ui-chat-tool-call__decision')).toHaveText(
       'Denied: I still need it',
     );
-    await ask(page, 'Approval, awaited', 'Book dinner');
+    await ask(page, 'book', 'Book dinner');
     await assistant.getByRole('button', { name: 'Always allow in this trip' }).click();
     await expect(lastReply(assistant)).toContainText('Booked: Casa do Rio, Saturday at 20:00.');
     await expect(page.locator('[data-lab-output="allowed"]')).toHaveText('book_table');
@@ -441,7 +509,7 @@ test.describe('Chat lab', () => {
 
   test('UIC-CHAT-1.5 answers a card of questions with previews', async ({ page }) => {
     await openChat(page, 8);
-    const assistant = await ask(page, 'Questions with previews', 'Help me plan');
+    const assistant = await ask(page, 'ask', 'Help me plan');
     const card = assistant.locator('.ui-chat-question');
     await card.getByText('Packed', { exact: true }).click();
     await expect(card.getByRole('radio', { name: /^Packed/ })).toBeChecked();
@@ -462,14 +530,14 @@ test.describe('Chat lab', () => {
     page,
   }) => {
     await openChat(page, 8);
-    const assistant = await ask(page, 'Fails once', 'Ferry times?');
+    const assistant = await ask(page, 'ferry', 'Ferry times?');
     // The transcript announces the failure once; the message's own text is no alert.
     const failure = 'The timetable service is busy. Try again.';
     await expect(assistant.locator('.ui-chat-message__error')).toContainText(failure);
     await expect(assistant.locator('.ui-chat-transcript__announcer')).toHaveText(failure);
     await assistant.getByRole('button', { name: 'Retry' }).click();
     await expect(lastReply(assistant)).toContainText('ferries cross every 20 minutes');
-    await ask(page, 'Plan, diff and terminal', 'Save the plan');
+    await ask(page, 'plan', 'Save the plan');
     await expect(assistant.getByText('4 of 4 done')).toBeVisible();
     await expect(assistant.locator('.ui-text-diff')).toBeVisible();
     await expect(assistant.locator('.ui-code-block[data-variant="terminal"]')).toBeVisible();
@@ -483,18 +551,20 @@ test.describe('Chat lab', () => {
     const assistant = section(page, 'Assistant, live');
     await composer(assistant).click();
     await page.keyboard.press('ArrowUp');
-    await expect(composer(assistant)).toHaveText('Which day is best for the castle?');
+    await expect(composer(assistant)).toHaveText('Yes please, for two at eight.');
     const chooser = page.waitForEvent('filechooser');
-    await assistant.getByRole('button', { name: 'Attach files' }).click();
+    await attachFromMenu(page, assistant);
     const file = { name: 'broken-map.png', mimeType: 'image/png', buffer: Buffer.from('png') };
     await (await chooser).setFiles(file);
-    const files = assistant.getByRole('list', { name: 'Attachments' });
+    const files = assistant
+      .locator('.ui-chat__composer')
+      .getByRole('list', { name: 'Attachments' });
     await expect(files.getByRole('alert')).toContainText('did not arrive');
     await files.getByRole('button', { name: 'Retry' }).click();
     await expect(files.locator('.ui-chat-attachment[data-status="complete"]')).toBeVisible();
 
     const refused = page.waitForEvent('filechooser');
-    await assistant.getByRole('button', { name: 'Attach files' }).click();
+    await attachFromMenu(page, assistant);
     await (
       await refused
     ).setFiles([

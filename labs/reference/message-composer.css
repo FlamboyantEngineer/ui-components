@@ -14,7 +14,9 @@
   font: var(--ref-font-size)/1.4 var(--ref-font);
 }
 
-.ui-message-composer:focus-within {
+/* Focused while its text box is: a control in the footer, such as the model picker that a closing
+   menu hands focus back to, shows its own focus instead. */
+.ui-message-composer:has(.ui-message-composer__input:focus) {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
 }
