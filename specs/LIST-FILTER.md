@@ -6,7 +6,7 @@
 
 ### UIC-LIST-FILTER-1.1 - Typed controlled selection
 
-`ListFilter<V extends string>` shall take a controlled `value: V` and ordered `options` with typed `value`, text `label`, optional `count`, optional `countMax` and `isDisabled`. Picking an enabled option reports its value through `onChange`; picking the selected option never clears it. `isDisabled` refuses all filters. `size` defaults to `sm` and supports the shared control sizes. The root forwards `ref`, `id`, caller classes and data attributes; ARIA labelling and description props name and describe the radiogroup.
+`ListFilter<V extends string>` shall take a controlled `value: V` and ordered `options` with typed `value`, text `label`, optional decorative `icon`, optional `count`, optional `countMax` and `isDisabled`. Picking an enabled option reports its value through `onChange`; picking the selected option never clears it. `isDisabled` refuses all filters. `size` defaults to `sm` and supports the shared control sizes. The root forwards `ref`, `id`, caller classes and data attributes; ARIA labelling and description props name and describe the radiogroup.
 
 Implementation: `src/components/list-filter/list-filter.tsx`
 Verification: `src/components/list-filter/list-filter.test.tsx`, `e2e/list-filter.spec.ts`
@@ -38,6 +38,13 @@ The reference sheet shall keep filters and trailing actions on one row. Filters 
 
 Implementation: `src/components/list-filter/list-filter.tsx`, `labs/reference/list-filter.css`
 Verification: `e2e/list-filter.spec.ts`
+
+### UIC-LIST-FILTER-1.6 - Icons when narrow
+
+When every option has an `icon`, the filters shall fold to icon-only segments while their labels do not fit the row's remaining width, and show their labels again once it widens, as SegmentedChoice's `iconOnly="auto"` does ([UIC-SEGMENTED-CHOICE-1.10](SEGMENTED-CHOICE.md#uic-segmented-choice-110---icons-when-narrow)); each folded filter keeps its label, with its count, as its accessible name and shows the label in a tooltip. `iconOnly` defaults to `auto`; `true` always shows icons only and `false` always shows labels. Options without icons keep their labels and scroll as UIC-LIST-FILTER-1.5 describes.
+
+Implementation: `src/components/list-filter/list-filter.tsx`, `src/components/segmented-choice/use-icon-fallback.ts`
+Verification: `src/components/list-filter/list-filter.test.tsx`, `e2e/list-filter.spec.ts`
 
 ## Hooks
 

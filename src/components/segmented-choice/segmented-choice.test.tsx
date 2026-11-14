@@ -669,4 +669,75 @@ describe('SegmentedChoice', () => {
     await user.keyboard(' ');
     expect(screen.getByRole('radio', { name: 'Week' })).toBeChecked();
   });
+
+  it('UIC-SEGMENTED-CHOICE-1.10 folds to icons while the labels do not fit the parent, and unfolds when it widens', async () => {
+    const iconViews: SegmentedChoiceOption[] = [
+      { value: 'sort', label: 'Sort', icon: SortAscendingGlyph },
+      { value: 'fit', label: 'Fit', icon: FitPageGlyph },
+    ];
+    let room = 300;
+    const widths = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.dataset.host === 'row' ? room : 0;
+      });
+    const content = vi
+      .spyOn(HTMLElement.prototype, 'scrollWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        if (!this.classList.contains('ui-segmented-choice')) return 0;
+        return this.hasAttribute('data-icon-only') ? 60 : 200;
+      });
+    try {
+      const { container, rerender } = render(
+        <div data-host="row">
+          <SegmentedChoice aria-label="Tools" options={iconViews} value="sort" iconOnly="auto" />
+        </div>,
+      );
+      const group = requireDefined(container.querySelector<HTMLElement>('.ui-segmented-choice'));
+      expect(group).not.toHaveAttribute('data-icon-only');
+      expect(screen.getByRole('radio', { name: 'Sort' })).toHaveTextContent('Sort');
+      room = 120;
+      rerender(
+        <div data-host="row">
+          <SegmentedChoice aria-label="Tools" options={iconViews} value="sort" iconOnly="auto" />
+        </div>,
+      );
+      await waitFor(() => expect(group).toHaveAttribute('data-icon-only', 'true'));
+      const sort = screen.getByRole('radio', { name: 'Sort' });
+      expect(sort).toHaveAttribute('aria-label', 'Sort');
+      expect(sort.querySelector('.ui-segmented-choice__label')).toBeNull();
+      // Wider, but not yet as wide as the labels needed: still icons.
+      room = 180;
+      rerender(
+        <div data-host="row">
+          <SegmentedChoice aria-label="Tools" options={iconViews} value="sort" iconOnly="auto" />
+        </div>,
+      );
+      expect(group).toHaveAttribute('data-icon-only', 'true');
+      room = 220;
+      rerender(
+        <div data-host="row">
+          <SegmentedChoice aria-label="Tools" options={iconViews} value="sort" iconOnly="auto" />
+        </div>,
+      );
+      await waitFor(() => expect(group).not.toHaveAttribute('data-icon-only'));
+      expect(screen.getByRole('radio', { name: 'Sort' })).toBe(sort);
+      // An option without an icon keeps every label.
+      room = 100;
+      rerender(
+        <div data-host="row">
+          <SegmentedChoice
+            aria-label="Tools"
+            options={[...iconViews, { value: 'plain', label: 'Plain' }]}
+            value="sort"
+            iconOnly="auto"
+          />
+        </div>,
+      );
+      expect(group).not.toHaveAttribute('data-icon-only');
+    } finally {
+      widths.mockRestore();
+      content.mockRestore();
+    }
+  });
 });

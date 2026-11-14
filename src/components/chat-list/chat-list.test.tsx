@@ -450,14 +450,14 @@ describe('ChatList', () => {
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
 
-  it('UIC-CHAT-LIST-1.11 asks for the last rows to fade only with showEdgeFades', () => {
+  it('UIC-CHAT-LIST-1.11 asks for the last rows to fade by default, and not with showEdgeFades={false}', () => {
     const onLoadMore = vi.fn();
     const { container, rerender } = render(
-      <ChatList conversations={conversations} onLoadMore={onLoadMore} />,
+      <ChatList conversations={conversations} onLoadMore={onLoadMore} showEdgeFades={false} />,
     );
     const root = container.firstElementChild;
     expect(root).not.toHaveAttribute('data-edge-fades');
-    rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} showEdgeFades />);
+    rerender(<ChatList conversations={conversations} onLoadMore={onLoadMore} />);
     expect(root).toHaveAttribute('data-edge-fades', 'true');
     expectHooksMatchSpec(container, 'CHAT-LIST');
   });

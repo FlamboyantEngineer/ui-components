@@ -45,3 +45,29 @@ export function useTabListLayout(
     overflowing: menuMode ? menu.hiddenItems.length > 0 : scrollOverflowing,
   };
 }
+
+/**
+ * Menus, the wheel and scroll buttons serve horizontal lists; a vertical list scrolls. A horizontal
+ * `scroll` list is a scroll strip that takes the wheel, buttons or not.
+ */
+export function resolveTabListParts({
+  orientation,
+  overflow,
+  scrollButtons,
+  showEdgeFades,
+}: {
+  orientation: Orientation;
+  overflow: 'scroll' | 'menu';
+  scrollButtons: boolean;
+  showEdgeFades: boolean;
+}) {
+  const horizontal = orientation === 'horizontal';
+  const isStrip = horizontal && overflow === 'scroll';
+  return {
+    isMenu: horizontal && overflow === 'menu',
+    isStrip,
+    hasButtons: isStrip && scrollButtons,
+    hasFades: isStrip && showEdgeFades,
+    hasEdges: isStrip && (scrollButtons || showEdgeFades),
+  };
+}

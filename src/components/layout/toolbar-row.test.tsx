@@ -128,9 +128,9 @@ describe('ToolbarRow', () => {
     expect(rule).toHaveAttribute('data-orientation', 'horizontal');
   });
 
-  it('UIC-LAYOUT-3.8 draws the scrolling row fades only with showEdgeFades', () => {
+  it('UIC-LAYOUT-3.8 draws no scrolling row fades with showEdgeFades={false}', () => {
     const { container } = render(
-      <ToolbarRow aria-label="Kitchen" overflow="scroll">
+      <ToolbarRow aria-label="Kitchen" overflow="scroll" showEdgeFades={false}>
         <button type="button">Peel</button>
       </ToolbarRow>,
     );

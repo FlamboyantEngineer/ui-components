@@ -74,6 +74,13 @@ With non-empty `presets`, the control shall render a [Dropdown Menu](DROPDOWN-ME
 Implementation: `src/components/zoom-control/zoom-control.tsx`, `src/components/zoom-control/zoom-presets.tsx`, `src/core/strings.ts`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
 
+### UIC-ZOOM-CONTROL-1.11 - Wheel
+
+By default the vertical wheel over the control shall step the zoom as the step buttons do (UIC-ZOOM-CONTROL-1.3): each notch rolled up (away from the reader) requests the next level, each notch down the previous one, smaller trackpad deltas adding up to one notch, and nothing past the first or last level. While it does, the wheel does not scroll the page; the browser zoom gesture (the wheel with Ctrl or Meta, or a trackpad pinch) and a mostly sideways wheel are left to the browser. `zoomsOnWheel={false}` and `isDisabled` leave the wheel to the page.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`, `src/utils/use-wheel-steps.ts`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
 ## Hooks
 
 | Hook                        | Kind      | Values                 | Description                                        |

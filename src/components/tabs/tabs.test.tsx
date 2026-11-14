@@ -214,7 +214,7 @@ describe('Tabs', () => {
       </Tabs>,
     );
     const list = screen.getByRole('tablist', { name: 'Fruit' });
-    const root = list.parentElement;
+    const root = list.closest('.ui-tabs');
     expect(root).toHaveClass('ui-tabs', 'caller-root');
     expect(root).toHaveAttribute('id', 'fruit');
     expect(root).toHaveAttribute('data-size', 'md');

@@ -67,6 +67,13 @@ An option's `count` shall show a positive whole number after the label in the `u
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/segment.tsx`, `src/core/strings/common.ts`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
 
+### UIC-SEGMENTED-CHOICE-1.10 - Icons when narrow
+
+With `iconOnly="auto"`, and every option with an icon, the group shall show its labels while they fit and fold to icon-only segments (UIC-SEGMENTED-CHOICE-1.7, with `data-icon-only`) once its labels need more width than its parent gives it: the group's content width, plus what each label cut short by an ellipsis lacks, against the parent's width inside its padding. It shows its labels again once the parent gives back the width they needed, so the presentation does not flip back and forth at one width. It measures after every render and, at most once a frame, when the group or its parent resizes or fonts load. With an option lacking an icon, `auto` keeps the labels. Folding and unfolding keep each segment element, with its focus and selection.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/use-icon-fallback.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/list-filter.spec.ts`
+
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 
 ### UIC-SEGMENTED-CHOICE-2.1 - Keyboard and accessibility
@@ -165,7 +172,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `data-selection-mode`                   | attribute | `single`, `multiple`     | One value, or independent toggles.                  |
 | `data-value`                            | attribute |                          | A segment's option value.                           |
 | `data-label`                            | attribute |                          | A label's text, for reserving its selected width.   |
-| `data-icon-only`                        | state     | `true`                   | Segments show only their icons.                     |
+| `data-icon-only`                        | state     | `true`                   | Segments show only their icons, also when folded.   |
 | `data-inherited`                        | state     | `true`                   | The value in effect is inherited.                   |
 | `data-readonly`                         | state     | `true`                   | Read-only.                                          |
 | `data-invalid`                          | state     | `true`                   | Invalid.                                            |

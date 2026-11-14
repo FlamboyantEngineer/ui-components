@@ -286,18 +286,21 @@ test('UIC-TABS-3.11 a menu list that falls back to scrolling takes the wheel in 
     });
     await expect(bar).toHaveAttribute('data-overflow', 'scroll');
     await list.evaluate((element) => {
-      element.scrollLeft = 0;
+      // The stylesheet glides the list; the test puts it back at once.
+      element.scrollTo({ left: 0, behavior: 'instant' });
     });
     // The vertical wheel scrolls toward the inline end: leftward, so negative, right to left.
-    const first = await wheel(40);
-    expect(first.held).toBe(true);
-    expect(rtl ? first.left < 0 : first.left > 0).toBe(true);
+    // The list glides (scroll-behavior: smooth), so its position is read once it settles.
+    const left = () => list.evaluate((element) => element.scrollLeft);
+    expect((await wheel(40)).held).toBe(true);
+    await expect.poll(async () => (rtl ? (await left()) < 0 : (await left()) > 0)).toBe(true);
     // At the far end the list keeps the wheel, so the page behind it stays put.
     await wheel(10_000);
-    const end = await list.evaluate((element) => element.scrollLeft);
-    const past = await wheel(100);
-    expect(past.held).toBe(true);
-    expect(past.left).toBe(end);
+    const range = await list.evaluate((element) => element.scrollWidth - element.clientWidth);
+    await expect.poll(async () => Math.abs(await left())).toBeGreaterThanOrEqual(range - 1);
+    const end = await left();
+    expect((await wheel(100)).held).toBe(true);
+    expect(await left()).toBe(end);
     await demo.evaluate((element) => {
       element.style.removeProperty('width');
     });
