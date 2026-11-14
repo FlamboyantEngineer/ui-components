@@ -282,23 +282,30 @@ test.describe('Chat List history', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-CHAT-LIST-1.11 fades the last rows only with showEdgeFades and loads the next page', async ({
+  test('UIC-CHAT-LIST-1.11 fades the last rows by default, not when opted out, and loads the next page', async ({
     page,
     lab,
   }) => {
     await lab.open('chat-list');
     const list = history(page).locator('.ui-chat-list');
     await expect(list).toHaveAttribute('data-has-more', 'true');
-    await expect(list).not.toHaveAttribute('data-edge-fades');
-    const rows = recents(page).getByRole('row');
-    const opacity = (index: number) =>
-      rows.nth(index).evaluate((element) => Number(getComputedStyle(element).opacity));
-    expect(await opacity(9)).toBe(1);
-    await page.getByText('Fade the last rows', { exact: true }).click();
     await expect(list).toHaveAttribute('data-edge-fades', 'true');
+    const rows = recents(page).getByRole('row');
+    // How much of a row shows through the canvas veil over it: 1 without a veil.
+    const opacity = (index: number) =>
+      rows.nth(index).evaluate((element) => {
+        const veil = getComputedStyle(element, '::after');
+        if (veil.content === 'none') return 1;
+        const alpha = /\/\s*([\d.]+)\)$/.exec(veil.backgroundColor);
+        return 1 - Number(alpha?.[1] ?? 0);
+      });
     expect(await opacity(0)).toBe(1);
     expect(await opacity(8)).toBeLessThan(1);
     expect(await opacity(9)).toBeLessThan(await opacity(8));
+    await page.getByText('Fade the last rows', { exact: true }).click();
+    await expect(list).not.toHaveAttribute('data-edge-fades');
+    expect(await opacity(9)).toBe(1);
+    await page.getByText('Fade the last rows', { exact: true }).click();
     await history(page).getByRole('button', { name: 'Load more' }).click();
     await expect(rows).toHaveCount(20);
     await expect(list).not.toHaveAttribute('data-has-more');

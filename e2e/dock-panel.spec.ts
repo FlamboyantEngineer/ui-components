@@ -174,7 +174,7 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.locator('.ui-tabs__scroll-button')).toHaveCount(0);
   });
 
-  test('UIC-DOCK-PANEL-2.5 draws no fades without showEdgeFades', async ({ page, lab }) => {
+  test('UIC-DOCK-PANEL-2.5 draws no fades with showEdgeFades={false}', async ({ page, lab }) => {
     await lab.open('dock-panel');
     const panel = frame(page, 'overflow-expanded-plain').locator('.ui-dock-panel');
     const list = panel.getByRole('tablist');

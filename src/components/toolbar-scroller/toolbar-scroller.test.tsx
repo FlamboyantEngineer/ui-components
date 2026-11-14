@@ -176,9 +176,9 @@ describe('ToolbarScroller', () => {
     });
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.2 draws no fades without showEdgeFades', async () => {
+  it('UIC-TOOLBAR-SCROLLER-2.2 draws no fades with showEdgeFades={false}', async () => {
     const { container } = render(
-      <ToolbarScroller aria-label="Format">
+      <ToolbarScroller aria-label="Format" showEdgeFades={false}>
         <Tools />
       </ToolbarScroller>,
     );

@@ -43,7 +43,7 @@ export interface ToolbarScrollerProps<T extends ToolbarScrollerItem = ToolbarScr
   children?: ReactNode;
   /** Show a scroll button at each edge that hides tools. Defaults to `true`. */
   scrollButtons?: boolean | undefined;
-  /** Draws a decorative fade over each edge that hides tools. Defaults to `false`. */
+  /** Draws a decorative fade over each edge that hides tools. Defaults to `true`; `false` draws none. */
   showEdgeFades?: boolean | undefined;
   /** The tools as data, drawn by `renderItem`, in place of `children`. */
   items?: readonly T[] | undefined;
@@ -121,14 +121,14 @@ function useScrollerStrip<T extends ToolbarScrollerItem>(
 
 /**
  * One horizontal row of tools that scrolls instead of squeezing them, or collapses the tools that
- * do not fit into a menu. A toolbar gives the tools arrow-key focus; scroll buttons, and decorative
- * fades when asked for, appear only at an edge that hides tools. Both overflow modes draw the tools in the same
+ * do not fit into a menu. A toolbar gives the tools arrow-key focus; scroll buttons and decorative
+ * fades appear only at an edge that hides tools. Both overflow modes draw the tools in the same
  * strip, so changing the mode keeps every tool that stays visible mounted, with its state and focus.
  */
 export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerItem>({
   children,
   scrollButtons = true,
-  showEdgeFades = false,
+  showEdgeFades = true,
   items,
   renderItem,
   overflow: requestedOverflow = 'scroll',

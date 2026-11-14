@@ -514,7 +514,7 @@ mountLab(
     <ScrollRegionOptionCases />
     <LabSection
       title="Edge distances"
-      description="Every region publishes how far the content reaches past each edge, with native and overlay scrollbars. Edge fades are opt-in: with showEdgeFades the reference stylesheet fades each such edge, as deep as the distance up to 8px."
+      description="Every region publishes how far the content reaches past each edge, with native and overlay scrollbars. By default the reference stylesheet fades each such edge, as deep as the distance up to 8px; the fades=off column passes showEdgeFades={false}."
     >
       <StateMatrix
         axes={{ scrollbar: ['native', 'overlay'] as const, fades: ['off', 'on'] as const }}

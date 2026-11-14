@@ -1,6 +1,6 @@
 # Toolbar Scroller
 
-`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows, by default, a scroll button and, when asked with `showEdgeFades`, a decorative fade. With tools described as data it can instead move the tools that do not fit into a "more" menu, by priority.
+`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows, by default, a scroll button and a decorative fade (`showEdgeFades={false}` leaves the fade out). With tools described as data it can instead move the tools that do not fit into a "more" menu, by priority.
 
 ## UIC-TOOLBAR-SCROLLER-1 - Row and toolbar
 
@@ -36,7 +36,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-2.2 - Edge fades
 
-Edge fades shall be opt-in. With `showEdgeFades`, the scroller shall render one decorative fade per edge (`ui-toolbar-scroller__fade` with `data-edge` `start` or `end`), hidden from assistive technology, and hide each with the native `hidden` attribute while its edge hides nothing. By default it renders none. The reference sheet draws each fade over the strip's edge without taking pointer input.
+Edge fades shall be on by default: unless `showEdgeFades` is `false`, the scroller shall render one decorative fade per edge (`ui-toolbar-scroller__fade` with `data-edge` `start` or `end`), hidden from assistive technology, and hide each with the native `hidden` attribute while its edge hides nothing. With `showEdgeFades={false}` it renders none. The reference sheet draws each fade over the strip's edge without taking pointer input.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference/toolbar-scroller.css`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`

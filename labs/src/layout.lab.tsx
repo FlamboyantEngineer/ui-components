@@ -404,7 +404,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Toolbar edge fades"
-      description="Edge fades are opt-in: without showEdgeFades a scrolling row draws only its chevrons, on the canvas; with it, a fade covers each edge that hides tools, under the chevron."
+      description="Edge fades are on by default: a fade covers each edge that hides tools, under the chevron. With showEdgeFades={false} a scrolling row draws only its chevrons, on the canvas."
     >
       <ToolbarEdgeFades />
     </LabSection>
