@@ -65,7 +65,6 @@
 
 .ui-chat-tool-call[data-status='running'] .ui-chat-tool-call__status-glyph {
   color: var(--ref-accent);
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 .ui-chat-tool-call[data-status='approval-requested'] .ui-chat-tool-call__status-glyph {

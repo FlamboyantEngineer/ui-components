@@ -10,6 +10,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { Button } from '../button/button.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 
 export interface BannerProps
   extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'>, RefProps<HTMLElement> {
@@ -66,7 +67,7 @@ function BannerPart({
 
 /** The decorative lead: a spinner while pending, else the icon, if any. */
 function BannerLead({ icon, isPending }: { icon: IconSource; isPending: boolean }) {
-  if (isPending) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
+  if (isPending) return <Spinner size="sm" className={hooks.slotClass('spinner')} />;
   if (!icon) return null;
   return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
 }

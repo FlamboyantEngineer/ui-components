@@ -18,6 +18,22 @@ test.describe('Toast lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TOAST-3.1 centres the glyph, action and close button on the content', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    const toast = matrixCell(page, 'tone=warning content=action').locator('.ui-toast');
+    const middle = async (selector: string) => {
+      const box = await toast.locator(selector).first().boundingBox();
+      return (box?.y ?? 0) + (box?.height ?? 0) / 2;
+    };
+    const content = await middle('.ui-toast__content');
+    for (const part of ['.ui-toast__icon', '.ui-toast__action', '.ui-toast__close']) {
+      expect(Math.abs((await middle(part)) - content)).toBeLessThan(2);
+    }
+  });
+
   test('UIC-TOAST-2.3 shows every toast of a list in place, reachable and uncovered', async ({
     page,
     lab,

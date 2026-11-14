@@ -212,4 +212,37 @@ test.describe('Progress Bar lab', () => {
       await expect(meter).toHaveAttribute('data-tone', expected);
     }
   });
+
+  test('UIC-PROGRESS-BAR-2.1 turns the spinner arc like the circular progress, in the text colour', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const section = page.locator('section[data-lab-section="Spinner and circular progress"]');
+    for (const size of ['sm', 'md', 'lg'] as const) {
+      const cell = matrixCell(section, `ring=${size}`);
+      const ring = cell.locator('.ui-spinner .ui-spinner__ring');
+      const circular = cell.locator('.ui-progress-bar__ring');
+      const motion = (node: Element) => {
+        const style = getComputedStyle(node);
+        return [style.animationName, style.animationTimingFunction, style.animationIterationCount];
+      };
+      const expected = ['ref-spinner-turn', 'cubic-bezier(0.65, 0, 0.35, 1)', 'infinite'];
+      expect(await ring.evaluate(motion)).toEqual(expected);
+      expect(await circular.evaluate(motion)).toEqual(expected);
+      // The spinner is the arc only; the progress bar adds its track.
+      await expect(ring.locator('circle')).toHaveCount(1);
+      await expect(circular.locator('circle')).toHaveCount(2);
+    }
+    const colour = page.locator('section[data-lab-section="Spinner colour"]');
+    for (const context of ['body text', 'primary', 'danger']) {
+      const spinner = matrixCell(colour, `context=${context}`).locator('.ui-spinner');
+      const [stroke, text] = await spinner.evaluate((node) => [
+        getComputedStyle(node.querySelector('circle') as Element).stroke,
+        getComputedStyle(node).color,
+      ]);
+      expect(stroke).toBe(text);
+    }
+    await lab.expectAccessible();
+  });
 });

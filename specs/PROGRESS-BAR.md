@@ -64,7 +64,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-2.1 - Decorative busy glyph
 
-`Spinner` shall render a `ui-spinner` element hidden from assistive technology (`aria-hidden="true"`), publish `data-size` (`sm`, `md` by default, `lg`; the reference sheet draws 12, 16 and 20 pixel boxes), append the caller's `className` and forward `id`, `ref` (its `<span>`) and `data-*` attributes. The line it leads carries the status text and any `aria-busy`.
+`Spinner` shall render a `ui-spinner` element hidden from assistive technology (`aria-hidden="true"`) holding the indeterminate circular progress's ring without its track: a decorative `<svg>` `ui-spinner__ring` holding a `ui-spinner__fill` arc a quarter of the ring long, starting at the top ([UIC-PROGRESS-BAR-11.2](#uic-progress-bar-112---ring-geometry)). It shall publish `data-size` (`sm`, `md` by default, `lg`; the reference sheet draws 12, 16 and 20 pixel boxes, which a component's own spinner slot may override), append the caller's `className` and forward `id`, `ref` (its `<span>`) and `data-*` attributes. The line it leads carries the status text and any `aria-busy`. It is the library's one busy indicator: every component that shows a busy state draws it, with its own slot class added. The reference sheet draws the arc in the current text colour and turns the ring twice per cycle from the top back to the top, speeding up and slowing down, the same motion as an indeterminate circular progress bar; reduced motion rests it at the top.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
@@ -310,6 +310,8 @@ Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.
 | `ui-meter__ring`           | slot      |                                           | The circular meter's decorative `<svg>` ring.                |
 | `ui-meter__description`    | slot      |                                           | The meter's description, when `description` is set.          |
 | `ui-spinner`               | root      |                                           | The decorative busy glyph (`<span>`).                        |
+| `ui-spinner__ring`         | slot      |                                           | The spinner's decorative `<svg>` ring.                       |
+| `ui-spinner__fill`         | slot      |                                           | The spinner's quarter arc.                                   |
 | `data-size`                | attribute | `sm`, `md`, `lg`                          | Track thickness, ring size, or the spinner's box size.       |
 | `data-shape`               | attribute | `linear`, `circular`                      | Track appearance.                                            |
 | `data-tone`                | attribute | `neutral`, `success`, `warning`, `danger` | The work's status, or what a measured value means.           |

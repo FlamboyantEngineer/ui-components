@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { ActivityAnnouncer } from './activity-announcer.js';
 
 /** The assistant is `thinking` (or acting), or `writing` its answer. */
@@ -43,7 +44,7 @@ export function ChatStatusLine({
   return (
     <div {...rest} {...hooks.root({ className, props: rest, data: { activity } })}>
       {icon === undefined ? (
-        <span {...hooks.slot('spinner')} aria-hidden="true" />
+        <Spinner size="sm" className={hooks.slotClass('spinner')} />
       ) : isEmptyNode(icon) ? null : (
         <span {...hooks.slot('icon')} aria-hidden="true">
           {icon}

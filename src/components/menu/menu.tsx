@@ -117,7 +117,7 @@ function MenuLoader({ onLoadMore, isLoading }: Pick<MenuProps, 'onLoadMore' | 'i
       onLoadMore={onLoadMore}
       isLoading={isLoading}
     >
-      <span {...hooks.slot('load-more-spinner')} aria-hidden="true" /> {strings.loading}
+      <Spinner size="sm" className={hooks.slotClass('load-more-spinner')} /> {strings.loading}
     </MenuLoadMoreItem>
   );
 }
@@ -299,6 +299,7 @@ export type {
   MenuSectionProps,
   MenuSeparatorProps,
 } from './menu-item.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';
 export type { MenuOverlayProps, MenuPopoverProps } from './menu-popover.js';
 export { MenuOverlay, MenuPopover } from './menu-popover.js';

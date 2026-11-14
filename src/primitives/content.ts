@@ -9,6 +9,7 @@ export {
   Label,
   Meter,
   ProgressBar,
+  ProgressBarContext,
   Text,
   VisuallyHidden,
 } from 'react-aria-components';

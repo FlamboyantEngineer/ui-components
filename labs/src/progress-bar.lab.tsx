@@ -142,7 +142,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Spinner"
-        description="The decorative busy glyph at each size, leading a busy line."
+        description="The library's one busy glyph at each size, leading a busy line: the indeterminate circular progress's quarter arc without its track. Each turn starts at the top, makes two revolutions that speed up and slow down, and ends at the top."
       >
         <StateMatrix
           axes={{ size: sizes }}
@@ -160,6 +160,39 @@ mountLab(
         <StateMatrix
           axes={{ standalone: sizes }}
           render={({ standalone }) => <Spinner size={standalone} label="Loading recipes" />}
+        />
+      </LabSection>
+      <LabSection
+        title="Spinner and circular progress"
+        description="The spinner beside an indeterminate circular progress bar of the same size: the same arc and the same motion; the bar adds its track."
+      >
+        <StateMatrix
+          axes={{ ring: sizes }}
+          render={({ ring }) => (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+              <Spinner size={ring} />
+              <ProgressBar shape="circular" size={ring} isIndeterminate aria-label="Uploading" />
+            </span>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Spinner colour"
+        description="The spinner draws in its context's text colour: body text, and pending primary, secondary and danger buttons."
+      >
+        <StateMatrix
+          axes={{ context: ['body text', 'primary', 'secondary', 'danger'] }}
+          render={({ context }) =>
+            context === 'body text' ? (
+              <span aria-busy="true">
+                <Spinner /> Writing a summary
+              </span>
+            ) : (
+              <Button variant={context} isPending>
+                Save
+              </Button>
+            )
+          }
         />
       </LabSection>
       <LabSection

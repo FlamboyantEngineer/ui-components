@@ -262,3 +262,8 @@
 .ui-menu-popover {
   max-width: calc(100vw - 16px);
 }
+
+/* The spinner of a menu still loading its entries, at the small icon size. */
+.ui-menu__load-more-spinner {
+  --ref-spinner-size: var(--ref-icon-size-sm);
+}

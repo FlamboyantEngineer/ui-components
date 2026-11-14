@@ -160,7 +160,8 @@
   --ref-duration: 0.2s;
   --ref-duration-slow: 0.4s;
   /* One turn of a spinner, and one cycle of a pulse or a sliding bar. */
-  --ref-duration-spin: 0.8s;
+  --ref-duration-spin: 1.6s;
+  --ref-ease-spin: cubic-bezier(0.65, 0, 0.35, 1);
   --ref-duration-loop: 1.2s;
 }
 
@@ -233,33 +234,45 @@
 }
 
 /*
- * Spinners: every busy ring shares one geometry, a ring open on one side that turns once per
- * --ref-duration-spin in its text colour, --ref-spinner-size across. Partials place it, colour it
- * and pick its size; reduced motion stills it with every other animation.
+ * Spinners: every busy indicator is the library spinner, the indeterminate circular progress's
+ * quarter arc without its track, drawn in its text colour, --ref-spinner-size across. Each turn
+ * starts at the top, makes two revolutions that speed up and slow down, and ends at the top again.
+ * Partials place it, colour it and pick its size through their own slot class; reduced motion
+ * stills it with every other animation.
  */
-.ui-spinner,
-.ui-button__spinner,
-.ui-combobox__spinner,
-.ui-menu-item__spinner,
-.ui-menu__load-more-spinner,
-.ui-search-field__spinner,
-.ui-inline-error__spinner,
-.ui-banner__spinner,
-.ui-empty-state__spinner,
-.ui-chat-reasoning__spinner,
-.ui-chat-steps__spinner,
-.ui-chat-plan__spinner,
-.ui-chat-status-line__spinner,
-.ui-toast__spinner {
+.ui-spinner {
   display: inline-block;
   flex: none;
-  box-sizing: border-box;
   width: var(--ref-spinner-size);
   height: var(--ref-spinner-size);
-  border: 2px solid currentColor;
-  border-inline-end-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin var(--ref-duration-spin) linear infinite;
+}
+
+.ui-spinner__ring,
+.ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {
+  animation: ref-spinner-turn var(--ref-duration-spin) var(--ref-ease-spin) infinite;
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+.ui-spinner__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ui-spinner__fill {
+  stroke: currentColor;
+  stroke-width: 4;
+}
+
+@keyframes ref-spinner-turn {
+  from {
+    transform: rotate(0turn);
+  }
+  to {
+    transform: rotate(2turn);
+  }
 }
 
 /* Visually hidden: text kept for assistive technology but not drawn. */
@@ -334,12 +347,6 @@
   :root,
   :root[data-theme='dark'] {
     --ref-border: var(--ref-border-strong);
-  }
-}
-
-@keyframes ref-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

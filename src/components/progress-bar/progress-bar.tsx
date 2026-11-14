@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps, Size, Tone } from '../../core/props.js';
-import { useProgressBar } from '../../primitives/index.js';
+import { ProgressBarContext, useProgressBar, useSlottedContext } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { progressBarHooks as hooks } from './progress-bar-hooks.js';
 import { ProgressRing } from './progress-ring.js';
@@ -77,7 +77,10 @@ export interface ProgressValues {
   isIndeterminate: boolean;
 }
 
-const spinnerHooks = createHooks('spinner');
+const spinnerHooks = createHooks('spinner', ['ring', 'fill']);
+
+/** The share of the ring an indeterminate ring and the spinner leave open: a quarter arc is drawn. */
+const spinnerGap = 75;
 
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
 export function ProgressBar({ valueLabel, ...props }: ProgressBarProps) {
@@ -111,7 +114,8 @@ function RangeProgressBar({
           {shape === 'circular' ? (
             <ProgressRing
               hooks={hooks}
-              gap={values.isIndeterminate ? 75 : 100 - (values.percentage ?? 0)}
+              trackClass={hooks.slotClass('track')}
+              gap={values.isIndeterminate ? spinnerGap : 100 - (values.percentage ?? 0)}
             />
           ) : (
             <div {...hooks.slot('track')}>
@@ -128,20 +132,50 @@ function RangeProgressBar({
 }
 
 /**
- * A busy indicator for unmeasured work too small for a bar. Without `label` it is decorative, such
- * as the start of a busy line whose text carries the status; with one it stands alone as an
- * indeterminate progress bar named by the label.
+ * The library's one busy indicator for unmeasured work too small for a bar: the indeterminate
+ * circular progress's arc, without its track. Without `label` it is decorative, such as the start
+ * of a busy line whose text carries the status; with one it stands alone as an indeterminate
+ * progress bar named by the label. Components that show a busy state draw this spinner too, with
+ * their own slot class added.
  */
 export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps) {
   const hookProps = spinnerHooks.root({ className, data: { size } });
-  if (!label) return <span {...rest} {...hookProps} aria-hidden="true" />;
-  return <NamedSpinner {...rest} {...hookProps} label={label} />;
+  const ring = <ProgressRing hooks={spinnerHooks} gap={spinnerGap} />;
+  if (!label) {
+    return (
+      <span {...rest} {...hookProps} aria-hidden="true">
+        {ring}
+      </span>
+    );
+  }
+  return (
+    <NamedSpinner {...rest} {...hookProps} label={label}>
+      {ring}
+    </NamedSpinner>
+  );
 }
 
-/** The glyph stays a `<span>`, so a named spinner still sits inside a line of text. */
-function NamedSpinner({ id, label, ...rest }: SpinnerProps & { label: string }) {
-  const { progressBarProps } = useProgressBar({ id, 'aria-label': label, isIndeterminate: true });
-  return <span {...rest} {...progressBarProps} />;
+/**
+ * The glyph stays a `<span>`, so a named spinner still sits inside a line of text. Inside a pending
+ * button it takes the id the button names itself by, so the button reads its label and the spinner's.
+ */
+function NamedSpinner({
+  id,
+  label,
+  children,
+  ...rest
+}: SpinnerProps & { label: string; children: ReactNode }) {
+  const context = useSlottedContext(ProgressBarContext);
+  const { progressBarProps } = useProgressBar({
+    id: id ?? context?.id,
+    'aria-label': label,
+    isIndeterminate: true,
+  });
+  return (
+    <span {...rest} {...progressBarProps}>
+      {children}
+    </span>
+  );
 }
 
 export type { MeterProps, MeterShape, MeterSize, MeterTone, MeterValues } from './meter.js';

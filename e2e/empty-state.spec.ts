@@ -77,7 +77,8 @@ test.describe('Empty State lab', () => {
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await lab.open('empty-state');
-    const spinner = page.locator('.ui-empty-state__spinner').first();
+    // The library spinner turns its ring.
+    const spinner = page.locator('.ui-empty-state__spinner .ui-spinner__ring').first();
     await expect(spinner).toBeVisible();
     expect(
       await spinner.evaluate((node: Element) => getComputedStyle(node).animationDuration),

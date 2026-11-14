@@ -1,8 +1,9 @@
 /* Banner */
 
+/* The glyph, the actions and the dismiss button centre on the content, however many lines it takes. */
 .ui-banner {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   box-sizing: border-box;
   padding: 8px 12px;
@@ -44,7 +45,6 @@
 }
 
 .ui-banner__icon {
-  margin-block-start: 1px;
   color: var(--ref-tone);
 }
 

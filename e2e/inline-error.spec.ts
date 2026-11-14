@@ -1,27 +1,41 @@
 import { cellSelector, expect, matrixCell, test } from './fixtures.js';
 
 test.describe('Inline Error lab', () => {
-  test('UIC-INLINE-ERROR-1.3 moves recovery below a narrow message without overflowing', async ({
+  test('UIC-INLINE-ERROR-1.3 flows suggested actions after the message and wraps them whole', async ({
     page,
     lab,
   }) => {
     await lab.open('inline-error');
-    for (const [width, below] of [
+    for (const [width, wraps] of [
       ['280', true],
       ['480', false],
     ] as const) {
       const error = page.locator(
-        `${cellSelector(`recovery=long label width=${width}`)} .ui-inline-error`,
+        `${cellSelector(`recovery=two actions width=${width}`)} .ui-inline-error`,
       );
       const message = await error.locator('.ui-inline-error__message').boundingBox();
-      const retry = await error
-        .getByRole('button', { name: 'Reload the current versions' })
+      const retry = await error.getByRole('button', { name: 'Retry' }).boundingBox();
+      const reload = await error
+        .getByRole('button', { name: 'Reload the current version' })
         .boundingBox();
-      const messageBottom = (message?.y ?? 0) + (message?.height ?? 0);
-      if (below) expect(retry?.y ?? 0).toBeGreaterThanOrEqual(messageBottom - 1);
-      else expect(retry?.y ?? 0).toBeLessThan(messageBottom);
+      // Retry sits on the message's line, right after its last word.
+      expect(Math.abs((retry?.y ?? 0) - (message?.y ?? 0))).toBeLessThan(4);
+      expect(retry?.x ?? 0).toBeGreaterThan((message?.x ?? 0) + (message?.width ?? 0) - 1);
+      // The second link wraps onto the next line, under the message's start, only when it cannot fit.
+      if (wraps) {
+        expect(reload?.y ?? 0).toBeGreaterThan((retry?.y ?? 0) + (retry?.height ?? 0) - 1);
+        expect(Math.abs((reload?.x ?? 0) - (message?.x ?? 0))).toBeLessThan(10);
+      } else {
+        expect(Math.abs((reload?.y ?? 0) - (retry?.y ?? 0))).toBeLessThan(2);
+      }
       expect(await error.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+      // Links are text, like the message, with no frame of their own.
+      const link = error.getByRole('button', { name: 'Retry' });
+      await expect(link).toHaveAttribute('data-variant', 'link');
+      expect(await link.locator('svg').count()).toBe(0);
     }
+    const icons = matrixCell(page, 'recovery=icons width=480');
+    await expect(icons.getByRole('button', { name: 'Retry' }).locator('svg')).toHaveCount(1);
     const disabled = matrixCell(page, 'recovery=disabled width=480');
     await expect(disabled.getByRole('button', { name: 'Retry' })).toBeDisabled();
     const small = page.locator(
@@ -42,7 +56,7 @@ test.describe('Inline Error lab', () => {
     const error = demo.locator('.ui-inline-error');
     const glyph = await error.locator('.ui-inline-error__icon').boundingBox();
     expect(glyph?.width).toBe(16);
-    // The retry button sits beside the live message, so its label is not announced with it.
+    // The Retry link sits beside the live message, so its label is not announced with it.
     const retry = error.getByRole('button', { name: 'Retry' });
     await expect(alert.getByRole('button')).toHaveCount(0);
     await retry.focus();
@@ -116,7 +130,7 @@ test.describe('Inline Error lab', () => {
     await expect(pending).toHaveAttribute('data-pending', 'true');
     const spinner = pending.locator('.ui-inline-error__spinner');
     await expect(spinner).toBeVisible();
-    expect(await spinner.evaluate((node) => getComputedStyle(node).width)).toBe('14px');
+    expect(await spinner.evaluate((node) => getComputedStyle(node).width)).toBe('16px');
     await lab.expectAccessible();
   });
 });

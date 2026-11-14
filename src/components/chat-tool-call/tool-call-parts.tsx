@@ -10,7 +10,6 @@ import {
   type GlyphComponent,
   HandRaisedGlyph,
   NoSymbolGlyph,
-  RefreshGlyph,
   SearchGlyph,
   SuccessGlyph,
   TerminalGlyph,
@@ -23,6 +22,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
 import { CopyButton } from '../copy-button/copy-button.js';
 import { DisclosurePanel, DisclosureTitle } from '../disclosure/disclosure.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { formatToolValue } from './format-tool-call.js';
@@ -65,9 +65,9 @@ interface ToolCallBodyProps {
   children?: ReactNode;
 }
 
-const statusGlyphs: Readonly<Record<ChatToolCallStatus, GlyphComponent>> = {
+/** The glyph of each status but `running`, which shows the library spinner instead. */
+const statusGlyphs: Readonly<Record<Exclude<ChatToolCallStatus, 'running'>, GlyphComponent>> = {
   pending: ClockGlyph,
-  running: RefreshGlyph,
   'approval-requested': HandRaisedGlyph,
   succeeded: SuccessGlyph,
   failed: ErrorGlyph,
@@ -128,6 +128,8 @@ export function ToolCallTitle({
     <DisclosureTitle className={hooks.slotClass('heading')} triggerRef={triggerRef}>
       {status === 'succeeded' ? (
         <ToolCallIdentityGlyph identity={identity} />
+      ) : status === 'running' ? (
+        <Spinner className={hooks.slotClass('status-glyph')} />
       ) : (
         <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('status-glyph')} />
       )}

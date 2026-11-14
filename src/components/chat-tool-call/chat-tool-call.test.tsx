@@ -9,7 +9,7 @@ import { ChatToolCall, type ChatToolCallStatus } from './chat-tool-call.js';
 
 const statusTexts: Record<ChatToolCallStatus, [string, string]> = {
   pending: ['Pending', 'clock'],
-  running: ['Running', 'refresh'],
+  running: ['Running', 'spinner'],
   'approval-requested': ['Needs approval', 'hand-raised'],
   succeeded: ['Done', 'letter'],
   failed: ['Failed', 'error'],
@@ -129,7 +129,7 @@ describe('ChatToolCall', () => {
     expect(trigger).toHaveAccessibleName('Read notes.txt Running');
     expect(root.querySelector('.ui-chat-tool-call__target')).toHaveTextContent('notes.txt');
     const glyph = () => root.querySelector('.ui-chat-tool-call__status-glyph');
-    expect(glyph()).toHaveAttribute('data-glyph', 'refresh');
+    expect(glyph()).toHaveClass('ui-spinner');
     const kindGlyphs = {
       read: 'file-text',
       edit: 'edit',
@@ -163,7 +163,7 @@ describe('ChatToolCall', () => {
       <ChatToolCall id="call" name="read_files" source="OneDrive" status="running" />,
     );
     const glyph = () => container.querySelector('.ui-chat-tool-call__status-glyph');
-    expect(glyph()).toHaveAttribute('data-glyph', 'refresh');
+    expect(glyph()).toHaveClass('ui-spinner');
     rerender(<ChatToolCall id="call" name="read_files" source="OneDrive" status="succeeded" />);
     expect(glyph()).toHaveClass('ui-glyph');
     expect(glyph()).toHaveAttribute('data-glyph', 'letter');
@@ -219,10 +219,10 @@ describe('ChatToolCall', () => {
       const root = container.firstElementChild as HTMLElement;
       expect(root).toHaveAttribute('data-status', status);
       expect(root.querySelector('.ui-chat-tool-call__status')).toHaveTextContent(text);
-      expect(root.querySelector('.ui-chat-tool-call__status-glyph')).toHaveAttribute(
-        'data-glyph',
-        glyph,
-      );
+      const statusGlyph = root.querySelector('.ui-chat-tool-call__status-glyph');
+      // A running call shows the library spinner; every other status a named glyph.
+      if (glyph === 'spinner') expect(statusGlyph).toHaveClass('ui-spinner');
+      else expect(statusGlyph).toHaveAttribute('data-glyph', glyph);
       if (status === 'running') expect(root).toHaveAttribute('aria-busy', 'true');
       else expect(root).not.toHaveAttribute('aria-busy');
       unmount();

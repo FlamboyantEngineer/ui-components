@@ -105,7 +105,11 @@ export function Meter({
             values={values}
           />
           {shape === 'circular' ? (
-            <ProgressRing hooks={hooks} gap={100 - (values.percentage ?? 0)} />
+            <ProgressRing
+              hooks={hooks}
+              trackClass={hooks.slotClass('track')}
+              gap={100 - (values.percentage ?? 0)}
+            />
           ) : (
             <div {...hooks.slot('track')}>
               <div {...hooks.slot('fill')} style={{ width: `${values.percentage ?? 0}%` }} />

@@ -9,13 +9,13 @@ import {
   Button as AriaButton,
   FocusableContext,
   Link as AriaLink,
-  ProgressBar,
 } from '../../primitives/index.js';
 import { toBubblingKeyHandlers } from '../../utils/bubbling-keys.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { isNewContextTarget } from '../../utils/merge-safe-rel.js';
 import { hasIcon, Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import type { LinkUnderline } from '../link/link.js';
+import { Spinner } from '../progress-bar/progress-bar.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -106,12 +106,10 @@ const hooks = createHooks('button', [
   'new-tab-label',
 ]);
 
-/** The busy indicator of a pending button: an indeterminate progress bar React Aria announces. */
+/** The busy indicator of a pending button: the library spinner, named so it is announced. */
 export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
   const strings = useUiStrings();
-  return (
-    <ProgressBar isIndeterminate aria-label={label ?? strings.loading} className={className} />
-  );
+  return <Spinner label={label ?? strings.loading} className={className} />;
 }
 
 /**

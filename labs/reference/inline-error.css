@@ -1,10 +1,13 @@
 /* Inline Error */
 
+/*
+ * The message and its suggested actions flow as one paragraph after the glyph, so a link sits right
+ * after the last word and wraps with the text instead of taking a column of its own.
+ */
 .ui-inline-error {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 4px 8px;
+  --ref-inline-error-glyph: var(--ref-icon-size-lg);
+  position: relative;
+  padding-inline-start: calc(var(--ref-inline-error-glyph) + 6px);
   color: var(--ref-danger);
 }
 .ui-inline-error[data-tone='warning'] {
@@ -16,25 +19,43 @@
 .ui-inline-error[data-pending] {
   color: var(--ref-muted);
 }
-.ui-inline-error__icon {
-  margin-block-start: 0.15em;
+.ui-inline-error__icon,
+.ui-inline-error__spinner {
+  position: absolute;
+  inset-block-start: calc((1lh - var(--ref-inline-error-glyph)) / 2);
+  inset-inline-start: 0;
+  width: var(--ref-inline-error-glyph);
+  height: var(--ref-inline-error-glyph);
 }
 .ui-inline-error__spinner {
-  --ref-spinner-size: var(--ref-icon-size-md);
-  margin-block-start: 0.15em;
+  --ref-spinner-size: var(--ref-inline-error-glyph);
+}
+.ui-inline-error__message,
+.ui-inline-error__retry,
+.ui-inline-error__action {
+  margin-inline-end: 0.25em;
 }
 .ui-inline-error__message {
-  flex: 1 1 12rem;
-  min-width: 0;
+  display: inline;
   overflow-wrap: anywhere;
 }
 .ui-inline-error__message > p {
+  display: inline;
   margin: 0;
 }
 .ui-inline-error__message > :is(ul, ol) {
   margin: 0;
   padding-inline-start: 1.25em;
 }
-.ui-inline-error__retry {
-  flex: none;
+/*
+ * Each link keeps its words together and takes the message's own size and line box. The gap before
+ * it is a word space plus the previous part's end margin, which a wrapped link leaves on the line
+ * above, so it starts flush with the message.
+ */
+.ui-inline-error :is(.ui-inline-error__retry, .ui-inline-error__action) {
+  height: auto;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+  vertical-align: top;
 }

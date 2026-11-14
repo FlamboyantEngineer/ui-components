@@ -291,3 +291,10 @@
     animation: none;
   }
 }
+
+/* Busy activity: the library spinner at the small icon size, in the trigger's or line's colour. */
+.ui-chat-reasoning__spinner,
+.ui-chat-steps__spinner,
+.ui-chat-status-line__spinner {
+  --ref-spinner-size: var(--ref-icon-size-sm);
+}
