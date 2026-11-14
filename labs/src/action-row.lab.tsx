@@ -20,6 +20,10 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'pending', 'with lead'] as const;
 const noop = () => undefined;
 
+// Lab-only frame: a row puts its actions at its end, so on a wide page they would sit far from
+// everything else; each case keeps to a readable width.
+const caseFrame = { maxWidth: 420 };
+
 function actionsFor(state: (typeof states)[number]): ActionRowAction[] {
   return [
     {
@@ -40,7 +44,7 @@ function actionsFor(state: (typeof states)[number]): ActionRowAction[] {
 function MoreMenu() {
   const [last, setLast] = useState('none');
   return (
-    <div data-lab-case="more-menu">
+    <div style={caseFrame} data-lab-case="more-menu">
       <ActionRow
         lead={<strong>Report.pdf</strong>}
         actions={[
@@ -127,14 +131,17 @@ function SlowSave() {
     return new Promise<void>((resolve) => setTimeout(resolve, 2000));
   };
   return (
-    <div style={{ width: 30 }} data-lab-case="slow-save">
-      <ActionRow
-        overflow="menu"
-        actions={[
-          { verb: 'refresh', onPress: noop },
-          { verb: 'save', onPress: save },
-        ]}
-      />
+    <div data-lab-case="slow-save">
+      {/* Too narrow for any action, so every action is in the more menu. */}
+      <div style={{ width: 30 }}>
+        <ActionRow
+          overflow="menu"
+          actions={[
+            { verb: 'refresh', onPress: noop },
+            { verb: 'save', onPress: save },
+          ]}
+        />
+      </div>
       <p>
         Saves started: <output data-lab-output="saves">{saves}</output>
       </p>
@@ -164,7 +171,7 @@ function ChangingActions() {
     onPress: () => setLast('share'),
   };
   return (
-    <div data-lab-case="changing">
+    <div style={caseFrame} data-lab-case="changing">
       <ActionRow
         toolbar
         aria-label="Changing actions"
@@ -200,7 +207,7 @@ function LoadedEntries() {
     onAction: (key) => setLast(String(key)),
   };
   return (
-    <div data-lab-case="loaded">
+    <div style={caseFrame} data-lab-case="loaded">
       <ActionRow toolbar aria-label="Loaded entries" actions={[more]} />
       <button type="button" onClick={() => setItems([])}>
         Clear entries
@@ -227,11 +234,14 @@ function SharedIdMenus() {
     ],
   });
   return (
-    <div style={{ width: 30 }} data-lab-case="shared-ids">
-      <ActionRow
-        overflow="menu"
-        actions={[menuAction('sheet', 'Sheet'), menuAction('chart', 'Chart')]}
-      />
+    <div data-lab-case="shared-ids">
+      {/* Too narrow for any action, so every action is in the more menu. */}
+      <div style={{ width: 30 }}>
+        <ActionRow
+          overflow="menu"
+          actions={[menuAction('sheet', 'Sheet'), menuAction('chart', 'Chart')]}
+        />
+      </div>
       <p>
         Last action: <output data-lab-output="last">{last}</output>
       </p>
@@ -243,7 +253,7 @@ function SelectionBar() {
   const [selected, setSelected] = useState(['Apple', 'Cherry']);
   const fruit = ['Apple', 'Banana', 'Cherry'];
   return (
-    <div data-lab-case="selection">
+    <div style={caseFrame} data-lab-case="selection">
       {fruit.map((name) => (
         <label key={name} style={{ display: 'block' }}>
           <input
@@ -297,7 +307,7 @@ function EmptyRow() {
       ]
     : [];
   return (
-    <div data-lab-case="empty-row">
+    <div style={caseFrame} data-lab-case="empty-row">
       <div role="group" aria-label="Row inputs">
         <Switch isSelected={hasActions} onChange={setHasActions}>
           Actions
@@ -344,7 +354,7 @@ mountLab(
       title="Fixed order"
       description="Every verb given in reverse order, plus two custom actions, drawn in the row's order."
     >
-      <div data-lab-case="order">
+      <div style={caseFrame} data-lab-case="order">
         <ActionRow
           actions={[
             { verb: 'close', onPress: noop },
@@ -365,7 +375,7 @@ mountLab(
       title="Custom action without an icon"
       description="A custom action's icon is optional: without one it shows its label as text, still a toggle."
     >
-      <div data-lab-case="no-icon">
+      <div style={caseFrame} data-lab-case="no-icon">
         <ActionRow
           actions={[
             { verb: 'custom', id: 'schedule', label: 'Schedule', isSelected: false, onPress: noop },
@@ -379,7 +389,7 @@ mountLab(
       description="The more verb and the custom sort action open menus of typed items. The disabled delete keeps focus so its tooltip can explain why."
     >
       <MoreMenu />
-      <div data-lab-case="disabled-reason">
+      <div style={caseFrame} data-lab-case="disabled-reason">
         <ActionRow
           actions={[
             {

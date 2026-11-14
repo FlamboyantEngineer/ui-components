@@ -248,12 +248,18 @@ function RevealingForm() {
         <PropertyFilter aria-label="Page setup" defaultQuery="Copies">
           <PropertySection title="Page" defaultExpanded={false}>
             <PropertyRow label="Title">
-              <TextField label="Title" name="title" isRequired />
+              <TextField label="Title" labelLayout="control-only" name="title" isRequired />
             </PropertyRow>
           </PropertySection>
           <PropertySection title="Print">
             <PropertyRow label="Copies">
-              <TextField label="Copies" name="copies" defaultValue="2" isRequired />
+              <TextField
+                label="Copies"
+                labelLayout="control-only"
+                name="copies"
+                defaultValue="2"
+                isRequired
+              />
             </PropertyRow>
           </PropertySection>
         </PropertyFilter>

@@ -385,7 +385,7 @@ Verification: `src/components/pdf-viewer/pdf-commands.test.tsx`, `e2e/pdf-viewer
 
 ### UIC-PDF-VIEWER-10.1 - Sidebar
 
-A toggle button (`sidebar` glyph, the provider's `sidebar` string) shall show and hide a `ui-pdf-viewer__sidebar` panel in the stage before the page scroller, pressed while it shows; it is disabled until the document has opened. `defaultSidebarOpen` opens it with the viewer. The panel holds [Tabs](TABS.md) named with the `sidebar` string: the page thumbnails (the `pages` string) and the outline (the `outline` string), which is disabled when the document has none and selected when it has one.
+A toggle button (`sidebar` glyph, the provider's `sidebar` string) shall show and hide a `ui-pdf-viewer__sidebar` panel in the stage before the page scroller, pressed while it shows; it is disabled until the document has opened. `defaultSidebarOpen` opens it with the viewer. The panel holds [Tabs](TABS.md) named with the `sidebar` string: the page thumbnails (the `pages` string) and the outline (the `outline` string), which is disabled when the document has none and selected when it has one. In the reference sheet the tab row keeps its full height at any sidebar height and scroll position: only the tab's panel scrolls, below the row.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`, `src/components/pdf-viewer/pdf-viewer-stage.tsx`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`

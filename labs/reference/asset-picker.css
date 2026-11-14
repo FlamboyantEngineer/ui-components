@@ -53,6 +53,9 @@
 .ui-asset-picker__details {
   display: grid;
   gap: 8px;
+  /* The details appear once an image is chosen; they take the picker's width rather than widening
+     it, so the results keep the size they had before the first choice. */
+  contain: inline-size;
 }
 
 .ui-asset-picker__alt {
@@ -62,6 +65,7 @@
 .ui-asset-picker__size {
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .ui-asset-picker__constrain,

@@ -370,4 +370,19 @@ test.describe('Property Panel host cases', () => {
     await expect(cache).toHaveValue('256');
     await lab.expectAccessible(familySelector('property-panel-host-cases'));
   });
+
+  test('UIC-PROPERTY-PANEL-1.1 keeps a usable width in a cell and a form that shrink to fit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const counted = matrixCell(page, { variant: 'subtle', count: '128' }).locator(
+      '.ui-property-panel',
+    );
+    expect((await counted.boundingBox())?.width).toBeGreaterThanOrEqual(190);
+    const revealing = page.locator('[data-lab-revealing] .ui-property-panel');
+    const frame = await page.locator('[data-lab-revealing]').boundingBox();
+    expect((await revealing.boundingBox())?.width).toBe(frame?.width);
+    await expect(revealing.locator('.ui-field__label')).toHaveCount(0);
+  });
 });

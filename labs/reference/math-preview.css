@@ -12,6 +12,20 @@
   font-size: 1.1em;
 }
 
+/* Math wider than its box scrolls inside the box instead of spilling past it; it does not wrap. An
+   inline flex box, unlike an inline block, keeps the math's baseline on the line while it scrolls. */
+.ui-math-preview__math {
+  display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: baseline;
+}
+
+.ui-math-preview[data-display='display'] .ui-math-preview__math {
+  display: block;
+}
+
 .ui-math-preview[data-stale] .ui-math-preview__math {
   opacity: 0.6;
 }
