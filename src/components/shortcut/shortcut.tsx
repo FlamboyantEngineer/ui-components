@@ -25,9 +25,9 @@ export type ShortcutAppearance = 'keycaps' | 'text';
 
 /**
  * The appearance of every shortcut inside it that sets none, such as those of menu items and
- * button tooltips. Defaults to `keycaps`.
+ * button tooltips. Defaults to `text`.
  */
-export const ShortcutAppearanceContext = createContext<ShortcutAppearance>('keycaps');
+export const ShortcutAppearanceContext = createContext<ShortcutAppearance>('text');
 
 export interface ShortcutProps extends BaseProps, RefProps<HTMLElement> {
   /**
@@ -39,7 +39,7 @@ export interface ShortcutProps extends BaseProps, RefProps<HTMLElement> {
   platform?: ShortcutPlatform | undefined;
   /** Draw only the keycaps, for a control that already describes the chord. */
   decorative?: boolean | undefined;
-  /** Keycaps or quiet text. Defaults to the nearest `ShortcutAppearanceContext`, else `keycaps`. */
+  /** Keycaps or quiet text. Defaults to the nearest `ShortcutAppearanceContext`, else `text`. */
   appearance?: ShortcutAppearance | undefined;
 }
 

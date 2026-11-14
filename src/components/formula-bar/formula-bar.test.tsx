@@ -241,14 +241,13 @@ describe('FormulaBar', () => {
         cell={{ row: 0, column: 0 }}
         value="=1"
         showActions={false}
-        evaluate={() => '1'}
         onCommit={onCommit}
       />,
     );
     expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     expect(container.querySelector('.ui-formula-bar__cancel')).toBeNull();
-    expect(contentBox()).toHaveAccessibleDescription('Result 1 Enter confirms, Escape cancels.');
+    expect(contentBox()).toHaveAccessibleDescription('Enter confirms, Escape cancels.');
     await user.click(contentBox());
     await user.keyboard('{End}+2{Escape}');
     expect(contentBox()).toHaveValue('=1');
@@ -478,35 +477,11 @@ describe('FormulaBar', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it('UIC-FORMULA-BAR-3.3 shows the caller’s evaluation of the draft', async () => {
-    const user = userEvent.setup();
-    const evaluate = vi.fn((value: string) => (value.startsWith('=') ? `${value.length}` : value));
-    const { container } = render(
-      <FormulaBar cell={{ row: 2, column: 1 }} value="=1+1" evaluate={evaluate} />,
-    );
-    const result = requireDefined(container.querySelector('.ui-formula-bar__result'));
-    expect(result).toHaveTextContent('Result 4');
-    expect(evaluate).toHaveBeenLastCalledWith('=1+1', { row: 2, column: 1 });
-    expect(contentBox()).toHaveAccessibleDescription('Result 4');
-    await user.click(contentBox());
-    await user.keyboard('{End}0');
-    expect(result).toHaveTextContent('Result 5');
-    expectHooksMatchSpec(container, 'FORMULA-BAR', { slots: ['result'] });
-  });
-
-  it('UIC-FORMULA-BAR-3.3 leaves out an empty result, keeping no room for it', async () => {
-    const user = userEvent.setup();
-    const { container } = render(
-      <FormulaBar cell={{ row: 0, column: 0 }} value="" evaluate={(value) => value} />,
-    );
-    expect(container.querySelector('.ui-formula-bar__result')).not.toBeInTheDocument();
+  it('UIC-FORMULA-BAR-3.3 shows the content alone, with no result beside it', () => {
+    const { container } = render(<FormulaBar cell={{ row: 1, column: 3 }} value="=B2*C2" />);
+    expect(contentBox()).toHaveValue('=B2*C2');
     expect(contentBox()).not.toHaveAttribute('aria-describedby');
-    await user.click(contentBox());
-    await user.keyboard('7');
-    expect(container.querySelector('.ui-formula-bar__result')).toHaveTextContent('Result 7');
-    expect(contentBox()).toHaveAccessibleDescription('Result 7');
-    await user.keyboard('{Backspace}');
-    expect(container.querySelector('.ui-formula-bar__result')).not.toBeInTheDocument();
+    expect(container.querySelector('.ui-formula-bar__result')).toBeNull();
   });
 
   it('UIC-FORMULA-BAR-4.1 names the group', () => {

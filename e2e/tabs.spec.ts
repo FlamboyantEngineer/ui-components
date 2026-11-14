@@ -326,6 +326,30 @@ test.describe('Tabs lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-TABS-2.9 fades the edges that hide tabs unless opted out, and glides the list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const faded = page.locator('[data-lab-fades="on"]');
+    const list = faded.getByRole('tablist');
+    const start = faded.locator('.ui-tabs__fade[data-edge="start"]');
+    const end = faded.locator('.ui-tabs__fade[data-edge="end"]');
+    await expect(start).toBeHidden();
+    await expect(end).toBeVisible();
+    await expect(list).toHaveCSS('scroll-behavior', 'smooth');
+    // The end fade lies over the list's end without moving it.
+    const [listBox, fadeBox] = await Promise.all([list.boundingBox(), end.boundingBox()]);
+    expect(Math.round((fadeBox?.x ?? 0) + (fadeBox?.width ?? 0))).toBe(
+      Math.round((listBox?.x ?? 0) + (listBox?.width ?? 0)),
+    );
+    await list.hover();
+    await page.mouse.wheel(0, 200);
+    await expect(start).toBeVisible();
+    await expect(page.locator('[data-lab-fades="off"] .ui-tabs__fade')).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-section="Edge fades"]');
+  });
+
   test('UIC-TABS-2.7 pages the list with scroll buttons that stay out of the tab order', async ({
     page,
     lab,

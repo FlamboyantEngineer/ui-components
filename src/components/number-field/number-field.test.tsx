@@ -61,7 +61,7 @@ describe('NumberField', () => {
   it('UIC-NUMBER-FIELD-1.1 is a field around a number field that starts empty', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    const { container } = render(<NumberField label="Weight" onChange={onChange} />);
+    const { container } = render(<NumberField showStepper label="Weight" onChange={onChange} />);
     expect(root(container)).toHaveClass('ui-field', 'ui-number-field');
     const input = screen.getByRole('textbox', { name: 'Weight' });
     expect(input).toHaveValue('');
@@ -139,7 +139,7 @@ describe('NumberField', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container, unmount } = render(
-      <NumberField label="Weight" defaultValue={9} maxValue={10} onCommit={onCommit} />,
+      <NumberField label="Weight" defaultValue={9} maxValue={10} onCommit={onCommit} showStepper />,
     );
     const increase = screen.getByRole('button', { name: 'Increase Weight' });
     const decrease = screen.getByRole('button', { name: 'Decrease Weight' });
@@ -153,12 +153,12 @@ describe('NumberField', () => {
     await user.click(input);
     await user.keyboard('{ArrowDown}');
     expect(input).toHaveValue('9');
-    expect(root(container)).not.toHaveAttribute('data-hide-stepper');
+    expect(root(container)).toHaveAttribute('data-show-stepper', 'true');
     unmount();
 
-    const view = render(<NumberField label="Weight" defaultValue={2} step={2} hideStepper />);
+    const view = render(<NumberField label="Weight" defaultValue={2} step={2} />);
     expect(screen.queryByRole('button', { name: 'Increase Weight' })).not.toBeInTheDocument();
-    expect(root(view.container)).toHaveAttribute('data-hide-stepper', 'true');
+    expect(root(view.container)).not.toHaveAttribute('data-show-stepper');
     await user.click(screen.getByRole('textbox'));
     await user.keyboard('{ArrowUp}');
     expect(screen.getByRole('textbox')).toHaveValue('4');
@@ -168,18 +168,18 @@ describe('NumberField', () => {
   it('UIC-NUMBER-FIELD-1.4 names, describes and locks the input', async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <NumberField id="weight" label="Weight" description="In kilograms." isRequired />,
+      <NumberField showStepper id="weight" label="Weight" description="In kilograms." isRequired />,
     );
     const input = screen.getByRole('textbox', { name: 'Weight' });
     expect(input).toBeRequired();
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-errormessage', 'weight-message');
     expect(input).toHaveAccessibleDescription('In kilograms. A value is required.');
-    rerender(<NumberField id="weight" label="Weight" value={3} isReadOnly />);
+    rerender(<NumberField showStepper id="weight" label="Weight" value={3} isReadOnly />);
     expect(screen.getByRole('textbox')).toHaveAttribute('readonly');
     await user.click(screen.getByRole('button', { name: 'Increase Weight' }));
     expect(screen.getByRole('textbox')).toHaveValue('3');
-    rerender(<NumberField id="weight" label="Weight" value={3} isDisabled />);
+    rerender(<NumberField showStepper id="weight" label="Weight" value={3} isDisabled />);
     expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
@@ -348,6 +348,7 @@ describe('NumberField', () => {
     const onCommit = vi.fn();
     const { container } = render(
       <NumberField
+        showStepper
         showRestoreButton
         label="Weight"
         committedValue={4}
@@ -397,6 +398,7 @@ describe('NumberField', () => {
       const onPress = vi.fn();
       render(
         <NumberField
+          showStepper
           label="Length"
           defaultValue={4}
           {...props}
@@ -415,7 +417,13 @@ describe('NumberField', () => {
 
   it('UIC-NUMBER-FIELD-3.1 frames literal affixes with the number', () => {
     const { container } = render(
-      <NumberField label="Rent" defaultValue={1000} startAdornment="$" endAdornment="/mo" />,
+      <NumberField
+        showStepper
+        label="Rent"
+        defaultValue={1000}
+        startAdornment="$"
+        endAdornment="/mo"
+      />,
     );
     const group = container.querySelector('.ui-number-field__group');
     expect([...(group?.children ?? [])].map((node) => node.className.split(' ')[0])).toEqual([
@@ -529,6 +537,7 @@ describe('NumberField', () => {
       const onCommit = vi.fn();
       render(
         <NumberField
+          showStepper
           label="Weight"
           radix={radix}
           defaultValue={4}
@@ -574,7 +583,13 @@ describe('NumberField', () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { rerender } = render(
-      <NumberField label="Weight" defaultValue={5} largeStep={10} onCommit={onCommit} />,
+      <NumberField
+        showStepper
+        label="Weight"
+        defaultValue={5}
+        largeStep={10}
+        onCommit={onCommit}
+      />,
     );
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -590,7 +605,14 @@ describe('NumberField', () => {
     await user.keyboard('{/Alt}');
     expect(input).toHaveValue('30');
     rerender(
-      <NumberField label="Weight" value={30} largeStep={10} isReadOnly onCommit={onCommit} />,
+      <NumberField
+        showStepper
+        label="Weight"
+        value={30}
+        largeStep={10}
+        isReadOnly
+        onCommit={onCommit}
+      />,
     );
     await user.keyboard('{Shift>}');
     await user.click(screen.getByRole('button', { name: /Increase/ }));

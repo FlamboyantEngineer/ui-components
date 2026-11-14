@@ -12,6 +12,7 @@ function renderSize(props: Partial<NumberEntryFieldProps> = {}) {
   const onCommit = vi.fn();
   render(
     <NumberField
+      showStepper
       label="Size"
       stepValues={fontSizes}
       onChange={onChange}
@@ -104,10 +105,10 @@ describe('NumberField with stepValues', () => {
 
   it('UIC-NUMBER-FIELD-3.5 starts an empty value at the first or last preset', async () => {
     const user = userEvent.setup();
-    render(<NumberField label="Up" stepValues={fontSizes} />);
+    render(<NumberField showStepper label="Up" stepValues={fontSizes} />);
     await user.click(screen.getByRole('button', { name: 'Increase Up' }));
     expect(screen.getByRole('textbox', { name: 'Up' })).toHaveValue('8');
-    render(<NumberField label="Down" stepValues={fontSizes} />);
+    render(<NumberField showStepper label="Down" stepValues={fontSizes} />);
     await user.click(screen.getByRole('button', { name: 'Decrease Down' }));
     expect(screen.getByRole('textbox', { name: 'Down' })).toHaveValue('36');
   });
@@ -154,6 +155,7 @@ describe('NumberField with stepValues', () => {
     expect(decrease).toHaveClass('ui-number-field__decrement');
     render(
       <NumberField
+        showStepper
         label="Mask"
         radix={16}
         decrementIcon={DecreaseFontSizeGlyph}
@@ -162,7 +164,7 @@ describe('NumberField with stepValues', () => {
     );
     const hex = screen.getByRole('button', { name: 'Increase Mask' });
     expect(hex.querySelector('.ui-glyph')).toHaveAttribute('data-glyph', 'increase-font-size');
-    render(<NumberField label="Plain" />);
+    render(<NumberField showStepper label="Plain" />);
     expect(
       screen.getByRole('button', { name: 'Increase Plain' }).querySelector('.ui-glyph'),
     ).toHaveAttribute('data-glyph', 'plus');

@@ -717,7 +717,6 @@
   "formulaCellReference": "セル参照",
   "formulaCellContent": "セルの内容",
   "formulaInvalidReference": "{text} という名前のセルはありません",
-  "formulaResult": "結果",
   "formulaKeysHint": "Enterで確定、Escでキャンセル。",
   "formulaFunctions": "関数を挿入",
   "relationItems": "項目",

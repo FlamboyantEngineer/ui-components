@@ -143,3 +143,27 @@ test('UIC-LIST-FILTER-1.5 bounds a long action list in its overflow menu without
   await page.keyboard.press('Escape');
   await expect(demo.getByRole('radio', { name: 'All, 7' })).toBeChecked();
 });
+
+test('UIC-LIST-FILTER-1.6 UIC-SEGMENTED-CHOICE-1.10 folds the filters to icons in a narrow row and back when it widens', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-filter');
+  const demo = page.locator('[data-lab-demo="narrow-filter"]');
+  const filters = demo.locator('.ui-list-filter__filters');
+  await expect(filters).toHaveAttribute('data-icon-only', 'true');
+  const mentions = demo.getByRole('radio', { name: 'Mentions, 0' });
+  await expect(mentions.locator('.ui-segmented-choice__label')).toHaveCount(0);
+  await mentions.focus();
+  await expect(page.getByRole('tooltip')).toHaveText('Mentions');
+  // The folded filters fit beside the actions without scrolling.
+  const lead = demo.locator('.ui-action-row__lead');
+  expect(await lead.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await demo.evaluate((element) => {
+    element.style.width = '600px';
+  });
+  await expect(filters).not.toHaveAttribute('data-icon-only');
+  await expect(mentions).toHaveText(/Mentions/);
+  await expect(mentions).toBeFocused();
+  await lab.expectAccessible('[data-lab-section="Narrow panel"]');
+});

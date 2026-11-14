@@ -332,7 +332,7 @@
   text-decoration: line-through;
 }
 .ui-table__row[data-status='low'] > .ui-table__cell:last-child {
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
+  background: color-mix(in srgb, var(--ref-warning-fill) var(--ref-tint), transparent);
 }
 :is(
   .ui-table__row,

@@ -19,8 +19,8 @@
   outline-offset: 2px;
 }
 .ui-banner:not([data-tone='neutral']) {
-  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-entering] {
   animation: ref-banner-enter var(--ref-duration) ease-out;

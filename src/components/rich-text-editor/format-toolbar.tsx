@@ -20,9 +20,9 @@ export interface FormatToolbarProps
   /** Controls after the built-in ones, such as an `InsertMenuButton` or the caller's own. */
   children?: ReactNode;
   /**
-   * How the block type select draws its options: `plain`, the default, with a glyph and the name,
-   * or `preview`, the name alone in a `block-preview` slot naming the block type, for a host's
-   * styles to draw each name the way its block looks.
+   * How the block type select draws its options: `preview`, the default, the name alone in a
+   * `block-preview` slot naming the block type, for a host's styles to draw each name the way its
+   * block looks, or `plain`, with a glyph and the name.
    */
   blockTypeLabels?: BlockTypeLabels | undefined;
 }
@@ -38,7 +38,7 @@ export function FormatToolbar({
   ref,
   className,
   children,
-  blockTypeLabels = 'plain',
+  blockTypeLabels = 'preview',
   ...rest
 }: FormatToolbarProps) {
   const strings = useUiStrings();

@@ -605,7 +605,7 @@ test.describe('Menu lab', () => {
       'Weekly digest of every shared folder you follow 3 unread',
     );
     await expect(menu.getByRole('menuitem', { name: /^Updates/ })).toHaveAccessibleName(
-      'Updates Control U 12 unread',
+      'Updates Control Alt Shift U 12 unread',
     );
     await expect(menu.getByRole('menuitem', { name: /^Updates/ })).toContainText('9+');
     await expect(menu.getByRole('menuitem', { name: /^Mentions/ })).toHaveAccessibleName(

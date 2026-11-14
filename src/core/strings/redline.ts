@@ -44,8 +44,6 @@ interface RedlineStrings {
   formulaCellContent: string;
   /** Says that a typed reference names no cell of the grid. */
   formulaInvalidReference: (text: string) => string;
-  /** Labels the evaluated result of the content being edited. */
-  formulaResult: string;
   /** Describes the formula bar's content without its buttons: the keys that confirm and cancel. */
   formulaKeysHint: string;
   /** Names the formula bar's fₓ button, which lists functions to insert. */

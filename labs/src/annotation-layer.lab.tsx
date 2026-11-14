@@ -133,6 +133,49 @@ function ShadowReview() {
   );
 }
 
+/** Two notes whose ids differ only in type, 1 and '1', each anchored to its own phrase. */
+function NumericAndTextIds() {
+  const [currentKey, setCurrentKey] = useState<Key | null>(null);
+  const label = (key: Key | null) => (key === null ? 'none' : `${typeof key} ${String(key)}`);
+  return (
+    <div data-lab-demo="id-types">
+      <p>
+        Active: <output data-lab-active>{label(currentKey)}</output>
+      </p>
+      <AnnotationLayer
+        annotations={[
+          { id: 1, targetId: 'id-types-number' },
+          { id: '1', targetId: 'id-types-text' },
+        ]}
+        currentKey={currentKey}
+        onCurrentKeyChange={setCurrentKey}
+      >
+        <p>
+          Line the tin with <span id="id-types-number">paper and beans</span>, then{' '}
+          <span id="id-types-text">bake the shell blind</span> for 15 minutes.
+        </p>
+        <AnnotationMargin
+          aria-label="Notes by id type"
+          renderCard={(annotation, { isActive }) => (
+            <CommentThread
+              aria-label={`Note with the ${typeof annotation.id} ID 1`}
+              quote={typeof annotation.id === 'number' ? 'paper and beans' : 'bake the shell blind'}
+              isSelected={isActive}
+              isReadOnly
+            >
+              <CommentThreadReply
+                author={typeof annotation.id === 'number' ? jon : lena}
+                time="2026-04-20T09:30:00"
+                text={`Anchored by the ${typeof annotation.id} ID 1.`}
+              />
+            </CommentThread>
+          )}
+        />
+      </AnnotationLayer>
+    </div>
+  );
+}
+
 /** A review the reader works through: press a mark or a card, or move between cards by keyboard. */
 function LiveReview() {
   const [currentKey, setCurrentKey] = useState<Key | null>(null);
@@ -305,7 +348,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrolling and changing content"
-      description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight and its underline stay inside the visible part of the phrase, even at the region’s edge, and disappear when it scrolls out. Pressing the phrase makes its note active."
+      description="The steps scroll inside the layer, and their own button adds a step above the note without the layer rendering. The highlight stays inside the visible part of the phrase, even at the region’s edge, and disappear when it scrolls out. Pressing the phrase makes its note active."
     >
       <ScrollingReview />
     </LabSection>
@@ -317,17 +360,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Numeric and text IDs"
-      description="The numeric ID 1 and the text ID '1' identify separate cards."
+      description="The numeric ID 1 and the text ID '1' anchor two phrases and identify separate cards: pressing either phrase or card makes only that one active."
     >
-      <AnnotationLayer
-        annotations={[
-          { id: 1, rects: [{ top: 0, left: 0, width: 20, height: 20 }] },
-          { id: '1', rects: [{ top: 40, left: 0, width: 20, height: 20 }] },
-        ]}
-      >
-        <p>Two annotations with different primitive ID types.</p>
-        <AnnotationMargin renderCard={(annotation) => `${typeof annotation.id} ID card`} />
-      </AnnotationLayer>
+      <NumericAndTextIds />
     </LabSection>
     <LabSection
       title="Inside a shadow root"

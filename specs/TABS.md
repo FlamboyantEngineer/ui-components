@@ -108,6 +108,13 @@ With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__re
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-selection.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
+### UIC-TABS-2.9 - Edge fades
+
+A horizontal list that scrolls shall, by default, sit in a `ui-tabs__bar` element with a decorative `ui-tabs__fade` element (`data-edge` `start` or `end`, hidden from assistive technology) before and after it, each hidden with the native `hidden` attribute while its edge hides no tabs, as the [scroll strip hook](SCROLL-STRIP.md) measures it, as a [Toolbar Scroller](TOOLBAR-SCROLLER.md)'s fades do. `showEdgeFades={false}` draws none, and a list with an overflow menu, or a vertical list, never does. The reference sheet lays each fade over its edge of the list without moving the list or the bar's other parts, from the canvas to transparent, and lets the list glide (`scroll-behavior: smooth`) as the wheel, a scroll button or a selection moves it, unless the reader asks for reduced motion.
+
+Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-list-layout.ts`, `src/components/tabs/tab-bar.tsx`, `labs/reference/tabs.css`
+Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
+
 ## UIC-TABS-3 - Editing
 
 ### UIC-TABS-3.1 - Renaming in place
@@ -192,11 +199,12 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | Hook                     | Kind      | Values                   | Description                                                                              |
 | ------------------------ | --------- | ------------------------ | ---------------------------------------------------------------------------------------- |
 | `ui-tabs`                | root      |                          | The `Tabs` element holding the list and panels.                                          |
-| `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons or an add button.                  |
+| `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons, edge fades or an add button.      |
 | `ui-tabs__owner`         | slot      |                          | The semantic tablist owning mounted tabs when action parts are present.                  |
 | `ui-tabs__action`        | slot      |                          | An ordinary action part, excluded from tab selection.                                    |
 | `ui-tabs__list`          | slot      |                          | The visual `TabList` (`role="group"` with actions, otherwise `tablist`).                 |
 | `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                                      |
+| `ui-tabs__fade`          | slot      |                          | A decorative fade over an edge of a scrolling list that hides tabs.                      |
 | `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                                             |
 | `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                                       |
 | `ui-tabs__tab`           | slot      |                          | One `Tab` (`role="tab"`, an `<a>` with `href`).                                          |
@@ -213,7 +221,7 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria).               |
 | `data-inline-actions`    | state     | `true`                   | The bar contains independent action parts; its reference layout fills the available row. |
 | `data-overflow`          | attribute | `scroll`, `menu`         | What the bar's list does with tabs that do not fit.                                      |
-| `data-edge`              | attribute | `start`, `end`           | The edge a scroll button belongs to.                                                     |
+| `data-edge`              | attribute | `start`, `end`           | The edge a scroll button or fade belongs to.                                             |
 | `data-label`             | attribute |                          | A plain-text label, on the label slot.                                                   |
 | `data-key`               | attribute |                          | Opaque collection key (React Aria): not the `id`, not for styling.                       |
 | `data-collection`        | attribute |                          | React Aria's collection identifier on the list and tabs; not for styling.                |

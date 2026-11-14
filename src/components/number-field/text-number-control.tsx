@@ -200,7 +200,7 @@ function TextNumberStepper({
 export function TextNumberControl(props: TextNumberControlProps) {
   const { state, control, config, steps } = props;
   const {
-    hideStepper,
+    showStepper,
     showScrubber,
     startAdornment,
     endAdornment,
@@ -238,7 +238,7 @@ export function TextNumberControl(props: TextNumberControlProps) {
       onChange={entry.edit}
     >
       <Group {...hooks.slot('group')}>
-        {hideStepper ? null : stepper(-1)}
+        {showStepper ? stepper(-1) : null}
         {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
         <NumberAdornment side="start">{startAdornment}</NumberAdornment>
         <NumberValue
@@ -262,7 +262,7 @@ export function TextNumberControl(props: TextNumberControlProps) {
           />
         </NumberValue>
         <NumberAdornment side="end">{endAdornment}</NumberAdornment>
-        {hideStepper ? null : stepper(1)}
+        {showStepper ? stepper(1) : null}
       </Group>
       <FieldFormValue
         name={name}

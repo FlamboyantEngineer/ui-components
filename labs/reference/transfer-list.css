@@ -1,4 +1,4 @@
-/* Transfer List: two framed sides of equal width around a column of move buttons. */
+/* Transfer List: two sides of equal width around a column of move buttons; only the lists are framed. */
 
 .ui-transfer-list {
   display: grid;
@@ -14,10 +14,6 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  padding: 8px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-surface);
 }
 
 .ui-transfer-list__header {

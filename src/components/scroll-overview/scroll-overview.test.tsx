@@ -1,4 +1,4 @@
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { type ReactNode, useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -45,7 +45,6 @@ describe('ScrollOverview', () => {
     expect(root.style.getPropertyValue('--ui-scroll-overview-image')).toContain('red 50% 52%');
     expect(root.style.height).toBe('100px');
     expect(root).toHaveAttribute('aria-hidden', 'true');
-    expect(root.style.pointerEvents).toBe('none');
     expect(root).not.toHaveAttribute('data-empty');
     expectHooksMatchSpec(container, 'SCROLL-OVERVIEW');
   });
@@ -124,11 +123,37 @@ describe('ScrollOverview', () => {
     const scroller = requireDefined(root.previousElementSibling as HTMLElement | null);
     scroller.scrollTo = vi.fn() as typeof scroller.scrollTo;
     expect(root).toHaveAttribute('data-interactive', 'true');
-    expect(root.style.pointerEvents).toBe('');
     await user.pointer({ keys: '[MouseLeft]', target: root, coords: { clientY: 10 } });
     expect(onMarkerActivate).not.toHaveBeenCalled();
     await user.pointer({ keys: '[MouseLeft]', target: root, coords: { clientY: 50 } });
     expect(scroller.scrollTo).toHaveBeenCalledWith({ top: 500 });
     expect(onMarkerActivate).toHaveBeenCalledWith(first);
+  });
+
+  it('UIC-SCROLL-OVERVIEW-1.4 draws a thumb that follows the scroll and pages toward a track press', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Scroller markers={[]} />);
+    const root = strip(container);
+    const thumb = requireDefined(root.querySelector<HTMLElement>('.ui-scroll-overview__thumb'));
+    const scroller = requireDefined(root.previousElementSibling as HTMLElement | null);
+    expect(root).toHaveAttribute('data-scrollable', 'true');
+    expect(thumb).not.toHaveAttribute('hidden');
+    // 100 of 1000 pixels show: a tenth of the track, but at least 24 pixels.
+    expect(thumb.style.height).toBe('24px');
+    expect(thumb.style.top).toBe('0px');
+    scroller.scrollTop = 900;
+    fireEvent.scroll(scroller);
+    await waitFor(() => expect(thumb.style.top).toBe('76px'));
+    expectHooksMatchSpec(container, 'SCROLL-OVERVIEW', { slots: ['thumb'] });
+    scroller.scrollTo = vi.fn() as typeof scroller.scrollTo;
+    await user.pointer({ keys: '[MouseLeft]', target: root, coords: { clientY: 10 } });
+    expect(scroller.scrollTo).toHaveBeenCalledWith({ top: 800 });
+  });
+
+  it('UIC-SCROLL-OVERVIEW-1.4 hides the thumb while the content fits', () => {
+    const scrollRef = { current: document.createElement('div') };
+    const { container } = render(<ScrollOverview scrollRef={scrollRef} />);
+    expect(strip(container)).not.toHaveAttribute('data-scrollable');
+    expect(container.querySelector('.ui-scroll-overview__thumb')).toHaveAttribute('hidden');
   });
 });

@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import { ListFilter } from '../../src/components/list-filter/list-filter.js';
-import { CheckGlyph, InfoGlyph, UsersGlyph } from '../../src/core/glyphs.js';
+import {
+  CheckGlyph,
+  EnvelopeGlyph,
+  InfoGlyph,
+  ListBulletGlyph,
+  UsersGlyph,
+} from '../../src/core/glyphs.js';
 import type { ControlSize } from '../../src/core/props.js';
 
 type Filter = 'unread' | 'all' | 'mentions';
@@ -25,9 +31,9 @@ export function ListFilterExample({
         aria-label={`${label} filters`}
         aria-describedby={error ? `${label}-error` : undefined}
         options={[
-          { value: 'unread', label: 'Unread', count },
-          { value: 'all', label: 'All', count },
-          { value: 'mentions', label: 'Mentions', count: 0 },
+          { value: 'unread', label: 'Unread', icon: EnvelopeGlyph, count },
+          { value: 'all', label: 'All', icon: ListBulletGlyph, count },
+          { value: 'mentions', label: 'Mentions', icon: UsersGlyph, count: 0 },
         ]}
         value={value}
         size={size}

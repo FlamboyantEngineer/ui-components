@@ -263,3 +263,35 @@ it('UIC-LIST-FILTER-1.1 UIC-LIST-FILTER-1.2 UIC-LIST-FILTER-1.3 respects option 
   await user.click(screen.getByRole('button', { name: 'Refresh' }));
   expect(onPress).toHaveBeenCalled();
 });
+
+it('UIC-LIST-FILTER-1.6 folds filters with icons to icons when the row is too narrow, named by label and count', async () => {
+  const widths = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return this.classList.contains('ui-action-row__lead') ? 80 : 0;
+  });
+  const content = vi
+    .spyOn(HTMLElement.prototype, 'scrollWidth', 'get')
+    .mockImplementation(function (this: HTMLElement) {
+      return this.classList.contains('ui-segmented-choice') ? 240 : 0;
+    });
+  try {
+    const withIcons = options.map((option) => ({ ...option, icon: CheckGlyph }));
+    const { container, rerender } = render(
+      <ListFilter aria-label="Show" options={withIcons} value="unread" />,
+    );
+    const filters = container.querySelector('.ui-list-filter__filters');
+    await waitFor(() => expect(filters).toHaveAttribute('data-icon-only', 'true'));
+    expect(screen.getByRole('radio', { name: 'Unread, 7' })).toHaveAttribute(
+      'aria-label',
+      'Unread, 7',
+    );
+    rerender(<ListFilter aria-label="Show" options={withIcons} value="unread" iconOnly={false} />);
+    expect(filters).not.toHaveAttribute('data-icon-only');
+    rerender(<ListFilter aria-label="Show" options={options} value="unread" />);
+    expect(filters).not.toHaveAttribute('data-icon-only');
+  } finally {
+    widths.mockRestore();
+    content.mockRestore();
+  }
+});

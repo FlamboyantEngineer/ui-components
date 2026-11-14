@@ -11,5 +11,4 @@ export const formulaBarHooks = createHooks('formula-bar', [
   'glyph',
   'functions',
   'editor',
-  'result',
 ]);

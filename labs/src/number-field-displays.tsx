@@ -14,10 +14,20 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[]
 
 /** Each display choice as the props that draw it. */
 const displays = {
-  steppers: {},
-  'double arrow': { showScrubber: true, hideStepper: true },
-  'unit at edge': { showScrubber: true, endAdornment: 'kg', endAdornmentPlacement: 'edge' },
-  'unit after value': { showScrubber: true, endAdornment: 'kg', endAdornmentPlacement: 'value' },
+  steppers: { showStepper: true },
+  'double arrow': { showScrubber: true },
+  'unit at edge': {
+    showScrubber: true,
+    showStepper: true,
+    endAdornment: 'kg',
+    endAdornmentPlacement: 'edge',
+  },
+  'unit after value': {
+    showScrubber: true,
+    showStepper: true,
+    endAdornment: 'kg',
+    endAdornmentPlacement: 'value',
+  },
 } as const satisfies Record<string, Partial<NumberEntryFieldProps>>;
 
 const displayNames = Object.keys(displays) as (keyof typeof displays)[];
