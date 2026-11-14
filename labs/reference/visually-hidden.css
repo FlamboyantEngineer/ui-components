@@ -11,3 +11,11 @@
   background: var(--ref-raised);
   box-shadow: var(--ref-shadow);
 }
+
+/* Hidden inline geometry still wins until focus reveals this viewport-level skip control. */
+.ui-visually-hidden[data-reveal-placement='overlay'] {
+  position: fixed;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 2;
+}

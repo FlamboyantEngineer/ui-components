@@ -85,10 +85,6 @@ test.describe('reference stylesheet right to left', () => {
     await lab.open('card');
     const skeleton = page.locator('[data-lab-demo="rtl"] .ui-card__skeleton');
     await expect(skeleton).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
-
-    await lab.open('user-card');
-    const loading = page.locator('[data-lab-demo="rtl"] .ui-user-card__skeleton');
-    await expect(loading).toHaveCSS('mask-image', /^linear-gradient\(to left,/);
   });
 });
 

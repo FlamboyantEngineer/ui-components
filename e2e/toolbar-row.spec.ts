@@ -250,3 +250,48 @@ test('UIC-TOOLBAR-ROW-1.4 reveals focused tools without optional paging buttons'
     page.locator(cell('Scroll buttons', 'buttons=on')).locator('.ui-toolbar-row__scroll-button'),
   ).toHaveCount(2);
 });
+
+test('UIC-TOOLBAR-ROW-1.4 keeps fitting center/end alignment and reveals both overflow ends from the keyboard', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('toolbar-row');
+  for (const justify of ['center', 'end']) {
+    const fitting = page.locator(cell('Scroll alignment', `justify=${justify} width=fit`));
+    await expect(async () => {
+      const strip = await box(fitting.locator('.ui-toolbar-row__strip'));
+      const first = await box(fitting.getByRole('button', { name: 'First tool' }));
+      const last = await box(fitting.getByRole('button', { name: 'Last tool' }));
+      const contentWidth = last.x + last.width - first.x;
+      const expectedStart =
+        justify === 'center' ? (strip.width - contentWidth) / 2 : strip.width - contentWidth;
+      expect(first.x - strip.x).toBeCloseTo(expectedStart, 0);
+    }).toPass();
+    const overflowing = page.locator(cell('Scroll alignment', `justify=${justify} width=overflow`));
+    const strip = overflowing.locator('.ui-toolbar-row__strip');
+    const first = overflowing.getByRole('button', { name: 'First tool' });
+    const last = overflowing.getByRole('button', { name: 'Last tool' });
+    await expect
+      .poll(() => strip.evaluate((node) => node.scrollWidth - node.clientWidth))
+      .toBeGreaterThan(0);
+    await first.focus();
+    await expect(first).toBeFocused();
+    for (let step = 0; step < 4; step += 1) await page.keyboard.press('ArrowRight');
+    await expect(last).toBeFocused();
+    await expect.poll(() => strip.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+    await expect(async () => {
+      const viewport = await box(strip);
+      const tool = await box(last);
+      expect(tool.x).toBeGreaterThanOrEqual(viewport.x - 1);
+      expect(tool.x + tool.width).toBeLessThanOrEqual(viewport.x + viewport.width + 1);
+    }).toPass();
+    for (let step = 0; step < 4; step += 1) await page.keyboard.press('ArrowLeft');
+    await expect(first).toBeFocused();
+    await expect(async () => {
+      const viewport = await box(strip);
+      const tool = await box(first);
+      expect(tool.x).toBeGreaterThanOrEqual(viewport.x - 1);
+      expect(tool.x + tool.width).toBeLessThanOrEqual(viewport.x + viewport.width + 1);
+    }).toPass();
+  }
+});

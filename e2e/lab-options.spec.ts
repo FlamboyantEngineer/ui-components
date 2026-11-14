@@ -11,7 +11,7 @@ test.describe('Lab options', () => {
     page,
     lab,
   }) => {
-    await lab.open('chat');
+    await lab.open('chat-list');
     const list = demo(page, 'history-load-error');
     const loadMore = list.getByRole('button', { name: 'Load more' });
     await loadMore.click();
@@ -22,7 +22,7 @@ test.describe('Lab options', () => {
   });
 
   test('UIC-CHAT-36.4 lets the host show the sources', async ({ page, lab }) => {
-    await lab.open('chat');
+    await lab.open('chat-sources');
     const sources = demo(page, 'host-expanded');
     await sources.getByRole('button', { name: 'Host shows the sources' }).click();
     await expect(output(page, 'host-expanded', 'expanded')).toHaveText('true');

@@ -218,3 +218,29 @@ export function ToolbarScrollButtons() {
     />
   );
 }
+
+/** Fitting controls keep their requested alignment; overflow always leaves the first tool reachable. */
+export function ToolbarAlignment() {
+  return (
+    <StateMatrix
+      axes={{ justify: ['start', 'center', 'end'], width: ['fit', 'overflow'] }}
+      render={({ justify, width }) => (
+        <div style={frameStyle(width === 'fit' ? 520 : 180)}>
+          <ToolbarRow
+            overflow="scroll"
+            justify={justify}
+            aria-label={`Alignment tools, ${justify}, ${width}`}
+          >
+            {['First tool', 'Second tool', 'Third tool', 'Fourth tool', 'Last tool'].map(
+              (label) => (
+                <Button key={label} size="sm">
+                  {label}
+                </Button>
+              ),
+            )}
+          </ToolbarRow>
+        </div>
+      )}
+    />
+  );
+}

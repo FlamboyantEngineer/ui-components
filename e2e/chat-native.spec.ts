@@ -149,8 +149,14 @@ test.describe('Chat native embedded controls', () => {
     const handle = demo.getByRole('button', { name: 'Reorder queued message 3' });
     await handle.focus();
     await page.keyboard.press('Enter');
+    const rows = demo.locator('.ui-chat__queue-item');
+    await expect(rows.nth(2)).toHaveAttribute('data-dragging', 'true');
+    // The drop marker appears after React Aria installs the keyboard drag listeners.
+    await expect(rows.nth(1)).toHaveAttribute('data-drop-position', 'before');
     await page.keyboard.press('ArrowUp');
+    await expect(rows.nth(1)).toHaveAttribute('data-drop-position', 'before');
     await page.keyboard.press('Enter');
+    await expect(demo.locator('.ui-chat__queue-item[data-dragging]')).toHaveCount(0);
     await expect(demo.locator('.ui-chat__queue-text').nth(1)).toHaveText('Only in the queue');
     await demo.getByRole('button', { name: 'Actions for queued message 2' }).click();
     await page.getByRole('menuitem', { name: 'Edit queued message 2' }).click();

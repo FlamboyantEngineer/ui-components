@@ -8,6 +8,7 @@ import {
   AttachedGroups,
   PendingToolbar,
   PresentationChanges,
+  ToolbarAlignment,
   ToolbarEdgeFades,
   ToolbarOverflow,
   ToolbarScrollButtons,
@@ -70,6 +71,9 @@ mountLab(
       description="In a 240px host: wrap flows the tools and their groups onto more rows, scroll keeps one row that scrolls between edge buttons, none keeps one row and leaves overflow to the caller."
     >
       <ToolbarOverflow />
+    </LabSection>
+    <LabSection title="Scroll alignment">
+      <ToolbarAlignment />
     </LabSection>
     <LabSection title="Scroll buttons">
       <ToolbarScrollButtons />

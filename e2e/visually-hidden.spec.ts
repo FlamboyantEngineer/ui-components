@@ -7,6 +7,19 @@ async function box(locator: Locator) {
   return rect;
 }
 
+/** Focus may scroll the viewport; document coordinates distinguish that from layout movement. */
+async function documentBox(locator: Locator) {
+  return locator.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      x: rect.x + window.scrollX,
+      y: rect.y + window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    };
+  });
+}
+
 test.describe('Visually Hidden lab', () => {
   test('UIC-VISUALLY-HIDDEN-1.1 UIC-VISUALLY-HIDDEN-1.2 hides content in a div or a span without taking space', async ({
     page,
@@ -71,7 +84,7 @@ test.describe('Visually Hidden lab', () => {
     await expect.poll(async () => (await box(wrapper)).width).toBeLessThanOrEqual(1);
 
     await page.keyboard.press('Shift+Tab');
-    await expect(page.getByRole('link', { name: 'Drinks' })).toBeFocused();
+    await expect(demo.getByRole('link', { name: 'Drinks' })).toBeFocused();
     await lab.expectAccessible();
   });
 
@@ -89,6 +102,51 @@ test.describe('Visually Hidden lab', () => {
     await expect(hidden).not.toHaveAttribute('data-focus-within');
     await expect.poll(async () => (await box(hidden)).width).toBeLessThanOrEqual(1);
   });
+
+  for (const width of [390, 1280]) {
+    for (const direction of ['ltr', 'rtl']) {
+      test(`UIC-VISUALLY-HIDDEN-2.3 reveals an overlay without layout shift at ${width}px ${direction}`, async ({
+        page,
+        lab,
+      }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await lab.open('visually-hidden');
+        await page
+          .locator('html')
+          .evaluate((node, dir) => node.setAttribute('dir', dir), direction);
+        const demo = page.locator('[data-lab-demo="skip-overlay"]');
+        const menu = demo.getByRole('button', { name: 'Recipe menu' });
+        const skip = demo.getByRole('link', { name: 'Skip to recipes' });
+        const wrapper = demo.locator('.ui-visually-hidden');
+        const navigation = demo.getByRole('navigation');
+        const content = demo.locator('#lab-overlay-recipes');
+        await menu.focus();
+        const before = {
+          menu: await documentBox(menu),
+          navigation: await documentBox(navigation),
+          content: await documentBox(content),
+        };
+        await page.keyboard.press('Tab');
+        await expect(skip).toBeFocused();
+        await expect(wrapper).toHaveAttribute('data-focus-within', 'true');
+        await expect(wrapper).toHaveCSS('position', 'fixed');
+        const revealed = await box(wrapper);
+        expect(revealed.y).toBeCloseTo(8, 0);
+        expect(direction === 'ltr' ? revealed.x : width - revealed.x - revealed.width).toBeCloseTo(
+          8,
+          0,
+        );
+        expect(await documentBox(menu)).toEqual(before.menu);
+        expect(await documentBox(navigation)).toEqual(before.navigation);
+        expect(await documentBox(content)).toEqual(before.content);
+        await lab.expectAccessible();
+        await page.keyboard.press('Enter');
+        await expect(content).toBeFocused();
+        await expect(wrapper).not.toHaveAttribute('data-focus-within');
+        expect((await box(wrapper)).width).toBeLessThanOrEqual(1);
+      });
+    }
+  }
 
   test('UIC-VISUALLY-HIDDEN-1.4 hides the text of library components through the hook', async ({
     page,

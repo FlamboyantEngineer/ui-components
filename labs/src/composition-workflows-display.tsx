@@ -16,6 +16,7 @@ import { Link } from '../../src/components/link/link.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import { SectionHeader } from '../../src/components/section-header/section-header.js';
 import { TruncationTooltip } from '../../src/components/tooltip/index.js';
+import { VisuallyHidden } from '../../src/components/visually-hidden/index.js';
 import { formatPath } from '../../src/utils/path.js';
 
 export function IdentityComposition() {
@@ -136,7 +137,9 @@ export function FrameComposition({
   const mainId = useId();
   return (
     <Stack space="md">
-      <Link href={`#${mainId}`}>Skip to sample content</Link>
+      <VisuallyHidden isFocusable revealPlacement="overlay">
+        <Link href={`#${mainId}`}>Skip to sample content</Link>
+      </VisuallyHidden>
       <Cluster as="header" justify="between">
         <Label label="Workspace" />
         <Button>Settings</Button>

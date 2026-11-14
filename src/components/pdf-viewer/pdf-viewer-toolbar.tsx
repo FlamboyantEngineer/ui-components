@@ -199,7 +199,7 @@ export function PdfViewerToolbar({
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('toolbar')} onKeyDown={onKeyDown}>
-      <ToolbarRow overflow="scroll" aria-label={strings.controlsFor(label)}>
+      <ToolbarRow overflow="scroll" justify="start" aria-label={strings.controlsFor(label)}>
         {isEmptyNode(leadingActions) ? null : (
           <div {...hooks.slot('leading-actions')}>{leadingActions}</div>
         )}

@@ -176,3 +176,19 @@
     border-end-end-radius: 0;
   }
 }
+
+/* Auto margins distribute spare room but become zero on overflow, keeping the start scrollable. */
+.ui-toolbar-row[data-overflow='scroll']:is([data-justify='end'], [data-justify='center'])
+  > .ui-toolbar-row__strip {
+  justify-content: flex-start;
+}
+.ui-toolbar-row[data-overflow='scroll']:is([data-justify='end'], [data-justify='center'])
+  > .ui-toolbar-row__strip
+  > :first-child {
+  margin-inline-start: auto;
+}
+.ui-toolbar-row[data-overflow='scroll'][data-justify='center']
+  > .ui-toolbar-row__strip
+  > :last-child {
+  margin-inline-end: auto;
+}

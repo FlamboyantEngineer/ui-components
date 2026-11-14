@@ -183,28 +183,29 @@ test.describe('Hover Card lab', () => {
     await page.clock.install();
     await lab.open('hover-card');
     await page.clock.pauseAt(Date.now() + 1000);
-    const output = page.locator('[data-lab-output="controlled"]');
+    const demo = page.locator('[data-lab-section="Controlled and disabled"]');
+    const output = demo.locator('[data-lab-output="controlled"]');
     const card = page.locator('.ui-hover-card[data-lab-card="controlled"]');
-    await page.locator('[data-lab-toggle]').click();
+    await demo.locator('[data-lab-toggle]').click();
     await expect(card).toBeVisible();
     await expect(output).toHaveText('open');
-    await page.locator('[data-lab-toggle]').click();
+    await demo.locator('[data-lab-toggle]').click();
     await page.clock.runFor(500);
     await expect(card).toHaveCount(0);
     await expect(output).toHaveText('closed');
 
-    await page.locator('[data-lab-trigger="disabled"]').hover();
+    await demo.locator('[data-lab-trigger="disabled"]').hover();
     await page.clock.runFor(2000);
     await expect(page.locator('.ui-hover-card[data-lab-card="disabled"]')).toHaveCount(0);
 
     // Locking an open card closes it once; it stays closed when unlocked.
-    await page.locator('[data-lab-toggle]').click();
+    await demo.locator('[data-lab-toggle]').click();
     await expect(card).toBeVisible();
-    await page.locator('[data-lab-lock]').click();
+    await demo.locator('[data-lab-lock]').click();
     await page.clock.runFor(500);
     await expect(card).toHaveCount(0);
     await expect(output).toHaveText('closed');
-    await page.locator('[data-lab-lock]').click();
+    await demo.locator('[data-lab-lock]').click();
     await page.clock.runFor(500);
     await expect(card).toHaveCount(0);
     await page.clock.resume();

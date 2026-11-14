@@ -22,6 +22,8 @@ export interface VisuallyHiddenProps
   as?: VisuallyHiddenElement | undefined;
   /** Shows the content while it or a descendant has focus, as a skip link does. */
   isFocusable?: boolean | undefined;
+  /** Where focus-revealed content appears. Defaults to normal flow; overlay floats at viewport start. */
+  revealPlacement?: 'flow' | 'overlay' | undefined;
 }
 
 const hooks = createHooks('visually-hidden');
@@ -34,6 +36,7 @@ export function VisuallyHidden({
   as,
   className,
   isFocusable = false,
+  revealPlacement = 'flow',
   ...rest
 }: VisuallyHiddenProps) {
   const [isFocusWithin, setFocusWithin] = useState(false);
@@ -44,7 +47,7 @@ export function VisuallyHidden({
   const hookProps = hooks.root({
     className,
     props: rest,
-    data: { focusWithin: isFocusable && isFocusWithin },
+    data: { focusWithin: isFocusable && isFocusWithin, revealPlacement },
   });
   return (
     <AriaVisuallyHidden
