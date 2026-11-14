@@ -29,6 +29,31 @@ test.describe('Chat Model Picker lab', () => {
     await lab.expectAccessible('[data-lab-demo="disabling"]');
   });
 
+  test('UIC-MESSAGE-COMPOSER-2.1 leaves the composer at rest after a model or effort is chosen', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-model-picker');
+    const scope = demo(page, 'composer');
+    const frame = scope.locator('.ui-message-composer');
+    const look = () =>
+      frame.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return `${style.borderColor} ${style.outlineStyle}`;
+      });
+    const atRest = await look();
+    for (const item of [/^Deep/, /^Medium/]) {
+      await picker(scope).click();
+      await page.getByRole('menuitemradio', { name: item }).click();
+      await expect(page.getByRole('menu')).toHaveCount(0);
+      await expect(picker(scope)).toBeFocused();
+      await expect(scope.getByRole('textbox')).not.toBeFocused();
+      expect(await look()).toBe(atRest);
+    }
+    await scope.getByRole('textbox').click();
+    expect(await look()).not.toBe(atRest);
+  });
+
   test('UIC-CHAT-MODEL-PICKER-2.4 UIC-CHAT-MODEL-PICKER-3.2 chooses a model and an effort by keyboard', async ({
     page,
     lab,
