@@ -7,7 +7,7 @@ import { BackgroundColorGlyph, FontColorGlyph } from '../../core/drawn-glyphs.js
 import { ColorSwatchButton } from './color-swatch.js';
 
 describe('ColorSwatchButton', () => {
-  it('UIC-COLOR-SWATCH-3.1 draws its glyph over a colour bar and is described by the colour', () => {
+  it('UIC-COLOR-SWATCH-3.1 draws its glyph over a color bar and is described by the color', () => {
     const { container } = render(
       <>
         <ColorSwatchButton icon={FontColorGlyph} label="Text color" color="#ff0000" />
@@ -35,7 +35,7 @@ describe('ColorSwatchButton', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH', { slots: ['swatch'] });
   });
 
-  it('UIC-COLOR-SWATCH-3.1 draws an empty bar for no colour or an unreadable one', () => {
+  it('UIC-COLOR-SWATCH-3.1 draws an empty bar for no color or an unreadable one', () => {
     render(
       <>
         <ColorSwatchButton icon={FontColorGlyph} label="None" />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { IconLabel } from '../../src/components/icon-label/icon-label.js';
+import { Label } from '../../src/components/label/label.js';
 import { InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
@@ -15,11 +15,7 @@ function LiveStatus({ mode }: { mode: keyof typeof liveModes }) {
   const [step, setStep] = useState(0);
   return (
     <div data-lab-live={mode}>
-      <IconLabel
-        icon={InfoGlyph}
-        label={syncStates[step % syncStates.length]}
-        live={liveModes[mode]}
-      />{' '}
+      <Label icon={InfoGlyph} label={syncStates[step % syncStates.length]} live={liveModes[mode]} />{' '}
       <Button size="sm" onPress={() => setStep((value) => value + 1)}>
         {`Change the ${mode} status`}
       </Button>
@@ -33,7 +29,7 @@ mountLab(
       <StateMatrix
         axes={{ icon: ['glyph', 'custom node'], size: sizes }}
         render={({ icon, size }) => (
-          <IconLabel
+          <Label
             size={size}
             label="Settings"
             icon={
@@ -50,6 +46,21 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Optional parts"
+      description="The icon and the text are both optional: an icon before text, text alone, or an icon alone that its host names."
+    >
+      <StateMatrix
+        axes={{ parts: ['icon and text', 'text only', 'icon only'], size: sizes }}
+        render={({ parts, size }) => (
+          <Label
+            size={size}
+            icon={parts === 'text only' ? undefined : InfoGlyph}
+            label={parts === 'icon only' ? undefined : 'Details'}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Options"
       description="Each option in a 180px column. Hide label keeps only the icon; hidden removes the whole label; live announces changes."
     >
@@ -60,7 +71,7 @@ mountLab(
         }}
         render={({ option, size }) => (
           <div data-lab-column="180" style={{ width: 180 }}>
-            <IconLabel
+            <Label
               icon={InfoGlyph}
               size={size}
               label={longText}
@@ -83,7 +94,7 @@ mountLab(
         axes={{ placement: ['alone', 'in a row'], room: ['96px', '160px', '320px'] }}
         render={({ placement, room }) => (
           <div style={{ width: room, display: placement === 'in a row' ? 'flex' : 'block' }}>
-            <IconLabel icon={InfoGlyph} label="Collapsible settings" collapsible />
+            <Label icon={InfoGlyph} label="Collapsible settings" collapsible />
             {placement === 'in a row' ? <span aria-hidden>⋯</span> : null}
           </div>
         )}

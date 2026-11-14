@@ -11,20 +11,20 @@ test.describe('Modal Controller lab coverage', () => {
   }) => {
     await lab.open('modal-controller');
     const area = section(page, 'Drawn by render');
-    await area.getByRole('button', { name: 'Pick a colour' }).click();
-    let dialog = page.getByRole('dialog', { name: 'Pick a colour (2 shown)' });
+    await area.getByRole('button', { name: 'Pick a color' }).click();
+    let dialog = page.getByRole('dialog', { name: 'Pick a color (2 shown)' });
     await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: 'Show more colours' }).click();
-    dialog = page.getByRole('dialog', { name: 'Pick a colour (4 shown)' });
+    await dialog.getByRole('button', { name: 'Show more colors' }).click();
+    dialog = page.getByRole('dialog', { name: 'Pick a color (4 shown)' });
     await dialog.getByRole('button', { name: 'Amber' }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(output(page, 'Picked colour')).toHaveText('Amber');
+    await expect(output(page, 'Picked color')).toHaveText('Amber');
     await expect(output(page, 'After closing')).toHaveText('render entry: gone');
 
-    await area.getByRole('button', { name: 'Pick a colour' }).click();
-    await expect(page.getByRole('dialog', { name: 'Pick a colour (2 shown)' })).toBeVisible();
+    await area.getByRole('button', { name: 'Pick a color' }).click();
+    await expect(page.getByRole('dialog', { name: 'Pick a color (2 shown)' })).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(output(page, 'Picked colour')).toHaveText('dismissed');
+    await expect(output(page, 'Picked color')).toHaveText('dismissed');
 
     await area.getByRole('button', { name: 'Open a content entry' }).click();
     await page

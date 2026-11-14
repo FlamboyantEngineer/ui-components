@@ -83,7 +83,7 @@ test.describe('Progress Bar lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-PROGRESS-BAR-1.8 colours each status and marks a full bar complete', async ({
+  test('UIC-PROGRESS-BAR-1.8 colors each status and marks a full bar complete', async ({
     page,
     lab,
   }) => {
@@ -92,19 +92,19 @@ test.describe('Progress Bar lab', () => {
       matrixCell(page, `tone=${tone} progress=${progress}`, {
         family: 'progress-bar-main',
       }).locator(`.ui-progress-bar`);
-    const fillColour = (tone: string, progress: string) =>
+    const fillColor = (tone: string, progress: string) =>
       bar(tone, progress)
         .locator('.ui-progress-bar__fill')
         .evaluate((node) => getComputedStyle(node).backgroundColor);
     await expect(bar('neutral', '100%')).toHaveAttribute('data-complete', 'true');
     await expect(bar('neutral', '60%')).not.toHaveAttribute('data-complete');
-    const colours = new Set(
+    const colors = new Set(
       await Promise.all(
-        ['neutral', 'success', 'warning', 'danger'].map((tone) => fillColour(tone, '60%')),
+        ['neutral', 'success', 'warning', 'danger'].map((tone) => fillColor(tone, '60%')),
       ),
     );
-    expect(colours.size).toBe(4);
-    expect(await fillColour('neutral', '100%')).toBe(await fillColour('success', '60%'));
+    expect(colors.size).toBe(4);
+    expect(await fillColor('neutral', '100%')).toBe(await fillColor('success', '60%'));
     for (const tone of ['neutral', 'success', 'warning', 'danger']) {
       const indeterminate = bar(tone, 'indeterminate');
       await expect(indeterminate).toHaveAttribute('data-tone', tone);
@@ -213,7 +213,7 @@ test.describe('Progress Bar lab', () => {
     }
   });
 
-  test('UIC-PROGRESS-BAR-2.1 turns and stretches the spinner arc like the circular progress, in the text colour', async ({
+  test('UIC-PROGRESS-BAR-2.1 turns and stretches the spinner arc like the circular progress, in the text color', async ({
     page,
     lab,
   }) => {
@@ -240,9 +240,9 @@ test.describe('Progress Bar lab', () => {
       await expect(ring.locator('circle')).toHaveCount(1);
       await expect(circular.locator('circle')).toHaveCount(2);
     }
-    const colour = page.locator('section[data-lab-section="Spinner colour"]');
+    const color = page.locator('section[data-lab-section="Spinner color"]');
     for (const context of ['body text', 'primary', 'danger']) {
-      const spinner = matrixCell(colour, `context=${context}`).locator('.ui-spinner');
+      const spinner = matrixCell(color, `context=${context}`).locator('.ui-spinner');
       const [stroke, text] = await spinner.evaluate((node) => [
         getComputedStyle(node.querySelector('circle') as Element).stroke,
         getComputedStyle(node).color,

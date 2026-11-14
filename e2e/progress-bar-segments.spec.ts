@@ -38,14 +38,14 @@ test.describe('Progress Bar segments', () => {
           .first()
           .evaluate((node) => {
             const style = getComputedStyle(node);
-            return { colour: style.backgroundColor, image: style.backgroundImage };
+            return { color: style.backgroundColor, image: style.backgroundImage };
           });
       const [complete, current, pending] = await Promise.all(
         ['complete', 'current', 'pending'].map(styleOf),
       );
       expect(current?.image).toContain('repeating-linear-gradient');
       expect(complete?.image).toBe('none');
-      expect(complete?.colour).not.toBe(pending?.colour);
+      expect(complete?.color).not.toBe(pending?.color);
       await lab.expectAccessible(family);
     });
   }

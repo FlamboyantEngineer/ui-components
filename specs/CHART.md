@@ -1,6 +1,6 @@
 # Chart
 
-The chart family draws data as accessible SVG with no charting dependency, on the library's scales ([SCALES.md](SCALES.md)). `BarChart`, `LineChart` and `DonutChart` draw complete charts; `Chart` is the frame they share, which a host also wraps around its own drawing; `ChartAxis` and `ChartLegend` are the axis and the legend they draw with. Every chart is a named figure described by a text summary, every drawn value is a named, focusable point with a tooltip, and a toggle shows the values as a table instead. Series colours are colour slots: each series publishes its position (`data-series`) and an optional tone (`data-tone`), and the host stylesheet maps them to colours; the library never writes a colour.
+The chart family draws data as accessible SVG with no charting dependency, on the library's scales ([SCALES.md](SCALES.md)). `BarChart`, `LineChart` and `DonutChart` draw complete charts; `Chart` is the frame they share, which a host also wraps around its own drawing; `ChartAxis` and `ChartLegend` are the axis and the legend they draw with. Every chart is a named figure described by a text summary, every drawn value is a named, focusable point with a tooltip, and a toggle shows the values as a table instead. Series colors are color slots: each series publishes its position (`data-series`) and an optional tone (`data-tone`), and the host stylesheet maps them to colors; the library never writes a color.
 
 ## UIC-CHART-1 - Chart frame
 
@@ -80,9 +80,9 @@ Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
 ## UIC-CHART-4 - Drawn values
 
-### UIC-CHART-4.1 - Colour slots
+### UIC-CHART-4.1 - Color slots
 
-Each drawn value and series mark (bars, lines, areas, points and slices, their legend items and the tooltip's swatch) shall publish `data-series`, the position of its series in the chart's `series` (or `segments`), which stays the same when other series are hidden, and `data-tone` when the series has a `tone` (`neutral`, `info`, `success`, `warning` or `danger`). The library sets no colour.
+Each drawn value and series mark (bars, lines, areas, points and slices, their legend items and the tooltip's swatch) shall publish `data-series`, the position of its series in the chart's `series` (or `segments`), which stays the same when other series are hidden, and `data-tone` when the series has a `tone` (`neutral`, `info`, `success`, `warning` or `danger`). The library sets no color.
 
 Implementation: `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`, `src/components/chart/chart-points.tsx`
 Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`
@@ -100,14 +100,14 @@ The drawn values shall take one tab stop, on the first value or the last one foc
 
 When two points in the target series are equally close, the first in input order wins.
 
-Each drawn value is identified by its series' typed `id` (numeric and text ids of one spelling stay apart) and its place along the series: a bar by its category, counting repeated category names in order, a line point by its read x, counting repeated coordinates in order, and a donut slice by its segment's `id` alone. The tab stop, focus, the active value and its tooltip stay on that value while series or segments reorder or values are added or removed elsewhere, while `data-series` keeps following the series' current position (its colour slot). When the value goes, the tab stop falls back to the first value and focus is not moved.
+Each drawn value is identified by its series' typed `id` (numeric and text ids of one spelling stay apart) and its place along the series: a bar by its category, counting repeated category names in order, a line point by its read x, counting repeated coordinates in order, and a donut slice by its segment's `id` alone. The tab stop, focus, the active value and its tooltip stay on that value while series or segments reorder or values are added or removed elsewhere, while `data-series` keeps following the series' current position (its color slot). When the value goes, the tab stop falls back to the first value and focus is not moved.
 
 Implementation: `src/components/chart/chart-points.tsx`
 Verification: `src/components/chart/chart-points.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-4.4 - Tooltip
 
-Hovering or focusing a drawn value shall publish `data-active` on it and open a [Tooltip](TOOLTIP.md) panel pointing at it, carrying `ui-chart__tooltip`, that shows the value's category or x value in `ui-chart__tooltip-title` (not for a donut), a `ui-chart__tooltip-swatch` with the series' colour slot, the series' label in `ui-chart__tooltip-label` and the formatted value in `ui-chart__tooltip-value` (with its share, for a donut, joined by the provider's `donutValue` string: `60 (50%)`). The tooltip closes when the pointer leaves, when focus leaves, and on Escape wherever focus is (a tooltip opened by hover included); that Escape goes no further, so it does not also close a surface around the chart. A composing Escape (cancelling an input method candidate in a field anywhere on the page) belongs to the input method: it leaves the tooltip open and goes on. When the active value leaves the chart (its series hidden, its value made unreadable or removed), its tooltip closes and gives up its Escape and the element it pointed at; no empty tooltip stays, and the value does not reopen it if it comes back.
+Hovering or focusing a drawn value shall publish `data-active` on it and open a [Tooltip](TOOLTIP.md) panel pointing at it, carrying `ui-chart__tooltip`, that shows the value's category or x value in `ui-chart__tooltip-title` (not for a donut), a `ui-chart__tooltip-swatch` with the series' color slot, the series' label in `ui-chart__tooltip-label` and the formatted value in `ui-chart__tooltip-value` (with its share, for a donut, joined by the provider's `donutValue` string: `60 (50%)`). The tooltip closes when the pointer leaves, when focus leaves, and on Escape wherever focus is (a tooltip opened by hover included); that Escape goes no further, so it does not also close a surface around the chart. A composing Escape (cancelling an input method candidate in a field anywhere on the page) belongs to the input method: it leaves the tooltip open and goes on. When the active value leaves the chart (its series hidden, its value made unreadable or removed), its tooltip closes and gives up its Escape and the element it pointed at; no empty tooltip stays, and the value does not reopen it if it comes back.
 
 Implementation: `src/components/chart/chart-points.tsx`, `src/components/chart/bar-chart.tsx`, `src/components/chart/line-chart.tsx`, `src/components/chart/donut-chart.tsx`
 Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `src/components/chart/chart-tooltip.test.tsx`, `e2e/chart.spec.ts`
@@ -281,7 +281,7 @@ Verification: `src/components/chart/heatmap-geometry.test.ts`, `src/components/c
 
 ### UIC-CHART-11.2 - Levels and legend
 
-A value shall publish its intensity as `data-level`, from 0 to `levels` (4 by default): 0 holds values at or below `minValue` (zero, or the lowest value below zero, by default), and each further level an equal step up to `maxValue` (the highest value by default). A value beyond a bound draws at the nearest level and publishes `data-outlier` (`low` or `high`). The meaning never rests on colour alone: every day's name and tooltip give its value, and a `ui-calendar-heatmap__legend` list, named by the provider's `heatmapLegend` string, names each level by the values it spans (`heatmapAtMost`, `heatmapRange`, `heatmapAtLeast`), then missing (`heatmapMissing`) and absent (`noData`) days when any draw, each item a `ui-calendar-heatmap__legend-item` holding a decorative `ui-calendar-heatmap__legend-swatch` (with the same `data-level` or `data-state`) and a `ui-calendar-heatmap__legend-label`. `showLegend={false}` hides it.
+A value shall publish its intensity as `data-level`, from 0 to `levels` (4 by default): 0 holds values at or below `minValue` (zero, or the lowest value below zero, by default), and each further level an equal step up to `maxValue` (the highest value by default). A value beyond a bound draws at the nearest level and publishes `data-outlier` (`low` or `high`). The meaning never rests on color alone: every day's name and tooltip give its value, and a `ui-calendar-heatmap__legend` list, named by the provider's `heatmapLegend` string, names each level by the values it spans (`heatmapAtMost`, `heatmapRange`, `heatmapAtLeast`), then missing (`heatmapMissing`) and absent (`noData`) days when any draw, each item a `ui-calendar-heatmap__legend-item` holding a decorative `ui-calendar-heatmap__legend-swatch` (with the same `data-level` or `data-state`) and a `ui-calendar-heatmap__legend-label`. `showLegend={false}` hides it.
 
 Implementation: `src/components/chart/heatmap-geometry.ts`, `src/components/chart/calendar-heatmap-model.ts`, `src/components/chart/calendar-heatmap.tsx`
 Verification: `src/components/chart/heatmap-geometry.test.ts`, `src/components/chart/calendar-heatmap.test.tsx`
@@ -308,7 +308,7 @@ Verification: `src/components/chart/calendar-heatmap.test.tsx`, `e2e/chart.spec.
 | `ui-chart__table`                    | slot      |                                                   | The table view, alongside `ui-prose-table`.                                         |
 | `ui-chart__tooltip`                  | slot      |                                                   | The tooltip panel of the hovered or focused value, alongside `ui-tooltip`.          |
 | `ui-chart__tooltip-title`            | slot      |                                                   | The value's category or x value.                                                    |
-| `ui-chart__tooltip-swatch`           | slot      |                                                   | The decorative mark of the series' colour slot.                                     |
+| `ui-chart__tooltip-swatch`           | slot      |                                                   | The decorative mark of the series' color slot.                                      |
 | `ui-chart__tooltip-label`            | slot      |                                                   | The series' label.                                                                  |
 | `ui-chart__tooltip-value`            | slot      |                                                   | The formatted value.                                                                |
 | `ui-chart__references`               | slot      |                                                   | The group of reference lines and bands, under the values.                           |
@@ -342,7 +342,7 @@ Verification: `src/components/chart/calendar-heatmap.test.tsx`, `e2e/chart.spec.
 | `ui-chart-axis__grid`                | slot      |                                                   | A grid line across the drawing.                                                     |
 | `ui-chart-legend`                    | root      |                                                   | `ChartLegend`'s group.                                                              |
 | `ui-chart-legend__item`              | slot      |                                                   | A series' toggle button.                                                            |
-| `ui-chart-legend__swatch`            | slot      |                                                   | The item's decorative colour mark.                                                  |
+| `ui-chart-legend__swatch`            | slot      |                                                   | The item's decorative color mark.                                                   |
 | `ui-chart-legend__label`             | slot      |                                                   | The item's label.                                                                   |
 | `data-view`                          | state     | `chart`, `table`                                  | The view the chart shows.                                                           |
 | `data-layout`                        | attribute | `grouped`, `stacked`                              | How a bar chart sets out a category's bars.                                         |

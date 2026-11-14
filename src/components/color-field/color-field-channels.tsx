@@ -97,9 +97,9 @@ function ChannelInput({
 }
 
 /**
- * The picker's hex input. It edits the colour and keeps the picker's alpha, as its six digits hold
- * none: it takes the picker's colour itself rather than through the picker's context, which would
- * set the colour opaque. It shows `#` only beside the Alpha input, and is otherwise named without a
+ * The picker's hex input. It edits the color and keeps the picker's alpha, as its six digits hold
+ * none: it takes the picker's color itself rather than through the picker's context, which would
+ * set the color opaque. It shows `#` only beside the Alpha input, and is otherwise named without a
  * visible label.
  */
 function HexInput({ showsAlpha }: { showsAlpha: boolean }) {
@@ -125,7 +125,7 @@ function HexInput({ showsAlpha }: { showsAlpha: boolean }) {
 
 /**
  * The picker's inputs for its format: a hex input, or a number input per channel of the format's
- * colour space (React Aria `ColorField` with `channel`), then alpha while the picker offers opacity.
+ * color space (React Aria `ColorField` with `channel`), then alpha while the picker offers opacity.
  * A channel has a visible label, its initial.
  */
 export function ColorChannelInputs({

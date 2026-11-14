@@ -31,7 +31,7 @@ const labelMarkup = `<svg ${svgNamespace} viewBox="0 0 48 24">
 /** Mixed-case design tokens, defined on a group and inherited by its shapes. */
 const tokenMarkup = `<svg ${svgNamespace} viewBox="0 0 24 24"><g style="--Leaf: #16a34a; --leaf: #dc2626; --leafShade: var(--Leaf)"><circle cx="8" cy="12" r="6" style="fill: var(--leafShade, #dc2626)"/><circle cx="17" cy="12" r="5" style="fill: var(--leaf)"/></g></svg>`;
 
-/** Two drawings that both name their gradient `tone`, with different colours. */
+/** Two drawings that both name their gradient `tone`, with different colors. */
 const toneMarkup = (color: string, reference = 'url(#tone)') =>
   `<svg ${svgNamespace} viewBox="0 0 24 24"><defs><linearGradient id="tone"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><rect width="24" height="24" fill="${reference}"/></svg>`;
 

@@ -67,7 +67,7 @@ describe('PropertyPanel', () => {
       >
         <PropertySection title="Fill" className="c-section" data-probe="section">
           <PropertyGroup heading="Paint" className="c-group" id="group" data-probe="group">
-            <PropertyRow label="Colour" className="c-row" id="row" data-probe="row">
+            <PropertyRow label="Color" className="c-row" id="row" data-probe="row">
               <PropertyStrip className="c-strip" id="strip" data-probe="strip">
                 <PropertyStripCell
                   letter="R"
@@ -160,7 +160,7 @@ describe('PropertyPanel', () => {
         onExpandedChange={onExpandedChange}
       >
         <PropertySection id="fill" title="Fill" persistKey="ignored.fill">
-          <PropertyRow label="Colour">red</PropertyRow>
+          <PropertyRow label="Color">red</PropertyRow>
         </PropertySection>
         <PropertySection id="stroke" title="Stroke">
           <PropertyCard name="Dash">
@@ -204,7 +204,7 @@ describe('PropertyPanel', () => {
           <PropertyPanel aria-label="Shape" expandedKeys={keys} onExpandedChange={setKeys}>
             <PropertyScope query={query}>
               <PropertySection id="fill" title="Fill">
-                <PropertyRow label="Colour">red</PropertyRow>
+                <PropertyRow label="Color">red</PropertyRow>
               </PropertySection>
               <PropertySection id="stroke" title="Stroke">
                 <PropertyRow label="Width">1</PropertyRow>

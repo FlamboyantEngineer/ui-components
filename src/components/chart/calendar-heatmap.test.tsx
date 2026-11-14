@@ -17,7 +17,7 @@ const readings: CalendarHeatmapDay[] = [
 const cell = (name: string) => screen.getByRole('img', { name });
 
 describe('CalendarHeatmap', () => {
-  it('UIC-CHART-11.1 UIC-CHART-11.2 names every day by its date and value, apart from colour', () => {
+  it('UIC-CHART-11.1 UIC-CHART-11.2 names every day by its date and value, apart from color', () => {
     render(
       <CalendarHeatmap
         label="Visits"

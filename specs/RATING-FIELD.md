@@ -34,7 +34,7 @@ Verification: `src/components/rating-field/rating-field.test.tsx`
 
 ### UIC-RATING-FIELD-1.5 - Glyphs
 
-`icon` shall set the glyph every position draws (a star by default), and `emptyIcon` a different glyph for the empty layer, such as an outlined shape beside a filled one. Both layers are hidden from assistive technology. The reference sheet outlines the empty glyph and fills the filled one, so a rating reads by shape as well as colour.
+`icon` shall set the glyph every position draws (a star by default), and `emptyIcon` a different glyph for the empty layer, such as an outlined shape beside a filled one. Both layers are hidden from assistive technology. The reference sheet outlines the empty glyph and fills the filled one, so a rating reads by shape as well as color.
 
 Implementation: `src/components/rating-field/rating-glyphs.tsx`, `labs/reference/rating-field.css`
 Verification: `src/components/rating-field/rating-field.test.tsx`, `e2e/rating-field.spec.ts`

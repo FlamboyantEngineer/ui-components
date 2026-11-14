@@ -312,7 +312,7 @@ test.describe('Text Field lab', () => {
     lab,
   }) => {
     await lab.open('text-field');
-    const input = field(page, 'hex').getByRole('textbox', { name: 'Colour code' });
+    const input = field(page, 'hex').getByRole('textbox', { name: 'Color code' });
     await input.pressSequentially('a1-zb');
     await expect(input).toHaveValue('A1B');
     await expect(output(page, 'Code')).toHaveText('A1B');

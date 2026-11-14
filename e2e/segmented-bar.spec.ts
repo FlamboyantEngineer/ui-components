@@ -58,23 +58,23 @@ test.describe('Segmented Bar lab', () => {
     await expect(matrixCell(page, 'option=empty').getByRole('listitem')).toHaveCount(4);
   });
 
-  test('UIC-SEGMENTED-BAR-1.3 colours each tone on the segment and its swatch', async ({
+  test('UIC-SEGMENTED-BAR-1.3 colors each tone on the segment and its swatch', async ({
     page,
     lab,
   }) => {
     await lab.open('segmented-bar');
-    const colours: string[] = [];
+    const colors: string[] = [];
     for (const tone of ['neutral', 'info', 'success', 'warning', 'danger']) {
       const cell = matrixCell(page, `tone=${tone}`);
       const segment = cell.locator(`.ui-segmented-bar__segment[data-tone="${tone}"]`).first();
       const swatch = cell
         .locator(`.ui-segmented-bar__item[data-tone="${tone}"] .ui-segmented-bar__swatch`)
         .first();
-      const colour = await segment.evaluate((node) => getComputedStyle(node).backgroundColor);
-      expect(await swatch.evaluate((node) => getComputedStyle(node).backgroundColor)).toBe(colour);
-      colours.push(colour);
+      const color = await segment.evaluate((node) => getComputedStyle(node).backgroundColor);
+      expect(await swatch.evaluate((node) => getComputedStyle(node).backgroundColor)).toBe(color);
+      colors.push(color);
     }
-    expect(new Set(colours).size).toBe(5);
+    expect(new Set(colors).size).toBe(5);
   });
 
   test('UIC-SEGMENTED-BAR-1.5 formats totals and counts, and fills toward a total', async ({

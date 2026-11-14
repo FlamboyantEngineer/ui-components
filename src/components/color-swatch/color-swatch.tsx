@@ -8,11 +8,11 @@ import { ColorSwatch as AriaColorSwatch, parseColor } from '../../primitives/ind
 
 export interface ColorSwatchProps extends BaseProps, RefProps<HTMLDivElement>, AriaLabellingProps {
   /**
-   * A hex, `rgb()`, `hsl()` or `hsb()` colour string. Nothing, empty text or a colour in another
+   * A hex, `rgb()`, `hsl()` or `hsb()` color string. Nothing, empty text or a color in another
    * notation draws an empty swatch.
    */
   color?: string | null | undefined;
-  /** Names the colour instead of its name in the locale. */
+  /** Names the color instead of its name in the locale. */
   colorName?: string | undefined;
   /** Box size. Defaults to `md`. */
   size?: Size | undefined;
@@ -20,7 +20,7 @@ export interface ColorSwatchProps extends BaseProps, RefProps<HTMLDivElement>, A
 
 const hooks = createHooks('color-swatch');
 
-/** `color` as the CSS colour the swatch draws, or nothing when it cannot draw it. */
+/** `color` as the CSS color the swatch draws, or nothing when it cannot draw it. */
 function toSwatchFill(color: string | null | undefined): string | undefined {
   if (!color) return undefined;
   try {
@@ -30,12 +30,12 @@ function toSwatchFill(color: string | null | undefined): string | undefined {
   }
 }
 
-/** Whether the swatch can draw `color`: a hex, `rgb()`, `hsl()` or `hsb()` colour string. */
+/** Whether the swatch can draw `color`: a hex, `rgb()`, `hsl()` or `hsb()` color string. */
 export function isSwatchColor(color: string | null | undefined): color is string {
   return toSwatchFill(color) !== undefined;
 }
 
-/** A colour shown on its own, named by its colour so assistive technology can read it. */
+/** A color shown on its own, named by its color so assistive technology can read it. */
 export function ColorSwatch({
   color,
   size = 'md',
@@ -50,7 +50,7 @@ export function ColorSwatch({
     <AriaColorSwatch
       {...rest}
       {...hooks.root({ className, props: rest, data: { size, empty: drawn === undefined } })}
-      // The fill again, so a stylesheet can layer it over a checkerboard for a translucent colour.
+      // The fill again, so a stylesheet can layer it over a checkerboard for a translucent color.
       style={fill === undefined ? undefined : measuredProperty('color-swatch-color', fill)}
       color={drawn}
       colorName={drawn === undefined ? strings.noColor : colorName}

@@ -323,7 +323,7 @@
   font-family: var(--ref-mono);
 }
 
-/* Marks in the copy change no metrics: colours, underlines and outlines only. */
+/* Marks in the copy change no metrics: colors, underlines and outlines only. */
 .ui-code-editor__mark[data-severity='error'] {
   text-decoration: wavy underline var(--ref-danger);
   text-decoration-skip-ink: none;

@@ -56,7 +56,7 @@ function scoreLine(line: readonly boolean[]): number {
   return score + countFinderPatterns(history) * finderPenalty;
 }
 
-/** The penalty of 2×2 blocks of one colour. */
+/** The penalty of 2×2 blocks of one color. */
 function scoreBlocks(modules: readonly (readonly boolean[])[]): number {
   let score = 0;
   for (let y = 0; y + 1 < modules.length; y += 1) {

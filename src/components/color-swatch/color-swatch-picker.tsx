@@ -31,11 +31,11 @@ export type ColorSwatchPickerLayout = 'grid' | 'stack';
 export interface ColorSwatchPickerProps
   extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /**
-   * The picked colour, as a hex, `rgb()`, `hsl()` or `hsb()` string (controlled). Empty or unreadable
+   * The picked color, as a hex, `rgb()`, `hsl()` or `hsb()` string (controlled). Empty or unreadable
    * text picks nothing.
    */
   value?: string | undefined;
-  /** The colour picked at first, when uncontrolled. Nothing is picked without it. */
+  /** The color picked at first, when uncontrolled. Nothing is picked without it. */
   defaultValue?: string | undefined;
   /** Called with the picked item's `color`, as the item gives it. */
   onChange?: ((color: string) => void) | undefined;
@@ -50,11 +50,11 @@ export interface ColorSwatchPickerProps
 export interface ColorSwatchPickerItemProps
   extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'> {
   /**
-   * The colour, as a hex, `rgb()`, `hsl()` or `hsb()` string; it is also what `onChange` receives.
-   * An item whose colour is in another notation is left out.
+   * The color, as a hex, `rgb()`, `hsl()` or `hsb()` string; it is also what `onChange` receives.
+   * An item whose color is in another notation is left out.
    */
   color: string;
-  /** Names the colour instead of its name in the locale. */
+  /** Names the color instead of its name in the locale. */
   colorName?: string | undefined;
   /** Keeps the swatch listed but not pickable. */
   isDisabled?: boolean | undefined;
@@ -62,7 +62,7 @@ export interface ColorSwatchPickerItemProps
 
 const hooks = createHooks('color-swatch-picker', ['item']);
 
-/** What the items tell their picker: their size, and where to list their colour text by key. */
+/** What the items tell their picker: their size, and where to list their color text by key. */
 interface PickerItems {
   size: Size;
   register: (key: string, color: string) => () => void;
@@ -70,12 +70,12 @@ interface PickerItems {
 
 const PickerItemsContext = createContext<PickerItems>({ size: 'md', register: () => () => {} });
 
-/** The canonical form of a colour, which compares colours whatever their spelling. */
+/** The canonical form of a color, which compares colors whatever their spelling. */
 function toColorKey(color: string | null): string | null {
   return isSwatchColor(color) ? parseColor(color).toString('hexa') : null;
 }
 
-/** The value and change handler a surrounding React Aria colour picker gives its swatches. */
+/** The value and change handler a surrounding React Aria color picker gives its swatches. */
 function useSurroundingPicker() {
   const context = useContext(ColorSwatchPickerContext) as {
     value?: Color | string;
@@ -89,8 +89,8 @@ function useSurroundingPicker() {
 }
 
 /**
- * Each item's colour text by its own key. Items are told apart by identity, not colour, so equal
- * colours in different spellings (or the same spelling twice) are separate options.
+ * Each item's color text by its own key. Items are told apart by identity, not color, so equal
+ * colors in different spellings (or the same spelling twice) are separate options.
  */
 function useItemColors() {
   const [colors, setColors] = useState<ReadonlyMap<string, string>>(new Map());
@@ -110,8 +110,8 @@ function useItemColors() {
 }
 
 /**
- * A list of colour swatches to choose one from: a single-selection listbox whose arrow keys move
- * between swatches and whose Enter or Space picks one. Every item of the picked colour shows as
+ * A list of color swatches to choose one from: a single-selection listbox whose arrow keys move
+ * between swatches and whose Enter or Space picks one. Every item of the picked color shows as
  * picked, whatever its spelling.
  */
 export function ColorSwatchPicker({
@@ -161,7 +161,7 @@ export function ColorSwatchPicker({
   );
 }
 
-/** One choice of a `ColorSwatchPicker`: an option drawing its colour as a `ColorSwatch`. */
+/** One choice of a `ColorSwatchPicker`: an option drawing its color as a `ColorSwatch`. */
 export function ColorSwatchPickerItem({
   color,
   colorName,

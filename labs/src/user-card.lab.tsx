@@ -122,7 +122,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Avatar options"
-      description="Each shape against initials given by the caller (MF), a stable colour key, an explicit colour slot in a six-colour palette, and a picture with a sharper candidate for dense screens, loaded lazily."
+      description="Each shape against initials given by the caller (MF), a stable color key, an explicit color slot in a six-color palette, and a picture with a sharper candidate for dense screens, loaded lazily."
     >
       <StateMatrix
         axes={{ option: identityOptions, shape: identityShapes }}

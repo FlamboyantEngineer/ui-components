@@ -54,7 +54,7 @@ test.describe('Field lab custom controls', () => {
     await lab.open('field');
     const inline = matrixCell(page, 'marker=text layout=inline');
     await expect(inline.locator('del')).toHaveText('Blue');
-    await inline.getByRole('button', { name: 'Restore the earlier colour' }).click();
+    await inline.getByRole('button', { name: 'Restore the earlier color' }).click();
     await expect(inline.getByRole('textbox')).toHaveValue('Blue');
     await expect(output(page, 'Restored inline text')).toHaveText('1');
 
@@ -65,12 +65,12 @@ test.describe('Field lab custom controls', () => {
 
     const hidden = matrixCell(page, 'marker=text layout=hidden');
     await expect(hidden.locator('del')).toHaveCount(0);
-    await hidden.getByRole('button', { name: 'Restore Colour, hidden, text' }).click();
+    await hidden.getByRole('button', { name: 'Restore Color, hidden, text' }).click();
     await expect(hidden.getByRole('textbox')).toHaveValue('Blue');
 
     await expect(
       matrixCell(page, 'marker=locked layout=inline').getByRole('button', {
-        name: 'Restore the earlier colour',
+        name: 'Restore the earlier color',
       }),
     ).toBeDisabled();
   });

@@ -218,7 +218,7 @@ export function NumberFieldUnitTypeSection() {
   return (
     <LabSection
       title="Units with the number"
-      description="A unit takes the number's font, size, colour and baseline, with about a space between them after the number. Negative, decimal, long, read-only, disabled and German-formatted values at xs, sm, md and lg."
+      description="A unit takes the number's font, size, color and baseline, with about a space between them after the number. Negative, decimal, long, read-only, disabled and German-formatted values at xs, sm, md and lg."
     >
       <UnitTypography />
     </LabSection>

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Verifies that the reference stylesheet draws on one token set (UIC-LABS-3.5): partials use the
-// base tokens instead of literal colours, radii, type, focus rings, state opacity and durations;
+// base tokens instead of literal colors, radii, type, focus rings, state opacity and durations;
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
 // carry their partial's name. Every other custom property is a measured --ui-* property a spec
 // declares or a listed third-party interop variable used only in its partial. A state rule never
@@ -85,7 +85,7 @@ const files = readdirSync(referenceDir)
 const declarations = files.flatMap(readDeclarations);
 const where = (declaration) => `labs/reference/${declaration.file}:${declaration.line}`;
 
-const colourLiteral =
+const colorLiteral =
   /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(|\b(?:white|black|red|green|blue|gray|grey|yellow|orange|purple|pink)\b/i;
 const radiusValue =
   /^(?:0|50%|25%|inherit|var\(--ref-radius(?:-[a-z]+)?\)|calc\(.*var\(--ref-radius.*\))$/;
@@ -121,22 +121,22 @@ for (const declaration of declarations) {
   const { selector, property, isExempt, isLayoutExempt } = declaration;
   const value = declaration.value.replace(/\s*!important$/, '');
   if (isTokenBlock(declaration)) continue;
-  // A partial's own token draws its colour from the base too; its uses are checked by property.
+  // A partial's own token draws its color from the base too; its uses are checked by property.
   if (property.startsWith('--')) {
-    if (!isExempt && colourLiteral.test(value))
-      problems.push(`${where(declaration)}: literal colour in ${property}; use a colour token`);
+    if (!isExempt && colorLiteral.test(value))
+      problems.push(`${where(declaration)}: literal color in ${property}; use a color token`);
     continue;
   }
   const isStateRule = transientState.test(selector.replace(/:not\([^)]*\)/g, ''));
   if (isStateRule && layoutProperty.test(property) && !isLayoutExempt) {
     problems.push(
-      `${where(declaration)}: ${property} changes with a state, so the state moves the layout; mark it with colour, background, outline, shadow or a positioned part`,
+      `${where(declaration)}: ${property} changes with a state, so the state moves the layout; mark it with color, background, outline, shadow or a positioned part`,
     );
   }
   if (isExempt) continue;
   const parts = value.split(/\s+(?![^(]*\))/);
-  if (colourLiteral.test(value))
-    problems.push(`${where(declaration)}: literal colour in ${property}; use a colour token`);
+  if (colorLiteral.test(value))
+    problems.push(`${where(declaration)}: literal color in ${property}; use a color token`);
   if (property.endsWith('radius') && parts.some((part) => !radiusValue.test(part))) {
     problems.push(`${where(declaration)}: ${property} "${value}" is not a radius token`);
   }
@@ -397,7 +397,7 @@ const themeValue = (name, theme) => {
 const seen = new Map();
 for (const name of baseTokens) {
   const light = themeValue(name, 'light');
-  if (!light || /var\(/.test(light) || !colourLiteral.test(light)) continue;
+  if (!light || /var\(/.test(light) || !colorLiteral.test(light)) continue;
   const key = `${light}|${themeValue(name, 'dark')}`;
   if (seen.has(key))
     problems.push(`${name} repeats the value of ${seen.get(key)} in both themes; alias it`);

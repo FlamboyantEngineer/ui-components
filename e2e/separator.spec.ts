@@ -10,7 +10,7 @@ async function box(locator: Locator) {
 /**
  * The inked rows of each pixel column of `element` drawn `zoom` times larger, read from a
  * screenshot: the ink-weighted middle row of every column and the column's ink, against the
- * background colour of the top-left pixel. Sizes are in CSS pixels of the unzoomed line.
+ * background color of the top-left pixel. Sizes are in CSS pixels of the unzoomed line.
  */
 async function traceLine(page: Page, element: Locator, zoom: number) {
   await element.evaluate((node, scale) => {

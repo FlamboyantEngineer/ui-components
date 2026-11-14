@@ -177,8 +177,8 @@ mountLab(
         />
       </LabSection>
       <LabSection
-        title="Spinner colour"
-        description="The spinner draws in its context's text colour: body text, and pending primary, secondary and danger buttons."
+        title="Spinner color"
+        description="The spinner draws in its context's text color: body text, and pending primary, secondary and danger buttons."
       >
         <StateMatrix
           axes={{ context: ['body text', 'primary', 'secondary', 'danger'] }}

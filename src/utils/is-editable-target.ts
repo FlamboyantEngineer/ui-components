@@ -29,7 +29,7 @@ const nonTextInputTypes = new Set([
 
 /**
  * Whether a key press at `target` types into it: like `isEditableTarget`, without the inputs that
- * take no text (checkboxes, radios, buttons, files, colours), whose keys a shortcut may answer.
+ * take no text (checkboxes, radios, buttons, files, colors), whose keys a shortcut may answer.
  */
 export function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!isElement(target)) return false;

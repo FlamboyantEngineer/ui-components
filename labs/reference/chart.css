@@ -1,4 +1,4 @@
-/* Chart: a quiet frame, muted axes and an eight-colour series palette keyed by data-series. */
+/* Chart: a quiet frame, muted axes and an eight-color series palette keyed by data-series. */
 
 .ui-chart {
   display: flex;
@@ -109,7 +109,7 @@
   font-weight: var(--ref-font-weight-strong);
 }
 
-/* The series palette: one category colour per position, replaced by a tone when the series has one. */
+/* The series palette: one category color per position, replaced by a tone when the series has one. */
 :is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series] {
   --ref-chart-series: var(--ref-category-0);
 }

@@ -1,4 +1,4 @@
-// Stable identities of a chart's drawn values, apart from their colour-slot positions (specs/CHART.md).
+// Stable identities of a chart's drawn values, apart from their color-slot positions (specs/CHART.md).
 
 import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';

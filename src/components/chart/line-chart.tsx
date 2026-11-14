@@ -47,7 +47,7 @@ export interface LineChartProps
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
-  /** The series, in the order of their colour slots. Dates make a time axis; numbers a linear one. */
+  /** The series, in the order of their color slots. Dates make a time axis; numbers a linear one. */
   series: readonly LineChartSeries[];
   /** Lines, or lines over filled areas. Defaults to `line`. */
   variant?: LineChartVariant | undefined;

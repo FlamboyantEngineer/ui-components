@@ -180,7 +180,7 @@ const HeatmapPlot = memo(function HeatmapPlot(props: HeatmapPlotProps) {
  * A day-by-day view of a daily measurement over weeks or months: a week per column, a weekday
  * per row, each day's square at an intensity level. Each day is a focusable square named by its
  * date and its value, with a tooltip; the legend names each level's values, so no meaning rests
- * on colour alone, and the days can be shown as a table.
+ * on color alone, and the days can be shown as a table.
  */
 export function CalendarHeatmap({
   label,

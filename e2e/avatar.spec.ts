@@ -45,7 +45,7 @@ test.describe('Avatar lab', () => {
     ).toBeVisible();
   });
 
-  test('UIC-AVATAR-1.3 UIC-AVATAR-2.2 colours each slot through the stylesheet only', async ({
+  test('UIC-AVATAR-1.3 UIC-AVATAR-2.2 colors each slot through the stylesheet only', async ({
     page,
     lab,
   }) => {
@@ -342,13 +342,13 @@ function requireBox<T>(box: T | null): T {
   return box;
 }
 
-test('UIC-AVATAR-1.3 keeps a key-derived colour across renames and follows the palette size and index', async ({
+test('UIC-AVATAR-1.3 keeps a key-derived color across renames and follows the palette size and index', async ({
   page,
   lab,
 }) => {
   await lab.open('avatar');
-  const demo = page.locator('[data-lab-demo="avatar-colours"]');
-  const row = (id: string) => demo.locator(`[data-lab-colour="${id}"]`);
+  const demo = page.locator('[data-lab-demo="avatar-colors"]');
+  const row = (id: string) => demo.locator(`[data-lab-color="${id}"]`);
   const check = async (id: string) => {
     const slot = await row(id).locator('[data-lab-output="slot"]').innerText();
     await expect(row(id).locator('.ui-avatar')).toHaveAttribute('data-color', slot);

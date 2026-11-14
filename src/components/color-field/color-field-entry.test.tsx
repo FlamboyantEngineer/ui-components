@@ -19,14 +19,14 @@ describe('ColorField typing', () => {
         allowsTyping
         defaultValue="#336699"
         format="rgb"
-        description="Brand colour."
+        description="Brand color."
       />,
     );
     const group = container.querySelector('.ui-color-field__group');
     expect(group).not.toBeNull();
     expect(input()).toHaveValue('rgb(51, 102, 153)');
     expect(input()).toHaveAttribute('id', 'accent-control');
-    expect(input()).toHaveAccessibleDescription('Brand colour.');
+    expect(input()).toHaveAccessibleDescription('Brand color.');
     expect(input().closest('.ui-color-field__entry')).not.toBeNull();
     const button = screen.getByRole('button', { name: 'Accent picker' });
     expect(button).toHaveClass('ui-color-field__trigger');
@@ -37,7 +37,7 @@ describe('ColorField typing', () => {
     });
   });
 
-  it('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-4.3 keeps an untouched hex alpha when a colour digit changes', async () => {
+  it('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-4.3 keeps an untouched hex alpha when a color digit changes', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     render(
@@ -55,7 +55,7 @@ describe('ColorField typing', () => {
     expect(onCommit).toHaveBeenLastCalledWith('#22345601');
   });
 
-  it('UIC-COLOR-FIELD-4.3 commits a typed colour in any form on Enter or blur', async () => {
+  it('UIC-COLOR-FIELD-4.3 commits a typed color in any form on Enter or blur', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
@@ -72,7 +72,7 @@ describe('ColorField typing', () => {
     expect(input()).toHaveValue('#336699');
     await user.clear(input());
     await user.type(input(), 'rgb(255, 0, 0)');
-    // A typed colour is the value at once; it commits on Enter.
+    // A typed color is the value at once; it commits on Enter.
     expect(onChange).toHaveBeenLastCalledWith('#ff0000');
     expect(onCommit).not.toHaveBeenCalled();
     expect(input()).toHaveValue('rgb(255, 0, 0)');
@@ -158,12 +158,12 @@ describe('ColorField typing', () => {
         label="Accent"
         allowsTyping
         defaultValue="#336699"
-        placeholder="Pick a colour"
+        placeholder="Pick a color"
         onCommit={onCommit}
       />,
     );
     await user.clear(input());
-    await user.type(input(), 'not a colour{Enter}');
+    await user.type(input(), 'not a color{Enter}');
     expect(input()).toHaveValue('#336699');
     await user.type(input(), '0{Escape}');
     expect(input()).toHaveValue('#336699');
@@ -171,7 +171,7 @@ describe('ColorField typing', () => {
     await user.keyboard('{Enter}');
     expect(onCommit).toHaveBeenLastCalledWith(null);
     expect(input()).toHaveValue('');
-    expect(input()).toHaveAttribute('placeholder', 'Pick a colour');
+    expect(input()).toHaveAttribute('placeholder', 'Pick a color');
     unmount();
 
     render(<ColorField label="Accent" allowsTyping isRequired defaultValue="#336699" />);
@@ -219,7 +219,7 @@ describe('ColorField typing', () => {
     expect(input()).toHaveValue('#0C0000');
   });
 
-  it('UIC-COLOR-FIELD-4.3 submits the colour typed while the input keeps focus', async () => {
+  it('UIC-COLOR-FIELD-4.3 submits the color typed while the input keeps focus', async () => {
     const user = userEvent.setup();
     const submitted: Array<FormDataEntryValue | null> = [];
     render(
@@ -251,7 +251,7 @@ describe('ColorField typing', () => {
     const { rerender } = render(
       <ColorField label="Accent" allowsTyping value="#123456" onChange={onChange} />,
     );
-    // The owner keeps its value, so the typed colour is refused and the text put back.
+    // The owner keeps its value, so the typed color is refused and the text put back.
     await user.tripleClick(input());
     await user.paste('#aabbcc');
     expect(onChange).toHaveBeenLastCalledWith('#aabbcc');

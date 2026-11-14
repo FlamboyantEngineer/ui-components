@@ -8,19 +8,19 @@ import type { TableColumn } from './table-rows.js';
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   weight: number;
   picked: string;
 }
 
 const fruit: Fruit[] = [
-  { id: 'banana', name: 'Banana', colour: 'Yellow', weight: 120, picked: '2026-10-02' },
-  { id: 'apple', name: 'Apple', colour: 'Red', weight: 30, picked: '2026-10-10' },
-  { id: 'cherry', name: 'Cherry', colour: 'Red', weight: 100, picked: '2026-10-20' },
+  { id: 'banana', name: 'Banana', color: 'Yellow', weight: 120, picked: '2026-10-02' },
+  { id: 'apple', name: 'Apple', color: 'Red', weight: 30, picked: '2026-10-10' },
+  { id: 'cherry', name: 'Cherry', color: 'Red', weight: 100, picked: '2026-10-20' },
 ];
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name', filter: { type: 'text' } },
-  { id: 'colour', header: 'Colour', filter: { type: 'set' } },
+  { id: 'color', header: 'Color', filter: { type: 'set' } },
   { id: 'weight', header: 'Weight', filter: { type: 'number' } },
   { id: 'picked', header: 'Picked', filter: { type: 'date' } },
 ];
@@ -64,8 +64,8 @@ describe('Table column filters', { timeout: 20_000 }, () => {
 
   it('UIC-TABLE-2.8 filters by ticked values listed from the rows', async () => {
     renderFruit();
-    const { user, dialog } = await openFilter('Colour');
-    const group = within(dialog).getByRole('group', { name: 'Colour' });
+    const { user, dialog } = await openFilter('Color');
+    const group = within(dialog).getByRole('group', { name: 'Color' });
     expect(
       within(group)
         .getAllByRole('checkbox')
@@ -101,18 +101,18 @@ describe('Table column filters', { timeout: 20_000 }, () => {
     const onFilterChange = vi.fn();
     renderFruit({
       filterable: true,
-      filter: { query: 'zzz', columns: { colour: ['Red'] } },
+      filter: { query: 'zzz', columns: { color: ['Red'] } },
       onFilterChange,
     });
     expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
     const search = screen.getByRole('searchbox', { name: 'Filter rows' });
     expect(search).toHaveValue('zzz');
-    expect(header('Colour')).toHaveAttribute('data-filtered', 'true');
+    expect(header('Color')).toHaveAttribute('data-filtered', 'true');
     const user = userEvent.setup();
     await user.type(search, 'y');
     expect(onFilterChange).toHaveBeenLastCalledWith({
       query: 'zzzy',
-      columns: { colour: ['Red'] },
+      columns: { color: ['Red'] },
     });
     expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
   });

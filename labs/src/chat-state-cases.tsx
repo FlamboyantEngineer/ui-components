@@ -11,7 +11,7 @@ import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { SparklesGlyph } from '../../src/core/glyphs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { agents } from './chat-agent.js';
-import { labDisclaimer } from './chat-assistant-cases.js';
+import { labDisclaimer } from './chat-agent-app.js';
 import { labEfforts, labModels } from './chat-model-samples.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';

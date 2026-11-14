@@ -32,7 +32,7 @@ export interface StatusLightProps
 const hooks = createHooks('status-light', ['dot', 'label']);
 
 /**
- * A coloured dot beside a short label that names a status, such as a service state or a person's
+ * A colored dot beside a short label that names a status, such as a service state or a person's
  * presence. Without a visible label it is an image named by `aria-label`, or decorative.
  */
 export function StatusLight({

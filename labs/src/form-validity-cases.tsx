@@ -44,15 +44,15 @@ function SaveBar({ values }: { values: Record<string, unknown> }) {
 export function ExternalSave() {
   const [title, setTitle] = useState('Spring fair');
   const [day, setDay] = useState<string | null>('2026-04-13');
-  const [colour, setColour] = useState<string | null>('#336699');
+  const [color, setColor] = useState<string | null>('#336699');
   return (
     <div data-lab-form="external-save">
       <Form aria-label="Event" validationMode="submit" onSubmit={(event) => event.preventDefault()}>
         <TextField label="Title" isRequired value={title} onChange={setTitle} />
         <DateTimeField label="Day" value={day} onChange={setDay} />
         <DateTimeField label="Stay" mode="date-range" />
-        <ColorField label="Badge colour" allowsTyping value={colour} onChange={setColour} />
-        <SaveBar values={{ title, day, colour }} />
+        <ColorField label="Badge color" allowsTyping value={color} onChange={setColor} />
+        <SaveBar values={{ title, day, color }} />
       </Form>
     </div>
   );

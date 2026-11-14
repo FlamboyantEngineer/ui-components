@@ -55,7 +55,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`
 
 ### UIC-PROGRESS-BAR-1.8 - Completion and status
 
-A determinate bar whose bounded value equals its maximum, in a range that is not empty, shall publish `data-complete`; an indeterminate bar and an empty range never do. `tone` shall publish `data-tone`: `neutral` (the default, work running normally), `success`, `warning` or `danger`, so the stylesheet colours a bar that finished, needs attention or failed. The tone is never the only signal: the label or value text states the outcome.
+A determinate bar whose bounded value equals its maximum, in a range that is not empty, shall publish `data-complete`; an indeterminate bar and an empty range never do. `tone` shall publish `data-tone`: `neutral` (the default, work running normally), `success`, `warning` or `danger`, so the stylesheet colors a bar that finished, needs attention or failed. The tone is never the only signal: the label or value text states the outcome.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
@@ -64,7 +64,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-2.1 - Decorative busy glyph
 
-`Spinner` shall render a `ui-spinner` element hidden from assistive technology (`aria-hidden="true"`) holding the indeterminate circular progress's ring without its track: a decorative `<svg>` `ui-spinner__ring` holding a `ui-spinner__fill` arc a quarter of the ring long, starting at the top ([UIC-PROGRESS-BAR-11.2](#uic-progress-bar-112---ring-geometry)). It shall publish `data-size` (`sm`, `md` by default, `lg`; the reference sheet draws 12, 16 and 20 pixel boxes, which a component's own spinner slot may override), append the caller's `className` and forward `id`, `ref` (its `<span>`) and `data-*` attributes. The line it leads carries the status text and any `aria-busy`. It is the library's one busy indicator: every component that shows a busy state draws it, with its own slot class added. The reference sheet draws the arc in the current text colour and turns the ring twice per cycle from the top back to the top, speeding up and slowing down without ever stopping, so the loop flows on, while the arc grows from nothing at the top to most of the ring and shrinks back to nothing at the top; an indeterminate circular progress bar moves the same way. Reduced motion rests it as a quarter arc from the top.
+`Spinner` shall render a `ui-spinner` element hidden from assistive technology (`aria-hidden="true"`) holding the indeterminate circular progress's ring without its track: a decorative `<svg>` `ui-spinner__ring` holding a `ui-spinner__fill` arc a quarter of the ring long, starting at the top ([UIC-PROGRESS-BAR-11.2](#uic-progress-bar-112---ring-geometry)). It shall publish `data-size` (`sm`, `md` by default, `lg`; the reference sheet draws 12, 16 and 20 pixel boxes, which a component's own spinner slot may override), append the caller's `className` and forward `id`, `ref` (its `<span>`) and `data-*` attributes. The line it leads carries the status text and any `aria-busy`. It is the library's one busy indicator: every component that shows a busy state draws it, with its own slot class added. The reference sheet draws the arc in the current text color and turns the ring twice per cycle from the top back to the top, speeding up and slowing down without ever stopping, so the loop flows on, while the arc grows from nothing at the top to most of the ring and shrinks back to nothing at the top; an indeterminate circular progress bar moves the same way. Reduced motion rests it as a quarter arc from the top.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
@@ -103,7 +103,7 @@ Verification: `src/components/progress-bar/progress-segments.test.tsx`
 
 ### UIC-PROGRESS-BAR-4.3 - Current unit
 
-The bar's `aria-valuetext` shall be the provider's `segmentProgress` string, which names the current unit by its `label` (`1 of 7 done, 14%, Draft in progress`), so the current unit never depends on colour alone. The reference sheet also draws the current segment striped, a shape cue beside its colour.
+The bar's `aria-valuetext` shall be the provider's `segmentProgress` string, which names the current unit by its `label` (`1 of 7 done, 14%, Draft in progress`), so the current unit never depends on color alone. The reference sheet also draws the current segment striped, a shape cue beside its color.
 
 Implementation: `src/components/progress-bar/progress-segments.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
@@ -138,7 +138,7 @@ Verification: `src/components/progress-bar/progress-segments.test.tsx`
 
 ### UIC-PROGRESS-BAR-4.8 - Size, tone and caller attributes
 
-A segmented bar shall publish `data-size` and `data-tone` and forward the caller's `className`, `id`, `ref` and `data-*` attributes as an ordinary bar does. The reference sheet colours completed segments with the tone (success once every unit is complete), keeps the label and value on one row above the track, and narrows the gaps between segments when there are many, so a long sequence fits a narrow container without overflowing.
+A segmented bar shall publish `data-size` and `data-tone` and forward the caller's `className`, `id`, `ref` and `data-*` attributes as an ordinary bar does. The reference sheet colors completed segments with the tone (success once every unit is complete), keeps the label and value on one row above the track, and narrows the gaps between segments when there are many, so a long sequence fits a narrow container without overflowing.
 
 Implementation: `src/components/progress-bar/progress-segments.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-segments.test.tsx`, `e2e/progress-bar-segments.spec.ts`
@@ -161,7 +161,7 @@ Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progres
 
 ### UIC-PROGRESS-BAR-11.2 - Ring geometry
 
-The ring shall hold a `ui-progress-bar__track` circle and a `ui-progress-bar__fill` circle whose path length is normalised to 100 and whose `stroke-dashoffset` is 100 minus the percentage, starting at the top. A full ring (100%) draws its fill without `stroke-dasharray` or `stroke-dashoffset`, one closed stroke, so no seam shows where a dash would end at its own start; any value short of the maximum keeps the dash and its sliver of gap. These are SVG geometry attributes computed from the value; the stylesheet chooses stroke colour and width.
+The ring shall hold a `ui-progress-bar__track` circle and a `ui-progress-bar__fill` circle whose path length is normalised to 100 and whose `stroke-dashoffset` is 100 minus the percentage, starting at the top. A full ring (100%) draws its fill without `stroke-dasharray` or `stroke-dashoffset`, one closed stroke, so no seam shows where a dash would end at its own start; any value short of the maximum keeps the dash and its sliver of gap. These are SVG geometry attributes computed from the value; the stylesheet chooses stroke color and width.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-ring.test.tsx`, `e2e/progress-ring.spec.ts`

@@ -13,19 +13,19 @@ import type { TableColumn } from './table-rows.js';
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   weight: number;
 }
 
 const fruit: readonly Fruit[] = Object.freeze([
-  { id: 'banana', name: 'Banana', colour: 'Yellow', weight: 120 },
-  { id: 'apple', name: 'Apple', colour: 'Red', weight: 30 },
-  { id: 'cherry', name: 'Cherry', colour: 'Red', weight: 100 },
+  { id: 'banana', name: 'Banana', color: 'Yellow', weight: 120 },
+  { id: 'apple', name: 'Apple', color: 'Red', weight: 30 },
+  { id: 'cherry', name: 'Cherry', color: 'Red', weight: 100 },
 ]);
 
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name', allowsSorting: true },
-  { id: 'colour', header: 'Colour' },
+  { id: 'color', header: 'Color' },
   { id: 'weight', header: 'Weight', align: 'end', allowsSorting: true },
 ];
 
@@ -43,13 +43,13 @@ describe('Table', { timeout: 15_000 }, () => {
         rows={fruit}
         columns={[
           { id: 'name', header: 'Name', width: 'content', minWidth: 100 },
-          { id: 'colour', header: 'Colour' },
+          { id: 'color', header: 'Color' },
         ]}
       />,
     );
     expect(header('Name')).toHaveAttribute('data-sizing', 'content');
     expect(tracks()).toBe('100px minmax(75px, 1fr)');
-    expect(header('Colour')).toHaveAttribute('data-sizing', 'flex');
+    expect(header('Color')).toHaveAttribute('data-sizing', 'flex');
     expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
     expectHooksMatchSpec(container, 'TABLE');
   });
@@ -216,7 +216,7 @@ describe('Table', { timeout: 15_000 }, () => {
         renderRowActions={() => null}
         columns={[
           { id: 'name', header: 'Name', cellWrap: 'nowrap' },
-          { id: 'colour', header: 'Colour', renderCell: (row) => <em>{row.colour}</em> },
+          { id: 'color', header: 'Color', renderCell: (row) => <em>{row.color}</em> },
           { id: 'id', header: 'Id', cellWrap: 'anywhere', renderFooter: () => 'All' },
         ]}
       />,
@@ -226,7 +226,7 @@ describe('Table', { timeout: 15_000 }, () => {
         cell.getAttribute('data-wrap'),
       );
     expect(wraps('name')).toEqual(['nowrap', 'nowrap', 'nowrap']);
-    expect(wraps('colour')).toEqual(['wrap', 'wrap', 'wrap']);
+    expect(wraps('color')).toEqual(['wrap', 'wrap', 'wrap']);
     expect(wraps('id')).toEqual(['anywhere', 'anywhere', 'anywhere']);
     expect(screen.getByRole('gridcell', { name: 'All' })).toHaveAttribute('data-wrap', 'anywhere');
     const selection = document.querySelector('.ui-table__cell[data-kind="selection"]');
@@ -393,7 +393,7 @@ describe('Table', { timeout: 15_000 }, () => {
     render(<Table aria-label="Fruit" rows={fruit} columns={columns} />);
     const glyph = (name: string) => header(name).querySelectorAll('.ui-table__sort-icon');
     expect(glyph('Name')).toHaveLength(1);
-    expect(glyph('Colour')).toHaveLength(0);
+    expect(glyph('Color')).toHaveLength(0);
     expect(glyph('Name')[0]).toHaveAttribute('data-glyph', 'sort-none');
     expect(glyph('Name')[0]).toHaveAttribute('aria-hidden', 'true');
     await user.click(header('Name'));
@@ -577,7 +577,7 @@ describe('Table', { timeout: 15_000 }, () => {
     const many = Array.from({ length: 500 }, (_, index) => ({
       id: `row-${index}`,
       name: `Fruit ${index + 1}`,
-      colour: 'Green',
+      color: 'Green',
       weight: index,
     }));
     try {

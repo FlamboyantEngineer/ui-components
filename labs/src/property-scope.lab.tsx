@@ -10,7 +10,7 @@ import { PropertyScope } from '../../src/components/property-scope/property-scop
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
-const queries = { none: '', title: 'colour', label: 'height', card: 'shadow', 'no match': 'zinc' };
+const queries = { none: '', title: 'color', label: 'height', card: 'shadow', 'no match': 'zinc' };
 
 function Swatches({
   query,
@@ -23,7 +23,7 @@ function Swatches({
 }) {
   return (
     <PropertyScope query={query} onClear={onClear} filter={filter}>
-      <PropertySection title="Colours">
+      <PropertySection title="Colors">
         <PropertyRow label="Fill">Teal</PropertyRow>
         <PropertyRow label="Stroke" isOverridden>
           Navy

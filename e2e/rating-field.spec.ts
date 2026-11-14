@@ -17,7 +17,7 @@ test.describe('Rating Field lab', () => {
         .evaluate((node) => getComputedStyle(node).visibility);
     expect(await fillOf(2)).toBe('visible');
     expect(await fillOf(3)).toBe('hidden');
-    // The filled glyph is painted, the outline is not: they differ by shape as well as colour.
+    // The filled glyph is painted, the outline is not: they differ by shape as well as color.
     const paint = await items
       .nth(0)
       .locator('.ui-rating-field__fill')

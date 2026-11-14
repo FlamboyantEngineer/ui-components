@@ -53,7 +53,7 @@
   color: var(--ref-muted);
 }
 
-/* The filled glyph differs in shape from the outline, so a rating never reads by colour alone. */
+/* The filled glyph differs in shape from the outline, so a rating never reads by color alone. */
 :is(.ui-rating-field__fill, .ui-rating__fill) {
   color: var(--ref-warning-fill);
   fill: currentColor;

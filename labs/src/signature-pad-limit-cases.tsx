@@ -19,7 +19,7 @@ function dataUrlBytes(url: string): number {
   return atob(url.slice(url.indexOf(',') + 1)).length;
 }
 
-/** A PNG of coloured noise, which barely compresses: tens of kilobytes from a small canvas. */
+/** A PNG of colored noise, which barely compresses: tens of kilobytes from a small canvas. */
 function drawNoisyPng(): string | null {
   const canvas = document.createElement('canvas');
   canvas.width = 120;

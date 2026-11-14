@@ -47,18 +47,18 @@ test.describe('Meter', () => {
     await expect(option('aria-label only').locator('.ui-meter__label')).toHaveCount(0);
   });
 
-  test('UIC-PROGRESS-BAR-21.6 UIC-PROGRESS-BAR-21.7 colours each tone and judges thresholds', async ({
+  test('UIC-PROGRESS-BAR-21.6 UIC-PROGRESS-BAR-21.7 colors each tone and judges thresholds', async ({
     page,
     lab,
   }) => {
     await lab.open('progress-bar');
-    const fillColour = (cell: string) =>
+    const fillColor = (cell: string) =>
       matrixCell(page, cell, { family: 'progress-meter-cases' })
         .locator(`.ui-meter__fill`)
         .evaluate((node) => getComputedStyle(node).backgroundColor);
     const tones = ['neutral', 'success', 'warning', 'danger'];
-    const colours = await Promise.all(tones.map((tone) => fillColour(`tone=${tone}`)));
-    expect(new Set(colours).size).toBe(4);
+    const colors = await Promise.all(tones.map((tone) => fillColor(`tone=${tone}`)));
+    expect(new Set(colors).size).toBe(4);
     const judged = {
       'optimum=low is best value=10': 'success',
       'optimum=low is best value=90': 'danger',
@@ -71,7 +71,7 @@ test.describe('Meter', () => {
       await expect(
         matrixCell(page, cell, { family: 'progress-meter-cases' }).locator(`.ui-meter`),
       ).toHaveAttribute('data-tone', tone);
-      expect(await fillColour(cell)).toBe(colours[tones.indexOf(tone)]);
+      expect(await fillColor(cell)).toBe(colors[tones.indexOf(tone)]);
     }
   });
 

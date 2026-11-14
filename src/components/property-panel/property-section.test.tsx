@@ -115,7 +115,7 @@ describe('PropertySection', () => {
 
   it('UIC-PROPERTY-PANEL-2.2 counts the rows and cards inside, or shows an explicit count with zero', () => {
     const { container, rerender } = render(
-      <PropertySection title="Colours" meta="3 shared">
+      <PropertySection title="Colors" meta="3 shared">
         <PropertyRow label="Fill">red</PropertyRow>
         <PropertyRow label="Stroke">blue</PropertyRow>
         <PropertyCard name="Shadow">
@@ -124,7 +124,7 @@ describe('PropertySection', () => {
         </PropertyCard>
       </PropertySection>,
     );
-    const trigger = screen.getByRole('button', { name: /^Colours/ });
+    const trigger = screen.getByRole('button', { name: /^Colors/ });
     const count = container.querySelector('.ui-property-section__count');
     expect(count).toHaveClass('ui-badge');
     expect(count).toHaveTextContent('3');

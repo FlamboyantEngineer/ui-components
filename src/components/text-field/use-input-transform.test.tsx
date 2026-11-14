@@ -15,9 +15,9 @@ describe('TextField input transform', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(
-      <TextField label="Colour code" transformInput={toHexDigits} onChange={onChange} />,
+      <TextField label="Color code" transformInput={toHexDigits} onChange={onChange} />,
     );
-    const input = screen.getByRole('textbox', { name: 'Colour code' });
+    const input = screen.getByRole('textbox', { name: 'Color code' });
     await user.type(input, 'a1-zb');
     expect(input).toHaveValue('A1B');
     expect(onChange.mock.calls.map(([value]) => value)).toEqual(['A', 'A1', 'A1B']);
@@ -29,13 +29,13 @@ describe('TextField input transform', () => {
     const onChange = vi.fn();
     render(
       <TextField
-        label="Colour code"
+        label="Color code"
         defaultValue="ABCD"
         transformInput={toHexDigits}
         onChange={onChange}
       />,
     );
-    const input = screen.getByRole('textbox', { name: 'Colour code' });
+    const input = screen.getByRole('textbox', { name: 'Color code' });
     await user.type(input, 'x', { initialSelectionStart: 2, initialSelectionEnd: 2 });
     // An edit the transform reduces to the current value changes nothing.
     expect(input).toHaveValue('ABCD');

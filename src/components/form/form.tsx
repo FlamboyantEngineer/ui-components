@@ -107,7 +107,7 @@ function useValidity(
 
 /**
  * The browser fires `invalid` at each invalid control of a native submit it blocked, in document
- * order, but not at a field whose control is a button or a group (a date, period or colour field).
+ * order, but not at a field whose control is a button or a group (a date, period or color field).
  * So the first event of that run does what a blocked submit does: it shows every field's
  * validation and focuses the first blocking field in document order, through the field, so a
  * collapsed or filtered container opens first. Only when no field blocks does focus go to the

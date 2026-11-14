@@ -1,29 +1,29 @@
-// A colour field's value model: the stored text, the formats it is written and edited in, and the
+// A color field's value model: the stored text, the formats it is written and edited in, and the
 // channels each format's inputs edit.
 
 import { parseColor } from '../../primitives/index.js';
 
-/** How a colour is written and edited: hex, RGB, HSL or HSB; alpha follows transparency. */
+/** How a color is written and edited: hex, RGB, HSL or HSB; alpha follows transparency. */
 export type ColorFieldFormat = 'hex' | 'rgb' | 'hsl' | 'hsb';
 
 /** A format as React Aria writes it, with alpha (`hexa`, `rgba`) or without. */
 type ColorNotation = ColorFieldFormat | 'hexa' | 'rgba' | 'hsla' | 'hsba';
 
-/** The colour space a format's channel inputs edit. */
+/** The color space a format's channel inputs edit. */
 export type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
 
-/** A channel a colour input edits. */
+/** A channel a color input edits. */
 export type ColorFormatChannel =
   'red' | 'green' | 'blue' | 'hue' | 'saturation' | 'lightness' | 'brightness' | 'alpha';
 
-/** The inputs a format edits with: a hex input or the channels of a colour space, then alpha. */
+/** The inputs a format edits with: a hex input or the channels of a color space, then alpha. */
 interface ColorFormatInputs {
   hasHex: boolean;
   space: ColorFormatSpace | undefined;
   channels: ColorFormatChannel[];
 }
 
-/** A colour that writes itself in a format and reads its alpha, such as the one the picker reports. */
+/** A color that writes itself in a format and reads its alpha, such as the one the picker reports. */
 interface FormattableColor {
   toString(format: ColorNotation): string;
   getChannelValue(channel: 'alpha'): number;
@@ -37,8 +37,8 @@ const spaces: Record<ColorFieldFormat, ColorFormatSpace | undefined> = {
 };
 
 /**
- * The notation a colour is written in: the format with alpha while transparency is allowed or the
- * colour is translucent, so an alpha the field cannot edit is kept rather than dropped.
+ * The notation a color is written in: the format with alpha while transparency is allowed or the
+ * color is translucent, so an alpha the field cannot edit is kept rather than dropped.
  */
 function toNotation(
   color: Pick<FormattableColor, 'getChannelValue'>,
@@ -57,7 +57,7 @@ function attemptParse(text: string) {
 }
 
 /**
- * A colour in hex from its RGB channels rounded to whole numbers: hex has no digits
+ * A color in hex from its RGB channels rounded to whole numbers: hex has no digits
  * for a fraction, so `rgb(10.5, 20, 30)` writes `#0B141E`.
  */
 function toHexText(color: FormattableColor, notation: ColorNotation): string {
@@ -69,8 +69,8 @@ function toHexText(color: FormattableColor, notation: ColorNotation): string {
 }
 
 /**
- * A colour text as the CSS colour it spells, trimmed and with a `#` added to bare hex digits;
- * `null` when it is no colour.
+ * A color text as the CSS color it spells, trimmed and with a `#` added to bare hex digits;
+ * `null` when it is no color.
  */
 export function toColorText(value: string | null | undefined): string | null {
   const text = value?.trim();
@@ -79,10 +79,10 @@ export function toColorText(value: string | null | undefined): string | null {
 }
 
 /**
- * A colour text written in a format, with its alpha while transparency is allowed or the colour is
+ * A color text written in a format, with its alpha while transparency is allowed or the color is
  * translucent: a decimal alpha to two decimals, so a hex alpha (`80`) reads `0.5` rather than
  * `0.5019607843137255`. Hex keeps its exact alpha byte, as its digits are edited as they are. Text
- * that is no colour is kept.
+ * that is no color is kept.
  */
 export function formatColor(
   text: string,
@@ -98,7 +98,7 @@ export function formatColor(
 }
 
 /**
- * The stored text of a colour, with alpha as `formatColor` writes it: hex in lower case
+ * The stored text of a color, with alpha as `formatColor` writes it: hex in lower case
  * (`#rrggbb`, `#rrggbbaa`), other formats as written.
  */
 export function toStoredValue(
@@ -110,7 +110,7 @@ export function toStoredValue(
   return format === 'hex' ? toHexText(color, notation).toLowerCase() : color.toString(notation);
 }
 
-/** A typed colour text as the stored text, or `null` when it is no colour. */
+/** A typed color text as the stored text, or `null` when it is no color. */
 export function storeColorText(
   value: string,
   format: ColorFieldFormat,
@@ -135,16 +135,16 @@ export function describeFormatInputs(
   };
 }
 
-/** Whether a colour text is translucent: its alpha is below one. */
+/** Whether a color text is translucent: its alpha is below one. */
 export function isTranslucent(text: string | null): boolean {
   const color = text === null ? null : attemptParse(text);
   return color !== null && color.getChannelValue('alpha') < 1;
 }
 
 /**
- * A picked colour with the alpha of the colour text it replaces, for a picker that does not edit
+ * A picked color with the alpha of the color text it replaces, for a picker that does not edit
  * transparency: its hex input, swatches and eye dropper never change the alpha. Without a previous
- * colour the picked one is kept.
+ * color the picked one is kept.
  */
 export function keepAlpha<T extends { withChannelValue(channel: 'alpha', value: number): T }>(
   picked: T,

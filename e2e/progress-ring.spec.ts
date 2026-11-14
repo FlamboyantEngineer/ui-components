@@ -74,7 +74,7 @@ test.describe('ProgressBar circular shape', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-PROGRESS-BAR-11.7 colours each status and marks a full ring complete', async ({
+  test('UIC-PROGRESS-BAR-11.7 colors each status and marks a full ring complete', async ({
     page,
     lab,
   }) => {
@@ -89,12 +89,12 @@ test.describe('ProgressBar circular shape', () => {
         .evaluate((node) => getComputedStyle(node).stroke);
     await expect(ring('warning', '100%')).toHaveAttribute('data-complete', 'true');
     await expect(ring('warning', '60%')).toHaveAttribute('data-tone', 'warning');
-    const colours = new Set(
+    const colors = new Set(
       await Promise.all(
         ['neutral', 'success', 'warning', 'danger'].map((tone) => stroke(tone, '60%')),
       ),
     );
-    expect(colours.size).toBe(4);
+    expect(colors.size).toBe(4);
     await lab.expectAccessible();
   });
 });

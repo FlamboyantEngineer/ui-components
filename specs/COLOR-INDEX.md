@@ -1,6 +1,6 @@
 # Color Index
 
-`getColorIndex` maps a key, such as a person's name or id, to a stable colour slot. Components publish the slot as a data attribute and the host stylesheet maps each slot to a colour, so the library never writes a colour itself.
+`getColorIndex` maps a key, such as a person's name or id, to a stable color slot. Components publish the slot as a data attribute and the host stylesheet maps each slot to a color, so the library never writes a color itself.
 
 ## UIC-COLOR-INDEX-1 - Stable slots
 

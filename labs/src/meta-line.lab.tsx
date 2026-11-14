@@ -1,8 +1,13 @@
-import { type ReactNode, useState } from 'react';
-import { formatMetaLine, MetaLine } from '../../src/components/meta-line/meta-line.js';
+import { useState } from 'react';
+import {
+  formatMetaLine,
+  MetaLine,
+  type MetaLineItem,
+} from '../../src/components/meta-line/index.js';
+import { CalendarGlyph, ClockGlyph, UsersGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
-const entrySets: Record<string, readonly ReactNode[]> = {
+const entrySets: Record<string, readonly MetaLineItem[]> = {
   one: ['Lisbon'],
   several: ['Lisbon', 'Portugal', '545,000 people'],
   'empty entries': [null, 'Lisbon', '', false, 'Portugal', undefined, '  '],
@@ -15,6 +20,12 @@ const entrySets: Record<string, readonly ReactNode[]> = {
       October 8
     </time>,
     <strong key="count">12 visits</strong>,
+  ],
+  labels: [
+    { icon: CalendarGlyph, label: 'October 8', size: 'sm' },
+    { icon: UsersGlyph, label: '3 people', size: 'sm' },
+    { icon: ClockGlyph, size: 'sm' },
+    { label: 'Draft' },
   ],
   none: [null, '', false],
 };
@@ -59,7 +70,7 @@ mountLab(
   <>
     <LabSection
       title="Entries"
-      description="Empty entries leave no separator, zero stays, and a line with nothing left renders nothing. The narrow column is 160px."
+      description="Empty entries leave no separator, zero stays, and a line with nothing left renders nothing. Label entries draw a Label: an icon before text, an icon alone or text alone. The narrow column is 160px."
     >
       <StateMatrix
         axes={{ entries: sets, container: ['wide', 'narrow'] }}

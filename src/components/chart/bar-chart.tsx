@@ -44,7 +44,7 @@ export interface BarChartProps
   label?: ReactNode;
   /** The categories along the category axis, each named once. */
   categories: readonly string[];
-  /** The series, in the order of their colour slots. */
+  /** The series, in the order of their color slots. */
   series: readonly BarChartSeries[];
   /** `grouped` bars side by side or `stacked` into one bar per category. Defaults to `grouped`. */
   layout?: BarChartLayout | undefined;

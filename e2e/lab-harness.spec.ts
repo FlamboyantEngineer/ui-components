@@ -62,7 +62,7 @@ test.describe('lab harness', () => {
     ).toHaveValue('data-theme');
   });
 
-  test("UIC-LABS-2.2 follows the reader's colour scheme until a light or dark theme is chosen", async ({
+  test("UIC-LABS-2.2 follows the reader's color scheme until a light or dark theme is chosen", async ({
     page,
     lab,
   }) => {
@@ -192,7 +192,7 @@ test.describe('lab harness', () => {
       scheme: 'normal',
       padding: '16px',
     });
-    // The dark theme's colour scheme belongs to the document base too: a host's dark page keeps its own.
+    // The dark theme's color scheme belongs to the document base too: a host's dark page keeps its own.
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
     expect(await rootStyle()).toEqual({
       background: 'rgba(0, 0, 0, 0)',

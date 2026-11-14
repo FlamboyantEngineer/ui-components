@@ -3,7 +3,9 @@ import { userEvent } from '@testing-library/user-event';
 import { createElement, Fragment, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { formatMetaLine, MetaLine, type MetaLineTextItem } from './meta-line.js';
+import { ClockGlyph } from '../../core/glyphs.js';
+import { MetaLine } from './meta-line.js';
+import { formatMetaLine, type MetaLineTextItem } from './meta-line-text.js';
 
 function Counter() {
   const [count, setCount] = useState(0);
@@ -151,5 +153,25 @@ describe('MetaLine', () => {
       </>,
     );
     expect(screen.getByRole('group', { name: 'Details' })).toHaveTextContent('Plum');
+  });
+
+  it('UIC-META-LINE-1.7 draws label entries as labels and skips empty ones', () => {
+    const { container } = render(
+      <MetaLine
+        items={[
+          { icon: ClockGlyph, label: 'Two days left' },
+          { label: '' },
+          { label: 'Pear' },
+          { icon: ClockGlyph },
+        ]}
+      />,
+    );
+    const labels = container.querySelectorAll('.ui-label');
+    expect(labels).toHaveLength(3);
+    expect(labels[0]?.querySelector('.ui-label__icon')).not.toBeNull();
+    expect(labels[0]).toHaveTextContent('Two days left');
+    expect(labels[2]?.querySelector('.ui-label__label')).toBeNull();
+    expect(container.querySelectorAll('.ui-meta-line__separator')).toHaveLength(2);
+    expect(container.firstElementChild).toHaveTextContent('Two days left · Pear ·');
   });
 });

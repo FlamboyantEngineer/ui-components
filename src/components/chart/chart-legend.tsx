@@ -22,7 +22,7 @@ export interface ChartHiddenKeysProps {
 
 export interface ChartLegendProps
   extends BaseProps, AriaLabellingProps, ChartHiddenKeysProps, RefProps<HTMLDivElement> {
-  /** The series, in the order of their colour slots. */
+  /** The series, in the order of their color slots. */
   items: readonly ChartSeries[];
 }
 
@@ -56,7 +56,7 @@ export function useHiddenKeys({
 }
 
 /**
- * A chart's legend: one toggle button per series, with a swatch in the series' colour slot, that
+ * A chart's legend: one toggle button per series, with a swatch in the series' color slot, that
  * shows or hides the series. The last shown series stays shown. The arrow keys move between items.
  */
 export function ChartLegend({

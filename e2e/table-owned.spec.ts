@@ -14,7 +14,7 @@ test.describe('Table lab, host-owned state', () => {
     await lab.open('table');
     const root = section(page, 'controlled-sort');
     const grid = root.getByRole('grid');
-    await expect(output(root, 'controlled-sort')).toHaveText('colour ascending');
+    await expect(output(root, 'controlled-sort')).toHaveText('color ascending');
     await expect(names(grid)).toHaveText(['Pear', 'Leek', 'Lime', 'Plum', 'Beet']);
     await root.getByRole('button', { name: 'Kind, then name descending' }).click();
     await expect(output(root, 'controlled-sort')).toHaveText('kind ascending, name descending');
@@ -35,20 +35,20 @@ test.describe('Table lab, host-owned state', () => {
     await lab.open('table');
     const root = section(page, 'controlled-layout');
     const grid = root.getByRole('grid');
-    await expect(headers(grid)).toHaveText(['Name', 'Kind', 'Colour', 'Weight (g)']);
-    await root.getByRole('button', { name: 'Weight before Colour and Kind' }).click();
-    await expect(headers(grid)).toHaveText(['Name', 'Weight (g)', 'Colour', 'Kind']);
-    await root.getByRole('button', { name: 'Hide Colour' }).click();
+    await expect(headers(grid)).toHaveText(['Name', 'Kind', 'Color', 'Weight (g)']);
+    await root.getByRole('button', { name: 'Weight before Color and Kind' }).click();
+    await expect(headers(grid)).toHaveText(['Name', 'Weight (g)', 'Color', 'Kind']);
+    await root.getByRole('button', { name: 'Hide Color' }).click();
     await expect(headers(grid)).toHaveText(['Name', 'Weight (g)', 'Kind']);
     await expect(output(root, 'controlled-layout')).toHaveText(
-      'order name, weight, colour, kind; hidden colour',
+      'order name, weight, color, kind; hidden color',
     );
     await grid.getByRole('columnheader', { name: /^Kind/ }).focus();
     await page.keyboard.press('Alt+ArrowLeft');
     await expect(headers(grid)).toHaveText(['Name', 'Kind', 'Weight (g)']);
     await expect(output(root, 'controlled-layout')).toContainText('order name, kind, weight');
     await root.getByRole('button', { name: 'Reset the layout' }).click();
-    await expect(headers(grid)).toHaveText(['Name', 'Kind', 'Colour', 'Weight (g)']);
+    await expect(headers(grid)).toHaveText(['Name', 'Kind', 'Color', 'Weight (g)']);
     await expect(output(root, 'controlled-layout')).toHaveText('order declared; hidden none');
   });
 
@@ -59,7 +59,7 @@ test.describe('Table lab, host-owned state', () => {
     await lab.open('table');
     const root = section(page, 'seeded');
     const grid = root.getByRole('grid');
-    await expect(headers(grid)).toHaveText(['Colour', 'Name', 'Kind']);
+    await expect(headers(grid)).toHaveText(['Color', 'Name', 'Kind']);
     await expect(root.getByRole('searchbox')).toHaveValue('p');
     await expect(grid.getByRole('columnheader', { name: /^Kind/ })).toHaveAttribute(
       'data-filtered',

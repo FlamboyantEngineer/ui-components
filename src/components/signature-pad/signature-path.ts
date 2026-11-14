@@ -114,7 +114,7 @@ function escapeAttribute(value: string): string {
 
 /**
  * A drawn signature as standalone SVG markup: round, unfilled strokes in `currentColor`, so the
- * markup inlined in a page takes the text colour and an image of it draws in black.
+ * markup inlined in a page takes the text color and an image of it draws in black.
  */
 export function formatSignatureSvg(drawing: DrawnSignature): string {
   const width = Number(drawing.width);

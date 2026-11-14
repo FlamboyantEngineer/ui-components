@@ -32,7 +32,7 @@ Each release is a `v<version>` tag in this repository, on a commit that holds th
 
 To try unreleased work, install a branch or commit the same way, for example `#dev`. The branch holds no build output, so npm installs the development dependencies in its clone and runs the `prepare` script, which builds the entry points, their declarations and the reference stylesheet. Runnable labs are a separate download: extract `ui-components-labs-<version>.tgz` and serve its `labs/` directory with a static HTTP server. The lockfile records the branch's commit, and `npm ci` prepares that commit again. `npm run check:git-install -- "<dependency>"` checks such an install from a clean consumer.
 
-The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package. A bare `import '@flamboyantengineer/ui-components/reference.css';` opts into these styles and survives production tree shaking without consumer overrides; unused JavaScript exports remain removable. It sits in the `ui-reference` cascade layer, so the host's own unlayered rules override it without a specificity fight, and it supports Chrome and Edge 117, Firefox 121 and Safari 17 or later (the package's `browserslist`). It styles components only; to also take its document base (type, text colour, canvas and colour scheme on the page), set `data-reference-document` on the root element, and `data-theme="dark"` there for the dark theme. Its type is Geist, with Geist Mono for code. The reference stylesheet loads no fonts by itself; the system stacks stand in unless you serve those families.
+The package ships the neutral reference stylesheet at `labs/build/reference.css` (also `@flamboyantengineer/ui-components/reference.css`): one self-contained file a host can copy into its assets or import, built when npm prepares the package. A bare `import '@flamboyantengineer/ui-components/reference.css';` opts into these styles and survives production tree shaking without consumer overrides; unused JavaScript exports remain removable. It sits in the `ui-reference` cascade layer, so the host's own unlayered rules override it without a specificity fight, and it supports Chrome and Edge 117, Firefox 121 and Safari 17 or later (the package's `browserslist`). It styles components only; to also take its document base (type, text color, canvas and color scheme on the page), set `data-reference-document` on the root element, and `data-theme="dark"` there for the dark theme. Its type is Geist, with Geist Mono for code. The reference stylesheet loads no fonts by itself; the system stacks stand in unless you serve those families.
 
 To include the default fonts in your application's build, opt in separately:
 
@@ -165,7 +165,7 @@ const user = userEvent.setup();
 await selectOption(user, screen.getByRole('button', { name: /Fruit$/ }), 'Pear');
 await pickDate(user, screen.getByRole('group', { name: 'Due' }), '2026-05-14');
 await chooseMenuItem(user, screen.getByRole('button', { name: 'Actions' }), 'Delete');
-expect(getTableCell(screen.getByRole('grid'), 'Apple', 'Colour')).toHaveTextContent('Red');
+expect(getTableCell(screen.getByRole('grid'), 'Apple', 'Color')).toHaveTextContent('Red');
 expect(getFieldError(screen.getByRole('textbox', { name: 'Name' }))).toBeNull();
 ```
 

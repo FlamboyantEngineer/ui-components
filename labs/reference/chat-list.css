@@ -99,7 +99,7 @@
 
 /*
  * With the edge fades (on by default), while more can load, the last rows fade toward the Load
- * more row: a veil of the canvas over each, so the rows keep their own colours underneath.
+ * more row: a veil of the canvas over each, so the rows keep their own colors underneath.
  */
 .ui-chat-list[data-has-more][data-edge-fades] .ui-chat-list__conversation:nth-last-child(-n + 2) {
   position: relative;

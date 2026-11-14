@@ -14,7 +14,7 @@ import { LabOutput } from './lab-output.js';
 import { TextSetting } from './property-text-setting.js';
 
 function OwnedDisclosures() {
-  const [isColoursOpen, setColoursOpen] = useState(true);
+  const [isColorsOpen, setColorsOpen] = useState(true);
   const [isShadowOpen, setShadowOpen] = useState(false);
   const [requests, setRequests] = useState<string[]>([]);
   const report = (part: string) => (isOpen: boolean) => {
@@ -23,23 +23,23 @@ function OwnedDisclosures() {
   return (
     <div data-lab-demo="owned-disclosures" style={{ width: 440 }}>
       <p>
-        <Button size="sm" variant="secondary" onPress={() => setColoursOpen((open) => !open)}>
-          {isColoursOpen ? 'Close colours from the page' : 'Open colours from the page'}
+        <Button size="sm" variant="secondary" onPress={() => setColorsOpen((open) => !open)}>
+          {isColorsOpen ? 'Close colors from the page' : 'Open colors from the page'}
         </Button>{' '}
         <Button size="sm" variant="secondary" onPress={() => setShadowOpen((open) => !open)}>
           {isShadowOpen ? 'Close shadow from the page' : 'Open shadow from the page'}
         </Button>
       </p>
-      <LabOutput name="colours">{isColoursOpen ? 'open' : 'closed'}</LabOutput>
+      <LabOutput name="colors">{isColorsOpen ? 'open' : 'closed'}</LabOutput>
       <LabOutput name="shadow">{isShadowOpen ? 'open' : 'closed'}</LabOutput>
       <LabOutput name="requests">{requests.join(', ') || 'none'}</LabOutput>
       <PropertyPanel aria-label="Owned disclosures">
         <PropertySection
-          title="Colours"
-          isExpanded={isColoursOpen}
+          title="Colors"
+          isExpanded={isColorsOpen}
           onExpandedChange={(isOpen) => {
-            report('colours')(isOpen);
-            setColoursOpen(isOpen);
+            report('colors')(isOpen);
+            setColorsOpen(isOpen);
           }}
         >
           <TextSetting label="Fill" value="#2a6f97" />
@@ -110,7 +110,7 @@ function InheritedValues() {
         <PropertySection title="Text">
           <InheritedSize />
           <TextSetting
-            label="Colour"
+            label="Color"
             value="#204060"
             isOverridden
             inherited={{ value: '#000000', source: 'from Theme' }}
@@ -126,7 +126,7 @@ export function PropertyPanelHostCases() {
     <div data-lab-family="property-panel-host-cases">
       <LabSection
         title="Disclosures the page owns"
-        description="The Colours section and the Shadow card each take isExpanded from the page and report every trigger press through onExpandedChange (listed in requests); the page's buttons open and close them too."
+        description="The Colors section and the Shadow card each take isExpanded from the page and report every trigger press through onExpandedChange (listed in requests); the page's buttons open and close them too."
       >
         <OwnedDisclosures />
       </LabSection>
@@ -138,7 +138,7 @@ export function PropertyPanelHostCases() {
       </LabSection>
       <LabSection
         title="Inherited values"
-        description="Size inherits 16 px until you type, even an empty value after clearing it; the reset button drops the row's own value. Colour overrides its inherited value but offers no reset."
+        description="Size inherits 16 px until you type, even an empty value after clearing it; the reset button drops the row's own value. Color overrides its inherited value but offers no reset."
       >
         <InheritedValues />
       </LabSection>

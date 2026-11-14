@@ -214,7 +214,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Running text"
-      description="Inline links stay underlined so colour is not the only cue; the external link says it opens a new tab, and its caller rel (nofollow) keeps noopener and noreferrer. A link to a named window opens a new tab too."
+      description="Inline links stay underlined so color is not the only cue; the external link says it opens a new tab, and its caller rel (nofollow) keeps noopener and noreferrer. A link to a named window opens a new tab too."
     >
       <p data-lab-demo="prose" style={{ maxInlineSize: 520 }}>
         Autumn brings <Link href="#lab-apples">apples</Link>, <Link href="#lab-pears">pears</Link>{' '}

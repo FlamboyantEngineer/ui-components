@@ -98,14 +98,14 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-3.2 - Marker mapping
 
-A marker (content-relative `top`, `height`, caller `color`, `priority`) shall map onto the visible height in proportion to the content height, cover at least two pixels, and win a shared pixel when its priority is lowest, whatever the marker order. Adjacent pixels of one colour form one segment, and the image paints segments in the caller's colours over a transparent ground; opacity is the stylesheet's.
+A marker (content-relative `top`, `height`, caller `color`, `priority`) shall map onto the visible height in proportion to the content height, cover at least two pixels, and win a shared pixel when its priority is lowest, whatever the marker order. Adjacent pixels of one color form one segment, and the image paints segments in the caller's colors over a transparent ground; opacity is the stylesheet's.
 
 Implementation: `src/utils/scroll-overview.ts`
 Verification: `src/utils/scroll-overview.test.ts`
 
 ### UIC-SCROLL-REGION-3.3 - Marker layers
 
-`overviewLayers` shall resolve priorities within each named layer, then mix the colours of layers sharing a pixel with equal weight, in layer-name order, so the result does not depend on the order the caller lists them. One layer paints exactly as the same markers passed to `overview`. The mix is CSS `color-mix(in srgb, …)`, which every browser of the package floor (`browserslist`, UIC-LABS-1.6) supports; an older engine drops the whole image, so a host that targets one passes `overview`, whose image mixes nothing.
+`overviewLayers` shall resolve priorities within each named layer, then mix the colors of layers sharing a pixel with equal weight, in layer-name order, so the result does not depend on the order the caller lists them. One layer paints exactly as the same markers passed to `overview`. The mix is CSS `color-mix(in srgb, …)`, which every browser of the package floor (`browserslist`, UIC-LABS-1.6) supports; an older engine drops the whole image, so a host that targets one passes `overview`, whose image mixes nothing.
 
 Implementation: `src/utils/scroll-overview.ts`, `src/components/scroll-region/use-scroll-overview.ts`, `package.json`
 Verification: `src/utils/scroll-overview.test.ts`, `test/package.test.ts`

@@ -9,19 +9,19 @@ import type { TableColumn } from './table-rows.js';
 interface Fruit {
   id: string;
   name: string;
-  colour: string;
+  color: string;
   weight: number;
 }
 
 const fruit: Fruit[] = [
-  { id: 'banana', name: 'Banana', colour: 'Yellow', weight: 120 },
-  { id: 'apple', name: 'Apple', colour: 'Red', weight: 30 },
-  { id: 'cherry', name: 'Cherry', colour: 'Red', weight: 100 },
-  { id: 'lemon', name: 'Lemon', colour: 'Yellow', weight: 100 },
+  { id: 'banana', name: 'Banana', color: 'Yellow', weight: 120 },
+  { id: 'apple', name: 'Apple', color: 'Red', weight: 30 },
+  { id: 'cherry', name: 'Cherry', color: 'Red', weight: 100 },
+  { id: 'lemon', name: 'Lemon', color: 'Yellow', weight: 100 },
 ];
 const columns: TableColumn<Fruit>[] = [
   { id: 'name', header: 'Name', allowsSorting: true },
-  { id: 'colour', header: 'Colour', allowsSorting: true },
+  { id: 'color', header: 'Color', allowsSorting: true },
   { id: 'weight', header: 'Weight', allowsSorting: true },
 ];
 
@@ -42,18 +42,18 @@ describe('Table sorting by several columns', { timeout: 15_000 }, () => {
         onSortDescriptorsChange={onSortDescriptorsChange}
       />,
     );
-    await user.click(header('Colour'));
+    await user.click(header('Color'));
     await user.keyboard('{Shift>}');
     await user.click(header('Weight'));
     await user.click(header('Weight'));
     await user.keyboard('{/Shift}');
     expect(onSortDescriptorsChange).toHaveBeenLastCalledWith([
-      { column: 'colour', direction: 'ascending' },
+      { column: 'color', direction: 'ascending' },
       { column: 'weight', direction: 'descending' },
     ]);
     expect(names()).toEqual(['Cherry', 'Apple', 'Banana', 'Lemon']);
-    expect(header('Colour')).toHaveAttribute('data-sort-priority', '1');
-    expect(header('Colour')).toHaveAttribute('aria-sort', 'ascending');
+    expect(header('Color')).toHaveAttribute('data-sort-priority', '1');
+    expect(header('Color')).toHaveAttribute('aria-sort', 'ascending');
     expect(header('Weight')).toHaveAttribute('data-sort-priority', '2');
     expect(header('Weight')).toHaveAttribute('aria-sort', 'none');
     expect(header('Weight').querySelector('[data-glyph]')).toHaveAttribute(
@@ -73,7 +73,7 @@ describe('Table sorting by several columns', { timeout: 15_000 }, () => {
         rows={fruit}
         columns={columns}
         defaultSortDescriptors={[
-          { column: 'colour', direction: 'ascending' },
+          { column: 'color', direction: 'ascending' },
           { column: 'weight', direction: 'ascending' },
         ]}
         onSortDescriptorsChange={onSortDescriptorsChange}
@@ -84,12 +84,12 @@ describe('Table sorting by several columns', { timeout: 15_000 }, () => {
     expect(onSortDescriptorsChange).toHaveBeenLastCalledWith([
       { column: 'name', direction: 'ascending' },
     ]);
-    expect(header('Colour')).not.toHaveAttribute('data-sort-priority');
-    header('Colour').focus();
+    expect(header('Color')).not.toHaveAttribute('data-sort-priority');
+    header('Color').focus();
     await user.keyboard('{Shift>}{Enter}{/Shift}');
     expect(onSortDescriptorsChange).toHaveBeenLastCalledWith([
       { column: 'name', direction: 'ascending' },
-      { column: 'colour', direction: 'ascending' },
+      { column: 'color', direction: 'ascending' },
     ]);
   });
 

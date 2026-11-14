@@ -9,17 +9,9 @@ import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { askTrip, planTrip } from './chat-agent-tasks.js';
 import { nextLabId, readerId } from './chat-samples.js';
 
-/** What the lab's agent does with the next message. */
-export const agentBehaviours = {
-  answer: 'Answer with tools and sources',
-  'approval-awaited': 'Approval, awaited',
-  'approval-turn': 'Approval, next turn',
-  question: 'Questions with previews',
-  plan: 'Plan, diff and terminal',
-  failure: 'Fails once',
-} as const;
-
-export type AgentBehaviour = keyof typeof agentBehaviours;
+/** What the lab's agent does with a message. */
+export type AgentBehaviour =
+  'answer' | 'approval-awaited' | 'approval-turn' | 'question' | 'plan' | 'failure';
 
 const answer =
   'Spring is **mild**, around 20 °C with the odd shower [1], and the fast train takes under three hours [2].\n\n| Day | Morning | Evening |\n| --- | --- | --- |\n| Saturday | Castle and Alfama | Fado in Mouraria |\n| Sunday | Belém by tram | Sunset at the river |\n\nTo keep the budget handy:\n\n```ts\nconst nights = 2;\nconst budget = nights * 90 + 45;\n```\n\nShall I book a table for Saturday?';

@@ -92,7 +92,7 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts
 
 ### UIC-SHORTCUT-2.5 - Text appearance
 
-`Shortcut` shall publish its `appearance` in `data-appearance`: `text` (the default) asks the stylesheet to draw the keys as quiet inline text, such as `Ctrl+Shift+K` or `⌘⇧K`, with no key backgrounds, borders or minimum widths, in a muted colour, and `keycaps` to box each key. Both draw the same markup, notation, separators and readable text, so only the stylesheet tells them apart and a sequence's chords stay separated. A shortcut without `appearance` takes the nearest `ShortcutAppearanceContext` value, `text` by default, so a host can set the appearance of the shortcuts the library composes, such as those of menu items and button tooltips, for a whole subtree. `KeyHints` passes its own `appearance` to each of its shortcuts.
+`Shortcut` shall publish its `appearance` in `data-appearance`: `text` (the default) asks the stylesheet to draw the keys as quiet inline text, such as `Ctrl+Shift+K` or `⌘⇧K`, with no key backgrounds, borders or minimum widths, in a muted color, and `keycaps` to box each key. Both draw the same markup, notation, separators and readable text, so only the stylesheet tells them apart and a sequence's chords stay separated. A shortcut without `appearance` takes the nearest `ShortcutAppearanceContext` value, `text` by default, so a host can set the appearance of the shortcuts the library composes, such as those of menu items and button tooltips, for a whole subtree. `KeyHints` passes its own `appearance` to each of its shortcuts.
 
 Implementation: `src/components/shortcut/shortcut.tsx`, `labs/reference/shortcut.css`
 Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts`
@@ -145,7 +145,7 @@ Verification: `src/components/shortcut/shortcut-scope.test.tsx`, `e2e/shortcut.s
 
 ### UIC-SHORTCUT-4.4 - Exclusions
 
-Chords shall match as [UIC-SHORTCUT-1.8](#uic-shortcut-18---matching-key-presses) says, so AltGr typing a character never matches, and no shortcut answers a key of a text composition (including key code 229). Unless allowed, a shortcut does not answer a press from a field that takes text or from editable content (`allowsEditable`); a checkbox, radio, file, colour or button input takes no text, so a press there answers, a repeated key (`allowsRepeat`), or a chord the browser keeps (`allowsReserved`): `Ctrl+L`, `Ctrl+N`, `Ctrl+Q`, `Ctrl+R`, `Ctrl+T`, `Ctrl+W`, `Ctrl+Shift+N`, `Ctrl+Shift+T`, `Ctrl+Shift+W`, `Ctrl+Tab`, `Ctrl+Shift+Tab`, `F5`, `F11` and `F12`.
+Chords shall match as [UIC-SHORTCUT-1.8](#uic-shortcut-18---matching-key-presses) says, so AltGr typing a character never matches, and no shortcut answers a key of a text composition (including key code 229). Unless allowed, a shortcut does not answer a press from a field that takes text or from editable content (`allowsEditable`); a checkbox, radio, file, color or button input takes no text, so a press there answers, a repeated key (`allowsRepeat`), or a chord the browser keeps (`allowsReserved`): `Ctrl+L`, `Ctrl+N`, `Ctrl+Q`, `Ctrl+R`, `Ctrl+T`, `Ctrl+W`, `Ctrl+Shift+N`, `Ctrl+Shift+T`, `Ctrl+Shift+W`, `Ctrl+Tab`, `Ctrl+Shift+Tab`, `F5`, `F11` and `F12`.
 
 Implementation: `src/components/shortcut/shortcut-registry.ts`
 Verification: `src/components/shortcut/shortcut-scope.test.tsx`

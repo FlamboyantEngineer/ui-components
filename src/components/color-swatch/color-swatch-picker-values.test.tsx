@@ -7,7 +7,7 @@ import {
   type ColorSwatchPickerProps,
 } from './color-swatch-picker.js';
 
-// Empty, unreadable and equal colours (UIC-COLOR-SWATCH-2.4, UIC-COLOR-SWATCH-2.5).
+// Empty, unreadable and equal colors (UIC-COLOR-SWATCH-2.4, UIC-COLOR-SWATCH-2.5).
 
 const selectedNames = () =>
   screen
@@ -72,7 +72,7 @@ describe('ColorSwatchPicker values', () => {
     expect(selectedNames()).toEqual(['Red']);
   });
 
-  it('UIC-COLOR-SWATCH-2.5 lists equal colours as separate options picked together', async () => {
+  it('UIC-COLOR-SWATCH-2.5 lists equal colors as separate options picked together', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
@@ -95,7 +95,7 @@ describe('ColorSwatchPicker values', () => {
     expect(onChange).toHaveBeenCalledTimes(3);
   });
 
-  it('UIC-COLOR-SWATCH-2.5 reports the spelling of the item picked after equal colours move', async () => {
+  it('UIC-COLOR-SWATCH-2.5 reports the spelling of the item picked after equal colors move', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const palette = (colors: readonly string[]) => (

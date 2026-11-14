@@ -138,7 +138,7 @@ describe('filter matching', () => {
       conditions: [
         { field: 'pages', operator: 'at-least', value: 200 },
         { field: 'genre', operator: 'none-of', value: ['cooking'] },
-        { field: 'colour', operator: 'equals', value: 'red' },
+        { field: 'color', operator: 'equals', value: 'red' },
       ],
       fields: Object.values(fields),
       getValue: (book: (typeof books)[number], id) => book[id as keyof typeof book],

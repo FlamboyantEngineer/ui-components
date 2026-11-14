@@ -62,7 +62,7 @@ test.describe('Find Bar lab', () => {
     await expect(status).toHaveText('1 of 5');
     await area.getByRole('button', { name: 'Previous match' }).click();
     await expect(status).toHaveText('5 of 5');
-    // Only the current match stands out, by colour alone, and it follows the steps.
+    // Only the current match stands out, by color alone, and it follows the steps.
     const marks = area.locator('mark');
     const current = area.locator('mark[data-lab-current]');
     await expect(current).toHaveCount(1);

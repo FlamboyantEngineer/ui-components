@@ -181,7 +181,7 @@ function TransformedInput() {
   return (
     <>
       <TextField
-        label="Colour code"
+        label="Color code"
         description="Hexadecimal digits only, in capitals."
         maxLength={6}
         transformInput={toHexDigits}

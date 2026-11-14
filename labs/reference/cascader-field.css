@@ -155,7 +155,7 @@
   color: var(--ref-muted);
 }
 
-/* On the focused option's wash the muted shortcut would lose contrast; it takes the row's colour. */
+/* On the focused option's wash the muted shortcut would lose contrast; it takes the row's color. */
 .ui-cascader-field__option[data-focused] .ui-cascader-field__option-shortcut {
   color: inherit;
 }

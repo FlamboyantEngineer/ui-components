@@ -123,7 +123,7 @@
   opacity: 1;
 }
 
-/* Plan: a checklist whose glyphs carry the status colour. */
+/* Plan: a checklist whose glyphs carry the status color. */
 .ui-chat-plan {
   display: grid;
   gap: 6px;
@@ -232,9 +232,9 @@
   white-space: nowrap;
 }
 
-/* Work in progress reads as a brighter band of colour sweeping across muted text: the status line,
+/* Work in progress reads as a brighter band of color sweeping across muted text: the status line,
    streaming reasoning and a running group of steps. It holds still for reduced motion and forced
-   colours: the status line muted, the labels in the text colour. */
+   colors: the status line muted, the labels in the text color. */
 .ui-chat-status-line__text,
 .ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
 .ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
@@ -292,7 +292,7 @@
   }
 }
 
-/* Busy activity: the library spinner at the small icon size, in the trigger's or line's colour. */
+/* Busy activity: the library spinner at the small icon size, in the trigger's or line's color. */
 .ui-chat-reasoning__spinner,
 .ui-chat-steps__spinner,
 .ui-chat-status-line__spinner {

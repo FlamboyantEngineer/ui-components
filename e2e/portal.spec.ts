@@ -133,14 +133,14 @@ test.describe('Portal lab', () => {
 
   test('UIC-PORTAL-3.2 stays usable while a React Aria modal is open', async ({ page, lab }) => {
     await lab.open('portal');
-    await page.getByRole('button', { name: 'Choose a colour' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Colour' });
+    await page.getByRole('button', { name: 'Choose a color' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Color' });
     await expect(dialog).toBeVisible();
-    await page.getByRole('button', { name: 'Show colours' }).click();
+    await page.getByRole('button', { name: 'Show colors' }).click();
 
-    await expect(page.getByRole('list', { name: 'Colours' })).toBeVisible();
-    const colours = page.locator('[data-lab-colours]');
-    await expect(colours).toHaveAttribute('data-react-aria-top-layer', 'true');
+    await expect(page.getByRole('list', { name: 'Colors' })).toBeVisible();
+    const colors = page.locator('[data-lab-colors]');
+    await expect(colors).toHaveAttribute('data-react-aria-top-layer', 'true');
     const inInertTree = (node: Element) => node.closest('[inert], [aria-hidden="true"]') !== null;
     expect(await page.getByRole('button', { name: 'Show notice' }).evaluate(inInertTree)).toBe(
       true,
@@ -151,13 +151,13 @@ test.describe('Portal lab', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('[data-lab-chosen]')).toHaveText('Chosen: Plum');
 
-    await page.getByRole('button', { name: 'Show colours' }).click();
+    await page.getByRole('button', { name: 'Show colors' }).click();
     const amber = page.getByRole('button', { name: 'Amber' });
     await amber.focus();
     await expect(amber).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(dialog.locator('[data-lab-chosen]')).toHaveText('Chosen: Amber');
-    await expect(page.getByRole('button', { name: 'Show colours' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Show colors' })).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);

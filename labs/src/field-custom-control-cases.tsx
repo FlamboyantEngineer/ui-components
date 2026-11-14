@@ -133,12 +133,12 @@ const layouts = ['inline', 'stacked', 'hidden'] as const satisfies readonly Fiel
 const markers = ['text', 'icon', 'locked'] as const;
 
 /**
- * A colour field edited from Blue to Green, whose control marks the previous value with
+ * A color field edited from Blue to Green, whose control marks the previous value with
  * `FieldPreviousValue`: plain text or an icon with its label, a restore button named by
  * `restoreLabel`, and a locked field whose restore is disabled. `changeLayout` places the marker
  * before the control or above it, or hides it, leaving the whole-field Restore.
  */
-function PreviousColour({
+function PreviousColor({
   layout,
   marker,
 }: {
@@ -146,18 +146,18 @@ function PreviousColour({
   marker: (typeof markers)[number];
 }) {
   const [restored, setRestored] = useState(0);
-  const [colour, setColour] = useState('Green');
+  const [color, setColor] = useState('Green');
   const state = useFieldState<string>({
     committedValue: 'Blue',
-    value: colour,
-    onChange: setColour,
+    value: color,
+    onChange: setColor,
     isReadOnly: marker === 'locked',
   });
   return (
     <>
       <Field
         state={state}
-        label={`Colour, ${layout}, ${marker}`}
+        label={`Color, ${layout}, ${marker}`}
         changeLayout={layout}
         showRestoreButton
       >
@@ -165,7 +165,7 @@ function PreviousColour({
           <span>
             {state.isDirty || marker === 'locked' ? (
               <FieldPreviousValue
-                restoreLabel="the earlier colour"
+                restoreLabel="the earlier color"
                 isDisabled={marker === 'locked'}
                 onRestore={() => {
                   setRestored((count) => count + 1);
@@ -198,7 +198,7 @@ export function PreviousValues() {
   return (
     <StateMatrix
       axes={{ marker: markers, layout: layouts }}
-      render={({ layout, marker }) => <PreviousColour layout={layout} marker={marker} />}
+      render={({ layout, marker }) => <PreviousColor layout={layout} marker={marker} />}
     />
   );
 }

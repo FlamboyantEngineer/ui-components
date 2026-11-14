@@ -22,7 +22,7 @@ describe('ColorField eye dropper', () => {
     vi.unstubAllGlobals();
   });
 
-  it('UIC-COLOR-FIELD-4.2 samples a screen colour into the picker', async () => {
+  it('UIC-COLOR-FIELD-4.2 samples a screen color into the picker', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();

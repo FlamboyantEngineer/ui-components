@@ -54,7 +54,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* With the style mark, an answered question's tab takes the success colour instead of a check. */
+/* With the style mark, an answered question's tab takes the success color instead of a check. */
 .ui-chat-question[data-answered-mark='style'] .ui-chat-question__tab[data-answered] {
   color: var(--ref-success);
 }

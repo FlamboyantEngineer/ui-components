@@ -13,7 +13,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-1.2 - Variants
 
-`variant` shall publish `data-variant`: `primary` (the default), drawn in the accent colour, or `secondary`, drawn in the surrounding text colour for links that should not compete with the content around them.
+`variant` shall publish `data-variant`: `primary` (the default), drawn in the accent color, or `secondary`, drawn in the surrounding text color for links that should not compete with the content around them.
 
 Implementation: `src/components/link/link.tsx`, `labs/reference/link.css`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-1.4 - Underline
 
-`underline` shall publish `data-underline`: `always`, `hover` (underlined while hovered or keyboard focused) or `none`. It defaults to `always` for a link in running text, so colour is never the only thing that tells it from the text around it, and to `hover` for a standalone link.
+`underline` shall publish `data-underline`: `always`, `hover` (underlined while hovered or keyboard focused) or `none`. It defaults to `always` for a link in running text, so color is never the only thing that tells it from the text around it, and to `hover` for a standalone link.
 
 Implementation: `src/components/link/link.tsx`, `labs/reference/link.css`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`

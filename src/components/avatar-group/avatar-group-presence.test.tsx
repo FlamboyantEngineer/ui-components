@@ -292,7 +292,7 @@ describe('AvatarGroup', () => {
     }
   });
 
-  it('UIC-AVATAR-GROUP-12.1 draws decorative colour dots inside another control', () => {
+  it('UIC-AVATAR-GROUP-12.1 draws decorative color dots inside another control', () => {
     const { container } = render(
       <button type="button" aria-label="Photos, 6 people here">
         Photos{' '}
@@ -324,7 +324,7 @@ describe('AvatarGroup', () => {
     expect(root(container).querySelector('.ui-avatar-group__dot')).toBeNull();
   });
 
-  it('UIC-AVATAR-GROUP-12.2 sizes every avatar and passes the colour count', () => {
+  it('UIC-AVATAR-GROUP-12.2 sizes every avatar and passes the color count', () => {
     const { container, rerender } = render(
       <AvatarGroup layout="strip" people={people.slice(0, 2)} />,
     );

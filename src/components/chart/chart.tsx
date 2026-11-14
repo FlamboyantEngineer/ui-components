@@ -15,7 +15,7 @@ import { chartHooks as hooks } from './chart-hooks.js';
 /** `chart` shows the drawing; `table` shows the values as a table instead. */
 export type ChartView = 'chart' | 'table';
 
-/** One named set of values, drawn in the colour slot of its position among the chart's series. */
+/** One named set of values, drawn in the color slot of its position among the chart's series. */
 export interface ChartSeries {
   /** Identifies the series among its siblings. */
   id: Key;

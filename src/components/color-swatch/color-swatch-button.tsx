@@ -21,19 +21,19 @@ export interface ColorSwatchButtonProps
   /** Names the button, such as `Text color`. */
   label: string;
   /**
-   * The colour the bar shows, as a hex, `rgb()`, `hsl()` or `hsb()` string. Nothing, empty text or
+   * The color the bar shows, as a hex, `rgb()`, `hsl()` or `hsb()` string. Nothing, empty text or
    * another notation shows an empty bar.
    */
   color?: string | null | undefined;
-  /** Names the colour instead of its name in the locale. */
+  /** Names the color instead of its name in the locale. */
   colorName?: string | undefined;
 }
 
 const hooks = createHooks('color-swatch-button', ['swatch']);
 
 /**
- * An icon button whose glyph sits over a bar of the colour it applies, as a text or fill colour
- * command shows the colour a press would set. The colour's name is the button's description.
+ * An icon button whose glyph sits over a bar of the color it applies, as a text or fill color
+ * command shows the color a press would set. The color's name is the button's description.
  */
 export function ColorSwatchButton({
   icon,

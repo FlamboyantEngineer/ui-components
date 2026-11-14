@@ -111,11 +111,11 @@ test.describe('Field lab', () => {
       ['warning', 'warning', 'Limes are very sour.', 'rgb(135, 108, 0)'],
       ['pending', 'pending', 'Validating', 'rgb(89, 99, 110)'],
     ] as const;
-    for (const [state, status, message, colour] of expected) {
+    for (const [state, status, message, color] of expected) {
       const target = cell(page, state, 'label-control');
       await expect(target.locator('.ui-field')).toHaveAttribute('data-validation', status);
       await expect(target.locator('.ui-field__message')).toHaveText(message);
-      await expect(target.locator('.ui-field__message')).toHaveCSS('color', colour);
+      await expect(target.locator('.ui-field__message')).toHaveCSS('color', color);
     }
     // The empty message keeps its line, so a status never moves what follows the field.
     const resting = cell(page, 'resting', 'label-control').locator('.ui-field__message');

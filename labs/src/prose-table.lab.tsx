@@ -9,7 +9,7 @@ import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const header = [
   { key: 'fruit', content: 'Fruit' },
-  { key: 'colour', content: 'Colour' },
+  { key: 'color', content: 'Color' },
   { key: 'season', content: 'Season' },
 ];
 
