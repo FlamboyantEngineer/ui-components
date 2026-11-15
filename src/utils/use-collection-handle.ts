@@ -17,7 +17,7 @@ export interface RevealLayout {
 }
 
 /** What a collection tells its handle. */
-export interface CollectionHandleSource<O extends object> {
+interface CollectionHandleSource<O extends object> {
   /** Why the collection does not show the key now, or `null` when it shows it. */
   locate: (key: Key) => CollectionRevealMiss | null;
   /** The collection's element, which holds its rows. */

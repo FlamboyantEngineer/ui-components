@@ -22,7 +22,7 @@ export const defaultMaskTokens: Readonly<Record<string, MaskToken>> = {
 };
 
 /** One place of a mask: a slot with its token, or a literal character. */
-export type MaskPart = { token: MaskToken } | { literal: string };
+type MaskPart = { token: MaskToken } | { literal: string };
 
 /** A parsed mask pattern. */
 export interface TextMask {

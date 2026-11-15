@@ -27,7 +27,7 @@ export interface MiniAppError {
  */
 export type MiniAppCapability = (args: unknown) => unknown;
 
-export interface MiniAppSessionOptions {
+interface MiniAppSessionOptions {
   readyTimeout: number;
   capabilities: Readonly<Record<string, MiniAppCapability>> | undefined;
   onReady: (() => void) | undefined;

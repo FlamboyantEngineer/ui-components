@@ -105,7 +105,7 @@ export function formatMessage(
 }
 
 /** For each text function of a strings interface, the message values its arguments become. */
-export type MessageArguments<S> = {
+type MessageArguments<S> = {
   [K in keyof S as S[K] extends string ? never : K]: S[K] extends (...args: infer A) => string
     ? (...args: A) => MessageValues
     : never;

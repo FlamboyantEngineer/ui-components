@@ -24,7 +24,7 @@ export interface ShortcutRegistration {
   sequenceTimeout: number;
 }
 
-export interface ShortcutEntry {
+interface ShortcutEntry {
   readonly current: ShortcutRegistration;
 }
 

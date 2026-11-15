@@ -20,7 +20,7 @@ interface TableToolbarProps<T> {
 /**
  * The controls above the grid: the search box, the columns menu when a column allows hiding, Without any it draws nothing.
  */
-export function TableToolbar<T>({ filter, columns, layout }: TableToolbarProps<T>) {
+function TableToolbar<T>({ filter, columns, layout }: TableToolbarProps<T>) {
   const hasMenu = columns.some((column) => column.allowsHiding);
   if (!filter && !hasMenu) return null;
   return (
