@@ -9,5 +9,12 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["scripts/**/*.mjs", "bin/*.mjs", "eslint-rules/*.js", "eslint.config.js"]
+  "include": [
+    "scripts/**/*.mjs",
+    "bin/*.mjs",
+    "tooling/**/*.mjs",
+    "tooling.config.mjs",
+    "eslint-rules/*.js",
+    "eslint.config.js"
+  ]
 }

@@ -18,7 +18,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const require = createRequire(import.meta.url);
 const dataDir = join(root, 'node_modules/emojibase-data');

@@ -1,12 +1,19 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { requireDefined } from '../src/utils/require-defined.js';
 
 const dirs: string[] = [];
+const bin = join(process.cwd(), 'tooling', 'bin.mjs');
+const CONFIG = "export default { specs: { prefix: 'UIC', hookPrefix: 'ui' } };\n";
+
+/** Runs the checker in a scratch repository. */
+function run(dir: string) {
+  return spawnSync('node', [bin, 'check-specs'], { cwd: dir, encoding: 'utf8' });
+}
 
 function requirement(id: string) {
   return [
@@ -24,10 +31,8 @@ function requirement(id: string) {
 function check(headings: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
   dirs.push(dir);
-  for (const sub of ['scripts/lib', 'specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
-  for (const script of ['check-specs.mjs', 'lib/script.mjs', 'lib/markdown-links.mjs']) {
-    copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
-  }
+  for (const sub of ['specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
+  writeFileSync(join(dir, 'tooling.config.mjs'), CONFIG);
   const lines = ['# Sample', ''];
   for (const heading of headings) {
     lines.push(...(heading.startsWith('## ') ? [heading, ''] : requirement(heading)));
@@ -35,7 +40,7 @@ function check(headings: string[]) {
   writeFileSync(join(dir, 'specs/SAMPLE.md'), lines.join('\n'));
   writeFileSync(join(dir, 'src/sample.ts'), '');
   writeFileSync(join(dir, 'src/sample.test.ts'), `// ${headings.join(' ')}\n`);
-  return spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+  return run(dir);
 }
 
 afterEach(() => {
@@ -78,12 +83,10 @@ describe('check-specs', () => {
     const styled = (css: string) => {
       const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
       dirs.push(dir);
-      for (const sub of ['scripts/lib', 'specs', 'src', 'labs/reference']) {
+      for (const sub of ['specs', 'src', 'labs/reference']) {
         mkdirSync(join(dir, sub), { recursive: true });
       }
-      for (const script of ['check-specs.mjs', 'lib/script.mjs', 'lib/markdown-links.mjs']) {
-        copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
-      }
+      writeFileSync(join(dir, 'tooling.config.mjs'), CONFIG);
       const spec = [
         '# Sample',
         '',
@@ -102,7 +105,7 @@ describe('check-specs', () => {
       writeFileSync(join(dir, 'src/sample.ts'), '');
       writeFileSync(join(dir, 'src/sample.test.ts'), '// UIC-SAMPLE-1.1\n');
       writeFileSync(join(dir, 'labs/reference/sample.css'), css);
-      return spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+      return run(dir);
     };
     expect(styled('.ui-sample { width: var(--ui-sample-width); }').stderr).toBe('');
     expect(styled('.ui-sample { width: 10px; }').stderr).toContain(
@@ -119,7 +122,7 @@ describe('check-specs', () => {
         writeFileSync(join(dir, `src/utils/${name}.ts`), '');
       writeFileSync(join(dir, 'src/utils/index.ts'), index);
       expect(result.status).toBe(0);
-      return spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+      return run(dir);
     };
     const unnamed = exported("export { share } from './shared.js';\n");
     expect(unnamed.status).toBe(1);
@@ -146,7 +149,7 @@ describe('check-specs', () => {
         '',
       ].join('\n'),
     );
-    const linked = spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+    const linked = run(dir);
     expect(linked.status).toBe(1);
     expect(linked.stderr).toContain(
       'docs/GUIDE.md:4: links to ../specs/GONE.md, which does not exist',
@@ -157,5 +160,88 @@ describe('check-specs', () => {
     expect(linked.stderr).not.toContain('NOPE');
     expect(linked.stderr).not.toContain(':3:');
     expect(linked.stderr).not.toContain('#guide');
+  });
+
+  it('UIC-TOOLING-2.2 reads the ID and hook prefixes from the repository configuration', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
+    dirs.push(dir);
+    for (const sub of ['specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
+    writeFileSync(
+      join(dir, 'tooling.config.mjs'),
+      "export default { specs: { prefix: 'DOCE', hookPrefix: 'de' } };\n",
+    );
+    const spec = [
+      '# Sample',
+      '',
+      '## DOCE-SAMPLE-1 - First',
+      '',
+      ...requirement('DOCE-SAMPLE-1.1'),
+      '## UIC-SAMPLE-2 - Foreign',
+      '',
+      '## Hooks',
+      '',
+      '| Hook | Kind | Values | Description |',
+      '| --- | --- | --- | --- |',
+      '| `ui-sample` | root | | The root. |',
+      '',
+    ];
+    writeFileSync(join(dir, 'specs/SAMPLE.md'), spec.join('\n'));
+    writeFileSync(join(dir, 'src/sample.ts'), '');
+    writeFileSync(join(dir, 'src/sample.test.ts'), '// DOCE-SAMPLE-1.1\n');
+    const result = run(dir);
+    expect(result.status).toBe(1);
+    expect(result.stderr).not.toContain('DOCE-SAMPLE-1.1');
+    expect(result.stderr).toContain('root hook ui-sample must match de-<component>');
+  });
+
+  it('UIC-TOOLING-2.2 does not count a longer ID as naming the requirement', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
+    dirs.push(dir);
+    for (const sub of ['specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
+    writeFileSync(join(dir, 'tooling.config.mjs'), CONFIG);
+    writeFileSync(
+      join(dir, 'specs/SAMPLE.md'),
+      ['# Sample', '', '## UIC-SAMPLE-1 - First', '', ...requirement('UIC-SAMPLE-1.1')].join('\n'),
+    );
+    writeFileSync(join(dir, 'src/sample.ts'), '');
+    writeFileSync(join(dir, 'src/sample.test.ts'), '// UIC-SAMPLE-1.18 UIC-SAMPLE-1.1a\n');
+    expect(run(dir).stderr).toContain(
+      'UIC-SAMPLE-1.1 is not named by any test it lists in Verification:',
+    );
+    writeFileSync(join(dir, 'src/sample.test.ts'), '// UIC-SAMPLE-1.1, UIC-SAMPLE-1.18\n');
+    expect(run(dir).status).toBe(0);
+  });
+
+  it('UIC-TOOLING-2.2 requires a requirement for every library module when configured', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
+    dirs.push(dir);
+    for (const sub of ['specs', 'src/client']) mkdirSync(join(dir, sub), { recursive: true });
+    writeFileSync(
+      join(dir, 'tooling.config.mjs'),
+      "export default { specs: { prefix: 'UIC', everyModuleImplemented: true } };\n",
+    );
+    writeFileSync(
+      join(dir, 'specs/SAMPLE.md'),
+      ['# Sample', '', '## UIC-SAMPLE-1 - First', '', ...requirement('UIC-SAMPLE-1.1')].join('\n'),
+    );
+    for (const name of ['sample.ts', 'client/index.ts', 'client/room.ts']) {
+      writeFileSync(join(dir, 'src', name), '');
+    }
+    writeFileSync(join(dir, 'src/sample.test.ts'), '// UIC-SAMPLE-1.1\n');
+    const result = run(dir);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'src/client/room.ts is not the Implementation: of any spec requirement',
+    );
+    expect(result.stderr).not.toContain('index.ts');
+    expect(result.stderr).not.toContain('src/sample.ts');
+  });
+
+  it('UIC-TOOLING-1.2 fails and names the missing configuration file', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
+    dirs.push(dir);
+    const result = run(dir);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('tooling.config.mjs is missing at the repository root');
   });
 });
