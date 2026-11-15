@@ -1,6 +1,6 @@
 'use client';
 
-// The edge controls around a strip that scrolls: shared by Toolbar Scroller, Toolbar Row and Tabs,
+// The edge controls around a strip that scrolls: shared by Toolbar Row and Tabs,
 // each with its own hook classes.
 
 import type { ReactNode } from 'react';

@@ -26,7 +26,7 @@ export interface CommentTextProps extends BaseProps, RefProps<HTMLSpanElement> {
   /** Splits the text into text and mentions. Defaults to `parseMentions`, for `@[Name](id)`. */
   parse?: ((text: string) => readonly CommentTextSegment[]) | undefined;
   /**
-   * The card a mention's chip opens, usually a `UserCard` for a person; without one the chip is
+   * The card a mention's chip opens, such as a person's details; without one the chip is
    * plain text. It receives what the mention names, `kind` included.
    */
   renderCard?:

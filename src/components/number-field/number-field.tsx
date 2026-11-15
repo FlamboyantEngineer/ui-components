@@ -14,8 +14,8 @@ import {
   type FieldTextInputProps,
   useFieldControl,
 } from '../field/field.js';
-import { DecimalControl } from './decimal-control.js';
-import { ExactDecimalField, type NumberDecimalFieldProps } from './exact-decimal-field.js';
+import { BaseTenControl } from './base-ten-control.js';
+import { DecimalValueField, type NumberDecimalFieldProps } from './decimal-value-field.js';
 import { createQuantityCodec, createRadixCodec } from './number-codecs.js';
 import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 import {
@@ -197,7 +197,7 @@ function NumberControl({ state, control, steps, config, radix, units }: NumberCo
   const { locale } = useLocale();
   const formatter = useNumberFormatter(config.formatOptions);
   if (radix === 10 && !units) {
-    return <DecimalControl state={state} control={control} steps={steps} config={config} />;
+    return <BaseTenControl state={state} control={control} steps={steps} config={config} />;
   }
   const codec =
     radix === 10 && units
@@ -320,7 +320,7 @@ export function NumberField(props: NumberEntryFieldProps): ReactElement;
 // Last, so `ComponentProps<typeof NumberField>` holds every mode and a wrapper can forward any.
 export function NumberField(props: NumberFieldProps): ReactElement;
 export function NumberField(props: NumberFieldProps): ReactElement {
-  if (props.valueType === 'decimal') return <ExactDecimalField {...props} />;
+  if (props.valueType === 'decimal') return <DecimalValueField {...props} />;
   if (props.range) return <NumberRangeField {...props} />;
   if (props.display === 'slider') return <NumberSliderField {...props} />;
   const { valueType: _valueType, range: _range, display: _display, ...entry } = props;
@@ -331,7 +331,7 @@ export function NumberField(props: NumberFieldProps): ReactElement {
   return <NumberEntryField {...entry} formatOptions={formatOptions} />;
 }
 
-export type { NumberDecimalFieldProps } from './exact-decimal-field.js';
+export type { NumberDecimalFieldProps } from './decimal-value-field.js';
 export type {
   NumberFieldDisplay,
   NumberRange,

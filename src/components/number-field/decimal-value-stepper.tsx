@@ -5,7 +5,7 @@ import type { HookProps } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 
-interface DecimalStepperProps {
+interface DecimalValueStepperProps {
   direction: 1 | -1;
   slot: HookProps;
   /** The input's id, which the button's id derives from. */
@@ -20,14 +20,14 @@ interface DecimalStepperProps {
  * A step button, outside the tab order as a spinbutton's buttons are: named `Increase` or
  * `Decrease` followed by the field's label.
  */
-export function DecimalStepper({
+export function DecimalValueStepper({
   direction,
   slot,
   controlId,
   labelledBy,
   isDisabled,
   onStep,
-}: DecimalStepperProps) {
+}: DecimalValueStepperProps) {
   const strings = useUiStrings();
   const id = `${controlId}-${direction === 1 ? 'increment' : 'decrement'}`;
   return (

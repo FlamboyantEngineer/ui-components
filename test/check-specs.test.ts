@@ -25,7 +25,7 @@ function check(headings: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'ui-specs-'));
   dirs.push(dir);
   for (const sub of ['scripts/lib', 'specs', 'src']) mkdirSync(join(dir, sub), { recursive: true });
-  for (const script of ['check-specs.mjs', 'lib/script.mjs']) {
+  for (const script of ['check-specs.mjs', 'lib/script.mjs', 'lib/markdown-links.mjs']) {
     copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
   }
   const lines = ['# Sample', ''];
@@ -81,7 +81,7 @@ describe('check-specs', () => {
       for (const sub of ['scripts/lib', 'specs', 'src', 'labs/reference']) {
         mkdirSync(join(dir, sub), { recursive: true });
       }
-      for (const script of ['check-specs.mjs', 'lib/script.mjs']) {
+      for (const script of ['check-specs.mjs', 'lib/script.mjs', 'lib/markdown-links.mjs']) {
         copyFileSync(join(process.cwd(), 'scripts', script), join(dir, 'scripts', script));
       }
       const spec = [
@@ -128,5 +128,34 @@ describe('check-specs', () => {
     );
     expect(unnamed.stderr).not.toContain('internal');
     expect(exported("export { sample } from '../sample.js';\n").status).toBe(0);
+  });
+
+  it('rejects links to missing specs and headings in specs and docs, and nothing in code', () => {
+    const result = check(['## UIC-SAMPLE-1 - First', 'UIC-SAMPLE-1.1']);
+    expect(result.status).toBe(0);
+    const dir = requireDefined(dirs.at(-1));
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(
+      join(dir, 'docs/GUIDE.md'),
+      [
+        '# Guide',
+        '',
+        'See [the sample](../specs/SAMPLE.md#uic-sample-11---sample) and [first](../specs/SAMPLE.md#uic-sample-1---first).',
+        'Also [gone](../specs/GONE.md), [renamed](../specs/SAMPLE.md#uic-sample-9---gone) and [here](#guide).',
+        'Code is not a link: `[x](NOPE.md)`, nor [external](https://example.com/NOPE.md).',
+        '',
+      ].join('\n'),
+    );
+    const linked = spawnSync('node', ['scripts/check-specs.mjs'], { cwd: dir, encoding: 'utf8' });
+    expect(linked.status).toBe(1);
+    expect(linked.stderr).toContain(
+      'docs/GUIDE.md:4: links to ../specs/GONE.md, which does not exist',
+    );
+    expect(linked.stderr).toContain(
+      'docs/GUIDE.md:4: links to #uic-sample-9---gone, which ../specs/SAMPLE.md has no heading for',
+    );
+    expect(linked.stderr).not.toContain('NOPE');
+    expect(linked.stderr).not.toContain(':3:');
+    expect(linked.stderr).not.toContain('#guide');
   });
 });

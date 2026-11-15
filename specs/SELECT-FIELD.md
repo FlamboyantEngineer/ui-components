@@ -254,7 +254,7 @@ Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/sel
 
 ### UIC-SELECT-FIELD-9.4 - Value display
 
-With `valueDisplay` `label` (the default), a chosen node shall read as its text value (`getTextValue`); with `path`, as the text values of its ancestors and itself joined like a [Path](PATH.md) (`Europe/Norway/Oslo`). The trigger and the chips both follow it.
+With `valueDisplay` `label` (the default), a chosen node shall read as its text value (`getTextValue`); with `path`, as the text values of its ancestors and itself joined as `formatPath` joins a folder path ([PATH-FORMAT.md](PATH-FORMAT.md)) (`Europe/Norway/Oslo`). The trigger and the chips both follow it.
 
 Label display shall read only the selected node’s text; path display reads its ancestors too.
 

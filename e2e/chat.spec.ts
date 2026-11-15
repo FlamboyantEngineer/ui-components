@@ -379,6 +379,11 @@ test.describe('Chat lab', () => {
   }) => {
     await openChat(page, 8);
     const assistant = await ask(page, undefined, 'Plan a weekend');
+    // The full answer streams for several seconds, longer on a busy runner: wait for it to end
+    // before reading the last complete message, which until then is an earlier one.
+    const stop = assistant.getByRole('button', { name: 'Stop' });
+    await expect(stop).toBeVisible();
+    await expect(stop).toBeHidden({ timeout: 60_000 });
     const reply = assistant.locator('article[data-status="complete"]').last();
     await expect(reply.getByRole('button', { name: 'Fetched a page, ran a search' })).toBeVisible();
     await expect(

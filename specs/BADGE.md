@@ -144,7 +144,7 @@ Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-li
 
 ### UIC-BADGE-5.4 - Presence
 
-`status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the type Avatar, User Identity and User Card take) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colors each presence as the presence avatar's indicator does, over the tone.
+`status`, a `PresenceStatus` (`active`, `away`, `busy` or `idle`, the type Avatar and User Identity take) shall publish `data-status`, and without `children` the light shows the provider's `presenceStatus` string for it as its label (`Away`). The reference sheet colors each presence as the presence avatar's indicator does, over the tone.
 
 Implementation: `src/components/badge/status-light.tsx`, `src/core/strings/common.ts`, `labs/reference/badge.css`
 Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-light.spec.ts`

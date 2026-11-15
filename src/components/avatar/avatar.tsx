@@ -175,7 +175,7 @@ export function splitAvatarIdentity<P extends AvatarIdentity>(
 
 /**
  * A presence in words: the caller's `statusLabel`, or the provider's `presenceStatus` of `status`.
- * Avatar, UserIdentity and UserCard name a status the same way.
+ * Avatar and UserIdentity name a status the same way.
  */
 export function resolveStatusLabel(
   { status, statusLabel }: Pick<AvatarProps, 'status' | 'statusLabel'>,

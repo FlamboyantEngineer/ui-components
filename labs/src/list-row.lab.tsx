@@ -144,7 +144,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Content"
-      description="Title only, title and meta, an icon through Icon Label, decorative leading media, and trailing controls beside the primary control."
+      description="Title only, title and meta, an icon through Label, decorative leading media, and trailing controls beside the primary control."
     >
       <StateMatrix
         axes={{ content: contents, kind: kinds }}

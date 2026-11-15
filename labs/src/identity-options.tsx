@@ -1,4 +1,4 @@
-// Shared identity options for the person labs: what the avatar of a User Identity or a User Card
+// Shared identity options for the person labs: what the avatar of a User Identity or a person preview
 // can be told beyond the name, and its corner badges.
 
 import type { AvatarImageProps } from '../../src/components/avatar/avatar.js';
