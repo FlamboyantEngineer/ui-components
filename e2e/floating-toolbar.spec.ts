@@ -49,6 +49,8 @@ test.describe('Floating Toolbar lab', () => {
   }) => {
     await lab.open('floating-toolbar');
     await selectWords(page, 'Select', 'words');
+    // The toolbar opens on the selectionchange that follows, and Alt+F10 can only move into it then.
+    await expect(toolbar(page)).toBeVisible();
     await page.keyboard.press('Alt+F10');
     await expect(toolbar(page).getByRole('button', { name: 'Count' })).toBeFocused();
     await page.keyboard.press('ArrowRight');
