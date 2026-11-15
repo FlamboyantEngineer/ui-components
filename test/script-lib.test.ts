@@ -7,13 +7,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import local from '../eslint-rules/index.js';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { runNpm } from '../scripts/lib/npm.mjs';
-// @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { findMissingRootRefs } from '../scripts/lib/root-refs.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { createTarGz, extractTarGz } from '../scripts/lib/tar.mjs';
+import { runNpm } from '../tooling/lib/npm.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { relativePosix } from '../tooling/lib/script.mjs';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { createTarGz, extractTarGz } from '../tooling/lib/tar.mjs';
 
 const dirs: string[] = [];
 

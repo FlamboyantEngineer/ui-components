@@ -26,9 +26,9 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { runNpm } from '../tooling/lib/npm.mjs';
 import { reportProblems } from '../tooling/lib/script.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
-import { runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
 

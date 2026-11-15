@@ -45,6 +45,7 @@
     },
     "./tooling/eslint": "./tooling/eslint.mjs",
     "./tooling/prettier": "./tooling/prettier.json",
+    "./tooling/lib/*.mjs": "./tooling/lib/*.mjs",
     "./locales": {
       "types": "./dist/core/locales/index.d.ts",
       "import": "./dist/core/locales/index.js",

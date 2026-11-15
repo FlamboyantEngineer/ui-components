@@ -5,7 +5,7 @@
 // `--skip <check>` leaves a check out, for hosted CI, which runs the unit tests in parallel jobs.
 
 import { parseArgs } from 'node:util';
-import { startNpm } from './lib/npm.mjs';
+import { startNpm } from '../tooling/lib/npm.mjs';
 
 const STAGES = [
   [

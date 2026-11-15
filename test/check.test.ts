@@ -14,10 +14,11 @@ afterEach(() => {
 it('UIC-PRIMITIVES-2.1 preserves large failure output and stops before the next check stage', () => {
   const fixture = mkdtempSync(join(tmpdir(), 'ui-check-test-'));
   fixtures.push(fixture);
-  mkdirSync(join(fixture, 'scripts/lib'), { recursive: true });
+  mkdirSync(join(fixture, 'scripts'), { recursive: true });
+  mkdirSync(join(fixture, 'tooling/lib'), { recursive: true });
   copyFileSync(join(process.cwd(), 'scripts/check.mjs'), join(fixture, 'scripts/check.mjs'));
   writeFileSync(
-    join(fixture, 'scripts/lib/npm.mjs'),
+    join(fixture, 'tooling/lib/npm.mjs'),
     `import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 export function startNpm(args, options) {
@@ -47,10 +48,11 @@ export function startNpm(args, options) {
 it('UIC-PRIMITIVES-2.1 leaves out the checks named by --skip and refuses a name that is not a check', () => {
   const fixture = mkdtempSync(join(tmpdir(), 'ui-check-test-'));
   fixtures.push(fixture);
-  mkdirSync(join(fixture, 'scripts/lib'), { recursive: true });
+  mkdirSync(join(fixture, 'scripts'), { recursive: true });
+  mkdirSync(join(fixture, 'tooling/lib'), { recursive: true });
   copyFileSync(join(process.cwd(), 'scripts/check.mjs'), join(fixture, 'scripts/check.mjs'));
   writeFileSync(
-    join(fixture, 'scripts/lib/npm.mjs'),
+    join(fixture, 'tooling/lib/npm.mjs'),
     `import { spawn } from 'node:child_process';
 export function startNpm(args, options) {
   return spawn(process.execPath, ['-e', ''], options);

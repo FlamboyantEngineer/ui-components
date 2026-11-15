@@ -14,8 +14,8 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
+import { packTarball, runNpm } from '../tooling/lib/npm.mjs';
 import { reportProblems } from '../tooling/lib/script.mjs';
-import { packTarball, runNpm } from './lib/npm.mjs';
 import { root } from './lib/root.mjs';
 
 const NEXT_VERSION = '16.4.3';
