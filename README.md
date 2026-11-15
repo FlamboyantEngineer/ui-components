@@ -242,7 +242,7 @@ It keeps installed dependencies and built package and lab output.
 The reference, spec and structure checks, the ESLint base and the Prettier options ship in `tooling/` for the libraries built on this one, which run them from their own checkout once the package is installed ([specs/TOOLING.md](specs/TOOLING.md)):
 
 ```sh
-ui-components-tooling check-references   # also check-specs, check-structure; settings in tooling.config.mjs
+ui-components-tooling check-references   # also check-specs, check-structure, check-exports; settings in tooling.config.mjs
 ```
 
 ```js

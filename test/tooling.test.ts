@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -103,7 +103,7 @@ describe('shared tooling', () => {
       const result = spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8' });
       expect(result.status).toBe(2);
       expect(result.stderr).toContain(
-        'Usage: ui-components-tooling <check-references | check-specs | check-structure>',
+        'Usage: ui-components-tooling <check-exports | check-references | check-specs | check-structure>',
       );
     }
   });
@@ -189,6 +189,61 @@ describe('shared tooling', () => {
       'import cycle across src/components: src/components/avatar/avatar.ts, src/components/card/card.ts',
     );
     expect(result.stderr).not.toContain('one/one.ts');
+  });
+
+  it('UIC-TOOLING-2.4 reports exports nothing outside their file uses, and drops them', () => {
+    const dir = scratch('export default { exports: { entries: [] } };\n', {
+      'package.json': JSON.stringify({
+        type: 'module',
+        exports: { '.': { types: './dist/index.d.ts', import: './dist/index.js' } },
+      }),
+      'tsconfig.json': JSON.stringify({
+        compilerOptions: { module: 'nodenext', strict: true, skipLibCheck: true },
+        include: ['src'],
+      }),
+      'src/index.ts':
+        "export { make } from './maker.js';\nexport * as tables from './tables.js';\n",
+      'src/maker.ts': [
+        "import { shape } from './shape.js';",
+        'export interface Options { size: number }',
+        'export const helper = (options: Options) => options.size;',
+        'export const unused = 1;',
+        'export const make = () => shape(helper({ size: 1 }));',
+        '',
+      ].join('\n'),
+      'src/shape.ts': [
+        'export interface Shape { size: number }',
+        'export const shape = (size: number): Shape => ({ size });',
+        'export const tested = 2;',
+        'export const local = 3;',
+        'export const twice = () => local;',
+        '',
+      ].join('\n'),
+      'src/shape.test.ts': "import { tested } from './shape.js';\nvoid tested;\n",
+      'src/tables.ts': 'export const table = 1;\n',
+    });
+    symlinkSync(join(repository, 'node_modules'), join(dir, 'node_modules'), 'dir');
+    const result = run(dir, 'check-exports');
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'src/maker.ts:3: helper is used only in this file; drop its export',
+    );
+    expect(result.stderr).toContain(
+      'src/maker.ts:4: unused is exported and used nowhere; delete it',
+    );
+    expect(result.stderr).toContain('src/shape.ts:4: local is used only in this file');
+    expect(result.stderr).toContain('src/maker.ts:2: Options is used only in this file');
+    expect(result.stderr).toContain('src/shape.ts:5: twice is exported and used nowhere');
+    // Shape names the type make infers through another module; tables is a namespace export.
+    for (const used of ['Shape', 'shape', 'tested', 'make', 'table']) {
+      expect(result.stderr).not.toContain(` ${used} is`);
+    }
+
+    run(dir, 'check-exports', '--fix');
+    expect(readFileSync(join(dir, 'src', 'maker.ts'), 'utf8')).toContain(
+      'const helper = (options: Options)',
+    );
+    expect(readFileSync(join(dir, 'src', 'maker.ts'), 'utf8')).toContain('export const unused');
   });
 
   it('UIC-TOOLING-3.1 gives every repository the shared rules and lets it allow components', async () => {

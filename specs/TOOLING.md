@@ -20,7 +20,7 @@ Verification: `test/tooling.test.ts`
 
 ### UIC-TOOLING-1.3 - One command
 
-The package shall install the bin command `ui-components-tooling <command> [options]`, with the commands `check-references`, `check-specs` and `check-structure`. A command runs against the working directory, which npm sets to the package root for its scripts; an unknown or missing command prints the usage and exits with status 2. The tools the shared configuration and checks load (ESLint, `@eslint/js`, `typescript-eslint`, `eslint-plugin-simple-import-sort`, `globals`, Prettier and TypeScript) shall be optional peer dependencies, which a host that only renders components never installs.
+The package shall install the bin command `ui-components-tooling <command> [options]`, with the commands `check-exports`, `check-references`, `check-specs` and `check-structure`. A command runs against the working directory, which npm sets to the package root for its scripts; an unknown or missing command prints the usage and exits with status 2. The tools the shared configuration and checks load (ESLint, `@eslint/js`, `typescript-eslint`, `eslint-plugin-simple-import-sort`, `globals`, Prettier and TypeScript) shall be optional peer dependencies, which a host that only renders components never installs.
 
 Implementation: `tooling/bin.mjs`, `tooling/lib/script.mjs`, `package.json`
 Verification: `test/tooling.test.ts`
@@ -53,6 +53,13 @@ Verification: `test/check-specs.test.ts`
 `check-structure` shall fail on a file or directory name that is not kebab-case under `structure.names`, an `index.ts` in `src/` that does anything but re-export, a relative import from library source that leaves `src/`, an import from one layer of `src/` to a layer it does not list, a Node module imported by a browser layer, and a cycle of library modules (with `cyclesAcross`, only a cycle that spans two of its directories; type-only imports count only with `typeImportCycles`). It then adds the problems of `structure.rules`.
 
 Implementation: `tooling/check-structure.mjs`, `tooling/lib/imports.mjs`
+Verification: `test/tooling.test.ts`
+
+### UIC-TOOLING-2.4 - Needless exports
+
+`check-exports` shall fail on a declaration that a library module in `src/` exports when no entry point reaches it (the `./dist/` targets of the package's `exports` map, read as `src/` modules, and `exports.entries`) and its name appears in no other library module (a re-export included), test or file under `labs/`, `e2e/`, `examples/`, `test/` or `scripts/`. A name another module's declarations infer, a namespace import or an `export * as` counts as a use. It shall parse with the repository's own TypeScript. `--fix` drops the `export` keyword of each flagged declaration its own file still uses; one used nowhere is reported for deletion.
+
+Implementation: `tooling/check-exports.mjs`
 Verification: `test/tooling.test.ts`
 
 ## UIC-TOOLING-3 - Shared configuration

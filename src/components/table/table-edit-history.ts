@@ -35,7 +35,7 @@ export interface TableEditHistoryOptions {
 }
 
 /** Which way an entry is applied: back to its `before` values, or forward to its `after` values. */
-export type HistoryDirection = 'undo' | 'redo';
+type HistoryDirection = 'undo' | 'redo';
 
 /** Applies an entry's changes through a table and returns those it could apply. */
 export type HistoryApplier = (
