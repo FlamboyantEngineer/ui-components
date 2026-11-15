@@ -1,3 +1,4 @@
+export { type CompositionKey, isComposingKey } from '../utils/is-composing-key.js';
 export {
   booleanCodec,
   createJsonCodec,
