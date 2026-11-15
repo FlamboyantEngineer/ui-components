@@ -71,6 +71,13 @@ Package preparation, full lab builds and release tags shall include the font bun
 Implementation: `package.json`, `.gitattributes`, `scripts/lib/fonts.mjs`, `scripts/build-labs.mjs`, `scripts/check-package.mjs`, `scripts/check-git-install.mjs`, `scripts/pack-labs.mjs`, `scripts/release.mjs`, `scripts/start-labs.mjs`, `labs/src/chrome/page-style.ts`, `scripts/lib/consumer-bundle.mjs`
 Verification: `test/fonts.test.ts`, `test/package.test.ts`, `test/package-bundle.test.ts`, `test/release.test.ts`, `test/start-labs.test.ts`, `e2e/fonts.spec.ts`, `e2e/lab-harness.spec.ts`
 
+### UIC-LABS-1.10 - React Aria strings for the library's languages
+
+React Aria carries its own strings (such as date segment and color channel names) for about 34 locales, and a bundler keeps all of them unless the host's build drops the rest. The library supports the languages it ships a language file for (`src/core/locales`: English, Spanish, French and Japanese); the README tells hosts to keep React Aria's strings for those and their own with `@react-aria/optimize-locales-plugin`, and a removed locale falls back to English in React Aria. The consumer bundles of UIC-LABS-1.8 apply that plugin with the library's languages, as a host following the README does, and fail any consumer that still holds React Aria's strings for another language. The lab build keeps React Aria's strings for the library's languages plus Arabic, German, Hebrew and Swedish, which the labs show formatting and direction in, through an esbuild plugin of its own (`optimizeLocalesForEsbuild`) that replaces each other locale's strings module with an empty one.
+
+Implementation: `scripts/lib/react-aria-locales.mjs`, `scripts/build-labs.mjs`, `scripts/lib/consumer-bundle.mjs`, `scripts/check-bundle-size.mjs`, `README.md`
+Verification: `test/react-aria-locales.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker
