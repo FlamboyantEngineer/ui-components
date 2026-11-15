@@ -19,6 +19,7 @@ import { SparklesGlyph } from '../../src/core/glyphs.js';
 import { agents, fakeUpload, withModelNote } from './chat-agent.js';
 import { type AgentConversationSample, lisbonPhotos } from './chat-agent-app-samples.js';
 import { createAgentMenu } from './chat-agent-menu.js';
+import { useWorkingMarkCleanup, withReactions } from './chat-agent-reactions.js';
 import { agentTiming, sleep, streamText } from './chat-agent-stream.js';
 import { createReplyHandlers } from './chat-assistant-host.js';
 import { plannerCommands } from './chat-everything-samples.js';
@@ -147,7 +148,7 @@ interface AgentConversationProps {
 /** One conversation: its controller always, its chat while it is open. */
 export function AgentConversation({ sample, isOpen, shared, onSummary }: AgentConversationProps) {
   const controller = useChatController({
-    send: withModelNote(sendToAgent, shared.choice),
+    send: withReactions(withModelNote(sendToAgent, shared.choice)),
     currentUserId: readerId,
     assistantId: plannerId,
     initialMessages: sample.messages,
@@ -155,6 +156,7 @@ export function AgentConversation({ sample, isOpen, shared, onSummary }: AgentCo
     alwaysAllowed: shared.allowed,
     onAlwaysAllowedChange: shared.onAllowedChange,
   });
+  useWorkingMarkCleanup(controller);
   const { messages, isPending } = controller;
   const summary = summarize(sample, messages, isPending);
   const { title, lastMessage, time, isWorking } = summary;

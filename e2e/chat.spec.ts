@@ -551,6 +551,32 @@ test.describe('Chat lab', () => {
     await expect(assistant.locator('[data-lab-custom="weather-card"]')).toContainText('Lisbon');
   });
 
+  test('UIC-CHAT-2.3 UIC-CHAT-12.8 lets the agent react to the reader and take its reaction back', async ({
+    page,
+  }) => {
+    await openChat(page, 30);
+    const assistant = section(page, 'Assistant, live');
+    const photos = assistant.locator('article', { hasText: 'Here is what we loved last time' });
+    await expect(
+      photos.getByRole('button', { name: '😍 1, reacted by Trip planner' }),
+    ).toBeVisible();
+
+    await ask(page, 'summarize', 'Thanks, in short please');
+    const thanked = assistant.locator('article', { hasText: 'Thanks, in short please' });
+    const working = thanked.getByRole('button', { name: '👀 1, reacted by Trip planner' });
+    await expect(working).toBeVisible();
+    await expect(working).toHaveAttribute('aria-pressed', 'false');
+    await expect(lastReply(assistant)).toHaveAttribute('data-status', 'complete');
+    await expect(thanked.locator('.ui-reaction-bar__reaction')).toHaveAccessibleName(
+      '❤️ 1, reacted by Trip planner',
+    );
+
+    await ask(page, 'ferry', 'Ferry times?');
+    await expect(lastReply(assistant).locator('.ui-chat-message__error')).toBeVisible();
+    const failed = assistant.locator('article', { hasText: 'Ferry times?' });
+    await expect(failed.locator('.ui-reaction-bar__reaction')).toHaveCount(0);
+  });
+
   test('UIC-CHAT-3.3 UIC-CHAT-3.5 recalls a prompt with Up and uploads a file that fails once', async ({
     page,
   }) => {

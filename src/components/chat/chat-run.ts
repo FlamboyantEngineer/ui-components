@@ -10,6 +10,7 @@ import {
   updateMessage,
 } from './chat-controller-state.js';
 import type { ChatMessageData } from './chat-parts.js';
+import { setChatReaction } from './chat-reactions.js';
 import { type ChatReaderResponse, findAwaitingMessage, recordResponse } from './chat-reply.js';
 import { type ChatStreamContext, type ChatStreamEvent, reduceChatStream } from './chat-stream.js';
 import { type ChatReplyOutcome, endChatReply } from './chat-stream-parts.js';
@@ -92,11 +93,40 @@ function dropPending(run: ChatRun) {
 }
 
 /**
+ * Writes the assistant's reaction at once, after what the run streamed so far: to the message the
+ * event names, else to the reader's last message before the reply.
+ */
+function applyReaction(
+  engine: ChatEngineContext,
+  run: ChatRun,
+  event: Extract<ChatStreamEvent, { type: 'reaction' }>,
+) {
+  flushRun(engine, run);
+  const { messages } = engine.store.get();
+  const { currentUserId, assistantId } = engine.getConfig();
+  const before = messages.slice(
+    0,
+    messages.findIndex((message) => message.id === run.replyId),
+  );
+  const messageId =
+    event.messageId ?? before.findLast((message) => message.authorId === currentUserId)?.id;
+  if (messageId === undefined) return;
+  const { emoji, isReacted } = event;
+  const change = { messageId, emoji, participantId: assistantId, isReacted };
+  const next = setChatReaction(messages, change);
+  if (next !== messages) patchState(engine, { messages: next });
+}
+
+/**
  * Reduces an event into the run's pending reply. Text, reasoning and tool events wait for the
  * next frame, so a burst of deltas notifies the conversation's readers once; an approval request
  * or a question is written at once, since the reply then waits for the reader.
  */
 function applyEvent(engine: ChatEngineContext, run: ChatRun, event: ChatStreamEvent) {
+  if (event.type === 'reaction') {
+    applyReaction(engine, run, event);
+    return;
+  }
   const now = engine.getConfig().getNow().getTime();
   if (
     (event.type === 'reasoning-delta' || event.type === 'tool-call') &&

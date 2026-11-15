@@ -33,7 +33,7 @@ const pairMessages: ChatMessageData[] = [
     authorId: 'ana',
     time: '2026-04-19T18:06:00',
     text: 'Perfect. I will bring the big bags.',
-    reactions: [{ emoji: '👍', isReacted: true, people: ['Sam Reed'] }],
+    reactions: [{ emoji: '👍', participantIds: [readerId] }],
   }),
   textMessage({
     id: 'pair-4',
