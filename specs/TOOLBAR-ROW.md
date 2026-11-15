@@ -1,6 +1,6 @@
 # Toolbar Row
 
-Generic groups of tools with keyboard navigation, wrapping, scrolling, edge fades and pending presentation.
+Generic groups of tools with keyboard navigation, wrapping, scrolling, edge fades, an overflow menu and pending presentation.
 
 ## UIC-TOOLBAR-ROW-1 - Behavior
 
@@ -29,7 +29,7 @@ Verification: `src/components/toolbar-row/toolbar-row.test.tsx`, `e2e/toolbar-ro
 
 ### UIC-TOOLBAR-ROW-1.4 - Toolbar overflow
 
-`ToolbarRow`'s `overflow` shall choose what happens to controls that do not fit on one horizontal row, published in `data-overflow`. `wrap` (the default) flows them onto more rows, and every `ToolbarRowGroup` with them: the row and its groups publish `data-wrap="wrap"`. `scroll` keeps them on one row: the strip scrolls, and the root adds a scroll button (`ui-toolbar-row__scroll-button`, out of the tab order) at each edge and, unless `showEdgeFades` is `false`, a decorative fade (`ui-toolbar-row__fade`, hidden from assistive technology), both with `data-edge`, shown with `data-overflow-start` or `data-overflow-end` on the root only while that edge hides controls, with generic edge controls; a focused control scrolls clear of them. With `showScrollButtons={false}` the paging buttons are omitted; scrolling, edge fades and keyboard focus reveal remain available. The option defaults to true and is independent of showEdgeFades. `none` keeps one row and leaves overflow to the caller (for example an [Overflow List](OVERFLOW-LIST.md)). Rows that do not wrap and their groups publish `data-wrap="nowrap"`. A vertical row is one column: it treats `scroll` as `none`. In scrolling mode, center and end justification retain their requested alignment when the tools fit; when they overflow, spare-space margins collapse so the first tools remain at the reachable start. Focus reveals controls at either end. The controls stay mounted, with their state and focus, whichever mode or orientation the row moves to.
+`ToolbarRow`'s `overflow` shall choose what happens to controls that do not fit on one horizontal row, published in `data-overflow`. `wrap` (the default) flows them onto more rows, and every `ToolbarRowGroup` with them: the row and its groups publish `data-wrap="wrap"`. `scroll` keeps them on one row: the strip scrolls, and the root adds a scroll button (`ui-toolbar-row__scroll-button`, out of the tab order) at each edge and, unless `showEdgeFades` is `false`, a decorative fade (`ui-toolbar-row__fade`, hidden from assistive technology), both with `data-edge`, shown with `data-overflow-start` or `data-overflow-end` on the root only while that edge hides controls, with generic edge controls; a focused control scrolls clear of them. With `showScrollButtons={false}` the paging buttons are omitted; scrolling, edge fades and keyboard focus reveal remain available. The option defaults to true and is independent of showEdgeFades. `menu` keeps one row and moves the tools given as data that do not fit into a "more" menu ([UIC-TOOLBAR-ROW-2](#uic-toolbar-row-2---overflow-menu)). `none` keeps one row and leaves overflow to the caller (for example an [Overflow List](OVERFLOW-LIST.md)). Rows that do not wrap and their groups publish `data-wrap="nowrap"`. A vertical row is one column: it treats `scroll` and `menu` as `none`. In scrolling mode, center and end justification retain their requested alignment when the tools fit; when they overflow, spare-space margins collapse so the first tools remain at the reachable start. Focus reveals controls at either end. The controls stay mounted, with their state and focus, whichever mode or orientation the row moves to.
 
 Implementation: `src/components/toolbar-row/toolbar-row.tsx`, `src/components/toolbar-row/use-toolbar-scroll.ts`, `labs/reference/layout.css`, `labs/reference/toolbar-row.css`
 Verification: `src/components/toolbar-row/toolbar-row.test.tsx`, `src/components/layout/layout-identity.test.tsx`, `e2e/toolbar-row.spec.ts`
@@ -48,11 +48,36 @@ A `ToolbarRowGroup` spaces its controls with the row's gap. Its `attached` shall
 Implementation: `src/components/toolbar-row/toolbar-row.tsx`, `labs/reference/layout.css`, `labs/reference/toolbar-row.css`
 Verification: `src/components/toolbar-row/toolbar-row.test.tsx`, `e2e/toolbar-row.spec.ts`
 
+## UIC-TOOLBAR-ROW-2 - Overflow menu
+
+### UIC-TOOLBAR-ROW-2.1 - Tools as data
+
+`items` (each with an `id` and a `label`) and `renderItem(item)` shall draw the tools in place of `children`, each in a `ui-toolbar-row__item` element that is a direct child of the strip, in their order and keyed by `id`, in every overflow mode. Tools whose ids differ only by type, such as `1` and `'1'`, stay apart. `overflow="menu"` without both `items` and `renderItem` has nothing to collapse and behaves as `scroll`, publishing `data-overflow="scroll"`.
+
+Implementation: `src/components/toolbar-row/toolbar-row.tsx`, `src/components/toolbar-row/toolbar-row-menu.tsx`
+Verification: `src/components/toolbar-row/toolbar-row-menu.test.tsx`
+
+### UIC-TOOLBAR-ROW-2.2 - Collapsing into a menu by priority
+
+With `overflow="menu"`, `items` and `renderItem`, a horizontal row shall publish `data-overflow="menu"` and `data-wrap="nowrap"` and render only the tools that fit, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them: tools with a higher `priority` stay longest, and tools of the same priority leave from the end, keeping their order. Tools compare by `id`, so a host that builds `items` on each render is not measured afresh each time. While tools are hidden, a `ui-toolbar-row__overflow` element at the end of the strip holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tools by `label` with their `icon` and `isDisabled`; choosing one runs its `onAction`. In a `toolbar` row the menu button is one of the toolbar's controls, so the arrow keys reach it. The strip does not scroll, so no fades or scroll buttons render; the reference sheet keeps every tool at its natural width.
+
+Implementation: `src/components/toolbar-row/toolbar-row.tsx`, `src/components/toolbar-row/toolbar-row-menu.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/toolbar-row.css`
+Verification: `src/components/toolbar-row/toolbar-row-menu.test.tsx`, `e2e/toolbar-row-menu.spec.ts`
+
+### UIC-TOOLBAR-ROW-2.3 - Changing the overflow mode
+
+Every overflow mode shall draw the tools in the same strip element, so a change of `overflow` to or from `menu`, or of `showScrollButtons`, keeps every tool that stays visible mounted, with its state, uncontrolled values and focus; only the scroll buttons, fades and overflow menu come and go around them. When the tool holding focus collapses into the overflow menu, or leaves `items`, focus moves to the next tool, else the overflow menu's button, else the previous tool, so it never falls to the page.
+
+Implementation: `src/components/toolbar-row/toolbar-row.tsx`, `src/components/toolbar-row/toolbar-row-menu.tsx`, `src/utils/use-overflow-focus.ts`
+Verification: `src/components/toolbar-row/toolbar-row-menu.test.tsx`, `e2e/toolbar-row-menu.spec.ts`
+
 ## Hooks
 
 | Hook                            | Kind      | Values                                                                | Description                                                 |
 | ------------------------------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
 | `ui-toolbar-row__strip`         | slot      |                                                                       | The element holding a toolbar row's controls in every mode. |
+| `ui-toolbar-row__item`          | slot      |                                                                       | One tool drawn from `items`.                                |
+| `ui-toolbar-row__overflow`      | slot      |                                                                       | The element holding the menu of hidden tools.               |
 | `ui-toolbar-row__fade`          | slot      |                                                                       | A decorative fade at an edge of a scrolling row.            |
 | `ui-toolbar-row__scroll-button` | slot      |                                                                       | A scroll button at an edge of a scrolling row.              |
 | `ui-toolbar-row__group`         | slot      |                                                                       | `ToolbarRowGroup`'s `role="group"` element.                 |
@@ -70,7 +95,7 @@ Verification: `src/components/toolbar-row/toolbar-row.test.tsx`, `e2e/toolbar-ro
 | `data-offset`                   | attribute | `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`          | `GridItem` empty columns before it.                         |
 | `data-ratio`                    | attribute | `1-1`, `4-3`, `3-2`, `16-9`, `21-9`, `3-4`, `2-3`, `9-16`             | `AspectRatio` width to height.                              |
 | `data-variant`                  | attribute | `plain`, `surface`                                                    | `ToolbarRow` surface.                                       |
-| `data-overflow`                 | attribute | `wrap`, `scroll`, `none`                                              | What a toolbar row does with controls that do not fit.      |
+| `data-overflow`                 | attribute | `wrap`, `scroll`, `menu`, `none`                                      | What a toolbar row does with controls that do not fit.      |
 | `data-edge`                     | attribute | `start`, `end`                                                        | The edge a scrolling row's fade or scroll button sits at.   |
 | `data-overflow-start`           | state     | `true`                                                                | A scrolling row hides controls past its start.              |
 | `data-overflow-end`             | state     | `true`                                                                | A scrolling row hides controls past its end.                |

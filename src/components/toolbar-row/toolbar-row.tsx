@@ -13,7 +13,6 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation, RefProps } from '../../core/props.js';
 import { Group, Toolbar } from '../../primitives/index.js';
 import { renderCaretKeyToolbar } from '../../utils/toolbar-caret-keys.js';
-import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   type LayoutContainmentProps,
   type LayoutJustify,
@@ -23,18 +22,22 @@ import {
 } from '../layout/layout.js';
 import { Separator } from '../separator/separator.js';
 import { ScrollStrip } from './scroll-strip.js';
+import { type ToolbarRowItem, useToolbarRowItems } from './toolbar-row-menu.js';
 import { useToolbarScroll } from './use-toolbar-scroll.js';
+
+export type { ToolbarRowItem } from './toolbar-row-menu.js';
 
 export type ToolbarRowRole = 'toolbar' | 'group' | 'none';
 export type ToolbarRowVariant = 'plain' | 'surface';
 
 /**
  * `wrap` flows the controls, and the groups holding them, onto more rows; `scroll` keeps them on
- * one scrolling row; `none` keeps one row and leaves overflow to the caller.
+ * one scrolling row; `menu` keeps the tools given as `items` that fit and lists the others in a
+ * "more" menu; `none` keeps one row and leaves overflow to the caller.
  */
-export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'none';
+export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'menu' | 'none';
 
-export interface ToolbarRowProps
+export interface ToolbarRowProps<T extends ToolbarRowItem = ToolbarRowItem>
   extends Omit<ContainerProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
   /** `toolbar` (default) moves focus by arrow keys, `group` keeps tab stops, `none` has no role. */
   role?: ToolbarRowRole | undefined;
@@ -48,8 +51,15 @@ export interface ToolbarRowProps
   space?: LayoutSpace | undefined;
   /** Distribution of controls. Defaults to `end`. */
   justify?: LayoutJustify | undefined;
-  /** What happens to controls that do not fit on one horizontal row. Defaults to `wrap`. */
+  /**
+   * What happens to controls that do not fit on one horizontal row. Defaults to `wrap`. `menu`
+   * needs `items` and `renderItem`; without them the row scrolls.
+   */
   overflow?: ToolbarRowOverflow | undefined;
+  /** The tools as data, each drawn by `renderItem`, in place of `children`. */
+  items?: readonly T[] | undefined;
+  /** Draws one tool of `items`. */
+  renderItem?: ((item: T) => ReactNode) | undefined;
   /** With `overflow="scroll"`, draws a decorative fade over each edge that hides controls. Defaults to `true`; `false` draws none. */
   showEdgeFades?: boolean | undefined;
   /** With scrolling overflow, draw paging buttons at overflowing edges. Defaults to true. */
@@ -68,7 +78,15 @@ export interface ToolbarRowGroupProps
 
 export type ToolbarRowSeparatorProps = RefProps<HTMLElement> & BaseProps;
 
-const hooks = createHooks('toolbar-row', ['strip', 'group', 'separator', 'fade', 'scroll-button']);
+const hooks = createHooks('toolbar-row', [
+  'strip',
+  'item',
+  'overflow',
+  'group',
+  'separator',
+  'fade',
+  'scroll-button',
+]);
 
 interface ToolbarRowFlow {
   orientation: Orientation;
@@ -81,9 +99,18 @@ const ToolbarRowContext = createContext<ToolbarRowFlow>({
   wrap: 'wrap',
 });
 
-/** The overflow a row applies: a vertical row is one column that never scrolls sideways. */
-function resolveOverflow(overflow: ToolbarRowOverflow, orientation: Orientation) {
-  return orientation === 'vertical' && overflow === 'scroll' ? 'none' : overflow;
+/**
+ * The overflow a row applies: a vertical row is one column that never scrolls or collapses
+ * sideways, and a row without tools as data has nothing to collapse, so it scrolls.
+ */
+function resolveOverflow(
+  overflow: ToolbarRowOverflow,
+  orientation: Orientation,
+  hasItems: boolean,
+): ToolbarRowOverflow {
+  const applied = overflow === 'menu' && !hasItems ? 'scroll' : overflow;
+  const isSideways = applied === 'scroll' || applied === 'menu';
+  return orientation === 'vertical' && isSideways ? 'none' : applied;
 }
 
 interface ToolbarRowStripProps extends AriaLabellingProps {
@@ -140,10 +167,11 @@ function resolveScrollControls({
 /**
  * A row of controls, vertically centred, with a gap; or a column of them when vertical. The
  * controls always sit in the same strip, so changing the overflow or the orientation never
- * remounts them; `scroll` only adds edge controls beside the strip. `ref` reaches the row's root and
- * `stripRef` the strip, whose element children are the controls.
+ * remounts them; `scroll` only adds edge controls beside the strip, and `menu` the "more" menu at
+ * its end. `ref` reaches the row's root and `stripRef` the strip, whose element children are the
+ * controls.
  */
-export function ToolbarRow({
+export function ToolbarRow<T extends ToolbarRowItem = ToolbarRowItem>({
   children,
   className,
   role = 'toolbar',
@@ -154,6 +182,8 @@ export function ToolbarRow({
   overflow: requestedOverflow = 'wrap',
   showEdgeFades,
   showScrollButtons,
+  items,
+  renderItem,
   isPending = false,
   grow,
   fill,
@@ -163,12 +193,19 @@ export function ToolbarRow({
   onFocus,
   stripRef: callerStripRef,
   ...rest
-}: ToolbarRowProps) {
-  const overflow = resolveOverflow(requestedOverflow, orientation);
+}: ToolbarRowProps<T>) {
+  const hasItems = items !== undefined && renderItem !== undefined;
+  const overflow = resolveOverflow(requestedOverflow, orientation, hasItems);
   const isScroll = overflow === 'scroll';
   const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
   const scroll = useToolbarScroll(isScroll);
-  const stripRef = useMergedRefs(scroll.stripRef, callerStripRef);
+  const tools = useToolbarRowItems({
+    isMenu: overflow === 'menu',
+    items,
+    renderItem,
+    stripRefs: [scroll.stripRef, callerStripRef],
+    hooks,
+  });
   // The row renders again as it scrolls; its controls read this only when it changes.
   const context = useMemo<ToolbarRowFlow>(() => ({ orientation, wrap }), [orientation, wrap]);
   const edges = isScroll ? scroll.edges : { start: false, end: false };
@@ -200,12 +237,12 @@ export function ToolbarRow({
         <ToolbarRowStrip
           role={role}
           orientation={orientation}
-          stripRef={stripRef}
+          stripRef={tools.stripRef}
           onScroll={isScroll ? scroll.syncOverflow : undefined}
           aria-label={label}
           aria-labelledby={labelledBy}
         >
-          <ToolbarRowContext value={context}>{children}</ToolbarRowContext>
+          <ToolbarRowContext value={context}>{tools.content ?? children}</ToolbarRowContext>
         </ToolbarRowStrip>
       </ScrollStrip>
     </div>

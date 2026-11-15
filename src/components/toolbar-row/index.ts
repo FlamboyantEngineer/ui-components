@@ -1,5 +1,6 @@
 export type {
   ToolbarRowGroupProps,
+  ToolbarRowItem,
   ToolbarRowOverflow,
   ToolbarRowProps,
   ToolbarRowRole,

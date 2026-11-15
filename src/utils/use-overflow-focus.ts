@@ -1,7 +1,7 @@
 'use client';
 
 // Keeps keyboard focus in a row of items that can leave it or collapse into an overflow menu at its
-// end. Shared by Action Row and Toolbar Scroller.
+// end. Shared by Action Row and Toolbar Row.
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement, isFocusLost } from './focus-target.js';
