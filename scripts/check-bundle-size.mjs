@@ -16,6 +16,7 @@ import {
   updatedBudgets,
 } from './lib/bundle-budgets.mjs';
 import { bundleConsumer, installPackedConsumer } from './lib/consumer-bundle.mjs';
+import { LIBRARY_LOCALES } from './lib/react-aria-locales.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
 import { reportProblems, root } from './lib/script.mjs';
 
@@ -38,6 +39,9 @@ const HEAVY = [
   `${PACKAGE}/dist/core/locales/(?!index|en)`,
   `${PACKAGE}/dist/components/(?:rich-text-editor|pdf-viewer|math-preview|code-editor)/`,
 ];
+
+// React Aria's strings for a language the library does not ship, which a host's build leaves out.
+const OTHER_REACT_ARIA_STRINGS = `[/\\\\]intl[/\\\\].+[/\\\\](?!(?:${LIBRARY_LOCALES.join('|')})-)[a-z]{2}-[A-Z]{2}\\.m?js$`;
 
 const use = (names, from) => `import { ${names.join(', ')} } from '${from}';
 globalThis.used = [${names.join(', ')}];`;
@@ -115,6 +119,9 @@ try {
     };
     for (const name of forbiddenModules(allModules, consumer.excludes ?? []).slice(0, 5)) {
       problems.push(`${consumer.name} bundles ${name}, which a simple consumer must leave out`);
+    }
+    for (const name of forbiddenModules(allModules, [OTHER_REACT_ARIA_STRINGS]).slice(0, 5)) {
+      problems.push(`${consumer.name} bundles ${name}, React Aria's strings for another language`);
     }
     for (const pattern of consumer.includes ?? []) {
       if (forbiddenModules(allModules, [pattern]).length === 0) {
