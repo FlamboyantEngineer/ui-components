@@ -9,6 +9,7 @@ Before every commit, run the checks that cover your change, not the full suites.
 ```sh
 npm run lint && npm run format:check && npm run typecheck
 npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure
+npm run check:exports   # `--fix` drops exports only their own file uses
 npm run check:client-boundaries   # `--fix` adds the 'use client' directives
 npm run test:changed   # unit tests related to your changes since origin/dev
 ```

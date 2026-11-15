@@ -28,7 +28,7 @@ export const SYSTEM_THEME = 'system';
 const darkSchemeQuery = '(prefers-color-scheme: dark)';
 
 /** Where the reference option loads its stylesheet from, relative to the page. */
-export const DEFAULT_REFERENCE_STYLESHEET = 'build/reference.css';
+const DEFAULT_REFERENCE_STYLESHEET = 'build/reference.css';
 
 const stylesheetLinkId = 'ui-lab-stylesheet';
 
