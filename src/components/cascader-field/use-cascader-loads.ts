@@ -15,7 +15,7 @@ export type CascaderLoader = (
 ) => Promise<readonly CascaderOption[]>;
 
 /** Where the children of one branch stand. */
-export type CascaderLoad =
+type CascaderLoad =
   | { status: 'loading' }
   | { status: 'failed' }
   | { status: 'ready'; options: readonly CascaderOption[] };

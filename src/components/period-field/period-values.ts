@@ -29,7 +29,7 @@ export function writePeriod(index: PeriodIndex, granularity: PeriodGranularity):
 }
 
 /** The year a period falls in. */
-export function toYear(index: PeriodIndex, granularity: PeriodGranularity): number {
+function toYear(index: PeriodIndex, granularity: PeriodGranularity): number {
   return granularity === 'year' ? index : Math.floor(index / 12);
 }
 

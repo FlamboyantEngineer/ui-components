@@ -15,7 +15,7 @@ export interface MultiDateRules {
 }
 
 /** Why a set of dates is refused. */
-export type MultiDateIssue =
+type MultiDateIssue =
   | { kind: 'unreadable' }
   | ({ kind: 'bound' } & BoundIssue)
   | { kind: 'unavailable' }

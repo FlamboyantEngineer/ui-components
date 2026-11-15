@@ -2,7 +2,7 @@ import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import type { StepperPressProps } from './number-field-parts.js';
 
 /** The preset values a number field steps through, and the range that bounds them. */
-export interface StepValueList {
+interface StepValueList {
   values: readonly number[];
   minValue?: number | undefined;
   maxValue?: number | undefined;

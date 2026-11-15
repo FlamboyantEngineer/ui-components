@@ -60,7 +60,7 @@ export function usePeriodFormats(granularity: PeriodGranularity) {
   };
 }
 
-export interface PeriodPickerProps {
+interface PeriodPickerProps {
   granularity: PeriodGranularity;
   /** The chosen period, which the first page shows and the grid marks. */
   value: PeriodIndex | null;

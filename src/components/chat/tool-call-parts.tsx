@@ -40,7 +40,7 @@ export type ChatToolCallKind = 'read' | 'edit' | 'command' | 'search' | 'fetch' 
 type ToolCallPartName = 'arguments' | 'result';
 
 /** Who the call is: what names its letter, and the host's own glyph for the tool. */
-export interface ToolCallIdentity {
+interface ToolCallIdentity {
   name: string;
   source: string | undefined;
   kind: ChatToolCallKind;

@@ -31,7 +31,7 @@ function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
  * another try, and words the reader added meanwhile, or an edit or reply they started again, stay.
  * `readShown` reads what the composer shows when the host accepts.
  */
-export function submitMessage(
+function submitMessage(
   { options, state }: ChatComposerProps,
   message: ComposerMessage,
   { readShown, readQueue }: SubmitReaders,
