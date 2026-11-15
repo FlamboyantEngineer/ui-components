@@ -56,10 +56,8 @@ function listFiles() {
   const output = execFileSync(
     'git',
     ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
-    {
-      cwd: root,
-      encoding: 'utf8',
-    },
+    // A large checkout lists more than the default 1 MB of paths.
+    { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
   );
   const files = output.split('\0').filter((file) => file && !GENERATED.has(file));
   return { base: root, files };
