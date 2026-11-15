@@ -6,13 +6,11 @@
 import { createGlyph } from './glyph-component.js';
 import {
   abbreviationPath,
-  articlePath,
   bars3BarPath,
   bars3CenterMiddlePath,
   borderAllPath,
   chatBubbleCheckPath,
   chatBubblePlusPath,
-  chatBubbleTrashPath,
   chatBubbleXMarkPath,
   crossReferencePath,
   fileBadgeAudioPath,
@@ -79,7 +77,6 @@ import {
   wrapTextPath,
 } from './tabular-glyph-paths.js';
 
-export const ArticleGlyph = /* @__PURE__ */ createGlyph('article', articlePath);
 export const Bars3BarGlyph = /* @__PURE__ */ createGlyph('bars-3-bar', bars3BarPath);
 export const Bars3CenterMiddleGlyph = /* @__PURE__ */ createGlyph(
   'bars-3-center-middle',
@@ -92,10 +89,6 @@ export const ChatBubbleCheckGlyph = /* @__PURE__ */ createGlyph(
 export const ChatBubblePlusGlyph = /* @__PURE__ */ createGlyph(
   'chat-bubble-plus',
   chatBubblePlusPath,
-);
-export const ChatBubbleTrashGlyph = /* @__PURE__ */ createGlyph(
-  'chat-bubble-trash',
-  chatBubbleTrashPath,
 );
 export const ChatBubbleXMarkGlyph = /* @__PURE__ */ createGlyph(
   'chat-bubble-x-mark',
