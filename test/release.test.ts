@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { extractTarGz } from '../scripts/lib/tar.mjs';
+import { extractTarGz } from '../tooling/lib/tar.mjs';
 
 const fixtures: string[] = [];
 
@@ -20,12 +20,12 @@ function createReleaseFixture() {
     execFileSync('git', args, { cwd: fixture, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   const scripts = [
     'scripts/release.mjs',
-    'scripts/lib/npm.mjs',
+    'tooling/lib/npm.mjs',
     'tooling/lib/script.mjs',
     'scripts/lib/root.mjs',
     'scripts/lib/reference-stylesheet.mjs',
     'scripts/lib/fonts.mjs',
-    'scripts/lib/tar.mjs',
+    'tooling/lib/tar.mjs',
   ];
   for (const script of scripts) {
     const target = join(fixture, script);
