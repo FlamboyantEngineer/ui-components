@@ -13,6 +13,7 @@ export const composerHooks = createHooks('message-composer', [
   'start',
   'end',
   'menu-button',
+  'menu-popover',
   'menu',
   'attach',
   'emoji',

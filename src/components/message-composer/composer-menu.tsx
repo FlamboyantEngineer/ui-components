@@ -119,7 +119,7 @@ function renderItem(item: MessageComposerMenuItem, helpers: MessageComposerHelpe
   return (
     <SubmenuTrigger key={item.id}>
       {element}
-      <MenuPopover>
+      <MenuPopover className={hooks.slotClass('menu-popover')}>
         <Menu className={hooks.slotClass('menu')}>
           {item.items.map((child) => renderItem(child, helpers))}
         </Menu>
@@ -195,7 +195,11 @@ export function ComposerMenuButton({
           isDisabled={isDisabled}
         />
         {/* Above the whole composer, as its completion list opens, rather than over its input. */}
-        <MenuOverlay placement="top start" triggerRef={rootRef}>
+        <MenuOverlay
+          placement="top start"
+          triggerRef={rootRef}
+          className={hooks.slotClass('menu-popover')}
+        >
           <Menu className={hooks.slotClass('menu')} filterable={filterable}>
             {allSections.map((section) => (
               <MenuSection key={section.id} id={section.id} title={section.title}>

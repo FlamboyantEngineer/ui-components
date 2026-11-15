@@ -543,6 +543,10 @@ test.describe('Message Composer lab', () => {
     expect(await menu.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
       true,
     );
+    // One scrollbar: the popover around the scrolling menu never scrolls itself.
+    expect(await popover.evaluate((element) => element.scrollHeight - element.clientHeight)).toBe(
+      0,
+    );
     await lab.expectAccessible('.ui-menu-popover');
     await menu.getByRole('menuitem', { name: 'Files Team drive' }).click();
     const files = page.getByRole('menu', { name: /^Files/ });

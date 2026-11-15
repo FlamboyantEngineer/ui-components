@@ -92,8 +92,9 @@ describe('MessageComposer menu', () => {
       within(menu).getByRole('menuitem', { name: 'Add a note' }),
     );
     expect(menu.closest('.ui-menu-popover')).toHaveAttribute('data-trigger', 'MenuTrigger');
+    expect(menu.closest('.ui-menu-popover')).toHaveClass('ui-message-composer__menu-popover');
     expectHooksMatchSpec(document.body, 'MESSAGE-COMPOSER', {
-      slots: ['start', 'end', 'menu-button', 'menu', 'emoji'],
+      slots: ['start', 'end', 'menu-button', 'menu-popover', 'menu', 'emoji'],
     });
   });
 
