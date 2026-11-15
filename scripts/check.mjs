@@ -16,6 +16,7 @@ const STAGES = [
     'check:specs',
     'check:labs',
     'check:structure',
+    'check:exports',
     'check:client-boundaries',
     'build',
     'build:labs',

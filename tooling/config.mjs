@@ -40,6 +40,8 @@ export const CONFIG_FILE = 'tooling.config.mjs';
  * @property {StructureConfig} structure
  * @property {{ verbatim?: Record<string, string> }} [references] Files checked byte for byte against
  *   the installed package file they copy (`'labs/vendor/x.js': 'x/dist/x.js'`) instead of scanned.
+ * @property {{ entries?: string[] }} [exports] Library modules, besides those the package `exports`
+ *   map points at, whose exports count as public in `check-exports`.
  */
 
 /**
