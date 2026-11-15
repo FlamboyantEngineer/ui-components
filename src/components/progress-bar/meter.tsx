@@ -14,7 +14,7 @@ import type {
 } from './progress-bar.js';
 import { meterHooks as hooks } from './progress-bar-hooks.js';
 import type { MeterThresholds } from './progress-meter.js';
-import { ProgressRing } from './progress-ring.js';
+import { ProgressGauge } from './progress-ring.js';
 import { ProgressRoot, ProgressText } from './progress-root.js';
 
 export type MeterShape = ProgressBarShape;
@@ -104,17 +104,7 @@ export function Meter({
             showValueLabel={showValueLabel}
             values={values}
           />
-          {shape === 'circular' ? (
-            <ProgressRing
-              hooks={hooks}
-              trackClass={hooks.slotClass('track')}
-              gap={100 - (values.percentage ?? 0)}
-            />
-          ) : (
-            <div {...hooks.slot('track')}>
-              <div {...hooks.slot('fill')} style={{ width: `${values.percentage ?? 0}%` }} />
-            </div>
-          )}
+          <ProgressGauge hooks={hooks} shape={shape} percentage={values.percentage ?? 0} />
           {hasDescription ? (
             <span id={descriptionId} {...hooks.slot('description')}>
               {description}
