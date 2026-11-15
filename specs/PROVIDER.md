@@ -89,7 +89,7 @@ Verification: `src/core/message-format.test.ts`, `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-4.1 - React Aria locale
 
-`UiProvider`'s `locale` prop shall set the locale React Aria uses for formatting, collation and text direction below it. Without it, the provider takes the outer locale: a parent provider's, a host's `I18nProvider`'s, or else the browser's. That one locale serves both React Aria and the provider's text (UIC-PROVIDER-3.4) and `useFormatMessage`, so a provider given `messages` alone formats its sentences as its components format dates and numbers.
+`UiProvider`'s `locale` prop shall set the locale React Aria uses for formatting, collation and text direction below it. Without it, the provider takes the outer locale: a parent provider's, a host's `I18nProvider`'s, or else the browser's. That one locale serves both React Aria and the provider's text (UIC-PROVIDER-3.4) and `useFormatMessage`, so a provider given `messages` alone formats its sentences as its components format dates and numbers. `useUiLocale()` returns that locale, so a host formats its own dates and numbers in it, as the components do.
 
 Implementation: `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`, `src/core/provider-options.test.tsx`, `e2e/languages.spec.ts`

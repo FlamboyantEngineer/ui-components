@@ -166,3 +166,34 @@ it('UIC-PROPERTY-PANEL-5.4 supports a host-owned query without drawing a built-i
   expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   expect(rowOf('Apple')).toHaveAttribute('hidden');
 });
+
+it('UIC-PROPERTY-PANEL-5.4 keeps its rows mounted while search comes and goes', async () => {
+  const user = userEvent.setup();
+  const onMount = vi.fn();
+  function Draft() {
+    useState(() => onMount());
+    return <input aria-label="Note" />;
+  }
+  function Toggle() {
+    const [searchable, setSearchable] = useState(false);
+    return (
+      <>
+        <button type="button" onClick={() => setSearchable((value) => !value)}>
+          Toggle search
+        </button>
+        <PropertyPanel aria-label="Notes" searchable={searchable}>
+          <PropertyRow label="Note">
+            <Draft />
+          </PropertyRow>
+        </PropertyPanel>
+      </>
+    );
+  }
+  render(<Toggle />);
+  await user.type(screen.getByRole('textbox', { name: 'Note' }), 'kept');
+  await user.click(screen.getByRole('button', { name: 'Toggle search' }));
+  expect(screen.getByRole('searchbox')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Toggle search' }));
+  expect(screen.getByRole('textbox', { name: 'Note' })).toHaveValue('kept');
+  expect(onMount).toHaveBeenCalledTimes(1);
+});

@@ -207,6 +207,10 @@ When `onRename` returns a promise, the name field shall remain mounted, read-onl
 it settles. Further submissions shall not start another request. Success closes the field and
 returns focus to its row if the field still held it. Rejection shows the error through InlineError,
 marks and describes the invalid field, retains its draft and focus, and allows Enter to retry.
+Focus leaving the field does not submit a rejected draft again while it is unchanged: the field
+keeps its draft and error, and focus stays where it went. Leaving it after the draft changed
+submits the new draft. A rename submitted by focus leaving the field that is rejected keeps the
+field open with its draft and error, and does not move focus back to it; the error is announced.
 A revoked edit or unmounted tree shall ignore an older request's completion. A virtualized tree uses the host's `rowHeight`; hosts reserve enough height for an inline draft and feedback.
 
 Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/use-tree-rename-request.ts`

@@ -224,7 +224,7 @@ Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e
 
 ### UIC-PROPERTY-PANEL-5.4 - Controlled query and matching
 
-`query` with `onQueryChange` shall control the search box's query, so a host can restore or link to a search, and `defaultQuery` start an uncontrolled one; `onQueryChange` reports every change, typing and clearing alike. A supplied `query` or `defaultQuery` also filters without drawing a search box when `searchable` is false. An unconfigured panel inherits any enclosing `PropertyScope` rather than replacing it. `filter` shall pass to the scope ([UIC-PROPERTY-PANEL-4.6](PROPERTY-PANEL.md#uic-property-panel-46---custom-matching)).
+`query` with `onQueryChange` shall control the search box's query, so a host can restore or link to a search, and `defaultQuery` start an uncontrolled one; `onQueryChange` reports every change, typing and clearing alike. A supplied `query` or `defaultQuery` also filters without drawing a search box when `searchable` is false. An unconfigured panel inherits any enclosing `PropertyScope` rather than replacing it. The panel always holds its content in a `ui-property-scope` div, whose status region it draws only while it has a query, `filter` or `searchable` of its own, so a panel that gains or loses one at runtime keeps its content mounted, with its drafts, focus and expansion. `filter` shall pass to the scope ([UIC-PROPERTY-PANEL-4.6](PROPERTY-PANEL.md#uic-property-panel-46---custom-matching)).
 
 Implementation: `src/components/property-panel/property-panel.tsx`
 Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e2e/property-panel-search.spec.ts`
@@ -290,5 +290,5 @@ Verification: `src/components/property-panel/property-panel-search.test.tsx`, `e
 | `data-focused`                      | state     | `true`                  | On a trigger: focused (React Aria).                                                         |
 | `data-focus-visible`                | state     | `true`                  | On a trigger: keyboard focus (React Aria).                                                  |
 | `ui-property-panel__search`         | slot      |                         | The optional built-in search field, alongside header content.                               |
-| `ui-property-scope`                 | root      |                         | The div around query-filtered content.                                                      |
+| `ui-property-scope`                 | root      |                         | The div around query-filtered content, also around a panel's content.                       |
 | `ui-property-scope__status`         | slot      |                         | The no-match status region.                                                                 |

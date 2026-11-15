@@ -8,6 +8,7 @@ import {
 } from '../../src/components/state-machine-view/index.js';
 import { formatTableCsv, Table, type TableColumn } from '../../src/components/table/index.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { isComposingKey } from '../../src/utils/is-composing-key.js';
 
 /** Raw source and the active address belong to host state; library fields supply the controls. */
 export function FormulaBarComposition() {
@@ -37,7 +38,7 @@ export function FormulaBarComposition() {
             editor.current = event.currentTarget;
           }}
           onKeyDown={(event) => {
-            if (event.nativeEvent.isComposing) return;
+            if (isComposingKey(event.nativeEvent)) return;
             if (event.key === 'Enter') {
               event.preventDefault();
               setCommitted(source);

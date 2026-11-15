@@ -429,10 +429,17 @@ Verification: `src/components/message-composer/composer-toggle.test.tsx`, `e2e/m
 
 ### UIC-MESSAGE-COMPOSER-10.1 - Host presentation
 
-`MessageReference` shall render a token label with optional icon, name, supporting description, link, hover preview and remove action. `MessageReferenceResolver` accepts an opaque id, label and optional host scope and returns `MessageReferencePresentation`; a host may replace the label to express its own availability policy. The composer and Chat use the same reference renderer. A literal space separates the label content from its description so copied and accessible text remains readable. Reference presentation imports no rich editor peers. A missing resolver displays the token label. The neutral reference stylesheet provides inline geometry, spacing and wrapping without host CSS.
+`MessageReference` shall render a token label with optional icon, name, supporting description, link, hover preview ([UIC-MESSAGE-COMPOSER-10.2](#uic-message-composer-102---reference-preview)) and remove action. `MessageReferenceResolver` accepts an opaque id, label and optional host scope and returns `MessageReferencePresentation`; a host may replace the label to express its own availability policy. The composer and Chat use the same reference renderer. A literal space separates the label content from its description so copied and accessible text remains readable. Reference presentation imports no rich editor peers. A missing resolver displays the token label. The neutral reference stylesheet provides inline geometry, spacing and wrapping without host CSS.
 
 Implementation: `src/components/message-composer/message-reference.tsx`, `src/components/message-composer/rich/composer-pill.tsx`, `src/components/chat/chat-text-part.tsx`, `labs/reference/message-composer.css`
 Verification: `src/components/message-composer/message-reference.test.tsx`, `src/components/message-composer/rich/composer-pill.test.tsx`, `src/components/chat/chat-text-part.test.tsx`
+
+### UIC-MESSAGE-COMPOSER-10.2 - Reference preview
+
+A reference's `preview` shall open on hover and on keyboard focus, so pointer and keyboard users reach it alike. With `href` the link is the trigger and the preview opens in a [Hover Card](HOVER-CARD.md) (`ui-message-reference__preview`). Without `href` the label becomes a hover [Preview Trigger](HOVER-CARD.md) button, named by the label, whose preview opens without taking focus. Without `preview` the label is a link or plain text, and takes no focus of its own.
+
+Implementation: `src/components/message-composer/message-reference.tsx`
+Verification: `src/components/message-composer/message-reference.test.tsx`
 
 ## Hooks
 

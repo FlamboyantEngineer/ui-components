@@ -54,8 +54,10 @@ export const labRecords: readonly LabRecord[] = [
 export const getLabReference: MessageReferenceResolver = (reference: MessageReferenceData) => {
   const record = labRecords.find((entry) => entry.id === reference.id);
   if (!record) return { label: 'Missing item' };
-  if (record.unavailable)
-    return { label: record.unavailable === 'missing' ? 'Missing item' : 'Restricted item' };
+  if (record.unavailable === 'missing') return { label: 'Missing item' };
+  // No link to follow; the preview on the label says why.
+  if (record.unavailable === 'restricted')
+    return { label: 'Restricted item', preview: 'You do not have access to this item.' };
   const {
     id: _id,
     label: _label,

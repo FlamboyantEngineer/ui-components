@@ -340,6 +340,14 @@ export function useFormatMessage(): UiFormatMessage {
   return useCallback((message, values) => formatMessage(message, values, locale), [locale]);
 }
 
+/**
+ * The provider's locale: its `locale`, else the outer one. Its text, `useFormatMessage` and the
+ * components below format in it, so a host formats its own dates and numbers to match.
+ */
+export function useUiLocale(): string {
+  return useContext(TextContext).locale;
+}
+
 /** The provider's clock and time zone, inherited from outer providers. */
 export function useUiClock(): UiClock {
   return useContext(ClockContext);

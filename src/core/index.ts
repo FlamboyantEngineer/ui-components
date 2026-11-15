@@ -276,6 +276,7 @@ export {
   useFormatMessage,
   useGlyph,
   usePersistentState,
+  useUiLocale,
   useUiStorage,
   useUiStrings,
 } from './provider.js';

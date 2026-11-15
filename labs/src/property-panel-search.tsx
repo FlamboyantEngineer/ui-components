@@ -14,13 +14,13 @@ const widths = { narrow: 300, wide: 440 } as const;
 
 type FrameSettingsProps = Pick<
   Parameters<typeof PropertyPanel>[0],
-  'query' | 'onQueryChange' | 'filter'
+  'query' | 'onQueryChange' | 'filter' | 'searchable'
 > & { name: string; layout: PropertyPanelLabelLayout };
 
-function FrameSettings({ name, layout, ...search }: FrameSettingsProps) {
+function FrameSettings({ name, layout, searchable = true, ...search }: FrameSettingsProps) {
   return (
     <PropertyPanel
-      searchable
+      searchable={searchable}
       aria-label={name}
       header={<strong>{name}</strong>}
       searchPlaceholder="Try “paper” or “font”"
@@ -74,6 +74,21 @@ function SharedQuery() {
   );
 }
 
+/** Search turned on and off at runtime: the rows stay mounted, so drafts and open sections stay. */
+function SearchOnDemand() {
+  const [searchable, setSearchable] = useState(false);
+  return (
+    <div data-lab-search-on-demand style={{ width: widths.wide }}>
+      <p>
+        <button type="button" onClick={() => setSearchable((value) => !value)}>
+          {searchable ? 'Hide search' : 'Show search'}
+        </button>
+      </p>
+      <FrameSettings name="Frame on demand" layout="responsive" searchable={searchable} />
+    </div>
+  );
+}
+
 export function PropertyPanelSearchSections() {
   return (
     <>
@@ -100,6 +115,12 @@ export function PropertyPanelSearchSections() {
             <FrameSettings name="Word starts" layout="responsive" filter={wordStart} />
           </div>
         </div>
+      </LabSection>
+      <LabSection
+        title="Search on demand"
+        description="The button adds or removes the search box. Type a draft in a field first: it stays as typed either way."
+      >
+        <SearchOnDemand />
       </LabSection>
       <PropertyPanelSearchHostCases />
     </>

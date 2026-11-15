@@ -184,6 +184,7 @@
 
 :is(
     .ui-property-panel__body,
+    .ui-property-panel__body > .ui-property-scope,
     .ui-property-section__content,
     .ui-property-card__body,
     .ui-property-group
@@ -195,6 +196,7 @@
 .ui-property-group,
 :is(
     .ui-property-panel__body,
+    .ui-property-panel__body > .ui-property-scope,
     .ui-property-section__content,
     .ui-property-card__body,
     .ui-property-group
@@ -298,6 +300,7 @@
 
   :is(
       .ui-property-panel__body,
+      .ui-property-panel__body > .ui-property-scope,
       .ui-property-section__content,
       .ui-property-card__body,
       .ui-property-group
@@ -312,6 +315,7 @@
   .ui-property-panel[data-label-layout='responsive']
     :is(
       .ui-property-panel__body,
+      .ui-property-panel__body > .ui-property-scope,
       .ui-property-section__content,
       .ui-property-card__body,
       .ui-property-group
@@ -457,6 +461,11 @@
 .ui-property-scope {
   display: flex;
   flex-direction: column;
+}
+
+.ui-property-panel__body > .ui-property-scope {
+  display: grid;
+  grid-template-columns: subgrid;
 }
 
 .ui-property-scope__status {

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useContext, useMemo, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -36,15 +36,26 @@ const hooks = createHooks('property-scope', ['status']);
  * rows whose texts miss a term hide but stay mounted, matching containers open, matched text is
  * marked, and a status message reports a query nothing matches.
  */
-export function PropertyScope({
+export function PropertyScope(props: PropertyScopeProps) {
+  return <ScopeLevel {...props} isInherited={false} />;
+}
+
+/**
+ * A property panel's scope. An inherited one filters nothing of its own and has no status: its
+ * content follows the enclosing scope, in the same element tree, so a panel that gains or loses
+ * its own query keeps its content mounted.
+ */
+export function ScopeLevel({
   query = '',
   filter,
   onClear,
+  isInherited,
   children,
   className,
   ...rest
-}: PropertyScopeProps) {
+}: PropertyScopeProps & { isInherited: boolean }) {
   const strings = useUiStrings();
+  const parent = useContext(PropertyScopeContext);
   const terms = useMemo(() => splitMatchTerms(query), [query]);
   // A query lifted to reveal a field stays lifted until the query changes.
   const [liftedQuery, setLiftedQuery] = useState<string | null>(null);
@@ -52,7 +63,7 @@ export function PropertyScope({
   const isFiltering = !isLifted && (filter ? query.trim() !== '' : terms.length > 0);
   const { report, total } = usePropertyTallies();
   const latestClear = useLatest(onClear);
-  const value = useMemo(
+  const own = useMemo(
     () => ({
       terms,
       isFiltering,
@@ -67,33 +78,35 @@ export function PropertyScope({
     }),
     [terms, isFiltering, query, filter, report, latestClear],
   );
-  const hasNoMatch = hasNoPropertyMatch(isFiltering, total);
+  const hasNoMatch = !isInherited && hasNoPropertyMatch(isFiltering, total);
 
   return (
     <div {...rest} {...hooks.root({ className })}>
-      <TextMatchProvider query={isLifted ? '' : query}>
-        <PropertyScopeContext value={value}>{children}</PropertyScopeContext>
+      <TextMatchProvider query={isLifted ? '' : query} isInherited={isInherited}>
+        <PropertyScopeContext value={isInherited ? parent : own}>{children}</PropertyScopeContext>
       </TextMatchProvider>
-      <div {...hooks.slot('status')} role="status">
-        {hasNoMatch ? (
-          <EmptyState
-            size="sm"
-            description={
-              <>
-                {strings.noPropertyMatches(query.trim())}
-                {onClear ? (
-                  <>
-                    {' '}
-                    <Button variant="ghost" size="xs" onPress={onClear}>
-                      {strings.clearFilter}
-                    </Button>
-                  </>
-                ) : null}
-              </>
-            }
-          />
-        ) : null}
-      </div>
+      {isInherited ? null : (
+        <div {...hooks.slot('status')} role="status">
+          {hasNoMatch ? (
+            <EmptyState
+              size="sm"
+              description={
+                <>
+                  {strings.noPropertyMatches(query.trim())}
+                  {onClear ? (
+                    <>
+                      {' '}
+                      <Button variant="ghost" size="xs" onPress={onClear}>
+                        {strings.clearFilter}
+                      </Button>
+                    </>
+                  ) : null}
+                </>
+              }
+            />
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
