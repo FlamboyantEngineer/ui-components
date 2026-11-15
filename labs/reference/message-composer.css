@@ -219,9 +219,25 @@
 /*
  * The menu the "+" button opens above the composer: categories that scroll, each item an icon, its
  * label and a muted note after it on one line, then its shortcut, submenu arrow or toggle check.
+ * Only the menu scrolls: the popover stacks its search field over it and never scrolls itself, and
+ * the menu holds its visually hidden texts, so they cannot stretch the popover past its height.
  */
+.ui-message-composer__menu-popover {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ui-message-composer__menu-popover > .ui-menu__search {
+  flex: none;
+  margin: 0;
+}
+
 .ui-message-composer__menu {
+  position: relative;
+  flex: 0 1 auto;
   width: min(440px, calc(100vw - 18px));
+  min-height: 0;
   max-height: 320px;
   overflow-y: auto;
 }
