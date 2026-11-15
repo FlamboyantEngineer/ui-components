@@ -4,9 +4,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { AttachmentData } from '../../src/components/attachment/attachment.js';
-import type { ChatMessageData, ChatPart, ChatTextToken } from '../../src/components/chat/index.js';
-import type { ReactionEntry } from '../../src/components/reaction-bar/index.js';
-import { nextLabId, nowIso, reader, sentMessage } from './chat-samples.js';
+import {
+  type ChatMessageData,
+  type ChatPart,
+  type ChatTextToken,
+  setChatReaction,
+} from '../../src/components/chat/index.js';
+import { nextLabId, nowIso, readerId, sentMessage } from './chat-samples.js';
 
 /** Replaces the conversation from the one it holds, as React state or a chat controller does. */
 export type LabSetMessages = (
@@ -30,22 +34,6 @@ interface PeopleMessage {
   tokens?: readonly ChatTextToken[] | undefined;
   replyTo?: string | undefined;
   attachments?: readonly AttachmentData[] | undefined;
-}
-
-/** The reactions with the reader's reaction to `emoji` added or taken back. */
-function toggleReaction(
-  reactions: readonly ReactionEntry[] = [],
-  emoji: string,
-  isReacted: boolean,
-): ReactionEntry[] {
-  const found = reactions.find((entry) => entry.emoji === emoji);
-  const others = (found?.people ?? []).filter((name) => name !== reader.name);
-  const people = isReacted ? [...others, reader.name] : others;
-  const next = { emoji, isReacted, people };
-  if (!found) return isReacted ? [...reactions, next] : [...reactions];
-  return reactions
-    .map((entry) => (entry === found ? next : entry))
-    .filter((entry) => (entry.people?.length ?? 0) > 0);
 }
 
 /** Runs each callback after its delay, and forgets them all on unmount. */
@@ -135,11 +123,10 @@ export function usePeopleCallbacks({
           resolve();
         }),
       ),
-    onReact: (id: string, emoji: string, isReacted: boolean) =>
-      update(id, (message) => ({
-        ...message,
-        reactions: toggleReaction(message.reactions, emoji, isReacted),
-      })),
+    onReact: (messageId: string, emoji: string, isReacted: boolean) =>
+      setMessages((current) =>
+        setChatReaction(current, { messageId, emoji, participantId: readerId, isReacted }),
+      ),
     onDelete: (id: string) => update(id, (message) => ({ ...message, isDeleted: true })),
   };
 }

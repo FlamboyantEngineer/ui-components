@@ -32,6 +32,7 @@ import {
   toThinkingActivity,
 } from './chat-model.js';
 import { type ChatMessageData, ChatParts, type ChatPartsProps } from './chat-parts.js';
+import { toReactionEntries } from './chat-reactions.js';
 
 /** The `ChatParts` options a chat passes to every message unchanged. */
 export type ChatPartOptions = Pick<
@@ -103,13 +104,16 @@ function useQuote(
   return { authorName: author?.name ?? '', excerpt, messageId: quoted.id };
 }
 
-/** The reactions, which the reader toggles in chats between people. */
+/**
+ * The reactions, from the reader, other people and assistants, named by participant; the reader
+ * toggles them in chats between people.
+ */
 function MessageReactions({ message, context }: Pick<ChatMessageViewProps, 'message' | 'context'>) {
   const { react } = context.handlers;
   const canReact = react !== undefined && !context.isAssistantChat;
   return (
     <ReactionBar
-      reactions={message.reactions ?? []}
+      reactions={toReactionEntries(message.reactions ?? [], context)}
       onToggle={canReact ? (emoji, isReacted) => react(message.id, emoji, isReacted) : undefined}
     />
   );

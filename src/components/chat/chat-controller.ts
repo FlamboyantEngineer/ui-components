@@ -11,7 +11,12 @@ import type {
   ChatSendFunction,
   ChatUploadFunction,
 } from './chat-controller-state.js';
-import { type ChatEngine, type ChatMessagesUpdate, createChatEngine } from './chat-engine.js';
+import {
+  type ChatControllerReaction,
+  type ChatEngine,
+  type ChatMessagesUpdate,
+  createChatEngine,
+} from './chat-engine.js';
 import type { ChatMessageData, ChatTextToken } from './chat-parts.js';
 import type { ChatQuestionAnswer } from './chat-question.js';
 import { listPrompts } from './chat-reply.js';
@@ -23,7 +28,7 @@ export type {
   ChatUploadContext,
   ChatUploadFunction,
 } from './chat-controller-state.js';
-export type { ChatMessagesUpdate } from './chat-engine.js';
+export type { ChatControllerReaction, ChatMessagesUpdate } from './chat-engine.js';
 export type {
   ChatApprovalResponse,
   ChatQuestionResponse,
@@ -117,6 +122,11 @@ export interface ChatController {
    */
   updateMessages: (update: ChatMessagesUpdate) => void;
   /**
+   * Adds the assistant's reaction to a message, or takes it back with `isReacted: false`; with
+   * `participantId`, another participant's, such as another agent's.
+   */
+  setReaction: (reaction: ChatControllerReaction) => void;
+  /**
    * Replaces the conversation (empty by default), such as to clear it or load another one, and
    * drops what the old one owned: the running reply, its waiters, the queue, the composer's files
    * and their uploads.
@@ -194,6 +204,7 @@ export function useChatController(options: ChatControllerOptions): ChatControlle
     stop: engine.stop,
     retry: engine.retry,
     updateMessages: engine.updateMessages,
+    setReaction: engine.setReaction,
     resetConversation: engine.resetConversation,
     props,
   };
