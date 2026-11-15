@@ -291,7 +291,12 @@ test.describe('Completion List lab', () => {
     await expect(note).toHaveValue('Ask @jon ');
     await note.pressSequentially('about #1');
     await expect(list.getByRole('option')).toHaveText(['Requirement 12', 'Requirement 14']);
+    // The list settles on its first option before the arrow moves on; checking each step keeps a
+    // late update of the lookup from resetting the choice between the keys.
+    const reference = (name: string) => list.getByRole('option', { name: new RegExp(name) });
+    await expect(reference('Requirement 12')).toHaveAttribute('aria-selected', 'true');
     await page.keyboard.press('ArrowDown');
+    await expect(reference('Requirement 14')).toHaveAttribute('aria-selected', 'true');
     await page.keyboard.press('Tab');
     await expect(note).toHaveValue('Ask @jon about #14 ');
     await expect(note).toBeFocused();

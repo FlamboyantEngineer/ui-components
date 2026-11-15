@@ -101,7 +101,10 @@ describe('no-reference check', () => {
 
   it('UIC-TOOLING-2.1 allows every library requirement ID and license identifiers with the shared denylist', () => {
     const result = scan(
-      { 'SPEC.md': 'UIC-BUTTON-1.2, UIC-ICON-LABEL-1.2, DOCE-EDITOR-6.1 and CC-BY-4.0\n' },
+      {
+        'SPEC.md':
+          'UIC-BUTTON-1.2, UIC-ICON-LABEL-1.2, DOCE-EDITOR-6.1, COLLAB-SERVER-1.1, SE-CR-2.2a, SE-CHROME-4 and CC-BY-4.0\n',
+      },
       'repository',
     );
     expect(result.status).toBe(0);
