@@ -1,7 +1,5 @@
 export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { createBandScale } from './band-scale.js';
-export type { CellCoordinates } from './cell-reference.js';
-export { formatCellReference, parseCellReference } from './cell-reference.js';
 export { clamp } from './clamp.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
 export { copyRichText, copyText } from './clipboard.js';
@@ -133,7 +131,6 @@ export {
   resolveTreeKeyboardMove,
   resolveTreeMove,
 } from './tree-reorder.js';
-export { formatTsv, parseTsv } from './tsv.js';
 export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';
 export { useClipboard } from './use-clipboard.js';
 export type {
