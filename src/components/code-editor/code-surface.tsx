@@ -60,7 +60,7 @@ export interface CodeSurfaceProps extends BaseProps, CodeTextAreaProps {
   resize?: CodeEditorResize | undefined;
   /**
    * Edits several lines. Defaults to `true`; `false` keeps the source on one line that never wraps:
-   * Enter is left to the caller's `onKeyDown`, and typed or pasted line breaks become spaces.
+   * Enter submits through `onSubmit` when supplied; typed or pasted line breaks become spaces.
    */
   multiline?: boolean | undefined;
   /** Numbers the source lines in a gutter. */

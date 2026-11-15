@@ -45,6 +45,8 @@ The optional stylesheet declares self-hosted Geist and Geist Mono variable faces
 
 `react` and `react-dom` 19.2 or later are peer dependencies. Four entry points also need the optional rich-text peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`): `@flamboyantengineer/ui-components/rich-text-editor`, `/message-composer/rich`, `/chat` and `/comment-composer/rich` (comment mentions). A host that imports none of them installs none of the peers. `prosemirror-view` is pinned to an exact version because `@handlewithcare/react-prosemirror` requires exactly that version; install the version `package.json` names.
 
+See [Editor integration](docs/EDITOR-INTEGRATION.md) for a strict dependency set, shared provider requirements and supported query, collection, identity and counted-filter compositions.
+
 ## Use
 
 Import from the package root or from a component's own entry point, which keeps bundles small:

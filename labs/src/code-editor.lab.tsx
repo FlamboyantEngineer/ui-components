@@ -395,6 +395,7 @@ function FormEditor() {
         variant="surface"
         aria-label="Query source"
         name="source"
+        onSubmit={(source) => setSubmitted(`Submitted: ${source}`)}
         tokenize={tokenize}
         size="sm"
         value={value}
