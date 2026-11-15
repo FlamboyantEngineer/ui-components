@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and host edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, rows pinned at the top or bottom, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, `formatTsv` and `parseTsv` for tab-separated text, and `formatCsv` and `formatTableCsv` for CSV export.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and host edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, rows pinned at the top or bottom, CSV export, an edit history with undo and redo, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, and `formatCsv` and `formatTableCsv` for CSV export.
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -616,13 +616,6 @@ Withdrawn. Hosts compose data workflows with library controls; Table retains ord
 Implementation: `src/components/table/table.tsx`
 Verification: `src/components/table/table-workflow-boundary.test.tsx`
 
-### UIC-TABLE-14.9 - Tab-separated text
-
-`formatTsv(rows)` shall join cells with tabs and rows with line breaks, quoting a cell that holds a tab, a line break or a quote and doubling its quotes; `parseTsv(text)` reads such text back, accepting Windows line breaks and a final line break, and reads empty text as no rows.
-
-Implementation: `src/utils/tsv.ts`
-Verification: `src/utils/tsv.test.ts`
-
 ## UIC-TABLE-15 - Host selection workflows
 
 ### UIC-TABLE-15.1 - Selection bar
@@ -846,13 +839,4 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `--ui-table-span`                | property  |                                 | A group header cell's number of columns.                                                                  |
 | `--ui-table-level`               | property  |                                 | A tree column or group header cell's nesting level, from 1.                                               |
 
-Host-owned bulk editing and CSV export use Table selection plus TextField, Button, Stack and Cluster; see `TableWorkflowComposition` in `labs/src/composition-editors-grid.tsx`. Spreadsheet cell engines belong to the host; `formatCsv`, `formatTsv`, `parseTsv`, cell-reference parsing and `formatTableCsv` remain pure reusable utilities.
-
-## UIC-TABLE-20 - Cell references
-
-### UIC-TABLE-20.1 - Reference utilities
-
-`formatCellReference` and `parseCellReference` format and parse A1 coordinates independently of table interaction.
-
-Implementation: `src/utils/cell-reference.ts`
-Verification: `src/utils/cell-reference.test.ts`
+Host-owned bulk editing and CSV export use Table selection plus TextField, Button, Stack and Cluster; see `TableWorkflowComposition` in `labs/src/composition-editors-grid.tsx`. Spreadsheet cell engines, A1 references and tab-separated text belong to the host, such as the spreadsheet editor; `formatCsv` and `formatTableCsv` remain pure reusable utilities.
