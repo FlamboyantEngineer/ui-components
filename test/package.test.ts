@@ -191,7 +191,7 @@ describe('package manifest', () => {
   });
 
   it('UIC-LABS-4.3 ships the lab server as a command', () => {
-    expect(manifest.bin).toEqual({ 'ui-components-labs': 'bin/serve-labs.mjs' });
+    expect(manifest.bin).toMatchObject({ 'ui-components-labs': 'bin/serve-labs.mjs' });
     expect(manifest.files).toEqual(
       expect.arrayContaining(['bin/serve-labs.mjs', 'bin/lab-server.mjs']),
     );

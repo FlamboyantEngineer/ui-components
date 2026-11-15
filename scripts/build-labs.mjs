@@ -8,10 +8,11 @@ import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import * as esbuild from 'esbuild';
+import { flag } from '../tooling/lib/script.mjs';
 import { createFontBundle, FONT_DIRECTORY } from './lib/fonts.mjs';
 import { labsDir, labSourceDir, listLabSources } from './lib/labs.mjs';
 import { BROWSER_TARGETS } from './lib/reference-stylesheet.mjs';
-import { flag, root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const outdir = join(labsDir, 'build');
 const dev = flag('dev');

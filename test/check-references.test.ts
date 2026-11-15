@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-const script = join(process.cwd(), 'scripts', 'check-references.mjs');
+const command = [join(process.cwd(), 'tooling', 'bin.mjs'), 'check-references'];
 const dirs: string[] = [];
 
 function encode(source: string, flags = 'i') {
@@ -29,7 +29,7 @@ function tempDir() {
 function scan(files: Record<string, string>, denylist: 'sample' | 'repository' = 'sample') {
   const dir = tempDir();
   for (const [name, text] of Object.entries(files)) writeFileSync(join(dir, name), text);
-  const args = [script, '--dir', dir];
+  const args = [...command, '--dir', dir];
   if (denylist === 'sample') {
     const listFile = join(tempDir(), 'denylist.json');
     writeFileSync(listFile, JSON.stringify(sampleDenylist));
@@ -43,7 +43,15 @@ afterEach(() => {
 });
 
 describe('no-reference check', () => {
-  it('UIC-LABS-1.2 accepts the original PDF runtime and rejects changed copies', () => {
+  it('UIC-TOOLING-2.1 prints an encoded denylist entry', () => {
+    const result = spawnSync(process.execPath, [...command, '--encode', 'quux', 'i'], {
+      encoding: 'utf8',
+    });
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toEqual(encode('quux'));
+  });
+
+  it('UIC-LABS-1.2 UIC-TOOLING-2.1 accepts the original PDF runtime and rejects changed copies', () => {
     const dir = tempDir();
     const vendorDir = join(dir, 'labs/build/vendor');
     mkdirSync(vendorDir, { recursive: true });
@@ -51,12 +59,12 @@ describe('no-reference check', () => {
     for (const file of ['pdf.min.mjs', 'pdf.worker.min.mjs']) {
       copyFileSync(resolvePackage(`pdfjs-dist/build/${file}`), join(vendorDir, file));
     }
-    const args = [script, '--dir', dir];
+    const args = [...command, '--dir', dir];
     expect(spawnSync(process.execPath, args, { encoding: 'utf8' }).status).toBe(0);
     writeFileSync(join(vendorDir, 'pdf.min.mjs'), 'export {};\n');
     const changed = spawnSync(process.execPath, args, { encoding: 'utf8' });
     expect(changed.status).toBe(1);
-    expect(changed.stderr).toContain('differs from the installed PDF runtime');
+    expect(changed.stderr).toContain('differs from the installed pdfjs-dist/build/pdf.min.mjs');
   });
 
   it('passes neutral content', () => {
@@ -91,9 +99,9 @@ describe('no-reference check', () => {
     expect(result.stderr).toContain('probe.md');
   });
 
-  it('allows library requirement IDs and license identifiers with the repository denylist', () => {
+  it('UIC-TOOLING-2.1 allows every library requirement ID and license identifiers with the shared denylist', () => {
     const result = scan(
-      { 'SPEC.md': 'UIC-BUTTON-1.2, UIC-ICON-LABEL-1.2 and CC-BY-4.0\n' },
+      { 'SPEC.md': 'UIC-BUTTON-1.2, UIC-ICON-LABEL-1.2, DOCE-EDITOR-6.1 and CC-BY-4.0\n' },
       'repository',
     );
     expect(result.status).toBe(0);

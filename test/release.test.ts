@@ -19,17 +19,18 @@ function createReleaseFixture() {
   const git = (args: string[]) =>
     execFileSync('git', args, { cwd: fixture, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   const scripts = [
-    'release.mjs',
-    'lib/npm.mjs',
-    'lib/script.mjs',
-    'lib/reference-stylesheet.mjs',
-    'lib/fonts.mjs',
-    'lib/tar.mjs',
+    'scripts/release.mjs',
+    'scripts/lib/npm.mjs',
+    'tooling/lib/script.mjs',
+    'scripts/lib/root.mjs',
+    'scripts/lib/reference-stylesheet.mjs',
+    'scripts/lib/fonts.mjs',
+    'scripts/lib/tar.mjs',
   ];
   for (const script of scripts) {
-    const target = join(fixture, 'scripts', script);
+    const target = join(fixture, script);
     mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(join(process.cwd(), 'scripts', script), target);
+    copyFileSync(join(process.cwd(), script), target);
   }
   // The package check records the directory each run checks, and fails a run on the release tree
   // when FAIL_RELEASE_CHECK is set.

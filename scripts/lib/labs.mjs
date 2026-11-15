@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_LABS_HOST, DEFAULT_LABS_PORT } from '../../bin/lab-server.mjs';
 import { REFERENCE_LAYER } from './reference-stylesheet.mjs';
-import { root } from './script.mjs';
+import { root } from './root.mjs';
 
 export { root };
 export const labsDir = join(root, 'labs');

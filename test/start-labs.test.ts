@@ -28,11 +28,13 @@ function checkout(files: Record<string, number>) {
   fixtures.push(fixture);
   mkdirSync(join(fixture, 'scripts', 'lib'), { recursive: true });
   mkdirSync(join(fixture, 'bin'));
+  mkdirSync(join(fixture, 'tooling', 'lib'), { recursive: true });
   // The scripts date from before every file, so the lab library among them is no newer than a build.
   const scripts = [
     'scripts/start-labs.mjs',
     'scripts/lib/npm.mjs',
-    'scripts/lib/script.mjs',
+    'tooling/lib/script.mjs',
+    'scripts/lib/root.mjs',
     'scripts/lib/labs.mjs',
     'scripts/lib/reference-stylesheet.mjs',
     'scripts/lib/fonts.mjs',
