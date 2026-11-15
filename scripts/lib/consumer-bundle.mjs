@@ -10,7 +10,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import webpackModule from 'webpack';
 import { packTarball } from './npm.mjs';
 import { LIBRARY_LOCALES } from './react-aria-locales.mjs';
-import { root } from './script.mjs';
+import { root } from './root.mjs';
 import { extractTarGz } from './tar.mjs';
 
 const require = createRequire(import.meta.url);

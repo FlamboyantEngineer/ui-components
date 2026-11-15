@@ -14,8 +14,9 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
+import { reportProblems } from '../tooling/lib/script.mjs';
 import { packTarball, runNpm } from './lib/npm.mjs';
-import { reportProblems, root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const NEXT_VERSION = '16.4.3';
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));

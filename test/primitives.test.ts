@@ -4,10 +4,10 @@ import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
-// @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { walk as walkFiles } from '../scripts/lib/script.mjs';
 import * as primitives from '../src/primitives/index.js';
 import { requireDefined } from '../src/utils/require-defined.js';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { walk as walkFiles } from '../tooling/lib/script.mjs';
 
 const walk = walkFiles as (dir: string) => string[];
 const root = process.cwd();

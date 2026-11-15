@@ -1,6 +1,6 @@
 'use client';
 
-import type { FocusEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
+import type { FocusEvent, KeyboardEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
 import { TextArea } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -23,6 +23,8 @@ export interface CodeTextAreaProps
   name?: string | undefined;
   /** The id of the element holding the message for an invalid source. */
   'aria-errormessage'?: string | undefined;
+  /** Submits on Enter in a single line, or Ctrl/Cmd+Enter in multiple lines, after completion. */
+  onSubmit?: ((value: string) => void) | undefined;
   onFocus?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
 }
@@ -55,8 +57,34 @@ interface CodeAreaProps {
 
 type TextAreaAttributes = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
+/** Submission follows completion acceptance and precedes native line editing. */
+function submitCode(
+  event: KeyboardEvent<HTMLTextAreaElement>,
+  props: CodeTextAreaProps,
+  { multiline, locks }: Pick<CodeAreaProps, 'multiline' | 'locks'>,
+): boolean {
+  const isCommand = multiline ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+  if (
+    !props.onSubmit ||
+    event.key !== 'Enter' ||
+    event.shiftKey ||
+    event.altKey ||
+    !isCommand ||
+    locks.isReadOnly ||
+    locks.isDisabled
+  )
+    return false;
+  event.preventDefault();
+  props.onSubmit(event.currentTarget.value);
+  return true;
+}
+
 /** The text area's keys: the completion list, the snippet fields, the editing keys, then the caller's. */
-function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextAreaAttributes {
+function useKeyProps(
+  model: CodeEditorModel,
+  props: CodeTextAreaProps,
+  { multiline, locks }: Pick<CodeAreaProps, 'multiline' | 'locks'>,
+): TextAreaAttributes {
   const { completion, snippet, hover } = model;
   return {
     onKeyDown: (event) => {
@@ -72,6 +100,7 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
         hover.close();
         return;
       }
+      if (submitCode(event, props, { multiline, locks })) return;
       if (model.handleKeyDown(event)) return;
       // Tab that indents, or leaves after Escape, never asks for completions.
       if (!model.indentWithTab && completion.revealOnTab(event)) return;
@@ -87,16 +116,22 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
 /** The text area's props: the caller's, with the editor's handlers run first. */
 function useInputProps(
   model: CodeEditorModel,
-  { props, onChange, multiline }: Pick<CodeAreaProps, 'props' | 'onChange' | 'multiline'>,
+  {
+    props,
+    onChange,
+    multiline,
+    locks,
+  }: Pick<CodeAreaProps, 'props' | 'onChange' | 'multiline' | 'locks'>,
 ): TextAreaAttributes {
   const { layers, completion, hover, snippet } = model;
+  const { onSubmit: _onSubmit, ...inputProps } = props;
   return {
     spellCheck: false,
     autoComplete: 'off',
     autoCapitalize: 'off',
     autoCorrect: 'off',
-    ...props,
-    ...useKeyProps(model, props),
+    ...inputProps,
+    ...useKeyProps(model, props, { multiline, locks }),
     onCompositionStart: () => {
       completion.startComposition();
       hover.close();
@@ -132,7 +167,7 @@ function useInputProps(
 /** The highlighted copy and the text area over it. */
 export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaProps) {
   const { listId, caretRef, inputRef, id, value, wrap, multiline, isInvalid, describedBy } = area;
-  const inputProps = useInputProps(model, { props, onChange, multiline });
+  const inputProps = useInputProps(model, { props, onChange, multiline, locks });
   const form = useFieldFormOwner();
   return (
     <div {...hooks.slot('code')}>

@@ -45,6 +45,8 @@ The optional stylesheet declares self-hosted Geist and Geist Mono variable faces
 
 `react` and `react-dom` 19.2 or later are peer dependencies. Four entry points also need the optional rich-text peers (`@handlewithcare/react-prosemirror`, `react-reconciler` and the `prosemirror-*` packages listed in `package.json`): `@flamboyantengineer/ui-components/rich-text-editor`, `/message-composer/rich`, `/chat` and `/comment-composer/rich` (comment mentions). A host that imports none of them installs none of the peers. `prosemirror-view` is pinned to an exact version because `@handlewithcare/react-prosemirror` requires exactly that version; install the version `package.json` names.
 
+See [Editor integration](docs/EDITOR-INTEGRATION.md) for a strict dependency set, shared provider requirements and supported query, collection, identity and counted-filter compositions.
+
 ## Use
 
 Import from the package root or from a component's own entry point, which keeps bundles small:
@@ -234,5 +236,20 @@ local branch, including branches with unmerged commits. It uses the existing
 Cleanup then removes `coverage/`, `test-results/`,
 `playwright-report/`, `blob-report/`, `node_modules/.cache/` and `node_modules/.vite/`.
 It keeps installed dependencies and built package and lab output.
+
+### Shared tooling
+
+The reference, spec and structure checks, the ESLint base and the Prettier options ship in `tooling/` for the libraries built on this one, which run them from their own checkout once the package is installed ([specs/TOOLING.md](specs/TOOLING.md)):
+
+```sh
+ui-components-tooling check-references   # also check-specs, check-structure; settings in tooling.config.mjs
+```
+
+```js
+// eslint.config.js
+import { createBaseConfig } from '@flamboyantengineer/ui-components/tooling/eslint';
+```
+
+`.prettierrc.json` holds the string `"@flamboyantengineer/ui-components/tooling/prettier"`.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers branches, versioning and the source rules.

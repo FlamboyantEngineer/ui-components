@@ -10,7 +10,8 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { option, reportProblems, root } from './lib/script.mjs';
+import { option, reportProblems } from '../tooling/lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const referenceDir = option('dir', join(root, 'labs', 'reference'));
 const specsDir = join(root, 'specs');

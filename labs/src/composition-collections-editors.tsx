@@ -32,7 +32,13 @@ export function QueryCollectionRecipe() {
   const [result, setResult] = useState('');
   return (
     <Stack space="md">
-      <CodeEditor label="Query" language="sql" value={query} onChange={setQuery} />
+      <CodeEditor
+        label="Query"
+        language="sql"
+        value={query}
+        onChange={setQuery}
+        onSubmit={(value) => setResult(`Submitted: ${value}`)}
+      />
       <Button onPress={() => setResult(`Submitted: ${query}`)}>Run query</Button>
       <output aria-label="Query result" aria-live="polite">
         {result}
@@ -102,7 +108,10 @@ export function FolderCollectionRecipe() {
           isDisabled: !name.trim(),
           onPress: async (close) => {
             await Promise.resolve();
-            setItems((current) => [...current, { id: name, name }]);
+            const next = name.trim();
+            if (items.some((entry) => entry.name === next))
+              throw new Error('That name is already used.');
+            setItems((current) => [...current, { id: next, name: next }]);
             close();
           },
         }}

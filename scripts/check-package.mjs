@@ -10,10 +10,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
+import { reportProblems } from '../tooling/lib/script.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
 import { packTarball } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
-import { reportProblems, root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 import { extractTarGz } from './lib/tar.mjs';
 
 const STYLING_DEPENDENCY =
@@ -145,7 +146,7 @@ try {
   try {
     execFileSync(
       'node',
-      [join(root, 'scripts', 'check-references.mjs'), '--dir', join(extractDir, 'package')],
+      [join(root, 'tooling', 'bin.mjs'), 'check-references', '--dir', join(extractDir, 'package')],
       {
         stdio: 'inherit',
       },

@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { FONT_DIRECTORY, FONT_STYLESHEET } from './lib/fonts.mjs';
 import { packTarball, runNpm } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
-import { root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 import { extractTarGz } from './lib/tar.mjs';
 
 const BUILT = ['dist', REFERENCE_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY];

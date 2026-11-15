@@ -5,7 +5,7 @@
 
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { root } from './script.mjs';
+import { root } from './root.mjs';
 
 /** The languages the library ships a language file for, such as `en` and `fr`. */
 export const LIBRARY_LOCALES = readdirSync(join(root, 'src/core/locales'))

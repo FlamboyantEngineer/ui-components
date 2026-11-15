@@ -855,3 +855,13 @@ test.describe('Code Editor lab', () => {
     await lab.expectAccessible('[data-lab-demo="resize"]');
   });
 });
+
+test('UIC-CODE-EDITOR-1.9 submits current source with command Enter', async ({ page, lab }) => {
+  await lab.open('code-editor');
+  const form = page.getByRole('form', { name: 'Saved query' });
+  const input = form.getByRole('textbox', { name: 'Query source' });
+  await input.fill('select title');
+  await input.press('Control+Enter');
+  await expect(form.locator('output')).toHaveText('Submitted: select title');
+  await expect(input).toHaveValue('select title');
+});
