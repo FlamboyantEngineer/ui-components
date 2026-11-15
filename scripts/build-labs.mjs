@@ -11,6 +11,7 @@ import * as esbuild from 'esbuild';
 import { flag } from '../tooling/lib/script.mjs';
 import { createFontBundle, FONT_DIRECTORY } from './lib/fonts.mjs';
 import { labsDir, labSourceDir, listLabSources } from './lib/labs.mjs';
+import { LAB_LOCALES, optimizeLocalesForEsbuild } from './lib/react-aria-locales.mjs';
 import { BROWSER_TARGETS } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
 
@@ -77,6 +78,8 @@ const options = {
   define: { 'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production') },
   legalComments: 'none',
   logLevel: 'info',
+  // React Aria's own strings for the languages the labs show only, as a host's build keeps its own.
+  plugins: [optimizeLocalesForEsbuild(LAB_LOCALES)],
 };
 
 // The settings every page applies from its head before the body is parsed: a classic script, since
