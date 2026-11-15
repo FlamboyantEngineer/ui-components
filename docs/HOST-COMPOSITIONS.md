@@ -2,7 +2,7 @@
 
 Load the package reference stylesheet once, then compose reusable controls with `Stack`, `Cluster`, `Grid`, `ToolbarRow`, `Card` and `Modal`. Their layout props provide spacing, alignment, wrapping and form geometry. The examples below use those shared styles directly. A host owns its data, saved snapshots, validation, network requests and application policy next to the callbacks that change them.
 
-Open [Collection compositions](../labs/composition-collections.html) or [Editor compositions](../labs/composition-editors.html) to try every recipe. Both labs retain their initial examples at compact and wide viewport widths; tables, editors and visualizations keep their contained scrollers where needed. Each named export is an independent sample to copy and adapt, without an additional public workflow component.
+Open [Collection compositions](../labs/composition-collections.html) or [Editor compositions](../labs/composition-editors.html) to try every recipe. Both labs retain their initial examples at compact and wide viewport widths; tables, editors and visualizations keep their contained scrollers where needed. Each named export is an independent sample to adapt. The controls own generic interaction lifecycles; [Editor integration](EDITOR-INTEGRATION.md) identifies their callback contracts so consumers keep only data and policy.
 
 | Pattern                               | Copyable recipe                                                                                                                | Reusable controls                                                |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
@@ -27,7 +27,7 @@ Keep the recipe's state with the host. A network-backed rename can return a prom
 
 For timed events use DateTimeField's `date-time-range` with the calendar's `timeZone`. Decide whether storage represents a wall clock, an offset or a named zone. All-day ends are inclusive; timed ends are exclusive. A milestone uses a single date rather than a bar's range. Asset placement similarly keeps alternative-text policy and dimension constraints in the host after AssetPicker supplies the selected item.
 
-A source editor keeps the active address, raw draft and committed value together. CodeEditor supplies editing and completion; Apply commits the raw string and Escape or Cancel restores it. The host owns evaluation and insertion policy. CSV helpers return text; the host chooses its row scope, preview, destination and download policy.
+A source editor keeps the active address, raw draft and committed value together. CodeEditor supplies editing and completion; Apply commits the raw string and Escape or Cancel restores it. CodeEditor `onSubmit(value)` handles Enter for a single line and Ctrl/Cmd+Enter for multiple lines, after completion acceptance and outside input-method composition. The host owns evaluation and insertion policy. CSV helpers return text; the host chooses its row scope, preview, destination and download policy.
 
 [Additional editor guidance](WIDGET-COMPOSITIONS.md) covers time representation, source insertion and CSV destination decisions. [Workflow compositions](../labs/composition-workflows.html) show identity, page regions, counted filters and actions using the same controls and reference stylesheet.
 

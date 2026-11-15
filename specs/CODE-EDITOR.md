@@ -48,7 +48,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ### UIC-CODE-EDITOR-1.7 - Single line
 
-`multiline={false}` shall keep the source on one line, for a query or an expression: the text area has one row, reports `aria-multiline="false"` and never wraps (`data-wrap="off"` whatever `wrap` says), the root publishes `data-single-line`, Enter inserts no line break and reaches the caller's `onKeyDown` (after an open completion list has taken it), and line breaks typed or pasted into the text reach `onChange` as spaces. Multiple lines are the default.
+`multiline={false}` shall keep the source on one line, for a query or an expression: the text area has one row, reports `aria-multiline="false"` and never wraps (`data-wrap="off"` whatever `wrap` says), the root publishes `data-single-line`, Enter inserts no line break and, without `onSubmit`, reaches the caller's `onKeyDown` (after an open completion list has taken it), and line breaks typed or pasted into the text reach `onChange` as spaces. Multiple lines are the default.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/code-editor/use-code-keys.ts`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`
@@ -59,6 +59,13 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 Implementation: `src/components/code-editor/code-surface.tsx`, `src/components/code-editor/use-code-surface.ts`, `labs/reference/code-editor.css`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+
+### UIC-CODE-EDITOR-1.9 - Submission
+
+`onSubmit(value)` shall receive the current source on unmodified Enter in a single-line editor and Ctrl+Enter or Cmd+Enter in a multiline editor. The handled key inserts no line break and does not reach `onKeyDown`. Shift or Alt with Enter never submits. Completion and snippet acceptance take precedence; input-method keys, read-only and disabled editors never submit. Without the callback, existing editing and caller keyboard handlers remain available. Submission does not commit a field, evaluate its source or own asynchronous execution state.
+
+Implementation: `src/components/code-editor/code-area.tsx`
+Verification: `src/components/code-editor/code-submit.test.tsx`, `e2e/code-editor.spec.ts`
 
 ## UIC-CODE-EDITOR-2 - Line numbers
 

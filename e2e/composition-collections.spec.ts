@@ -56,10 +56,16 @@ test('UIC-COMPOSITION-6.2 creates host collections and keeps failed asynchronous
   const collections = section(page, 'Collection management');
   await collections.getByRole('button', { name: 'Create collection' }).click();
   const dialog = page.getByRole('dialog', { name: 'Create collection' });
-  await dialog.getByRole('textbox', { name: 'Collection name' }).fill('Research');
+  const name = dialog.getByRole('textbox', { name: 'Collection name' });
+  await name.fill('Archive');
+  await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+  await expect(dialog.getByText('That name is already used.')).toBeVisible();
+  await expect(name).toHaveValue('Archive');
+  await name.fill('Research');
   await dialog.getByRole('button', { name: 'Create', exact: true }).click();
   const row = collections.getByRole('row', { name: 'Research', exact: true });
   await expect(row).toBeVisible();
+  await expect(collections.getByRole('button', { name: 'Create collection' })).toBeFocused();
   await row.click();
   await row.press('F2');
   const rename = collections.getByRole('textbox', { name: /Rename/ });

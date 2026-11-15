@@ -114,7 +114,7 @@ Verification: `e2e/composition-collections.spec.ts`
 
 ### UIC-COMPOSITION-6.2 - Host collection interactions
 
-The collection recipes shall keep host state with ordinary library callbacks: dismissing updates reaches an empty collection, bulk permission changes preserve read-only inherited grants, and asynchronous rename failure retains the proposed name and its error until corrected. Creation and selection remain operable through accessible controls. The examples introduce no public domain workflow component.
+The collection recipes shall keep host state with ordinary library callbacks: dismissing updates reaches an empty collection, bulk permission changes preserve read-only inherited grants, and asynchronous rename failure retains the proposed name and its error until corrected. Rejected asynchronous creation keeps its dialog, proposed name and error until corrected; accepted creation restores focus to its trigger. Creation and selection remain operable through accessible controls. Query submission uses CodeEditor onSubmit for its command key, without repeating completion or input-method keyboard handling. The examples introduce no public domain workflow component.
 
 Implementation: `labs/src/composition-collections-feeds.tsx`, `labs/src/composition-collections-options.tsx`, `labs/src/composition-collections-editors.tsx`
 Verification: `e2e/composition-collections.spec.ts`
