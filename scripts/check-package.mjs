@@ -10,12 +10,12 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
+import { packTarball } from '../tooling/lib/npm.mjs';
 import { reportProblems } from '../tooling/lib/script.mjs';
+import { extractTarGz } from '../tooling/lib/tar.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
-import { packTarball } from './lib/npm.mjs';
 import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
-import { extractTarGz } from './lib/tar.mjs';
 
 const STYLING_DEPENDENCY =
   /^(@heroui\/|tailwind|styled-components$|@emotion\/|@stitches\/|@vanilla-extract\/|goober$|@linaria\/|styled-jsx$|jss$|react-jss$)/;

@@ -32,7 +32,7 @@ function checkout(files: Record<string, number>) {
   // The scripts date from before every file, so the lab library among them is no newer than a build.
   const scripts = [
     'scripts/start-labs.mjs',
-    'scripts/lib/npm.mjs',
+    'tooling/lib/npm.mjs',
     'tooling/lib/script.mjs',
     'scripts/lib/root.mjs',
     'scripts/lib/labs.mjs',
