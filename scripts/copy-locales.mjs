@@ -4,7 +4,7 @@
 
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const from = join(root, 'src/core/locales');
 const to = join(root, 'dist/core/locales');

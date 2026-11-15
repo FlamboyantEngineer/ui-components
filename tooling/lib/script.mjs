@@ -3,10 +3,13 @@
 
 import { readdirSync, statSync } from 'node:fs';
 import path, { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-/** The repository root, the directory that holds `scripts/`. */
-export const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+/**
+ * The repository root: the working directory, which npm sets to the package root for its scripts.
+ * The shared checks run from another package's `node_modules`, so the root cannot come from their
+ * own location.
+ */
+export const root = resolve(process.cwd());
 
 /**
  * Every file under `dir`, recursively, as full paths in a stable order; with `directories`, each

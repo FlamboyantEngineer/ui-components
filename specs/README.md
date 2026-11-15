@@ -12,6 +12,7 @@ Each file in this directory specifies one component, one family of components, o
 | [COLLECTIONS.md](COLLECTIONS.md)     | Virtualized and incrementally loaded collections.                                      |
 | [PRIMITIVES.md](PRIMITIVES.md)       | The one directory that imports React Aria and its companion packages.                  |
 | [TESTING.md](TESTING.md)             | The testing helpers hosts use to drive the components in their own tests.              |
+| [TOOLING.md](TOOLING.md)             | The checks and configuration the libraries built on this one share.                    |
 | `<COMPONENT>.md`                     | One component's behaviour and **its hook list**, in the `## Hooks` table.              |
 
 A component's hooks are listed only in its own spec. A family spec (for example a menu with items and sections) lists the hooks of every component in the family. No hook is declared in two specs.

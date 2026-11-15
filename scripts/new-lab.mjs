@@ -6,6 +6,7 @@
 
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { option } from '../tooling/lib/script.mjs';
 import {
   collectLabs,
   groupsOfTier,
@@ -16,7 +17,6 @@ import {
   renderLabPage,
   renderReferenceIndex,
 } from './lib/labs.mjs';
-import { option } from './lib/script.mjs';
 
 const args = process.argv.slice(2);
 

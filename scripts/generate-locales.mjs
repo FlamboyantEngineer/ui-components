@@ -7,7 +7,7 @@
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const localesDir = join(root, 'src/core/locales');
 const names = new Intl.DisplayNames('en', { type: 'language' });

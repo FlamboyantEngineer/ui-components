@@ -20,7 +20,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import { flag, reportProblems, root, walk } from './lib/script.mjs';
+import { flag, reportProblems, walk } from '../tooling/lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const DIRECTIVE = "'use client';";
 // The exports of React's server build (react.react-server).

@@ -11,9 +11,9 @@ import { runNpm } from '../scripts/lib/npm.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { findMissingRootRefs } from '../scripts/lib/root-refs.mjs';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { relativePosix } from '../scripts/lib/script.mjs';
-// @ts-expect-error The scripts are plain JavaScript modules without declarations.
 import { createTarGz, extractTarGz } from '../scripts/lib/tar.mjs';
+// @ts-expect-error The scripts are plain JavaScript modules without declarations.
+import { relativePosix } from '../tooling/lib/script.mjs';
 
 const dirs: string[] = [];
 
