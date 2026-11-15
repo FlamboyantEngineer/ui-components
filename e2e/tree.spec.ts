@@ -413,7 +413,10 @@ test.describe('Tree lab', () => {
     page,
     lab,
   }) => {
+    // The lab locks the row on a timer; a held clock keeps a slow runner from locking it first.
+    await page.clock.install();
     await lab.open('tree');
+    await page.clock.pauseAt(Date.now() + 1000);
     const area = page.locator('[data-lab-locked-rename]');
     const tree = area.getByRole('treegrid', { name: 'Rename tasks' });
     await area.getByRole('button', { name: 'Lock Review in 1.5 seconds' }).click();
@@ -422,6 +425,7 @@ test.describe('Tree lab', () => {
     const field = tree.getByRole('textbox', { name: 'Rename Review' });
     await expect(field).toBeFocused();
     await page.keyboard.type('Approve');
+    await page.clock.runFor(1500);
     await expect(area.locator('[data-lab-output="Locked"]')).toHaveText('review');
     await expect(field).toHaveCount(0);
     await expect(tree).toBeFocused();

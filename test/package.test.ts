@@ -155,7 +155,7 @@ describe('package manifest', () => {
       const source = readFileSync(join(process.cwd(), 'scripts', script), 'utf8');
       expect(source).toContain('packTarball(');
     }
-    const npm = readFileSync(join(process.cwd(), 'scripts/lib/npm.mjs'), 'utf8');
+    const npm = readFileSync(join(process.cwd(), 'tooling/lib/npm.mjs'), 'utf8');
     expect(npm).toContain("'--ignore-scripts'");
   });
 

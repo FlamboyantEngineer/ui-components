@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -71,6 +72,15 @@ describe('shared tooling', () => {
     expect(result.stderr).toContain('tooling/probe.mjs: tooling cannot import react');
     expect(result.stderr).toContain('tooling/probe.mjs: tooling cannot import ../src/sample.js');
     expect(result.stderr).not.toContain('tooling/ok.mjs');
+  });
+
+  it('UIC-TOOLING-1.4 exports the script library by file name', () => {
+    const resolvePackage = createRequire(join(repository, 'package.json')).resolve;
+    for (const name of ['script', 'npm', 'tar', 'unexported-types', 'imports', 'markdown-links']) {
+      expect(resolvePackage(`@flamboyantengineer/ui-components/tooling/lib/${name}.mjs`)).toBe(
+        join(repository, 'tooling', 'lib', `${name}.mjs`),
+      );
+    }
   });
 
   it('UIC-TOOLING-1.2 UIC-TOOLING-2.3 runs the repository rules from its configuration', () => {

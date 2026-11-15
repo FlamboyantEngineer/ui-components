@@ -11,9 +11,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { option, relativePosix, reportProblems, walk } from '../tooling/lib/script.mjs';
+import { findUnexportedTypes } from '../tooling/lib/unexported-types.mjs';
 import { root } from './lib/root.mjs';
 import { findMissingRootRefs } from './lib/root-refs.mjs';
-import { findUnexportedTypes } from './lib/unexported-types.mjs';
 
 const LEAK =
   /(?:from\s+|import\(\s*)['"]((?:\.{1,2}\/)+(?:\.\.\/)*primitives\/[^'"]*|react-aria(?:-components)?(?:\/[^'"]*)?|react-stately(?:\/[^'"]*)?|@react-(?:aria|stately|types)\/[^'"]*|@internationalized\/[^'"]*)['"]/g;

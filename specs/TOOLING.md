@@ -25,6 +25,13 @@ The package shall install the bin command `ui-components-tooling <command> [opti
 Implementation: `tooling/bin.mjs`, `tooling/lib/script.mjs`, `package.json`
 Verification: `test/tooling.test.ts`
 
+### UIC-TOOLING-1.4 - Script library
+
+The package shall export the helpers its scripts share as `./tooling/lib/<name>.mjs`, so a repository's own scripts use the same ones: `script.mjs` (the root, file listing, options and problem report), `npm.mjs` (npm run through one helper on every platform), `tar.mjs` (gzipped tar archives written and read in Node, refusing entries that leave the target directory), `unexported-types.mjs` (public declarations that name a type the package does not export), `imports.mjs` (the import graph and its cycles) and `markdown-links.mjs` (relative links between Markdown files).
+
+Implementation: `package.json`, `tooling/lib/npm.mjs`, `tooling/lib/tar.mjs`, `tooling/lib/unexported-types.mjs`
+Verification: `test/tooling.test.ts`, `test/script-lib.test.ts`
+
 ## UIC-TOOLING-2 - Checks
 
 ### UIC-TOOLING-2.1 - No host references

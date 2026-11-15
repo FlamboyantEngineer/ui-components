@@ -14,9 +14,9 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { createTarGz, extractTarGz } from '../tooling/lib/tar.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
 import { labsDir, listLabPages, root } from './lib/labs.mjs';
-import { createTarGz, extractTarGz } from './lib/tar.mjs';
 
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const destination = resolve(process.argv[2] ?? root);
