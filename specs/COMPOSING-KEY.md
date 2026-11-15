@@ -6,7 +6,7 @@
 
 ### UIC-COMPOSING-KEY-1.1 - Keys an input method owns
 
-`isComposingKey(event)` shall return `true` for a key event pressed while an input method composes (`isComposing`), or reported with key code 229, as some browsers report the Enter that confirms a candidate right after the composition ends; otherwise `false`. It takes a DOM `KeyboardEvent`, or any object with its `isComposing` and `keyCode` (`CompositionKey`), such as a React event's `nativeEvent`. A handler that commits on Enter or cancels on Escape returns early for such a key.
+`isComposingKey(event)` shall return `true` for a key event pressed while an input method composes (`isComposing`), or reported with key code 229, as some browsers report the Enter that confirms a candidate right after the composition ends; otherwise `false`. It takes a DOM `KeyboardEvent`, or any object with its `isComposing` and `keyCode` (`CompositionKey`), such as a React event's `nativeEvent`. Both are exported from the `./core` entry, as well as from the package root. A handler that commits on Enter or cancels on Escape returns early for such a key.
 
-Implementation: `src/utils/is-composing-key.ts`, `src/utils/index.ts`
+Implementation: `src/utils/is-composing-key.ts`, `src/utils/index.ts`, `src/core/index.ts`
 Verification: `src/utils/is-composing-key.test.ts`

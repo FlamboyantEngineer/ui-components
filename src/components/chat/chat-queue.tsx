@@ -29,7 +29,7 @@ interface ChatQueueProps {
 }
 
 /** The removals of queued messages the host has not answered yet. */
-export interface ChatQueueRemovals {
+interface ChatQueueRemovals {
   /** The queue as the next change builds on it: without the messages being removed. */
   without: (queue: readonly ChatQueuedMessage[]) => ChatQueuedMessage[];
   /** Counts the message `id` as being removed until the host's answer `result` settles. */

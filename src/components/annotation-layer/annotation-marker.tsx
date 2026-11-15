@@ -26,7 +26,7 @@ export interface EntryPlace {
 }
 
 /** One annotation in the icons presentation: where it goes, and what it shows. */
-export interface AnnotationMarkerEntryProps {
+interface AnnotationMarkerEntryProps {
   annotation: Annotation;
   state: AnnotationMarkerState;
   /** Its place among the margin's annotations, from 0, and their count. */

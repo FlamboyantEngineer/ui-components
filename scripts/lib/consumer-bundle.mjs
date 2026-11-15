@@ -1,12 +1,15 @@
 // Installs the packed package into a scratch consumer and bundles entry files there under
-// production webpack, as a host's build would (UIC-LABS-1.6, UIC-LABS-1.8).
+// production webpack, as a host's build would (UIC-LABS-1.6, UIC-LABS-1.8): keeping React Aria's
+// strings for the library's languages only, as the README tells hosts to.
 
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import optimizeLocales from '@react-aria/optimize-locales-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import webpackModule from 'webpack';
 import { packTarball } from './npm.mjs';
+import { LIBRARY_LOCALES } from './react-aria-locales.mjs';
 import { root } from './root.mjs';
 import { extractTarGz } from './tar.mjs';
 
@@ -63,6 +66,7 @@ export async function bundleConsumer(consumer, contents, { externals = {}, name 
         { test: /\.woff2$/, type: 'asset/resource' },
       ],
     },
+    plugins: [optimizeLocales.webpack({ locales: LIBRARY_LOCALES })],
     performance: { hints: false },
     // Run the production minifier in this worker rather than spawning unbounded workers.
     optimization: { minimizer: [new TerserPlugin({ parallel: false })] },

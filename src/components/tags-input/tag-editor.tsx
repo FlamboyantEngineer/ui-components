@@ -100,13 +100,7 @@ export function useTagEditing(options: {
  * restores the tag, and leaving the editor accepts the draft or, when the field refuses it,
  * restores the tag. Keys an input method composes stay with it.
  */
-export function TagEditor({
-  edit,
-  onDraftChange,
-  onFinish,
-  isInvalid,
-  describedBy,
-}: TagEditorProps) {
+function TagEditor({ edit, onDraftChange, onFinish, isInvalid, describedBy }: TagEditorProps) {
   const strings = useUiStrings();
   // Enter and Escape remove the editor; the blur that may follow must not end the next edit.
   const isEndedRef = useRef(false);

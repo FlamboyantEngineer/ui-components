@@ -152,26 +152,8 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
   };
 }
 export function CodeField(props: CodeEditorFieldProps) {
-  const {
-    state,
-    field,
-    size,
-    language,
-    schema,
-    isJson,
-    options,
-    tokenizer,
-    diagnostics,
-    suppliedCompletions,
-    completions,
-    suppliedHover,
-    indent,
-    autoCloseBrackets,
-    lineNumbers,
-    placeholder,
-    toolbar,
-    wrap,
-  } = useCodeField(props);
+  const code = useCodeField(props);
+  const { state, field, size, language, isJson, schema } = code;
   return (
     <Field
       state={state}
@@ -185,27 +167,27 @@ export function CodeField(props: CodeEditorFieldProps) {
     >
       {(control) => (
         <CodeSurface
-          {...(options as Partial<CodeSurfaceProps>)}
+          {...(code.options as Partial<CodeSurfaceProps>)}
           language={language}
           {...toSurfaceControlProps(control)}
           ref={control.ref}
           value={state.value}
           onChange={state.setValue}
-          tokenize={tokenizer}
-          diagnostics={diagnostics}
+          tokenize={code.tokenizer}
+          diagnostics={code.diagnostics}
           listDiagnostics={props.listDiagnostics ?? false}
-          completions={suppliedCompletions ?? (isJson ? completions : undefined)}
+          completions={code.suppliedCompletions ?? (isJson ? code.completions : undefined)}
           renderHover={
-            suppliedHover ??
+            code.suppliedHover ??
             (isJson && schema ? (offset) => describeJsonAt(schema, state.value, offset) : undefined)
           }
-          indent={indent}
-          autoCloseBrackets={autoCloseBrackets}
+          indent={code.indent}
+          autoCloseBrackets={code.autoCloseBrackets}
           size={size}
-          wrap={wrap}
-          lineNumbers={lineNumbers}
-          placeholder={placeholder}
-          toolbar={toolbar}
+          wrap={code.wrap}
+          lineNumbers={code.lineNumbers}
+          placeholder={code.placeholder}
+          toolbar={code.toolbar}
         />
       )}
     </Field>

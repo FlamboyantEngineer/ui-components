@@ -8,7 +8,7 @@ import type { TabListModel } from './tab-actions.js';
  * The tab to select in place of `removed`, from the list's order before it went: the first
  * selectable tab after it, else the nearest before it, else none.
  */
-export function findTabSuccessor(
+function findTabSuccessor(
   order: readonly Key[],
   removed: Key,
   isSelectable: (key: Key) => boolean,

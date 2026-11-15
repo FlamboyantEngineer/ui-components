@@ -112,7 +112,7 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
 }
 
 /** The rich text box alone, for a host component with its own buttons, keys and sending. */
-export interface RichMessageFieldProps extends Pick<
+interface RichMessageFieldProps extends Pick<
   RichMessageComposerProps,
   'className' | 'aria-label' | 'placeholder' | 'isDisabled' | 'triggers' | 'minRows' | 'maxRows'
 > {

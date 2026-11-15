@@ -5,40 +5,40 @@
   },
   "consumers": {
     "button-root": {
-      "raw": 170057,
-      "gzip": 54783
+      "raw": 164214,
+      "gzip": 53149
     },
     "button": {
-      "raw": 170057,
-      "gzip": 54783
+      "raw": 164214,
+      "gzip": 53149
     },
     "button-with-reference-css": {
-      "raw": 665866,
-      "gzip": 129676
+      "raw": 633158,
+      "gzip": 124022
     },
     "text-field": {
-      "raw": 397311,
-      "gzip": 123557
+      "raw": 390917,
+      "gzip": 120766
     },
     "table": {
-      "raw": 1158461,
-      "gzip": 347250
+      "raw": 876909,
+      "gzip": 266129
     },
     "markdown": {
-      "raw": 203485,
-      "gzip": 74596
+      "raw": 198485,
+      "gzip": 72834
     },
     "rich-text-editor": {
-      "raw": 687669,
-      "gzip": 210880
+      "raw": 681640,
+      "gzip": 208197
     },
     "pdf-viewer": {
-      "raw": 793502,
-      "gzip": 236902
+      "raw": 705529,
+      "gzip": 216696
     },
     "math-preview": {
-      "raw": 96118,
-      "gzip": 31196
+      "raw": 91427,
+      "gzip": 29657
     }
   }
 }

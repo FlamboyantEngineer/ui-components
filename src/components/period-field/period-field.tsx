@@ -1,9 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { useToday } from '../../core/clock.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button as AriaButton, Dialog, DialogTrigger } from '../../primitives/index.js';
+import { Dialog, DialogTrigger } from '../../primitives/index.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import {
   Field,
@@ -12,7 +12,7 @@ import {
   type FieldInputProps,
   type FieldIssue,
   type FieldState,
-  toAriaControlProps,
+  FieldValueTrigger,
   useFieldControl,
 } from '../field/field.js';
 import { PopoverPanel } from '../popover/popover.js';
@@ -62,28 +62,15 @@ function PeriodTrigger(props: {
   text: string | null;
   placeholder: string;
 }) {
-  const valueId = useId();
-  const { ref, ...rest } = props.control;
-  const aria = toAriaControlProps(rest);
   const { state, text } = props;
   return (
-    <AriaButton
-      {...hooks.slot('trigger')}
-      id={aria.id}
-      ref={ref}
-      aria-label={aria['aria-label']}
-      aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}
-      aria-describedby={aria['aria-describedby']}
-      isDisabled={aria.isDisabled}
-      onKeyDown={(event) => {
-        if ((event.key === 'Backspace' || event.key === 'Delete') && state.canClear) state.clear();
-        else event.continuePropagation();
-      }}
-    >
-      <span {...hooks.slot('value', { placeholder: text === null })} id={valueId}>
-        {text ?? props.placeholder}
-      </span>
-    </AriaButton>
+    <FieldValueTrigger control={props.control} state={state} hook={hooks.slot('trigger')}>
+      {(valueId) => (
+        <span {...hooks.slot('value', { placeholder: text === null })} id={valueId}>
+          {text ?? props.placeholder}
+        </span>
+      )}
+    </FieldValueTrigger>
   );
 }
 

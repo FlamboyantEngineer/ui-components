@@ -14,7 +14,7 @@ export interface CalendarHeatmapDay {
 }
 
 /** `value`: a finite number; `missing`: given without one; `absent`: not given at all. */
-export type HeatmapDayState = 'value' | 'missing' | 'absent';
+type HeatmapDayState = 'value' | 'missing' | 'absent';
 
 /** A drawn day. */
 export interface HeatmapCell {
@@ -35,7 +35,7 @@ export interface HeatmapCell {
 }
 
 /** The first column of each month, with its first day, for a label above it. */
-export interface HeatmapMonth {
+interface HeatmapMonth {
   date: string;
   column: number;
   x: number;
@@ -88,7 +88,7 @@ export function toDayNumber(text: string): number | null {
 }
 
 /** A day count as its `YYYY-MM-DD` text. */
-export function toDayText(day: number): string {
+function toDayText(day: number): string {
   return new Date(day * dayLength).toISOString().slice(0, 10);
 }
 

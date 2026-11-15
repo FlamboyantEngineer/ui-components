@@ -370,6 +370,7 @@ export type { FieldUndo } from './field-undo.js';
 export { getFieldUndo } from './field-undo.js';
 export { resolveFieldValidation, toIssueList } from './field-validation.js';
 export { isFieldValueEqual } from './field-value.js';
+export { FieldValueTrigger } from './field-value-trigger.js';
 export type { FieldsetProps } from './fieldset.js';
 export { Fieldset } from './fieldset.js';
 export type { StringRuleMessages, StringRules } from './string-rules.js';

@@ -35,11 +35,11 @@ export interface CommandPage {
 
 const wordSeparator = /[\s\p{P}]+/u;
 
-export function isCommandSection(entry: CommandPaletteEntry): entry is CommandPaletteSection {
+function isCommandSection(entry: CommandPaletteEntry): entry is CommandPaletteSection {
   return entry.type === 'section';
 }
 
-export function isCommandItem(entry: CommandPaletteEntry): entry is CommandPaletteItem {
+function isCommandItem(entry: CommandPaletteEntry): entry is CommandPaletteItem {
   return entry.type === undefined || entry.type === 'item';
 }
 

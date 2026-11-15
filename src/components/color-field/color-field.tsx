@@ -1,14 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
-import {
-  Button as AriaButton,
-  type Color,
-  ColorPicker,
-  DialogTrigger,
-} from '../../primitives/index.js';
+import { type Color, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
   Field,
@@ -18,7 +13,7 @@ import {
   type FieldIssue,
   type FieldState,
   type FieldTextInputProps,
-  toAriaControlProps,
+  FieldValueTrigger,
   useFieldControl,
 } from '../field/field.js';
 import { ColorEntry } from './color-field-entry.js';
@@ -95,29 +90,17 @@ const emptyPickerColor = '#808080';
  * chords.
  */
 function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
-  const valueId = useId();
-  const { ref, ...rest } = control;
-  const aria = toAriaControlProps(rest);
   return (
-    <AriaButton
-      {...hooks.slot('trigger')}
-      id={aria.id}
-      ref={ref}
-      aria-label={aria['aria-label']}
-      // A button takes no state props but the disabled one; it is named by the label, then its text.
-      aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}
-      aria-describedby={aria['aria-describedby']}
-      isDisabled={aria.isDisabled}
-      onKeyDown={(event) => {
-        if ((event.key === 'Backspace' || event.key === 'Delete') && state.canClear) state.clear();
-        else event.continuePropagation();
-      }}
-    >
-      <ColorSwatch color={color} size="sm" className={hooks.slotClass('swatch')} />
-      <span {...hooks.slot('value', { placeholder: color === null })} id={valueId}>
-        {text}
-      </span>
-    </AriaButton>
+    <FieldValueTrigger control={control} state={state} hook={hooks.slot('trigger')}>
+      {(valueId) => (
+        <>
+          <ColorSwatch color={color} size="sm" className={hooks.slotClass('swatch')} />
+          <span {...hooks.slot('value', { placeholder: color === null })} id={valueId}>
+            {text}
+          </span>
+        </>
+      )}
+    </FieldValueTrigger>
   );
 }
 

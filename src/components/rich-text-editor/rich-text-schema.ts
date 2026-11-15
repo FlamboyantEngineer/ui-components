@@ -130,7 +130,7 @@ function mergeSpecs<S, T>(
 const orderStep = 10;
 
 /** The plugin priorities of the built-in editing extension. */
-export const EDITING_PLUGIN_PRIORITY = 500;
+const EDITING_PLUGIN_PRIORITY = 500;
 
 /** The default node and mark types, with the caller's changes, as the built-in `base` extension. */
 function createBaseExtension(options: RichTextSchemaOptions): RichTextExtension {

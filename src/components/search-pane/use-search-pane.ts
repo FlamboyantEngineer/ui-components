@@ -23,7 +23,7 @@ export interface SearchPaneHandle {
 }
 
 /** The pane's controlled pairs and the facts its state depends on. */
-export interface SearchPaneModelOptions {
+interface SearchPaneModelOptions {
   query?: string | undefined;
   defaultQuery?: string | undefined;
   onQueryChange?: ((query: string) => void) | undefined;

@@ -148,6 +148,17 @@ format('{count, plural, one {# guest} other {# guests}}: {names}', { count: 3, n
 // 3 guests: Ana, Ben, and Chloé
 ```
 
+These four languages are the ones the library supports. React Aria, which the components build on, carries its own strings (such as date segment and color channel names) for about 34 locales, and a bundler keeps all of them, about 150 KB minified in a bundle with tables or date fields. Keep React Aria's strings for the library's languages and any the host adds with [`@react-aria/optimize-locales-plugin`](https://www.npmjs.com/package/@react-aria/optimize-locales-plugin) (webpack, Vite and Rollup; Parcel has `@react-aria/parcel-resolver-optimize-locales`). Keep English: React Aria falls back to it for a locale whose strings were removed.
+
+```js
+// webpack.config.js
+import optimizeLocales from '@react-aria/optimize-locales-plugin';
+
+export default {
+  plugins: [optimizeLocales.webpack({ locales: ['en', 'es', 'fr', 'ja'] })],
+};
+```
+
 ### External form controllers
 
 Fields can be owned by a form controller such as React Hook Form instead of a library `Form`: they take values through `value` and `onChange`, report leaving through `onLeave`, focus through `controlRef` and show the controller's errors through `errorMessage`. [docs/FORM-CONTROLLERS.md](docs/FORM-CONTROLLERS.md) has the recipe and says which layer owns validation, dirty state and the submit; the library itself depends on no controller.

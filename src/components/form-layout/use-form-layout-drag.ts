@@ -88,7 +88,7 @@ interface NodeDropMove {
   place: FormLayoutPlace;
 }
 
-export interface FormLayoutNodeDragOptions {
+interface FormLayoutNodeDragOptions {
   ref: RefObject<HTMLDivElement | null>;
   id: string;
   label: string;

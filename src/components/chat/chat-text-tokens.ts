@@ -163,7 +163,7 @@ function chooseMarker(values: readonly string[]): TokenMarker {
 }
 
 /** The parses a token source was read from, which the source of a longer text continues. */
-export interface TokenSourceParses {
+interface TokenSourceParses {
   text: StreamingMarkdownParse;
   marked: StreamingMarkdownParse;
 }
