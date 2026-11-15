@@ -5,7 +5,7 @@ export { formatCellReference, parseCellReference } from './cell-reference.js';
 export { clamp } from './clamp.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
 export { copyRichText, copyText } from './clipboard.js';
-export { getColorIndex } from './color-index.js';
+export { getColorIndex, placeColorIndexes } from './color-index.js';
 export type {
   BlockChange,
   BlockChangeCounts,
