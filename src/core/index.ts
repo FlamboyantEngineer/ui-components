@@ -1,3 +1,4 @@
+export { getColorIndex, placeColorIndexes } from '../utils/color-index.js';
 export { type CompositionKey, isComposingKey } from '../utils/is-composing-key.js';
 export {
   booleanCodec,

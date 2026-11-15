@@ -24,3 +24,10 @@ Verification: `src/utils/color-index.test.ts`
 
 Implementation: `src/utils/color-index.ts`
 Verification: `src/utils/color-index.test.ts`
+
+### UIC-COLOR-INDEX-1.4 - Entry
+
+`getColorIndex` and `placeColorIndexes` shall be exported from the `./core` entry, as well as from the package root, so a library that colors people the same way imports them without the root entry.
+
+Implementation: `src/core/index.ts`
+Verification: `src/utils/color-index.test.ts`
