@@ -8,6 +8,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { reportProblems } from '../tooling/lib/script.mjs';
 import {
   attributeModules,
   compareBudgets,
@@ -17,7 +18,7 @@ import {
 } from './lib/bundle-budgets.mjs';
 import { bundleConsumer, installPackedConsumer } from './lib/consumer-bundle.mjs';
 import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
-import { reportProblems, root } from './lib/script.mjs';
+import { root } from './lib/root.mjs';
 
 const BUDGETS = join(root, 'scripts/bundle-budgets.json');
 const PACKAGE = '@flamboyantengineer/ui-components';

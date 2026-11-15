@@ -1,40 +1,43 @@
-#!/usr/bin/env node
-// Validates specs/ against the format in specs/README.md:
-//   - unique UIC- requirement IDs with Implementation: and Verification: lines;
+// Validates specs/ against the format in specs/README.md, with the requirement ID and hook prefixes
+// of the repository's tooling.config.mjs (specs/TOOLING.md, UIC-TOOLING-2.2):
+//   - unique <prefix>- requirement IDs with Implementation: and Verification: lines;
 //   - every requirement sits under its own group heading, numbered from 1 without gaps, and groups
 //     ascend;
 //   - every referenced path exists, and a referenced test names the requirement ID;
 //   - Hooks tables use the hook contract's names;
 //   - every component directory, and every util the package exports (src/utils/index.ts), is
-//     implemented by some spec;
+//     implemented by some spec, and with `everyModuleImplemented` every library module is;
 //   - the reference stylesheet partials (labs/reference/) style every root and slot hook and read
 //     every measured property hook;
 //   - every relative link in specs/ and docs/ reaches a file, and a heading of it when it names one.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { loadConfig } from './config.mjs';
 import { findBrokenLinks } from './lib/markdown-links.mjs';
-import { reportProblems, root, walk } from './lib/script.mjs';
+import { relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 
+const { prefix, hookPrefix, everyModuleImplemented = false } = (await loadConfig(root)).specs;
 const specsDir = join(root, 'specs');
 
-const ID = String.raw`UIC-[A-Z0-9]+(?:-[A-Z0-9]+)*-T?\d+(?:\.\d+)?[a-z]?`;
+const ID = String.raw`${prefix}-[A-Z0-9]+(?:-[A-Z0-9]+)*-T?\d+(?:\.\d+)?[a-z]?`;
 const HEADING = new RegExp(`^(#{2,3}) (${ID}) - (.+)$`);
 // The group and the number within it: UIC-BUTTON-2 and UIC-BUTTON-2.3.
 const NUMBERS = /-(\d+)(?:\.(\d+))?[a-z]?$/;
 const TEST_FILE = /(\.test\.tsx?|\.spec\.ts)$/;
 const HOOK_KINDS = new Set(['root', 'slot', 'attribute', 'state', 'property']);
-const ROOT_HOOK = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const SLOT_HOOK = /^(ui-[a-z0-9]+(?:-[a-z0-9]+)*)__[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const ATTRIBUTE_HOOK = /^data-[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const PROPERTY_HOOK = /^--ui-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const NAME = '[a-z0-9]+(?:-[a-z0-9]+)*';
+const ROOT_HOOK = new RegExp(`^${hookPrefix}-${NAME}$`);
+const SLOT_HOOK = new RegExp(`^(${hookPrefix}-${NAME})__${NAME}$`);
+const ATTRIBUTE_HOOK = new RegExp(`^data-${NAME}$`);
+const PROPERTY_HOOK = new RegExp(`^--${hookPrefix}-${NAME}$`);
 
 const problems = [];
 const ids = new Map();
 const implemented = new Set();
 const implementationPaths = new Set();
 const classHooks = new Map();
-/** Measured property hooks (`--ui-*`) by the spec that declares them. */
+/** Measured property hooks (`--<hookPrefix>-*`) by the spec that declares them. */
 const propertyHooks = new Map();
 
 function backticked(text) {
@@ -70,7 +73,9 @@ function checkRequirement(file, requirement) {
       problems.push(`${file}: ${id} verification path ${path} is not a test file`);
       continue;
     }
-    if (readFileSync(full, 'utf8').includes(id)) named = true;
+    // The ID itself, not the start of a longer one: UIC-BUTTON-6.1 is not named by UIC-BUTTON-6.18.
+    const exact = new RegExp(`${id.replaceAll('.', '\\.')}(?![\\da-z]|\\.\\d)`, 'u');
+    if (exact.test(readFileSync(full, 'utf8'))) named = true;
   }
   if (tests.length > 0 && !named) {
     problems.push(`${file}: ${id} is not named by any test it lists in Verification:`);
@@ -78,6 +83,10 @@ function checkRequirement(file, requirement) {
 }
 
 function checkHooks(file, lines) {
+  if (!hookPrefix) {
+    problems.push(`${file}: ## Hooks needs a hookPrefix in tooling.config.mjs`);
+    return;
+  }
   const rows = lines.filter((line) => line.startsWith('|')).slice(2);
   if (rows.length === 0) problems.push(`${file}: ## Hooks has no table rows`);
   const roots = new Set();
@@ -98,7 +107,7 @@ function checkHooks(file, lines) {
       problems.push(`${file}: hook ${hooks[0]} has unknown kind "${kind}"`);
     if (kind === 'root') {
       if (!ROOT_HOOK.test(hooks[0]))
-        problems.push(`${file}: root hook ${hooks[0]} must match ui-<component>`);
+        problems.push(`${file}: root hook ${hooks[0]} must match ${hookPrefix}-<component>`);
       roots.add(hooks[0]);
     }
   }
@@ -114,7 +123,8 @@ function checkHooks(file, lines) {
     if (kind === 'property') propertyHooks.set(hook, file);
     if (kind === 'slot') {
       const match = hook.match(SLOT_HOOK);
-      if (!match) problems.push(`${file}: slot hook ${hook} must match ui-<component>__<slot>`);
+      if (!match)
+        problems.push(`${file}: slot hook ${hook} must match ${hookPrefix}-<component>__<slot>`);
       else if (!roots.has(match[1]))
         problems.push(`${file}: slot hook ${hook} has no root ${match[1]} in this table`);
     }
@@ -122,7 +132,7 @@ function checkHooks(file, lines) {
       problems.push(`${file}: ${kind} hook ${hook} must be a data-* attribute`);
     }
     if (kind === 'property' && !PROPERTY_HOOK.test(hook)) {
-      problems.push(`${file}: property hook ${hook} must be a --ui-* custom property`);
+      problems.push(`${file}: property hook ${hook} must be a --${hookPrefix}-* custom property`);
     }
   }
 }
@@ -191,9 +201,9 @@ for (const name of specFiles) {
         const isSequence = /-T\d/.test(id);
         if (!isSequence) checkNumbering(level, id);
         if (level === '###' && !isSequence) requirement = { id, lines: [] };
-      } else if (/^#{2,3} UIC-/.test(line)) {
+      } else if (line.startsWith(`## ${prefix}-`) || line.startsWith(`### ${prefix}-`)) {
         problems.push(
-          `${file}: malformed requirement heading "${line}" (expected "### UIC-AREA-1.1 - Title")`,
+          `${file}: malformed requirement heading "${line}" (expected "### ${prefix}-AREA-1.1 - Title")`,
         );
       } else if (line.startsWith('## ')) {
         group = null;
@@ -231,6 +241,18 @@ if (existsSync(utilsIndex)) {
       problems.push(
         `${path} is exported by src/utils/index.ts but is not the Implementation: of any spec requirement`,
       );
+    }
+  }
+}
+
+// Every source module carries behaviour some requirement specifies; index.ts files only re-export.
+const srcDir = join(root, 'src');
+if (everyModuleImplemented && existsSync(srcDir)) {
+  for (const full of walk(srcDir)) {
+    const path = relativePosix(root, full);
+    if (!/\.tsx?$/.test(path) || TEST_FILE.test(path) || path.endsWith('/index.ts')) continue;
+    if (!implementationPaths.has(path)) {
+      problems.push(`${path} is not the Implementation: of any spec requirement`);
     }
   }
 }

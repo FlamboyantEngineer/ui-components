@@ -60,7 +60,7 @@ try {
   for (const file of required) {
     if (statSync(join(extract, 'labs', file)).size === 0) throw new Error(`Empty labs/${file}`);
   }
-  execFileSync('node', [join(root, 'scripts/check-references.mjs'), '--dir', extract], {
+  execFileSync('node', [join(root, 'tooling/bin.mjs'), 'check-references', '--dir', extract], {
     stdio: 'inherit',
   });
   // Publish only after the extracted archive passes all checks.

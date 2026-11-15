@@ -4,6 +4,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { reportProblems } from '../tooling/lib/script.mjs';
 import {
   collectLabs,
   groupsOfTier,
@@ -18,7 +19,6 @@ import {
   renderReferenceIndex,
   root,
 } from './lib/labs.mjs';
-import { reportProblems } from './lib/script.mjs';
 
 const problems = [];
 const sources = new Set(listLabSources());

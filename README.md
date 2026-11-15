@@ -226,4 +226,19 @@ Cleanup then removes `coverage/`, `test-results/`,
 `playwright-report/`, `blob-report/`, `node_modules/.cache/` and `node_modules/.vite/`.
 It keeps installed dependencies and built package and lab output.
 
+### Shared tooling
+
+The reference, spec and structure checks, the ESLint base and the Prettier options ship in `tooling/` for the libraries built on this one, which run them from their own checkout once the package is installed ([specs/TOOLING.md](specs/TOOLING.md)):
+
+```sh
+ui-components-tooling check-references   # also check-specs, check-structure; settings in tooling.config.mjs
+```
+
+```js
+// eslint.config.js
+import { createBaseConfig } from '@flamboyantengineer/ui-components/tooling/eslint';
+```
+
+`.prettierrc.json` holds the string `"@flamboyantengineer/ui-components/tooling/prettier"`.
+
 [CONTRIBUTING.md](CONTRIBUTING.md) covers branches, versioning and the source rules.

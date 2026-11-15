@@ -5,7 +5,7 @@ import { basename, dirname, join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error The scripts are plain JavaScript modules without declarations.
-import { walk as walkFiles } from '../scripts/lib/script.mjs';
+import { walk as walkFiles } from '../tooling/lib/script.mjs';
 
 const walk = walkFiles as (dir: string) => string[];
 const root = process.cwd();
@@ -48,9 +48,15 @@ describe('client boundaries', { timeout: 60_000 }, () => {
     const dir = mkdtempSync(join(root, 'node_modules', '.client-boundaries-'));
     try {
       mkdirSync(join(dir, 'scripts/lib'), { recursive: true });
+      mkdirSync(join(dir, 'tooling/lib'), { recursive: true });
       mkdirSync(join(dir, 'src'));
-      for (const script of ['check-client-boundaries.mjs', 'lib/script.mjs']) {
-        copyFileSync(join(root, 'scripts', script), join(dir, 'scripts', script));
+      const scripts = [
+        'scripts/check-client-boundaries.mjs',
+        'scripts/lib/root.mjs',
+        'tooling/lib/script.mjs',
+      ];
+      for (const script of scripts) {
+        copyFileSync(join(root, script), join(dir, script));
       }
       const files = {
         'client.ts': [
@@ -91,9 +97,15 @@ describe('client boundaries', { timeout: 60_000 }, () => {
     const dir = mkdtempSync(join(root, 'node_modules', '.client-boundaries-'));
     try {
       mkdirSync(join(dir, 'scripts/lib'), { recursive: true });
+      mkdirSync(join(dir, 'tooling/lib'), { recursive: true });
       mkdirSync(join(dir, 'src'));
-      for (const script of ['check-client-boundaries.mjs', 'lib/script.mjs']) {
-        copyFileSync(join(root, 'scripts', script), join(dir, 'scripts', script));
+      const scripts = [
+        'scripts/check-client-boundaries.mjs',
+        'scripts/lib/root.mjs',
+        'tooling/lib/script.mjs',
+      ];
+      for (const script of scripts) {
+        copyFileSync(join(root, script), join(dir, script));
       }
       const files = {
         'pure.ts': ['export const isReady = (text: string) => text !== "";'],

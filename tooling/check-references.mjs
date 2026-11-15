@@ -1,27 +1,24 @@
-#!/usr/bin/env node
-// Fails when any authored file (or file path) mentions a host application.
-// The denylist is stored base64-encoded so the repository never contains the terms it forbids.
+// Fails when any authored file (or file path) mentions a host application (specs/TOOLING.md,
+// UIC-TOOLING-2.1). The denylist is stored base64-encoded so no repository contains the terms it
+// forbids; every repository that runs the check shares this one list.
 //
-//   node scripts/check-references.mjs              scan tracked and untracked, non-ignored files
-//   node scripts/check-references.mjs --dir <path> scan every file under <path> (e.g. an unpacked tarball)
-//   node scripts/check-references.mjs --encode <regex> [flags]   print a denylist entry
-//   --denylist <path> reads another denylist file of the same shape (the script's own tests use one)
+//   ui-components-tooling check-references              scan tracked and untracked, non-ignored files
+//   ui-components-tooling check-references --dir <path> scan every file under <path> (e.g. an unpacked tarball)
+//   ui-components-tooling check-references --encode <regex> [flags]   print a denylist entry
+//   --denylist <path> reads another denylist file of the same shape (the check's own tests use one)
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { loadConfig } from './config.mjs';
 import { option, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
 
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|pdf|woff2?|ttf|otf|eot|zip|gz|tgz|wasm|mp4|webm)$/i;
 // Generated third-party metadata, not authored content.
 const GENERATED = new Set(['package-lock.json']);
-const resolvePackage = createRequire(import.meta.url).resolve;
-// Upstream PDF vocabulary overlaps the denylist. Only exact dependency copies are accepted.
-const vendorFiles = new Map([
-  ['labs/build/vendor/pdf.min.mjs', 'pdfjs-dist/build/pdf.min.mjs'],
-  ['labs/build/vendor/pdf.worker.min.mjs', 'pdfjs-dist/build/pdf.worker.min.mjs'],
-]);
+const DENYLIST = fileURLToPath(new URL('reference-denylist.json', import.meta.url));
 
 const args = process.argv.slice(2);
 
@@ -36,10 +33,13 @@ if (args[0] === '--encode') {
   process.exit(0);
 }
 
+// Upstream vocabulary in a vendored copy may overlap the denylist, so the repository lists such
+// copies and only exact copies of the installed package files are accepted.
+const resolvePackage = createRequire(join(root, 'package.json')).resolve;
+const vendorFiles = new Map(Object.entries((await loadConfig(root)).references?.verbatim ?? {}));
+
 function loadDenylist() {
-  const denylistPath = resolve(
-    option('denylist', join(root, 'scripts', 'reference-denylist.json')),
-  );
+  const denylistPath = resolve(option('denylist', DENYLIST));
   const entries = JSON.parse(readFileSync(denylistPath, 'utf8'));
   return entries.map((entry, index) => ({
     index,
@@ -56,10 +56,8 @@ function listFiles() {
   const output = execFileSync(
     'git',
     ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
-    {
-      cwd: root,
-      encoding: 'utf8',
-    },
+    // A large checkout lists more than the default 1 MB of paths.
+    { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
   );
   const files = output.split('\0').filter((file) => file && !GENERATED.has(file));
   return { base: root, files };
@@ -79,10 +77,9 @@ for (const file of files) {
     try {
       const actual = readFileSync(join(base, file));
       const expected = readFileSync(resolvePackage(vendor));
-      if (!actual.equals(expected))
-        findings.push(`${file}: differs from the installed PDF runtime`);
+      if (!actual.equals(expected)) findings.push(`${file}: differs from the installed ${vendor}`);
     } catch {
-      findings.push(`${file}: cannot verify the installed PDF runtime`);
+      findings.push(`${file}: cannot verify against the installed ${vendor}`);
     }
     continue;
   }
