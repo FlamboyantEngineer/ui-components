@@ -197,7 +197,7 @@ interface UiText {
 }
 
 /** The clock and time zone a provider supplies; unset values fall back to the device's. */
-export interface UiClock {
+interface UiClock {
   getNow: () => Date;
   timeZone: string | undefined;
 }

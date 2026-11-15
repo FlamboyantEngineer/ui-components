@@ -6,7 +6,6 @@ import {
   arrowDownPath,
   arrowDownTrayPath,
   arrowLeftPath,
-  arrowLongRightPath,
   arrowPathPath,
   arrowRightPath,
   arrowsDiagonalPath,
@@ -15,8 +14,6 @@ import {
   arrowsRightLeftPath,
   arrowsUpDownPath,
   arrowTopRightOnSquarePath,
-  arrowTrendingDownPath,
-  arrowTrendingUpPath,
   arrowTurnUpRightPath,
   arrowUpPath,
   arrowUpTrayPath,
@@ -61,7 +58,6 @@ import {
   fileBadgePath,
   fileBadgePdfPath,
   fileBadgeTextPath,
-  filmPath,
   folderPath,
   functionPath,
   funnelPath,
@@ -176,9 +172,6 @@ export const ExternalLinkGlyph = /* @__PURE__ */ createGlyph(
   arrowTopRightOnSquarePath,
 );
 export const SidebarGlyph = /* @__PURE__ */ createGlyph('sidebar', viewColumnsPath);
-export const TrendUpGlyph = /* @__PURE__ */ createGlyph('trend-up', arrowTrendingUpPath);
-export const TrendDownGlyph = /* @__PURE__ */ createGlyph('trend-down', arrowTrendingDownPath);
-export const TrendFlatGlyph = /* @__PURE__ */ createGlyph('trend-flat', arrowLongRightPath);
 export const OfflineGlyph = /* @__PURE__ */ createGlyph('offline', signalSlashPath);
 export const LockGlyph = /* @__PURE__ */ createGlyph('lock', lockClosedPath);
 export const EmojiGlyph = /* @__PURE__ */ createGlyph('emoji', faceSmilePath);
@@ -194,7 +187,6 @@ export const DownloadGlyph = /* @__PURE__ */ createGlyph('download', arrowDownTr
 export const RotateGlyph = /* @__PURE__ */ createGlyph('rotate', arrowTurnUpRightPath);
 export const FileGlyph = /* @__PURE__ */ createGlyph('file', fileBadgePath);
 export const ImageGlyph = /* @__PURE__ */ createGlyph('image', photoPath);
-export const VideoGlyph = /* @__PURE__ */ createGlyph('video', filmPath);
 export const AudioGlyph = /* @__PURE__ */ createGlyph('audio', musicalNotePath);
 export const FilePdfGlyph = /* @__PURE__ */ createGlyph('file-pdf', fileBadgePdfPath);
 export const FileArchiveGlyph = /* @__PURE__ */ createGlyph('file-archive', fileBadgeArchivePath);

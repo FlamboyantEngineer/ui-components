@@ -188,7 +188,7 @@ export function ChartReferences({ placed }: { placed: readonly PlacedReference[]
 }
 
 /** An unclamped position along a linear scale, for references beyond its domain. */
-export function mapUnclamped(
+function mapUnclamped(
   scale: { domain: ScaleInterval; range: ScaleInterval },
   value: number,
 ): number {
@@ -212,7 +212,7 @@ export function toValueReferenceAxis(
 }
 
 /** References along one axis, with their value type settled. */
-export interface ReferenceGroup {
+interface ReferenceGroup {
   place: (layout: { plot: ChartBox; isRtl: boolean }) => PlacedReference[];
   describe: (strings: ReferenceStrings) => string[];
 }

@@ -7,7 +7,7 @@ import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { MIN_THUMB_SIZE } from './scroll-region-defaults.js';
 
 /** The thumb's place on the track: its offset and length, in track pixels. */
-export interface ThumbGeometry {
+interface ThumbGeometry {
   offset: number;
   size: number;
   /** How far the container scrolls, in content pixels. */

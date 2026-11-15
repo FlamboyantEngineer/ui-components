@@ -27,7 +27,7 @@ interface InputTextOptions {
 }
 
 /** Why the combobox's text and open state change, as its reasons read them. */
-export interface ComboboxModelReasons {
+interface ComboboxModelReasons {
   readInput: (text: string) => ComboboxInputChangeReason;
   readClose: () => ComboboxOpenChangeReason;
 }

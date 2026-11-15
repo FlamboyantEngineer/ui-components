@@ -48,7 +48,7 @@ export function layoutMedia({ natural, stage, zoom, rotation }: MediaLayoutInput
 }
 
 /** What a key press asks of a media viewer, if anything. */
-export type MediaKeyCommand = 'previous' | 'next' | 'zoom-in' | 'zoom-out';
+type MediaKeyCommand = 'previous' | 'next' | 'zoom-in' | 'zoom-out';
 
 /** Keys that ask the same of a media viewer in either text direction. */
 const fixedKeys: Readonly<Record<string, MediaKeyCommand>> = {

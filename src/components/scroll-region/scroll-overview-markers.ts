@@ -25,11 +25,11 @@ export interface ScrollOverviewSourceLayer {
 }
 
 /** A marker as measured now, beside the source it came from. */
-export interface MeasuredMarker extends ScrollOverviewMarker {
+interface MeasuredMarker extends ScrollOverviewMarker {
   source: ScrollOverviewSource;
 }
 
-export interface MeasuredLayer {
+interface MeasuredLayer {
   name: string;
   markers: readonly MeasuredMarker[];
 }

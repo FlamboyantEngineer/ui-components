@@ -60,7 +60,7 @@ function toScaledSliderState(
 }
 
 /** The props of a slider on a scale: React Aria's slider props, in values. */
-export interface ScaledSliderProps<T extends number | number[]> {
+interface ScaledSliderProps<T extends number | number[]> {
   /** The slot hooks of the slider's group. */
   slot: HookProps;
   scale: NumberSliderScale;

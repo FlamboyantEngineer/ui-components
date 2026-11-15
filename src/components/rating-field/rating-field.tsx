@@ -36,7 +36,7 @@ interface RatingGroupProps extends RatingIcons {
 }
 
 /** The pick a value selects: rounded to the step and bounded to the range, or none below a step. */
-export function toRatingPick(value: number | null, max: number, step: RatingFieldStep) {
+function toRatingPick(value: number | null, max: number, step: RatingFieldStep) {
   if (value === null || !Number.isFinite(value)) return null;
   const rounded = Math.round(value / step) * step;
   return rounded < step ? null : Math.min(rounded, max);

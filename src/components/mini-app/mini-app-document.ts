@@ -19,7 +19,7 @@ export type MiniAppState =
   | readonly MiniAppState[]
   | { readonly [key: string]: MiniAppState };
 
-export interface MiniAppDocumentOptions {
+interface MiniAppDocumentOptions {
   source: MiniAppSource;
   /** The document's title. */
   title: string;

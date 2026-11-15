@@ -9,7 +9,7 @@ import { chatHooks as hooks } from './chat-hooks.js';
 import { readMessageText, toExcerpt } from './chat-model.js';
 
 /** What the banner above the composer's input says, and how it ends. */
-export interface BannerContent {
+interface BannerContent {
   label: string;
   quote?: Omit<ChatQuoteData, 'messageId'> | undefined;
   onCancel?: (() => void) | undefined;
