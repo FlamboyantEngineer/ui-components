@@ -158,7 +158,7 @@ const overflowModes = ['wrap', 'scroll', 'none'] as const;
 /** Changing the dividers, the overflow or the orientation keeps a typed draft and its focus. */
 export function PresentationChanges() {
   const [divided, setDivided] = useState(false);
-  const [overflow, setOverflow] = useState<ToolbarRowOverflow>('wrap');
+  const [overflow, setOverflow] = useState<(typeof overflowModes)[number]>('wrap');
   const [isVertical, setVertical] = useState(false);
   const nextOverflow = overflowModes[(overflowModes.indexOf(overflow) + 1) % overflowModes.length];
   return (

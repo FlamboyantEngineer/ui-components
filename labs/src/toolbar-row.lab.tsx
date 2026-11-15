@@ -13,6 +13,7 @@ import {
   ToolbarOverflow,
   ToolbarScrollButtons,
 } from './toolbar-row-cases.js';
+import { ToolbarMenuSections } from './toolbar-row-menu-cases.js';
 
 const frameStyle = (width: number) => ({ width });
 
@@ -72,6 +73,7 @@ mountLab(
     >
       <ToolbarOverflow />
     </LabSection>
+    <ToolbarMenuSections />
     <LabSection title="Scroll alignment">
       <ToolbarAlignment />
     </LabSection>

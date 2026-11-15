@@ -68,6 +68,18 @@
   flex: none;
 }
 
+/* A row collapsing into a menu keeps every tool at its natural width so it can measure them. */
+.ui-toolbar-row[data-overflow='menu'] > .ui-toolbar-row__strip {
+  overflow: hidden;
+}
+
+.ui-toolbar-row__item,
+.ui-toolbar-row__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
 /* Above the strip's positioned tools, which would otherwise show through; under the buttons. */
 .ui-toolbar-row__fade {
   position: absolute;
