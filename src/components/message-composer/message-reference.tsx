@@ -6,7 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { HoverCard, HoverCardTrigger } from '../hover-card/hover-card.js';
+import { HoverCard, HoverCardTrigger, PreviewTrigger } from '../hover-card/hover-card.js';
 import type { IconSource } from '../icon/icon.js';
 import { Label } from '../label/label.js';
 import { Link } from '../link/link.js';
@@ -29,6 +29,10 @@ export interface MessageReferencePresentation {
   isExternal?: boolean | undefined;
   /** Optional neutral supporting content. */
   description?: ReactNode;
+  /**
+   * Content shown on hover and keyboard focus: from the link, or, without `href`, from the label,
+   * which becomes a button.
+   */
   preview?: ReactNode;
 }
 
@@ -59,21 +63,31 @@ export function MessageReference({
 }: MessageReferenceProps) {
   const strings = useUiStrings();
   const content = <Label icon={icon} label={name ? `${label} ${name}` : label} />;
-  const link = href ? (
-    <Link href={href} isExternal={isExternal}>
-      {content}
-    </Link>
+  const hasPreview = preview !== undefined && preview !== null && preview !== false;
+  // A link opens the preview on hover and focus; without one the label is a button that does.
+  const target = href ? (
+    <HoverCardTrigger isDisabled={!hasPreview}>
+      <span {...hooks.slot('content')}>
+        <Link href={href} isExternal={isExternal}>
+          {content}
+        </Link>
+      </span>
+      {hasPreview ? <HoverCard className={hooks.slotClass('preview')}>{preview}</HoverCard> : null}
+    </HoverCardTrigger>
   ) : (
-    content
+    <span {...hooks.slot('content')}>
+      {hasPreview ? (
+        <PreviewTrigger trigger="hover" preview={preview}>
+          {content}
+        </PreviewTrigger>
+      ) : (
+        content
+      )}
+    </span>
   );
   return (
     <span {...hooks.root({ className, props: rest })}>
-      <HoverCardTrigger isDisabled={!href || !preview}>
-        <span {...hooks.slot('content')}>{link}</span>
-        {href && preview ? (
-          <HoverCard className={hooks.slotClass('preview')}>{preview}</HoverCard>
-        ) : null}
-      </HoverCardTrigger>
+      {target}
       {description ? (
         <>
           {' '}

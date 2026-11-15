@@ -9,6 +9,7 @@ import {
   UiProvider,
   useFormatMessage,
   useGlyph,
+  useUiLocale,
   useUiStrings,
 } from './provider.js';
 
@@ -105,6 +106,24 @@ describe('UiProvider options', () => {
       </I18nProvider>,
     );
     expect(screen.getByRole('status', { name: 'Count' })).toHaveTextContent(/^1\s234,5 fichiers$/);
+  });
+
+  it('UIC-PROVIDER-4.1 reports the locale its text and components format in', () => {
+    function Locale({ name }: { name: string }) {
+      return <output aria-label={name}>{useUiLocale()}</output>;
+    }
+    render(
+      <I18nProvider locale="fr-FR">
+        <UiProvider>
+          <Locale name="Host locale" />
+          <UiProvider locale="de-DE">
+            <Locale name="Own locale" />
+          </UiProvider>
+        </UiProvider>
+      </I18nProvider>,
+    );
+    expect(screen.getByRole('status', { name: 'Host locale' })).toHaveTextContent('fr-FR');
+    expect(screen.getByRole('status', { name: 'Own locale' })).toHaveTextContent('de-DE');
   });
 
   it('UIC-PROVIDER-3.3 republishes nothing for inline messages and icons that hold the same entries', () => {

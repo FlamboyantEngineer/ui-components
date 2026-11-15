@@ -12,9 +12,9 @@ import { FieldScopeContext, useFieldScope } from '../field/field.js';
 import { SearchField } from '../search-field/search-field.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
-  PropertyScope,
   PropertyScopeContext,
   type PropertyScopeFilter,
+  ScopeLevel,
   usePropertyScopeLevel,
   useReportPropertyTally,
 } from './property-scope.js';
@@ -197,13 +197,9 @@ export function PropertyPanel({
       )}
       <FieldScopeContext value={scope}>
         <PanelBody expansion={expansion}>
-          {hasScope ? (
-            <PropertyScope query={query} filter={filter} onClear={clearQuery}>
-              {children}
-            </PropertyScope>
-          ) : (
-            children
-          )}
+          <ScopeLevel query={query} filter={filter} onClear={clearQuery} isInherited={!hasScope}>
+            {children}
+          </ScopeLevel>
         </PanelBody>
       </FieldScopeContext>
     </section>

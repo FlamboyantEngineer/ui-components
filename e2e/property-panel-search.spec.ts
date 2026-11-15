@@ -181,3 +181,16 @@ for (const width of ['narrow', 'wide']) {
     }
   });
 }
+
+test('UIC-PROPERTY-PANEL-5.4 keeps drafts while search comes and goes', async ({ page, lab }) => {
+  await lab.open('property-panel');
+  const area = page.locator('[data-lab-search-on-demand]');
+  const orientation = area.getByRole('textbox', { name: 'Orientation' });
+  await orientation.fill('Landscape');
+  await area.getByRole('button', { name: 'Show search' }).click();
+  await expect(area.getByRole('searchbox')).toBeVisible();
+  await expect(orientation).toHaveValue('Landscape');
+  await area.getByRole('button', { name: 'Hide search' }).click();
+  await expect(area.getByRole('searchbox')).toHaveCount(0);
+  await expect(orientation).toHaveValue('Landscape');
+});

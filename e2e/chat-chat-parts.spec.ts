@@ -34,7 +34,10 @@ test.describe('Chat Parts lab', () => {
     ).toHaveCount(3);
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');
   });
-  test('UIC-CHAT-26.5 draws record references as chips in both formats', async ({ page, lab }) => {
+  test('UIC-CHAT-26.5 UIC-MESSAGE-COMPOSER-10.2 draws record references as chips in both formats', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('chat-parts');
     for (const format of ['markdown', 'plain']) {
       const references = matrixCell(
@@ -47,6 +50,16 @@ test.describe('Chat Parts lab', () => {
       await expect(chips.nth(2)).toHaveText('Missing item');
       await expect(chips.nth(3)).toHaveText('Restricted item');
     }
+    // UIC-MESSAGE-COMPOSER-10.2: a reference without a link previews from its label on focus.
+    const restricted = matrixCell(matrix(page, 'chat-parts'), 'content=references format=plain')
+      .locator('.ui-chat-parts__token[data-kind="reference"]')
+      .nth(3)
+      .getByRole('button', { name: 'Restricted item' });
+    await restricted.focus();
+    await expect(page.getByRole('dialog', { name: 'Restricted item' })).toHaveText(
+      'You do not have access to this item.',
+    );
+    await page.keyboard.press('Escape');
     const linked = matrixCell(matrix(page, 'chat-parts'), 'content=linked format=markdown');
     const outer = linked.getByRole('link', { name: /^the plans for TRIP-4/ });
     await expect(outer).toHaveAttribute('href', 'https://example.com/plans');

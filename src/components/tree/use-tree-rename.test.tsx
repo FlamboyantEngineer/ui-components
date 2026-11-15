@@ -111,6 +111,43 @@ describe('Tree async renaming', () => {
     expect(rename).toHaveBeenLastCalledWith(FOOD[0], 'Berries');
   });
 
+  it('UIC-TREE-7.3 does not resubmit a rejected draft when focus leaves it unchanged', async () => {
+    const user = userEvent.setup();
+    const rename = vi.fn(() => Promise.reject(new Error('Name is reserved')));
+    render(<FoodTree onRename={rename} />);
+    await user.tab();
+    await user.keyboard('{F2}Berries{Enter}');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Name is reserved');
+    await user.click(row('Nuts'));
+    const input = screen.getByRole('textbox', { name: 'Rename Fruit' });
+    expect(input).toHaveValue('Berries');
+    await user.click(input);
+    await user.click(row('Oats'));
+    expect(rename).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('alert')).toHaveTextContent('Name is reserved');
+
+    await user.click(input);
+    await user.keyboard('{Enter}');
+    expect(rename).toHaveBeenCalledTimes(2);
+    await screen.findByRole('alert');
+    await user.keyboard('{Control>}a{/Control}Grapes');
+    await user.click(row('Nuts'));
+    expect(rename).toHaveBeenCalledTimes(3);
+    expect(rename).toHaveBeenLastCalledWith(FOOD[0], 'Grapes');
+  });
+
+  it('UIC-TREE-7.3 keeps a failed blur rename open without taking focus back', async () => {
+    const user = userEvent.setup();
+    const rename = vi.fn(() => Promise.reject(new Error('Name is reserved')));
+    render(<FoodTree onRename={rename} />);
+    await user.tab();
+    await user.keyboard('{F2}Berries');
+    await user.click(row('Nuts'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Name is reserved');
+    expect(screen.getByRole('textbox', { name: 'Rename Fruit' })).toHaveValue('Berries');
+    expect(row('Nuts')).toHaveFocus();
+  });
+
   it('UIC-TREE-7.3 keeps a pending draft read-only and ignores duplicate submits', async () => {
     const user = userEvent.setup();
     const rename = vi.fn(() => new Promise<void>(() => undefined));

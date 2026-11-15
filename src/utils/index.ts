@@ -35,6 +35,8 @@ export { diffLines, diffSequences, diffWords } from './diff.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
 export { formatBytes } from './format-bytes.js';
 export { getInitials } from './initials.js';
+export type { CompositionKey } from './is-composing-key.js';
+export { isComposingKey } from './is-composing-key.js';
 export type {
   LayeredLayoutEdge,
   LayeredLayoutNode,

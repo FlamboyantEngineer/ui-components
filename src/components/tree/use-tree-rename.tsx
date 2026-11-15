@@ -109,7 +109,10 @@ function TreeRenameInput({
   );
 }
 
-/** Commits the current draft once, preserving its field until an asynchronous rename succeeds. */
+/**
+ * Commits the current draft once, preserving its field until an asynchronous rename succeeds. A
+ * rejected draft is submitted again only by Enter, or when focus leaves it after it changed.
+ */
 function finishRename<T extends TreeItemData>(options: {
   key: Key | null;
   input: HTMLInputElement | null;
@@ -120,16 +123,21 @@ function finishRename<T extends TreeItemData>(options: {
   close: () => void;
   isCommit: boolean;
   restoreFocus: boolean;
+  /** The draft the last rejected request submitted, while its error shows. */
+  submitted: { current: string | null };
 }) {
   const { key, input, scope, request, onRename, getTextValue, isCommit, restoreFocus } = options;
   if (key === null || request.pending) return;
   const item = findRenameable(key, scope);
   const name = input?.value.trim() ?? '';
+  // Leaving a rejected draft unchanged keeps it and its error; only Enter submits it again.
+  if (!restoreFocus && request.error !== null && name === options.submitted.current) return;
   const close = () => {
     options.close();
     if (restoreFocus && input && isFocused(input)) focusNear(input);
   };
   if (isCommit && item && name !== '' && name !== getTextValue(item)) {
+    options.submitted.current = name;
     request.run(() => onRename?.(item, name), close);
   } else {
     request.reset();
@@ -141,7 +149,8 @@ function finishRename<T extends TreeItemData>(options: {
  * Renaming rows in place: F2 on a row the owner lets rename (`canRename`, every row by default)
  * opens a name field holding the text value. Enter and leaving the field report a changed, non-blank
  * name for the row as it is now through `onRename`; Escape abandons it. Enter and Escape return focus
- * to the row. A row that becomes disabled, leaves the shown rows or stops taking renames closes its
+ * to the row. Leaving a draft `onRename` rejected, unchanged, keeps it and its error without
+ * submitting it again. A row that becomes disabled, leaves the shown rows or stops taking renames closes its
  * field without renaming, returning focus to the row while it is still shown.
  */
 export function useTreeRename<T extends TreeItemData>(
@@ -152,6 +161,7 @@ export function useTreeRename<T extends TreeItemData>(
   const [editingKey, setEditingKey] = useState<Key | null>(null);
   const editingRef = useRef<Key | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const submittedRef = useRef<string | null>(null);
   const scope = useMemo(
     () => ({ canRename, items, getChildren, disabledKeys }),
     [canRename, items, getChildren, disabledKeys],
@@ -184,6 +194,7 @@ export function useTreeRename<T extends TreeItemData>(
         },
         isCommit,
         restoreFocus,
+        submitted: submittedRef,
       });
     return {
       editingKey,

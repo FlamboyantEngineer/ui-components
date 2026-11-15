@@ -4,6 +4,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { CheckGlyph, MoreGlyph, RefreshGlyph } from '../../src/core/glyphs.js';
+import { isComposingKey } from '../../src/utils/is-composing-key.js';
 
 export function FilterComposition() {
   const [value, setValue] = useState<string | null>('all');
@@ -79,8 +80,7 @@ export function SelectionComposition() {
             if (
               event.key === 'Escape' &&
               !event.defaultPrevented &&
-              !event.nativeEvent.isComposing &&
-              event.nativeEvent.keyCode !== 229
+              !isComposingKey(event.nativeEvent)
             ) {
               event.preventDefault();
               setCount(0);
