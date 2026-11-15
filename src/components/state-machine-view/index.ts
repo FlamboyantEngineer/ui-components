@@ -1,5 +1,3 @@
-export type { StateMachineGraphProps } from './state-machine-graph.js';
-export { StateMachineGraph } from './state-machine-graph.js';
 export type {
   StateMachineContextMenuEvent,
   StateMachineDensity,
@@ -9,5 +7,5 @@ export type {
   StateMachineTransition,
   StateMachineTransitionRequest,
 } from './state-machine-model.js';
-export type { StateMachineSequenceProps } from './state-machine-sequence.js';
-export { StateMachineSequence } from './state-machine-sequence.js';
+export type { StateMachineGraphProps, StateMachineSequenceProps } from './state-machine-view.js';
+export { StateMachineGraph, StateMachineSequence } from './state-machine-view.js';

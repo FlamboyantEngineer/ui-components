@@ -34,7 +34,7 @@ interface RecordedEditsOptions<T> {
 }
 
 /** The table's edit callbacks, recording what they report, and the root's undo and redo keys. */
-export interface RecordedEdits<T> {
+interface RecordedEdits<T> {
   onCellsChange: ((edits: readonly TableCellEdit<T>[]) => void) | undefined;
   rootProps: object;
 }

@@ -14,7 +14,7 @@ import type { MarkdownInline } from '../markdown/markdown-nodes.js';
 type MentionSegment = Extract<CommentTextSegment, { kind: 'mention' }>;
 
 /** Draws one mention's chip; `isInLink` asks for a chip without a card, inside a link. */
-export type RenderMention = (mention: MentionSegment, isInLink: boolean) => ReactNode;
+type RenderMention = (mention: MentionSegment, isInLink: boolean) => ReactNode;
 
 // A marker is a private-use opening, the mention's position and a private-use closing. The text's
 // own private-use openings are replaced first, so text cannot spell a marker.

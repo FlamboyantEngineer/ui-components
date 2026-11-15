@@ -45,7 +45,7 @@ export function roundCoordinate(value: number): number {
 }
 
 /** The ends of a value axis the caller fixed (`minValue`, `maxX`, …); a missing one is open. */
-export interface AxisBounds {
+interface AxisBounds {
   low?: number | undefined;
   high?: number | undefined;
 }

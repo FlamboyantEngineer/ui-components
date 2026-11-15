@@ -1,4 +1,8 @@
 import type { ComponentHooks } from '../../core/hooks.js';
+import type { ProgressBarShape } from './progress-bar.js';
+
+/** The share of the ring an indeterminate ring and the spinner leave open: a quarter arc is drawn. */
+export const spinnerGap = 75;
 
 /** The ring's circumference, normalised through `pathLength` so offsets read as percentages. */
 const ringLength = 100;
@@ -39,5 +43,37 @@ export function ProgressRing({
         {...dash}
       />
     </svg>
+  );
+}
+
+/**
+ * The bar's track and fill, or its ring, filled to `percentage`; `null` while the amount is not
+ * known, when the bar's fill takes no width and the ring draws the spinner's quarter arc.
+ */
+export function ProgressGauge({
+  hooks,
+  shape,
+  percentage,
+}: {
+  hooks: ComponentHooks<'ring' | 'fill' | 'track'>;
+  shape: ProgressBarShape;
+  percentage: number | null;
+}) {
+  if (shape === 'circular') {
+    return (
+      <ProgressRing
+        hooks={hooks}
+        trackClass={hooks.slotClass('track')}
+        gap={percentage === null ? spinnerGap : 100 - percentage}
+      />
+    );
+  }
+  return (
+    <div {...hooks.slot('track')}>
+      <div
+        {...hooks.slot('fill')}
+        style={percentage === null ? undefined : { width: `${percentage}%` }}
+      />
+    </div>
   );
 }

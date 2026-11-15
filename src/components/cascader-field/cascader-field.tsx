@@ -1,10 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useId, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button as AriaButton, Dialog, DialogTrigger } from '../../primitives/index.js';
+import { Dialog, DialogTrigger } from '../../primitives/index.js';
 import { DEFAULT_DROPDOWN_OFFSET } from '../../utils/overlay-defaults.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { useLatest } from '../../utils/use-latest.js';
@@ -14,7 +14,7 @@ import {
   FieldFormValue,
   type FieldInputProps,
   type FieldState,
-  toAriaControlProps,
+  FieldValueTrigger,
   useFieldControl,
 } from '../field/field.js';
 import { PopoverPanel } from '../popover/popover.js';
@@ -228,43 +228,30 @@ function CascaderTrigger({
   placeholder: string;
 }) {
   const strings = useUiStrings();
-  const valueId = useId();
-  const { ref, ...rest } = control;
-  const aria = toAriaControlProps(rest);
   const path = state.value ?? [];
   // An id whose option is not loaded shows itself, so a restored path still reads in full.
   const labels = path.map((key, index) => chosen[index]?.label ?? String(key));
   return (
-    <AriaButton
-      {...hooks.slot('trigger')}
-      id={aria.id}
-      ref={ref}
-      aria-label={aria['aria-label']}
-      aria-labelledby={`${aria['aria-labelledby'] ?? aria.id} ${valueId}`}
-      aria-describedby={aria['aria-describedby']}
-      isDisabled={aria.isDisabled}
-      onKeyDown={(event) => {
-        if ((event.key === 'Backspace' || event.key === 'Delete') && state.canClear) state.clear();
-        else event.continuePropagation();
-      }}
-    >
-      <span {...hooks.slot('value', { placeholder: labels.length === 0 })} id={valueId}>
-        {labels.length === 0
-          ? placeholder
-          : labels.map((text, index) => (
-              <Fragment key={index}>
-                {/* The spaces keep the segments apart in the trigger's name. */}
-                {index > 0 ? (
-                  <>
-                    {' '}
-                    <span {...hooks.slot('separator')}>{strings.cascaderPathSeparator}</span>{' '}
-                  </>
-                ) : null}
-                <span {...hooks.slot('segment')}>{text}</span>
-              </Fragment>
-            ))}
-      </span>
-    </AriaButton>
+    <FieldValueTrigger control={control} state={state} hook={hooks.slot('trigger')}>
+      {(valueId) => (
+        <span {...hooks.slot('value', { placeholder: labels.length === 0 })} id={valueId}>
+          {labels.length === 0
+            ? placeholder
+            : labels.map((text, index) => (
+                <Fragment key={index}>
+                  {/* The spaces keep the segments apart in the trigger's name. */}
+                  {index > 0 ? (
+                    <>
+                      {' '}
+                      <span {...hooks.slot('separator')}>{strings.cascaderPathSeparator}</span>{' '}
+                    </>
+                  ) : null}
+                  <span {...hooks.slot('segment')}>{text}</span>
+                </Fragment>
+              ))}
+        </span>
+      )}
+    </FieldValueTrigger>
   );
 }
 

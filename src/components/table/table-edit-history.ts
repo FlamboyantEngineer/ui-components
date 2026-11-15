@@ -44,7 +44,7 @@ export type HistoryApplier = (
 ) => readonly TableCellChange[];
 
 /** The table's side of a history: recording its edits, and connecting how entries apply. */
-export interface HistoryChannel {
+interface HistoryChannel {
   record: (changes: readonly TableCellChange[]) => void;
   /** Makes `applier` the way entries apply until the returned function disconnects it. */
   connect: (applier: HistoryApplier) => () => void;

@@ -30,7 +30,7 @@ export interface DecimalRules extends DecimalBounds {
 }
 
 /** The given texts of the rules. */
-export interface DecimalRuleProps {
+interface DecimalRuleProps {
   minValue?: string | undefined;
   maxValue?: string | undefined;
   step?: string | undefined;

@@ -7,7 +7,7 @@ import type { BaseProps, RefProps, Size, Tone } from '../../core/props.js';
 import { ProgressBarContext, useProgressBar, useSlottedContext } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { progressBarHooks as hooks } from './progress-bar-hooks.js';
-import { ProgressRing } from './progress-ring.js';
+import { ProgressGauge, ProgressRing, spinnerGap } from './progress-ring.js';
 import { ProgressRoot, ProgressText } from './progress-root.js';
 import { type ProgressSegment, SegmentedProgressBar } from './progress-segments.js';
 
@@ -79,9 +79,6 @@ export interface ProgressValues {
 
 const spinnerHooks = createHooks('spinner', ['ring', 'fill']);
 
-/** The share of the ring an indeterminate ring and the spinner leave open: a quarter arc is drawn. */
-const spinnerGap = 75;
-
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
 export function ProgressBar({ valueLabel, ...props }: ProgressBarProps) {
   // Untyped callers may still pass an element, which would read as `[object Object]`.
@@ -111,20 +108,11 @@ function RangeProgressBar({
             showValueLabel={showValueLabel}
             values={values}
           />
-          {shape === 'circular' ? (
-            <ProgressRing
-              hooks={hooks}
-              trackClass={hooks.slotClass('track')}
-              gap={values.isIndeterminate ? spinnerGap : 100 - (values.percentage ?? 0)}
-            />
-          ) : (
-            <div {...hooks.slot('track')}>
-              <div
-                {...hooks.slot('fill')}
-                style={values.isIndeterminate ? undefined : { width: `${values.percentage ?? 0}%` }}
-              />
-            </div>
-          )}
+          <ProgressGauge
+            hooks={hooks}
+            shape={shape}
+            percentage={values.isIndeterminate ? null : (values.percentage ?? 0)}
+          />
         </>
       )}
     </ProgressRoot>

@@ -28,7 +28,7 @@ interface RatingGlyphsProps extends RatingIcons {
 }
 
 /** The share of the glyph at `position` (from 1) that `value` fills, from 0 to 1. */
-export function toGlyphShare(value: number | null, position: number): number {
+function toGlyphShare(value: number | null, position: number): number {
   return value === null || !Number.isFinite(value) ? 0 : clamp(value - (position - 1), 0, 1);
 }
 

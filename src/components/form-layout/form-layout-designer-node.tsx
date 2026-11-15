@@ -31,7 +31,7 @@ function useDesigner(): DesignerContextValue {
 }
 
 /** The drop target at the end of a container, or of the top level when `parentId` is null. */
-export function FormLayoutSlot({
+function FormLayoutSlot({
   parentId,
   index,
   name,
@@ -168,7 +168,7 @@ function NodeHeader({
 }
 
 /** One node in the canvas: its header with handle, name and Remove, then its preview. */
-export function FormLayoutDesignerNode({
+function FormLayoutDesignerNode({
   node,
   parentId,
   index,

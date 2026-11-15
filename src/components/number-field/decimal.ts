@@ -148,7 +148,7 @@ export function clampDecimal(value: string, { minValue, maxValue }: DecimalBound
 }
 
 /** A step grid within bounds. */
-export type DecimalRange = DecimalGrid & DecimalBounds;
+type DecimalRange = DecimalGrid & DecimalBounds;
 
 /**
  * The nearest grid value within the bounds (half a step rounds away from the origin): a value

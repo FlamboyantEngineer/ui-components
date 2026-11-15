@@ -139,7 +139,7 @@ function RetryButton({ onRetry }: { onRetry: () => void }) {
  * The time placed in the footer, the edited marker, the stopped marker and the delivery status,
  * with Retry for a failed send.
  */
-export function ChatMessageFooter({
+function ChatMessageFooter({
   time,
   getNow,
   isEdited,
