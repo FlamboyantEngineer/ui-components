@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import * as core from '../core/index.js';
 import { getColorIndex, placeColorIndexes } from './color-index.js';
 
 function unsignedHash(key: string): number {
@@ -61,5 +62,12 @@ describe('placeColorIndexes', () => {
 
     expect([...placed.values()]).toEqual([0, 1, getColorIndex('r', 2)]);
     expect([...placeColorIndexes(['b'], 0)]).toEqual([['b', 0]]);
+  });
+});
+
+describe('color index entry', () => {
+  it('UIC-COLOR-INDEX-1.4 is exported from the core entry', () => {
+    expect(core.getColorIndex).toBe(getColorIndex);
+    expect(core.placeColorIndexes).toBe(placeColorIndexes);
   });
 });
