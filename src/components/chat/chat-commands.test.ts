@@ -125,4 +125,11 @@ describe('message commands', () => {
     expect(handlers.edit).toHaveBeenCalledWith('a');
     expect(handlers.delete).toHaveBeenCalledWith('a');
   });
+
+  it('UIC-CHAT-2.3 takes back a reaction the reader holds as a participant', () => {
+    const { context, handlers } = createContext();
+    const reactions = [{ emoji: '👍', participantIds: ['helper', 'sam'] }];
+    toMessageCommands(message('a', 'ana', { reactions }), context).onReact?.('👍');
+    expect(handlers.react).toHaveBeenCalledWith('a', '👍', false);
+  });
 });

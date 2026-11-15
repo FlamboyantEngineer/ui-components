@@ -25,6 +25,7 @@ export type {
   ChatController,
   ChatControllerOptions,
   ChatControllerProps,
+  ChatControllerReaction,
   ChatMessagesUpdate,
   ChatQuestionResponse,
   ChatQueuedMessage,
@@ -98,6 +99,8 @@ export type {
   ChatQuestionStatus,
 } from './chat-question.js';
 export { ChatQuestion } from './chat-question.js';
+export type { ChatReaction, ChatReactionChange } from './chat-reactions.js';
+export { setChatReaction } from './chat-reactions.js';
 export type { ChatReasoningProps } from './chat-reasoning.js';
 export { ChatReasoning } from './chat-reasoning.js';
 export { isAwaitingReader } from './chat-reply.js';

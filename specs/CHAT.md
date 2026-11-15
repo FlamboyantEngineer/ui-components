@@ -98,10 +98,12 @@ Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/
 
 ### UIC-CHAT-2.3 - Reactions
 
-A message's `reactions` shall show in a [Reaction Bar](REACTION-BAR.md). In a chat between people with `onReact`, toggling a chip and choosing an emoji through React call `onReact` with the message's id, the emoji and whether the reader now reacts with it.
+A message's `reactions` (`ChatReaction` values) shall show in a [Reaction Bar](REACTION-BAR.md), in every chat, whoever reacted: the reader, other people or an assistant. A reaction names who reacted as participants (`participantIds`), by name (`people`, a `ReactionEntry`'s field), or both: each chip is named by the participants' names first, then `people` ([UIC-REACTION-BAR-1.2](REACTION-BAR.md#uic-reaction-bar-12---who-reacted)), such as `👍 1, reacted by Trip planner`, and counts them both when `count` is missing; a participant missing from `participants` still counts. The reader reacts, and the chip is pressed, when `isReacted` is true or `participantIds` holds `currentUserId`. In a chat between people with `onReact`, toggling a chip and choosing an emoji through React call `onReact` with the message's id, the emoji and whether the reader now reacts with it; in an assistant chat the reactions are read-only.
 
-Implementation: `src/components/chat/chat-message-view.tsx`, `src/components/chat/chat-commands.ts`
-Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/chat.test.tsx`
+`setChatReaction(messages, { messageId, emoji, participantId, isReacted? })` shall return the conversation with that participant's reaction added (`isReacted` defaults to true) or taken back: it joins the end of the reaction's `participantIds`, a new reaction joins the end of the message's reactions, an explicit `count` steps by one, and a reaction that no longer counts anyone leaves the message. It returns the same array, and leaves the messages unchanged, when the participant already reacts that way or no message has the id. Hosts use it for agents' reactions and for the reader's `onReact`.
+
+Implementation: `src/components/chat/chat-message-view.tsx`, `src/components/chat/chat-commands.ts`, `src/components/chat/chat-reactions.ts`
+Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/chat.test.tsx`, `src/components/chat/chat-reactions.test.tsx`
 
 ### UIC-CHAT-2.4 - Reply
 
@@ -460,7 +462,7 @@ Verification: `src/components/chat/chat-status-line.test.tsx`
 
 ## Chat Controller
 
-`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `sendNow`, `steer`, `stop`, `retry`, `updateMessages` and `resetConversation`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
+`useChatController(options)` turns a host's `send` function, which streams an assistant's reply as library events, into the state and callbacks of a chat: the messages with their streaming reply, stop, retry, errors, a queue of follow-ups, approvals, questions, the reader's prompt history and uploads. It has no backend of its own: `send` talks to whatever service the host uses, and an adapter of a few lines maps that service's stream onto the events below. The hook returns the state, imperative `send`, `sendNow`, `steer`, `stop`, `retry`, `updateMessages`, `setReaction` and `resetConversation`, and `props`, everything a chat needs to spread into it. `reduceChatStream`, the pure reducer the hook folds events with, is exported for hosts that keep the conversation themselves.
 
 Messages are [`ChatMessageData`](CHAT.md) values whose content is an ordered list of typed parts ([Chat Parts](CHAT.md)). The reader's messages carry `authorId: currentUserId`, the replies `authorId: assistantId`.
 
@@ -468,25 +470,26 @@ Messages are [`ChatMessageData`](CHAT.md) values whose content is an ordered lis
 
 `send(messages, { signal, waitFor })` returns an async iterable of plain objects, one per step of the reply:
 
-| Event              | Fields                                              | Effect on the reply                                                                                               |
-| ------------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `text-delta`       | `text`                                              | Appends to the open text part, or starts a streaming text part.                                                   |
-| `reasoning-delta`  | `id`, `text`                                        | Appends to the reasoning part `id`, or starts it, streaming.                                                      |
-| `reasoning-end`    | `id`, `durationMs?`                                 | Completes the reasoning part `id`.                                                                                |
-| `tool-call`        | `id`, `name`, `label?`, `target?`, `kind?`, `args?` | Adds the tool call `id`, running, or updates its name, label, target, kind and arguments.                         |
-| `tool-result`      | `id`, `result?`, `error?`, `durationMs?`            | Ends the tool call `id`: `failed` with an `error`, else `succeeded`; a denied call stays denied.                  |
-| `approval-request` | `id`, `scopeLabel?`, `await?`                       | Puts the tool call `id` in `approval-requested`, or runs it auto-approved when the reader always allows its tool. |
-| `question`         | `id`, `questions`, `await?`                         | Adds a pending question card.                                                                                     |
-| `plan`             | `id`, `title?`, `steps`                             | Adds the plan `id`, or replaces its title and steps.                                                              |
-| `plan-step`        | `planId`, `stepId`, `status`                        | Moves one step of a plan.                                                                                         |
-| `source`           | `source`                                            | Adds a source to the reply's one sources part, or replaces the source with its `id`.                              |
-| `file`             | `attachment`                                        | Adds a file to the files part just before it, or starts a files part.                                             |
-| `code`             | `id?`, `code`, `language?`, `title?`, `variant?`    | Adds a code block (`variant: 'terminal'` for terminal output), or replaces the one with its `id`.                 |
-| `diff`             | `id?`, `title?`, `oldText`, `newText`               | Adds a diff, or replaces the one with its `id`.                                                                   |
-| `custom`           | `id?`, `name`, `data?`                              | Adds a part the host draws itself, or replaces the one with its `id`.                                             |
-| `status`           | `text`                                              | Sets the reply's `statusText`; an empty text clears it.                                                           |
-| `finish`           |                                                     | Ends the reply.                                                                                                   |
-| `error`            | `message`                                           | Ends the reply as failed with `message`.                                                                          |
+| Event              | Fields                                              | Effect on the reply                                                                                                 |
+| ------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `text-delta`       | `text`                                              | Appends to the open text part, or starts a streaming text part.                                                     |
+| `reasoning-delta`  | `id`, `text`                                        | Appends to the reasoning part `id`, or starts it, streaming.                                                        |
+| `reasoning-end`    | `id`, `durationMs?`                                 | Completes the reasoning part `id`.                                                                                  |
+| `tool-call`        | `id`, `name`, `label?`, `target?`, `kind?`, `args?` | Adds the tool call `id`, running, or updates its name, label, target, kind and arguments.                           |
+| `tool-result`      | `id`, `result?`, `error?`, `durationMs?`            | Ends the tool call `id`: `failed` with an `error`, else `succeeded`; a denied call stays denied.                    |
+| `approval-request` | `id`, `scopeLabel?`, `await?`                       | Puts the tool call `id` in `approval-requested`, or runs it auto-approved when the reader always allows its tool.   |
+| `question`         | `id`, `questions`, `await?`                         | Adds a pending question card.                                                                                       |
+| `plan`             | `id`, `title?`, `steps`                             | Adds the plan `id`, or replaces its title and steps.                                                                |
+| `plan-step`        | `planId`, `stepId`, `status`                        | Moves one step of a plan.                                                                                           |
+| `source`           | `source`                                            | Adds a source to the reply's one sources part, or replaces the source with its `id`.                                |
+| `file`             | `attachment`                                        | Adds a file to the files part just before it, or starts a files part.                                               |
+| `code`             | `id?`, `code`, `language?`, `title?`, `variant?`    | Adds a code block (`variant: 'terminal'` for terminal output), or replaces the one with its `id`.                   |
+| `diff`             | `id?`, `title?`, `oldText`, `newText`               | Adds a diff, or replaces the one with its `id`.                                                                     |
+| `custom`           | `id?`, `name`, `data?`                              | Adds a part the host draws itself, or replaces the one with its `id`.                                               |
+| `reaction`         | `emoji`, `messageId?`, `isReacted?`                 | None: the assistant reacts to another message, or takes it back ([UIC-CHAT-12.8](#uic-chat-128---agent-reactions)). |
+| `status`           | `text`                                              | Sets the reply's `statusText`; an empty text clears it.                                                             |
+| `finish`           |                                                     | Ends the reply.                                                                                                     |
+| `error`            | `message`                                           | Ends the reply as failed with `message`.                                                                            |
 
 ## UIC-CHAT-11 - Reducer
 
@@ -598,6 +601,13 @@ The controller shall time each reasoning part and tool call from its first event
 
 Implementation: `src/components/chat/chat-run.ts`, `src/components/chat/chat-engine.ts`, `src/components/chat/chat-controller.ts`
 Verification: `src/components/chat/chat-controller.test.tsx`
+
+### UIC-CHAT-12.8 - Agent reactions
+
+A `reaction` event shall add the assistant's (`assistantId`) reaction with `emoji` to the message `messageId`, by default the reader's last message before the reply (the one it answers), or take it back with `isReacted: false`, as `setChatReaction` does ([UIC-CHAT-2.3](#uic-chat-23---reactions)). It writes at once, after what the reply streamed so far, and leaves the reply unchanged; `reduceChatStream` returns the reply as it is. `setReaction({ messageId, emoji, isReacted?, participantId? })` shall do the same at any time, as the assistant unless `participantId` names another participant, such as another agent. Neither changes the conversation when nothing changes.
+
+Implementation: `src/components/chat/chat-run.ts`, `src/components/chat/chat-engine.ts`, `src/components/chat/chat-controller.ts`, `src/components/chat/chat-stream.ts`, `src/components/chat/chat-reactions.ts`
+Verification: `src/components/chat/chat-reactions.test.tsx`
 
 ## UIC-CHAT-13 - Reader responses
 

@@ -1,6 +1,7 @@
 import type { ChatFeedback, ChatMessageCommandProps } from './chat-message-actions.js';
 import { type ChatParticipantIndex, isOwnText, readMessageText } from './chat-model.js';
 import type { ChatMessageData } from './chat-parts.js';
+import { isReaderReaction } from './chat-reactions.js';
 
 /**
  * The message commands a chat offers, each bound to a message id and present only when the chat
@@ -25,8 +26,12 @@ export interface ChatCommandContext {
 }
 
 /** Whether the reader already reacts to the message with `emoji`. */
-function isReactedWith(message: ChatMessageData, emoji: string): boolean {
-  return Boolean(message.reactions?.some((entry) => entry.emoji === emoji && entry.isReacted));
+function isReactedWith(message: ChatMessageData, emoji: string, currentUserId: string): boolean {
+  return Boolean(
+    message.reactions?.some(
+      (entry) => entry.emoji === emoji && isReaderReaction(entry, currentUserId),
+    ),
+  );
 }
 
 /** Copy, once the message has text and has finished, and the ratings of an assistant's reply. */
@@ -64,7 +69,10 @@ function toPeopleCommands(
   return {
     ...(reply ? { onReply: () => reply(id) } : {}),
     ...(react
-      ? { onReact: (emoji: string) => react(id, emoji, !isReactedWith(message, emoji)) }
+      ? {
+          onReact: (emoji: string) =>
+            react(id, emoji, !isReactedWith(message, emoji, context.currentUserId)),
+        }
       : {}),
     ...(canEdit ? { onEdit: () => edit(id) } : {}),
     ...(remove && isOwn ? { onDelete: () => remove(id) } : {}),
