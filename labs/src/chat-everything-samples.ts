@@ -110,8 +110,8 @@ export const everythingMessages: ChatMessageData[] = [
     time: daysAgo(2, '18:10'),
     text: 'The rooftop looks amazing.',
     reactions: [
-      { emoji: '😍', people: ['Ana Lopez', 'Mia Chen'] },
-      { emoji: '👍', isReacted: true, people: [reader.name] },
+      { emoji: '😍', participantIds: [ana.id, mia.id] },
+      { emoji: '👍', participantIds: [reader.id] },
     ],
   }),
   withMentions(

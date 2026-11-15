@@ -72,6 +72,17 @@ export type ChatStreamEvent =
     }
   /** Adds a part the host draws itself, or replaces the one with its `id`. */
   | { type: 'custom'; id?: string | undefined; name: string; data?: unknown }
+  /**
+   * The assistant reacts to the message `messageId` with an emoji, by default to the reader's
+   * message the reply answers, or takes its reaction back with `isReacted: false`. The reply itself
+   * is unchanged: the controller writes the reaction to that message.
+   */
+  | {
+      type: 'reaction';
+      emoji: string;
+      messageId?: string | undefined;
+      isReacted?: boolean | undefined;
+    }
   /** Says what the assistant is doing, such as `Searching recipes…`; an empty text clears it. */
   | { type: 'status'; text: string }
   /** Ends the reply. */
@@ -208,6 +219,7 @@ const handlers: { [T in ChatStreamEventType]: Handler<T> } = {
     withParts(message, addPart(message.parts, { type: 'diff', ...diff }, context)),
   custom: (message, { type: _type, ...custom }, context) =>
     withParts(message, addPart(message.parts, { type: 'custom', ...custom }, context)),
+  reaction: (message) => message,
   status: (message, { text }) => ({ ...message, statusText: text || undefined }),
   finish: (message, _event, context) => endChatReply(message, { status: 'complete' }, context),
   error: (message, { message: error }, context) =>

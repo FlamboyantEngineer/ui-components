@@ -61,10 +61,14 @@ function lisbonConversation(): ChatMessageData[] {
   // Today's messages are minutes old, so they are never ahead of the clock.
   const at = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
   return [
-    entry('agent-lisbon', 1, 'reader', at(42), [
-      text('Here is what we loved last time. Plan something like it for Lisbon, two days.'),
-      { type: 'files', attachments: tripAttachments.slice(0, 2) },
-    ]),
+    {
+      ...entry('agent-lisbon', 1, 'reader', at(42), [
+        text('Here is what we loved last time. Plan something like it for Lisbon, two days.'),
+        { type: 'files', attachments: tripAttachments.slice(0, 2) },
+      ]),
+      // The planner reacted to the photos as it read them.
+      reactions: [{ emoji: '😍', participantIds: [plannerId] }],
+    },
     entry('agent-lisbon', 2, 'planner', at(41), [
       {
         type: 'reasoning',
@@ -127,7 +131,10 @@ function lisbonConversation(): ChatMessageData[] {
 function packingConversation(): ChatMessageData[] {
   const at = (time: string) => daysAgo(1, time);
   return [
-    entry('agent-packing', 1, 'reader', at('18:40'), [text('Help me pack for the weekend.')]),
+    {
+      ...entry('agent-packing', 1, 'reader', at('18:40'), [text('Help me pack for the weekend.')]),
+      reactions: [{ emoji: '👍', participantIds: [plannerId] }],
+    },
     entry('agent-packing', 2, 'planner', at('18:40'), [
       text('A few questions first.'),
       {

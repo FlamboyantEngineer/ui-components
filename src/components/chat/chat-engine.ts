@@ -12,6 +12,7 @@ import {
 } from './chat-controller-state.js';
 import type { ChatMessageData, ChatTextToken } from './chat-parts.js';
 import type { ChatQuestionAnswer } from './chat-question.js';
+import { type ChatReactionChange, setChatReaction } from './chat-reactions.js';
 import {
   type ChatReaderResponse,
   createOutgoingMessage,
@@ -32,6 +33,11 @@ import {
 export type ChatMessagesUpdate = (
   messages: readonly ChatMessageData[],
 ) => readonly ChatMessageData[];
+
+/** A reaction the controller sets: by the assistant unless it names another participant. */
+export type ChatControllerReaction = Omit<ChatReactionChange, 'participantId'> & {
+  participantId?: string | undefined;
+};
 
 /** Dismisses what the last message waits for: denies its approvals, dismisses its questions. */
 function dismissWaiting(engine: ChatEngineContext) {
@@ -257,6 +263,13 @@ export function createChatEngine(
       // The host's update sees, and keeps, what the running reply streamed so far.
       if (engine.run) flushRun(engine, engine.run);
       patchState(engine, { messages: update(engine.store.get().messages) });
+    },
+    setReaction: ({ participantId, ...change }: ChatControllerReaction) => {
+      const reactor = participantId ?? engine.getConfig().assistantId;
+      if (engine.run) flushRun(engine, engine.run);
+      const { messages } = engine.store.get();
+      const next = setChatReaction(messages, { ...change, participantId: reactor });
+      if (next !== messages) patchState(engine, { messages: next });
     },
     resetConversation: (messages: readonly ChatMessageData[] = []) =>
       resetConversation(engine, messages),

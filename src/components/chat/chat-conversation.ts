@@ -3,9 +3,9 @@ import type {
   ChatMessageDelivery,
   ChatMessageStatus,
 } from '../chat-transcript/chat-transcript.js';
-import type { ReactionEntry } from '../reaction-bar/reaction-bar.js';
 import type { ChatFeedbackRating } from './chat-message-actions.js';
 import type { ChatPart } from './chat-part.js';
+import type { ChatReaction } from './chat-reactions.js';
 
 /** A person, or an assistant answering for software. */
 export type ChatParticipantKind = 'person' | 'assistant';
@@ -38,7 +38,8 @@ export interface ChatMessageData {
   isDeleted?: boolean | undefined;
   /** The id of the message this one replies to. */
   replyTo?: string | undefined;
-  reactions?: readonly ReactionEntry[] | undefined;
+  /** The reactions, from the reader, other people and assistants. */
+  reactions?: readonly ChatReaction[] | undefined;
   /** The reader's rating of an assistant reply. */
   feedback?: ChatFeedbackRating | undefined;
   /** What the assistant is doing while the message streams, such as `Searching recipes…`. */
