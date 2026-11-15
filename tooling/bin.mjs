@@ -3,7 +3,7 @@
 // built on it (specs/TOOLING.md, UIC-TOOLING-1.3). Each runs in the working directory, which npm sets
 // to the package root for its scripts, with that repository's tooling.config.mjs.
 
-const COMMANDS = ['check-references', 'check-specs', 'check-structure'];
+const COMMANDS = ['check-exports', 'check-references', 'check-specs', 'check-structure'];
 
 const [command] = process.argv.splice(2, 1);
 if (!command || !COMMANDS.includes(command)) {

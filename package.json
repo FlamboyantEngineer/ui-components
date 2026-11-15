@@ -195,6 +195,7 @@
     "changeset": "changeset",
     "release": "node scripts/release.mjs",
     "check:structure": "node tooling/bin.mjs check-structure",
+    "check:exports": "node tooling/bin.mjs check-exports",
     "pack:labs": "node scripts/pack-labs.mjs"
   },
   "peerDependencies": {

@@ -20,7 +20,7 @@ import {
   type TimeZoneEntry,
 } from './time-zones.js';
 
-export const timeZoneFieldHooks = createHooks('time-zone-field', []);
+const timeZoneFieldHooks = createHooks('time-zone-field', []);
 
 type SelectListProps = Exclude<SelectFieldProps<'single'>, { mode: 'tree' }>;
 
