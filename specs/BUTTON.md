@@ -242,7 +242,7 @@ Verification: `src/components/button/button-action.test.tsx`, `src/components/bu
 
 ## Button Group
 
-`ButtonGroup` holds a few related [Buttons](BUTTON.md), [Icon Buttons](BUTTON.md) or [Dropdown Menu](DROPDOWN-MENU.md) triggers in one labelled group, built on React Aria's `Group`. Its `density` spaces them apart and `attached` joins them into one control, `orientation` lays them out in a row or a column, and `justified` shares the group's length between them. Every button keeps its own tab stop; a row of tools that is one tab stop with arrow-key focus is a toolbar ([Action Row](ACTION-ROW.md), [Toolbar Scroller](TOOLBAR-SCROLLER.md)).
+`ButtonGroup` holds a few related [Buttons](BUTTON.md), [Icon Buttons](BUTTON.md) or [Dropdown Menu](DROPDOWN-MENU.md) triggers in one labelled group, built on React Aria's `Group`. Its `density` spaces them apart and `attached` joins them into one control, `orientation` lays them out in a row or a column, and `justified` shares the group's length between them. Every button keeps its own tab stop; a row of tools that is one tab stop with arrow-key focus is a toolbar ([Action Row](ACTION-ROW.md), [Toolbar Row](TOOLBAR-ROW.md)).
 
 ## UIC-BUTTON-22 - Group
 

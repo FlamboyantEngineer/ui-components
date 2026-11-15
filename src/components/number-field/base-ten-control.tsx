@@ -29,7 +29,7 @@ import {
 import { snapNumberValue } from './snap-number-value.js';
 import { findStepValue, toSortedStepValues, toStepValuePressProps } from './step-values.js';
 
-interface DecimalControlProps {
+interface BaseTenControlProps {
   state: FieldState<number | null>;
   control: FieldControlProps;
   config: NumberControlConfig;
@@ -155,7 +155,7 @@ function useSortedPresets(
   );
 }
 
-export function DecimalControl({ state, control, config, steps }: DecimalControlProps) {
+export function BaseTenControl({ state, control, config, steps }: BaseTenControlProps) {
   const {
     showStepper,
     startAdornment,

@@ -1,6 +1,6 @@
 # Attribution
 
-`Attribution` says who did something and when in one sentence, such as `Edited 5 minutes ago by Maria Santos`: literal text from a template, a live [Relative Time](RELATIVE-TIME.md) and the person's name, which can open their [User Card](USER-CARD.md). History rows, state timelines, change lists, activity feeds, comments and notifications use it, so every "who did it and when" reads one way.
+`Attribution` says who did something and when in one sentence, such as `Edited 5 minutes ago by Maria Santos`: literal text from a template, a live [Relative Time](RELATIVE-TIME.md) and the person's name, which can open a card about them through a [Preview Trigger](HOVER-CARD.md). History rows, state timelines, change lists, activity feeds, comments and notifications use it, so every "who did it and when" reads one way.
 
 ## UIC-ATTRIBUTION-1 - Contract
 

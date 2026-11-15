@@ -98,7 +98,7 @@ Verification: `src/components/number-field/unit-number.test.ts`, `src/components
 
 With `stepValues`, a list of numbers such as font sizes (`[8, 9, 10, 11, 12, 14, 18, 24]`), the increment button and plain Arrow Up shall move the value to the smallest preset above the number the input shows, and the decrement button and plain Arrow Down to the largest preset below it, and commit, so a value between presets (`13`) moves to the nearest one that way (`14` up, `12` down). The presets are read in ascending order whatever their order in the list, and those outside `minValue` and `maxValue` are left out. An empty value moves to the first preset going up and to the last going down. Past the last preset that way, the button is disabled and the key does nothing. Any number in the range can still be typed: without `step`, a typed value off the presets is kept rather than snapped or reported, and with `step` the range and step rules of UIC-NUMBER-FIELD-2.2 apply to it as usual. Each preset press steps once, keeping focus in the input; React Aria's own step and press-and-hold repeat are left out of it, and the mouse wheel does not step the field. Shift and Alt keep their `largeStep` and `smallStep` (UIC-NUMBER-FIELD-3.2). A read-only or disabled field refuses the steps, and an arrow that belongs to an input method composition is the input method's. An empty list steps by `step`. Presets apply to decimal fields without `units`.
 
-Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/decimal-control.tsx`, `src/components/number-field/step-values.ts`
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/base-ten-control.tsx`, `src/components/number-field/step-values.ts`
 Verification: `src/components/number-field/step-values.test.tsx`, `e2e/number-field.spec.ts`
 
 ### UIC-NUMBER-FIELD-3.6 - Step button glyphs
@@ -269,36 +269,36 @@ Both modes hide step buttons by default and share the same styling hooks and lab
 
 `NumberField valueType="decimal"` shall render a `Field` around a text field element (`ui-number-field__box`) holding a group (`ui-number-field__group`) with a decrement button, the input (`ui-number-field__input`) and an increment button. Its root is the field's root, which carries `ui-number-field` beside `ui-field`. The value is a decimal string or `null` for an empty field, which a field given no value, committed value or default starts with and Clear sets. The value, default, committed value, `onChange` and `onCommit` all take and give `string | null`.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`, `src/components/number-field/number-field-props.test.tsx`, `e2e/number-field-exact.spec.ts`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`, `src/components/number-field/number-field-props.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ### UIC-NUMBER-FIELD-9.2 - Canonical decimals
 
 A canonical decimal shall be an optional `-`, the whole digits without leading zeros and, when the value has a fraction, a `.` and its digits without trailing zeros, with no exponent and no `-0` (`0`, `-12.5`, `9007199254740993`). Every value the field sets (from typing, stepping, snapping and rounding) is canonical, and `toCanonicalDecimal(text)` gives the canonical form of any plain decimal text (`+1.50` reads `1.5`) or `null` for other text. A value the host gives is kept as given: a non-canonical decimal (`1.50`) shows and validates as its decimal and is never rewritten until the reader edits or steps it, and text that is no decimal shows as given and reports `decimalUnreadable` with the validity `badInput`. The field never converts a value through `Number` or `parseFloat`: `9007199254740993` and a value with more fraction digits than a number holds round-trip unchanged through typing, `onChange`, `onCommit`, controlled updates and the submitted form value.
 
-Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/number-field-exact.spec.ts`
+Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/decimal-value-field.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ### UIC-NUMBER-FIELD-9.3 - Locale text
 
 The input shall show the value in the `UiProvider` locale: the whole part as `Intl.NumberFormat` writes that exact integer (its sign and, with `formatOptions.useGrouping`, `true` by default, its grouping), then the locale's decimal separator and every fraction digit in the locale's digits, padded with zeros to `formatOptions.minimumFractionDigits`. Nothing is rounded for display. Reading the reader's text skips group separators and spaces, reads the locale's digits and minus signs (`−` included) as their ASCII forms and the locale's decimal separator as the decimal point; where the locale does not group with `.`, a `.` reads as the decimal point too, so a pasted `1.5` reads in `fr-FR`. Empty text is an empty value. The input's `inputMode` is `decimal`.
 
 Implementation: `src/components/number-field/decimal-locale.ts`
-Verification: `src/components/number-field/decimal-locale.test.ts`, `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/number-field-exact.spec.ts`
+Verification: `src/components/number-field/decimal-locale.test.ts`, `src/components/number-field/decimal-value-field.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ### UIC-NUMBER-FIELD-9.4 - Draft and commit
 
 Typing shall change the input's text only: the draft stays apart from the value, which changes when Enter, Tab or focus leaving the field reads the draft, and Enter and leaving the field commit (UIC-FIELD-1.11). A draft that spells a decimal becomes the value, rounded and snapped (UIC-NUMBER-FIELD-10); a draft that spells none stays in the input and reports `decimalUnreadable` (validity `badInput`) until the reader corrects it, and the value keeps its last decimal. Leaving a field the reader did not edit changes nothing. An Enter that belongs to an input method composition is the input method's. A new controlled value, a restore, undo or the field menu replaces the draft with the value's text.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/number-field-exact.spec.ts`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ### UIC-NUMBER-FIELD-9.5 - Form value
 
 With `name`, the field shall submit its value through a hidden input as the value text (canonical whenever the field set it), and an empty value as an empty string; the visible input has no name. A disabled field submits nothing. A native form reset puts back the value the field had when it mounted, as for every field.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`
 
 ## UIC-NUMBER-FIELD-10 - Exact rules
 
@@ -306,36 +306,36 @@ Verification: `src/components/number-field/exact-decimal-field.test.tsx`
 
 `minValue`, `maxValue` and `step` shall be decimal strings. With `step`, values lie on a step grid that counts from `minValue`, or `0` without one; without `step` there is no grid, values only keep within the bounds, and the arrows and buttons add or subtract `1`. Every comparison and step is exact: steps of `0.1` from `0` reach `0.3`, never `0.30000000000000004`.
 
-Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/decimal-value-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-10.2 - Scale and rounding
 
 `scale` shall be the number of fraction digits the value keeps at most. A typed or stepped value with more is rounded to `scale` digits by `roundingMode`: `halfExpand` (the default) rounds half away from zero, `halfEven` rounds half to the even digit and `trunc` drops the extra digits. Without `scale` the field keeps every typed fraction digit.
 
-Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal.ts`, `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal.test.ts`, `src/components/number-field/decimal-value-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-10.3 - Commit behavior
 
 `commitBehavior` shall say what reading the draft does with a value outside the rules: `snap` (the default) clamps it into the range and, with a `step`, moves it to the nearest step (half a step away from the origin), so a range end off the grid stops at the last step inside it; `validate` keeps it, rounded to the scale, and the field reports it.
 
 Implementation: `src/components/number-field/decimal-rules.ts`, `src/components/number-field/decimal.ts`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-10.4 - Validation
 
 A value below `minValue` shall report `rangeUnderflow` and one above `maxValue` `rangeOverflow`, with the provider's messages and the bound in the locale; a value off the step grid of a given `step`, or with more fraction digits than `scale`, reports `stepMismatch` with the step (or the scale's smallest step, `0.01` for 2). These checks run before the caller's `validate`, and an empty value passes them; requiring a value is the field's (`isRequired`).
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-10.5 - Stepping
 
 Arrow Up and Arrow Down, and the increment and decrement buttons, shall step the decimal the input shows (the draft's, or the value while the draft spells none) by one `step` on the grid (by `1` without a `step`), within the bounds, and commit: a value off the grid moves to the next grid value that way, a value at the last grid value inside an end stays, and an empty field starts at `minValue`, or `0` within the bounds. The buttons are named by the provider strings `numberIncrease` and `numberDecrease` followed by the field's label, stay out of the tab order, keep focus in the input and are disabled at the end they point to. The buttons are drawn only with `showStepper` (`data-show-stepper` on the root); without it, the default, the arrows still step.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`, `src/components/number-field/decimal-stepper.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/number-field-exact.spec.ts`
+Implementation: `src/components/number-field/decimal-value-field.tsx`, `src/components/number-field/decimal-value-stepper.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ## UIC-NUMBER-FIELD-11 - Accessibility and states
 
@@ -343,22 +343,22 @@ Verification: `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/n
 
 The input shall have the role `spinbutton`, be named by the field's label, described by its description and message, and carry `aria-required` and `aria-invalid` as the field's state says. Its `aria-valuetext` is the value's exact locale text and `aria-valuemin`, `aria-valuemax` and `aria-valuenow` approximate the bounds and value as numbers for assistive technology only. A read-only field keeps its text selectable but refuses edits and steps and disables its buttons; a disabled field disables the input and its buttons.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`, `e2e/number-field-exact.spec.ts`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`, `e2e/number-field-exact.spec.ts`
 
 ### UIC-NUMBER-FIELD-11.2 - Field behaviour
 
 `NumberField valueType="decimal"` shall show each validation status, show dirty state, with a restore button given `showRestoreButton`, undo and redo with the field's chords, and offer the field's menu, whose Clear empties the value, Reset puts the committed value back and Set to default puts the default back.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`, `src/components/field/field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal-value-field.tsx`, `src/components/field/field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-11.3 - Hooks and caller attributes
 
 The field shall carry the hooks below on top of the field's, append the caller's `className` to its root and forward `id`, `ref` and caller `data-*` attributes to it. Each field holds its own draft, so several fields on a page are independent.
 
-Implementation: `src/components/number-field/exact-decimal-field.tsx`
-Verification: `src/components/number-field/exact-decimal-field.test.tsx`
+Implementation: `src/components/number-field/decimal-value-field.tsx`
+Verification: `src/components/number-field/decimal-value-field.test.tsx`
 
 ## Hooks
 

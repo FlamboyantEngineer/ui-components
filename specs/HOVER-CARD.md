@@ -1,6 +1,6 @@
 # Hover Card
 
-`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card Trigger](HOVER-CARD.md#uic-preview-trigger-13---opening-on-hover-and-focus) opens its hover cards through it.
+`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [Preview Trigger](#uic-hover-card-43---opening-on-hover-and-focus) opens its hover cards through it.
 
 ## UIC-HOVER-CARD-1 - Opening and closing
 
@@ -66,7 +66,7 @@ Verification: `src/components/hover-card/hover-card-tag.test.tsx`
 
 ## Preview Trigger
 
-`PreviewTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card, usually a [User Card](USER-CARD.md), in a popover, on press or on hover and focus. [Presence Avatar](AVATAR.md), [Presence Strip](AVATAR-GROUP.md) and [Attribution](ATTRIBUTION.md) open cards through it. It imports no card or identity code itself, so a component that only wraps content in it, such as `Avatar`, does not load `UserCard`.
+`PreviewTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card, such as a person's details, in a popover, on press or on hover and focus. [Presence Avatar](AVATAR.md), [Presence Strip](AVATAR-GROUP.md) and [Attribution](ATTRIBUTION.md) open cards through it. It imports no card or identity code itself, so a component that only wraps content in it, such as `Avatar`, does not load the card's content.
 
 ## UIC-HOVER-CARD-4 - Trigger
 

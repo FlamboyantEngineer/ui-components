@@ -29,7 +29,7 @@ import {
   stepFrom,
   toDecimalRules,
 } from './decimal-rules.js';
-import { DecimalStepper } from './decimal-stepper.js';
+import { DecimalValueStepper } from './decimal-value-stepper.js';
 import type { NumberFieldCommitBehavior } from './number-field.js';
 import { numberFieldHooks } from './number-field-parts.js';
 
@@ -169,7 +169,7 @@ function isAtBound(value: string | null, bound: string | undefined, direction: 1
  * never as a JavaScript number: it reads and writes the locale's separators and digits, steps,
  * bounds, rounds and validates with exact decimal arithmetic, and submits the canonical text.
  */
-export function ExactDecimalField({
+export function DecimalValueField({
   valueType: _valueType,
   range: _range,
   display: _display,
@@ -211,7 +211,7 @@ export function ExactDecimalField({
       commitOnBlur
     >
       {(control) => (
-        <DecimalControl
+        <DecimalValueControl
           {...{ state, control, entry, showStepper, placeholder, autoComplete, enterKeyHint }}
           name={rest.name}
           aria={{
@@ -228,7 +228,7 @@ export function ExactDecimalField({
   );
 }
 
-interface DecimalControlProps extends Pick<
+interface DecimalValueControlProps extends Pick<
   NumberDecimalFieldProps,
   'placeholder' | 'autoComplete' | 'enterKeyHint' | 'name'
 > {
@@ -248,7 +248,7 @@ interface DecimalControlProps extends Pick<
 }
 
 /** The spinbutton on React Aria's text field, between its step buttons, and the form value. */
-function DecimalControl({
+function DecimalValueControl({
   state,
   control,
   entry,
@@ -258,10 +258,10 @@ function DecimalControl({
   isAtMinimum,
   isAtMaximum,
   ...text
-}: DecimalControlProps) {
+}: DecimalValueControlProps) {
   const [input, inputRef] = useForwardedRef<HTMLInputElement>(control.ref);
   const stepper = (direction: 1 | -1) => (
-    <DecimalStepper
+    <DecimalValueStepper
       direction={direction}
       slot={hooks.slot(direction === 1 ? 'increment' : 'decrement')}
       controlId={control.id}

@@ -25,7 +25,7 @@ export interface AttributionProps
   template?: string | undefined;
   /** Draws the person's avatar before their name. */
   showAvatar?: boolean | undefined;
-  /** A card about the person, usually a `UserCard`, that their name opens. */
+  /** A card about the person, such as their details, that their name opens. */
   card?: ReactNode;
   /** How `card` opens: on press (the default), or on hover and keyboard focus after a delay. */
   cardTrigger?: PreviewTriggerType | undefined;

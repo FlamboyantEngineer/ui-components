@@ -36,7 +36,15 @@ describe('NumberField props', () => {
     const numberRange: NumberFieldProps = { label: 'Price', range: true, value: 3 };
     // @ts-expect-error A number input does not hold a range.
     const rangeEntry: NumberFieldProps = { label: 'Price', value: [1, 4] };
-    expect([emptySlider, numberRange, rangeEntry]).toHaveLength(3);
+    // @ts-expect-error A decimal value reads in base 10 only; the error points at `radix`.
+    const decimalRadix: NumberFieldProps = { label: 'Exact', valueType: 'decimal', radix: 16 };
+    // @ts-expect-error A decimal value is never a slider; the error names `display`.
+    const decimalSlider: NumberFieldProps = {
+      label: 'Exact',
+      valueType: 'decimal',
+      display: 'slider',
+    };
+    expect([emptySlider, numberRange, rangeEntry, decimalRadix, decimalSlider]).toHaveLength(5);
     render(
       <>
         {modes.map((props) => (

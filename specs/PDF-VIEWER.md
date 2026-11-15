@@ -272,7 +272,7 @@ Verification: `src/components/pdf-viewer/use-pdf-search.test.tsx`
 
 ### UIC-PDF-VIEWER-6.1 - Toolbar
 
-The controls shall sit above the pages in a [Toolbar Scroller](TOOLBAR-SCROLLER.md) named with the provider's `controlsFor` string (`Report controls`), in this order: the caller's `leadingActions` (`ui-pdf-viewer__leading-actions`), the sidebar toggle (UIC-PDF-VIEWER-10.1), zoom, fit modes, page navigation, find (or the controls `renderSearch` draws), the document commands (UIC-PDF-VIEWER-9.1), then the caller's `actions` (`ui-pdf-viewer__actions`). The left and right arrow keys move focus along the toolbar; inside a text field they move the caret, and move focus only at the ends of the text; while an input method composes in the field (`isComposing`, or key code 229), every arrow is the input method's and moves no focus.
+The controls shall sit above the pages in a scrolling [Toolbar Row](TOOLBAR-ROW.md) named with the provider's `controlsFor` string (`Report controls`), in this order: the caller's `leadingActions` (`ui-pdf-viewer__leading-actions`), the sidebar toggle (UIC-PDF-VIEWER-10.1), zoom, fit modes, page navigation, find (or the controls `renderSearch` draws), the document commands (UIC-PDF-VIEWER-9.1), then the caller's `actions` (`ui-pdf-viewer__actions`). The left and right arrow keys move focus along the toolbar; inside a text field they move the caret, and move focus only at the ends of the text; while an input method composes in the field (`isComposing`, or key code 229), every arrow is the input method's and moves no focus.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`
@@ -448,7 +448,7 @@ Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `e2
 | Hook                              | Kind     | Values                  | Description                                                                                        |
 | --------------------------------- | -------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
 | `ui-pdf-viewer`                   | root     |                         | The viewer `<div>`.                                                                                |
-| `ui-pdf-viewer__toolbar`          | slot     |                         | The toolbar's wrapper, around a Toolbar Scroller.                                                  |
+| `ui-pdf-viewer__toolbar`          | slot     |                         | The toolbar's wrapper, around a scrolling Toolbar Row.                                             |
 | `ui-pdf-viewer__leading-actions`  | slot     |                         | The caller's leading actions at the start of the toolbar.                                          |
 | `ui-pdf-viewer__group`            | slot     |                         | The page navigation group, and the find row (a Find Bar beside its own `ui-find-bar` hooks).       |
 | `ui-pdf-viewer__page-field`       | slot     |                         | The page number field (React Aria `NumberField`).                                                  |

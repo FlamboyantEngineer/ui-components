@@ -4,7 +4,7 @@ import { expect, matrix, test } from './fixtures.js';
 const output = (page: Page, name: string) =>
   matrix(page, 'preview-trigger').locator(`[data-lab-output="${name}"]`);
 
-test.describe('User Card Trigger lab timings, defaults, plain buttons and commands', () => {
+test.describe('Preview Trigger lab timings, defaults, plain buttons and commands', () => {
   test('UIC-HOVER-CARD-4.3 opens and closes after the chosen delays', async ({ page, lab }) => {
     await lab.open('hover-card');
     const demo = matrix(page, 'preview-trigger').locator('[data-lab-demo="timed-hover"]');

@@ -82,7 +82,7 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 
 ### UIC-AVATAR-GROUP-11.5 - Person cards
 
-With `renderCard`, each visible person for whom it returns content shall be a presence avatar whose `card` is that content, usually a `UserCard`, so pressing the person opens it ([AVATAR.md](AVATAR.md)); `onAction` is still called. A person for whom it returns nothing opens no card.
+With `renderCard`, each visible person for whom it returns content shall be a presence avatar whose `card` is that content, such as the person's details, so pressing the person opens it ([AVATAR.md](AVATAR.md)); `onAction` is still called. A person for whom it returns nothing opens no card.
 
 Implementation: `src/components/avatar-group/avatar-group.tsx`, `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e/avatar-group-presence.spec.ts`

@@ -8,11 +8,13 @@
 //   - every component directory, and every util the package exports (src/utils/index.ts), is
 //     implemented by some spec;
 //   - the reference stylesheet partials (labs/reference/) style every root and slot hook and read
-//     every measured property hook.
+//     every measured property hook;
+//   - every relative link in specs/ and docs/ reaches a file, and a heading of it when it names one.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { reportProblems, root } from './lib/script.mjs';
+import { findBrokenLinks } from './lib/markdown-links.mjs';
+import { reportProblems, root, walk } from './lib/script.mjs';
 
 const specsDir = join(root, 'specs');
 
@@ -251,6 +253,14 @@ if (existsSync(referenceDir)) {
     }
   }
 }
+
+// A removed or renamed spec must not leave links to it behind.
+const markdownFiles = ['specs', 'docs']
+  .map((dir) => join(root, dir))
+  .filter((dir) => existsSync(dir))
+  .flatMap((dir) => walk(dir))
+  .filter((file) => file.endsWith('.md'));
+problems.push(...findBrokenLinks(root, markdownFiles));
 
 reportProblems(problems, {
   heading: 'Spec problems',

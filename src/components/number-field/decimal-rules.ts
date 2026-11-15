@@ -17,12 +17,7 @@ import {
   stepDecimal,
   toCanonicalDecimal,
 } from './decimal.js';
-
-/**
- * What a commit does with a value outside the range or off the step: `snap` moves it to the
- * nearest step inside the range; `validate` keeps it and reports an error.
- */
-export type DecimalFieldCommitBehavior = 'snap' | 'validate';
+import type { NumberFieldCommitBehavior } from './number-field.js';
 
 /** The rules a value is checked and moved by. */
 export interface DecimalRules extends DecimalBounds {
@@ -113,7 +108,7 @@ export function checkDecimal(
 export function settleDecimal(
   value: string,
   rules: DecimalRules,
-  behavior: DecimalFieldCommitBehavior,
+  behavior: NumberFieldCommitBehavior,
 ): string {
   const rounded =
     rules.scale === undefined ? value : roundDecimal(value, rules.scale, rules.roundingMode);

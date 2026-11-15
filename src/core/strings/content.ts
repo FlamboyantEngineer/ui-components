@@ -7,10 +7,6 @@ interface ContentStrings {
   rename: string;
   /** Names the field that renames an item, from its current name. */
   renameItem: (name: string) => string;
-  /** Opens the list of places the selected items can move to. */
-  moveTo: string;
-  /** The top level of a tree, as a place items can move to. */
-  topLevel: string;
   /** Names a list of completions. */
   suggestions: string;
   /** Names a message composer's text box. */

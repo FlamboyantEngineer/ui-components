@@ -1,6 +1,6 @@
 # Breadcrumb
 
-`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, draws its links through the provider's link renderer and shows a cut label whole in a tooltip. A trail that runs out of room can collapse its middle crumbs into a menu, and a crumb can offer the places beside it in a menu. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is a [Path](PATH.md).
+`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, draws its links through the provider's link renderer and shows a cut label whole in a tooltip. A trail that runs out of room can collapse its middle crumbs into a menu, and a crumb can offer the places beside it in a menu. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is text, joined by `formatPath` ([PATH-FORMAT.md](PATH-FORMAT.md)).
 
 ## UIC-BREADCRUMB-1 - Structure
 

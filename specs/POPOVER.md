@@ -1,6 +1,6 @@
 # Popover
 
-`Popover` is a dialog that floats against its trigger: an optional title and close button, then the reader's content, such as filters, a short form or details about a control. Unlike a [Modal](MODAL.md) it stays beside what opened it; unlike a [Tooltip](TOOLTIP.md) it may hold interactive content. It is built on React Aria's `DialogTrigger`, `Popover`, `OverlayArrow` and `Dialog`, which place it, flip it to stay in the viewport, move and contain focus, close it on Escape and outside presses, and return focus to the trigger. Its floating panel is shared with [Hover Card](HOVER-CARD.md), the anchored [Modal](MODAL.md#uic-modal-82---anchored-dialog) and the [User Card](USER-CARD.md) popover.
+`Popover` is a dialog that floats against its trigger: an optional title and close button, then the reader's content, such as filters, a short form or details about a control. Unlike a [Modal](MODAL.md) it stays beside what opened it; unlike a [Tooltip](TOOLTIP.md) it may hold interactive content. It is built on React Aria's `DialogTrigger`, `Popover`, `OverlayArrow` and `Dialog`, which place it, flip it to stay in the viewport, move and contain focus, close it on Escape and outside presses, and return focus to the trigger. Its floating panel is shared with [Hover Card](HOVER-CARD.md), the anchored [Modal](MODAL.md#uic-modal-82---anchored-dialog) and the [Preview Trigger](HOVER-CARD.md) popover.
 
 ## UIC-POPOVER-1 - Overlay
 

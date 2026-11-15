@@ -333,7 +333,6 @@
 .ui-dock-panel__launchers,
 .ui-tabs__list,
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip,
-.ui-toolbar-scroller__strip,
 .ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport {
   scrollbar-width: none;
 }
@@ -343,7 +342,6 @@
 .ui-dock-panel__launchers::-webkit-scrollbar,
 .ui-tabs__list::-webkit-scrollbar,
 .ui-toolbar-row[data-overflow='scroll'] > .ui-toolbar-row__strip::-webkit-scrollbar,
-.ui-toolbar-scroller__strip::-webkit-scrollbar,
 .ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport::-webkit-scrollbar {
   display: none;
 }

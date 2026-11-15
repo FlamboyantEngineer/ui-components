@@ -1,6 +1,6 @@
 import { expect, matrix, test } from './fixtures.js';
 
-test.describe('User Card Trigger lab', () => {
+test.describe('Preview Trigger lab', () => {
   test('UIC-HOVER-CARD-4.3 opens the first hover preview after programmatic trigger focus', async ({
     page,
     lab,

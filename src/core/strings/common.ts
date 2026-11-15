@@ -158,8 +158,6 @@ interface CommonStrings {
    * top and bottom (`vertical`), left and right (`horizontal`), or the block or inline start and end.
    */
   linkSides: (group: 'all' | 'vertical' | 'horizontal' | 'block' | 'inline') => string;
-  /** The action that signs, in a signature dialog. */
-  sign: string;
   /** Titles the question asked before leaving unsaved changes. */
   unsavedChanges: string;
   /** Asks to save unsaved changes before leaving. */

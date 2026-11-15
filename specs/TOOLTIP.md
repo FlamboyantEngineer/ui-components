@@ -133,14 +133,14 @@ Verification: `src/components/tooltip/truncation-tooltip.test.tsx`, `e2e/tooltip
 
 ### UIC-TOOLTIP-3.5 - Visual only
 
-The panel shall have `role="tooltip"`, show the children's text in the Tooltip's `default` variant, also carry the `ui-truncation-tooltip__panel` class, and be visual only: because the text is already the accessible content, the component adds no `aria-describedby` and never moves focus. The panel holds a copy of the text's markup taken from the page, hidden from assistive technology and inert, with every `id` removed: it renders no second instance of the children, so it owns no ids, refs or focusable elements, and a ref, id or control in the children stays the page's one. The copy keeps the markup's direction and formatting, such as a [Path](PATH.md)'s left-to-right isolation. `placement` (`top` by default) chooses the preferred side, flipping when it does not fit. Inside a control that has its own [Tooltip](TOOLTIP.md), the panel keeps a separate id and is positioned against the text.
+The panel shall have `role="tooltip"`, show the children's text in the Tooltip's `default` variant, also carry the `ui-truncation-tooltip__panel` class, and be visual only: because the text is already the accessible content, the component adds no `aria-describedby` and never moves focus. The panel holds a copy of the text's markup taken from the page, hidden from assistive technology and inert, with every `id` removed: it renders no second instance of the children, so it owns no ids, refs or focusable elements, and a ref, id or control in the children stays the page's one. The copy keeps the markup's direction and formatting, such as the left-to-right isolation of a folder path. `placement` (`top` by default) chooses the preferred side, flipping when it does not fit. Inside a control that has its own [Tooltip](TOOLTIP.md), the panel keeps a separate id and is positioned against the text.
 
 Implementation: `src/components/tooltip/truncation-tooltip.tsx`, `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/truncation-tooltip.test.tsx`, `e2e/tooltip-truncation-tooltip.spec.ts`
 
 ### UIC-TOOLTIP-3.6 - Hooks and caller attributes
 
-`TruncationTooltip` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to the text, except the pointer handlers it owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`). A component whose root is the text that may be cut, such as [Path](PATH.md), renders its root as a `TruncationTooltip`.
+`TruncationTooltip` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes ([UIC-COMPOSITION-2.4](COMPOSITION.md#uic-composition-24---native-props-of-containers): all of them but `dangerouslySetInnerHTML`) to the text, except the pointer handlers it owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`). A component whose root is the text that may be cut renders its root as a `TruncationTooltip`.
 
 Implementation: `src/components/tooltip/truncation-tooltip.tsx`
 Verification: `src/components/tooltip/truncation-tooltip.test.tsx`
