@@ -141,7 +141,7 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2
 
 ### UIC-COMMENT-THREAD-2.2 - Comment menu
 
-When the comment has `actions`, `onEdit` or `onDelete`, its header shall end with an icon-only `DropdownMenu` (`ui-comment-thread-reply__actions`) named by the provider's `commentActions` string, listing `actions`, then Edit (`edit` glyph) with `onEdit`, then Delete (`delete` glyph, `danger` tone) with `onDelete`. Choosing a caller action calls `onAction` with its `id`; the built-in actions use the ids `edit` and `delete`.
+When the comment has `actions`, `onEdit` or `onDelete`, its header shall end with an icon-only `DropdownMenu` (`ui-comment-thread-reply__actions`) named by the provider's `commentActions` string, listing Edit (`edit` glyph) with `onEdit`, then Delete (`delete` glyph, `danger` tone) with `onDelete`, then `actions`, so a caller's Copy link comes last. Choosing a caller action calls `onAction` with its `id`; the built-in actions use the ids `edit` and `delete`.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`

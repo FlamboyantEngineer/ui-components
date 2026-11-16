@@ -127,6 +127,8 @@ describe('CommentThreadReply', () => {
         text="Hi"
         actions={[{ id: 'copy-link', label: 'Copy link', icon: LinkGlyph }]}
         onAction={onAction}
+        onEdit={() => {}}
+        onDelete={() => {}}
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Comment actions' });
@@ -137,7 +139,7 @@ describe('CommentThreadReply', () => {
       within(menu)
         .getAllByRole('menuitem')
         .map((item) => item.textContent),
-    ).toEqual(['Copy link']);
+    ).toEqual(['Edit', 'Delete', 'Copy link']);
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Copy link' }));
     expect(onAction).toHaveBeenCalledWith('copy-link');
     expectHooksMatchSpec(container, 'COMMENT-THREAD', {

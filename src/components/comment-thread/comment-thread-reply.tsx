@@ -53,7 +53,7 @@ export interface CommentThreadReplyProps
   children?: ReactNode;
   /** Content under the body, usually a `ReactionBar`. */
   reactions?: ReactNode;
-  /** Actions of the comment's menu, before the built-in Edit and Delete. */
+  /** Actions of the comment's menu, after the built-in Edit and Delete. */
   actions?: readonly MenuEntry[] | undefined;
   /** Called with the `id` of a caller action chosen in the menu. */
   onAction?: ((key: Key) => void) | undefined;
@@ -97,26 +97,20 @@ const hooks = createHooks('comment-thread-reply', [
 const editKey = 'edit';
 const deleteKey = 'delete';
 
-/**
- * The comment's menu entries: the caller's actions, then Edit and Delete when offered; in a thread's
- * header menu, Edit and Delete come first.
- */
-function useMenuEntries(
-  {
-    actions = [],
-    onEdit,
-    onDelete,
-  }: Pick<CommentThreadReplyProps, 'actions' | 'onEdit' | 'onDelete'>,
-  isBuiltInFirst: boolean,
-): MenuEntry[] {
+/** The comment's menu entries: Edit and Delete when offered, then the caller's actions. */
+function useMenuEntries({
+  actions = [],
+  onEdit,
+  onDelete,
+}: Pick<CommentThreadReplyProps, 'actions' | 'onEdit' | 'onDelete'>): MenuEntry[] {
   const strings = useUiStrings();
-  const builtIn = [
+  return [
     ...(onEdit ? [{ id: editKey, label: strings.edit, icon: EditGlyph }] : []),
     ...(onDelete
       ? [{ id: deleteKey, label: strings.delete, icon: DeleteGlyph, tone: 'danger' as const }]
       : []),
+    ...actions,
   ];
-  return isBuiltInFirst ? [...builtIn, ...actions] : [...actions, ...builtIn];
 }
 
 type TimeOptions = Pick<CommentThreadReplyProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
@@ -171,7 +165,7 @@ function CommentMenu({
   // A confirmation whose Delete is withdrawn ends, rather than coming back with it.
   if (isConfirming && !onDelete) setIsConfirming(false);
   const isInHeader = useContext(FirstCommentMenuContext) !== null;
-  const entries = useMenuEntries({ actions, onEdit, onDelete }, isInHeader);
+  const entries = useMenuEntries({ actions, onEdit, onDelete });
   const runAction = (key: Key) => {
     if (key === editKey && onEdit) onEditStart();
     else if (key === deleteKey && onDelete && confirmsDelete) setIsConfirming(true);
