@@ -459,6 +459,33 @@ describe('CharacterGrid', () => {
     expect(container.querySelector('.ui-character-grid__preview-code')).toHaveTextContent('U+20AC');
   });
 
+  it('UIC-CHARACTER-GRID-1.5 carries the caller font weight, style and color', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <CharacterGrid
+        categories={categories}
+        onSelect={() => {}}
+        fontWeight={700}
+        fontStyle="italic"
+        color="rgb(200, 0, 0)"
+      />,
+    );
+    const euro = cell('Euro sign');
+    expect(euro.style.fontWeight).toBe('700');
+    expect(euro.style.fontStyle).toBe('italic');
+    expect(euro.style.color).toBe('rgb(200, 0, 0)');
+    expect(euro.style.fontFamily).toBe('');
+    await user.hover(euro);
+    const preview = container.querySelector<HTMLElement>('.ui-character-grid__preview-char');
+    expect(preview?.style.fontStyle).toBe('italic');
+  });
+
+  it('UIC-CHARACTER-GRID-1.6 shows each cell symbol and code in its tooltip', () => {
+    renderGrid();
+    expect(within(cell('Euro sign')).getByTitle('€ U+20AC')).toHaveTextContent('€');
+    expect(cell('Euro sign')).toHaveAccessibleName('Euro sign');
+  });
+
   it('UIC-CHARACTER-GRID-1.5 leaves the font and columns to the stylesheet by default', () => {
     const { container } = renderGrid();
     expect(container.querySelector('.ui-character-grid__section')).not.toHaveAttribute('style');

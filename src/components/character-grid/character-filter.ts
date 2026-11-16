@@ -30,6 +30,16 @@ export function formatCodePoints(char: string): string {
 }
 
 /**
+ * How the character is typed or written as a code: `Alt+0169` for one code point up to U+00FF,
+ * else its code points in Unicode notation.
+ */
+export function formatCharacterCode(char: string): string {
+  const points = Array.from(char);
+  const point = points.length === 1 ? (char.codePointAt(0) ?? 0) : 0x100;
+  return point <= 0xff ? `Alt+0${String(point).padStart(3, '0')}` : formatCodePoints(char);
+}
+
+/**
  * Whether a character matches a search: its name holds every term of `query` (ignoring case and
  * accents), or `query` is the character itself or its code point (`U+00B0`, `u+b0`). The terms and
  * code point are read once per query, not once per character.

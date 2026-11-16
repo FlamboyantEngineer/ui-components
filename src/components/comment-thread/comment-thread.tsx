@@ -1,7 +1,6 @@
 'use client';
 
 import { isValidElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -25,6 +24,7 @@ import {
 } from './comment-thread-activity.js';
 import { CommentThreadContext } from './comment-thread-context.js';
 import { commentThreadHooks as hooks } from './comment-thread-hooks.js';
+import { useResolvedState } from './use-resolved-state.js';
 
 export interface CommentThreadProps
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
@@ -36,8 +36,11 @@ export interface CommentThreadProps
   isResolved?: boolean | undefined;
   /** Whether the discussion starts closed, uncontrolled. */
   defaultResolved?: boolean | undefined;
-  /** Offers Resolve and Reopen; called with the new state. */
-  onResolvedChange?: ((isResolved: boolean) => void) | undefined;
+  /**
+   * Offers Resolve and Reopen; called with the new state. A returned promise holds the button
+   * pending, and the state flips once it resolves.
+   */
+  onResolvedChange?: ((isResolved: boolean) => void | Promise<unknown>) | undefined;
   /** Shows Resolve and Reopen as icon buttons, named by their label, which their tooltip shows. */
   resolveIconOnly?: boolean | undefined;
   /**
@@ -203,11 +206,13 @@ function CommentThreadHeader({
   quote,
   isResolved,
   onToggle,
+  isPending,
   iconOnly,
   statusIconOnly,
 }: Pick<CommentThreadProps, 'quote'> & {
   isResolved: boolean;
   onToggle: (() => void) | null;
+  isPending: boolean;
   iconOnly: boolean;
   statusIconOnly: boolean | undefined;
 }) {
@@ -225,6 +230,7 @@ function CommentThreadHeader({
           size="sm"
           className={hooks.slotClass('resolve')}
           onPress={onToggle}
+          isPending={isPending}
           {...(iconOnly ? { icon, label, tooltip: label } : { startIcon: icon, children: label })}
         />
       ) : null}
@@ -292,11 +298,11 @@ export function CommentThread({
 }: CommentThreadProps) {
   const strings = useUiStrings();
   const threadContext = useMemo(() => ({ isReadOnly, mentions }), [isReadOnly, mentions]);
-  const [resolved, setResolved] = useControllableState(
+  const { resolved, isPending, toggle } = useResolvedState({
     isResolved,
     defaultResolved,
     onResolvedChange,
-  );
+  });
   const comments = flattenChildren(children);
   // The composer mounts once replying is possible, then stays: hidden while it is not.
   const canReply = !isReadOnly && !resolved;
@@ -323,7 +329,8 @@ export function CommentThread({
         <CommentThreadHeader
           quote={quote}
           isResolved={resolved}
-          onToggle={onResolvedChange && !isReadOnly ? () => setResolved(!resolved) : null}
+          onToggle={onResolvedChange && !isReadOnly ? toggle : null}
+          isPending={isPending}
           iconOnly={resolveIconOnly}
           statusIconOnly={statusIconOnly}
         />

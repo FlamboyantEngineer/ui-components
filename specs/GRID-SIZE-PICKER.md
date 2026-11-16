@@ -13,7 +13,7 @@ Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/
 
 ### UIC-GRID-SIZE-PICKER-1.2 - Preview and readout
 
-The picker shall preview one size and keep one focused cell, both 1 × 1 at first. Hovering a cell with a pointer previews its size without moving the focused cell; focusing a cell, or moving with the keys, makes it both the focused cell and the preview. Every cell within the previewed size publishes `data-in-range`, the cell at the previewed size publishes `data-active`, the focused cell holds the grid's single tab stop, and the readout shows the provider's `gridSize` string for the preview (`3 × 4`). The preview stays when the pointer leaves the grid.
+The picker shall preview one size and keep one focused cell, both 1 × 1 at first. Hovering a cell with a pointer previews its size without moving the focused cell; focusing a cell, or moving with the keys, makes it both the focused cell and the preview. Every cell within the previewed size publishes `data-in-range`, the cell at the previewed size publishes `data-active`, the focused cell holds the grid's single tab stop, and the readout shows the provider's `gridSize` string for the preview (`3 × 4`), which a host rewords through the provider's messages (`Insert table: 3 x 4`); where it sits around the grid is the host stylesheet's. The preview stays when the pointer leaves the grid.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`

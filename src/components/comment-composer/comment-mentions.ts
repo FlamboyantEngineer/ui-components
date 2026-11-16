@@ -44,6 +44,13 @@ export interface CommentMentionOptions {
   serialize?: ((candidate: MentionCandidate) => string) | undefined;
   /** Splits stored text into text and mentions; the inverse of `serialize`. Defaults to `parseMentions`. */
   parse?: ((text: string) => readonly CommentTextSegment[]) | undefined;
+  /**
+   * Turns pasted plain text into text and mentions, such as a reserved name into its mention
+   * token; nothing pastes it as plain text. Typed text is never turned into mentions.
+   */
+  resolvePaste?: ((text: string) => readonly CommentTextSegment[] | null | undefined) | undefined;
+  /** The element the suggestion list stays inside, such as an editor's stage. Defaults to the body. */
+  getListBoundary?: (() => Element | null) | undefined;
 }
 
 /** What a comment composer hands the text box that takes mentions. */
@@ -61,7 +68,10 @@ export interface CommentMentionFieldProps {
 }
 
 /** Mentions for comments, made by `createCommentMentions` from the `comment-composer/rich` entry point. */
-export interface CommentMentions extends Required<CommentMentionOptions> {
+export interface CommentMentions
+  extends
+    Required<Pick<CommentMentionOptions, 'search' | 'serialize' | 'parse'>>,
+    Pick<CommentMentionOptions, 'resolvePaste' | 'getListBoundary'> {
   /** Draws the text box that takes mentions, which needs the rich text peers. */
   renderField: (field: CommentMentionFieldProps) => ReactNode;
 }

@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { MathPreview } from './math-preview.js';
 import type { MathRender, MathRenderer } from './math-render.js';
 
@@ -86,9 +87,22 @@ describe('MathPreview', () => {
   it('UIC-MATH-PREVIEW-1.2 shows why source does not typeset, with the source', async () => {
     const { container } = render(<MathPreview source="\frac{1" />);
     await waitFor(() => expect(rootOf(container)).toHaveAttribute('data-status', 'invalid'));
-    expect(container.querySelector('.ui-math-preview__error')).toHaveTextContent(/expected '}'/);
+    expect(container.querySelector('.ui-math-preview__error')).toHaveTextContent('Invalid math');
+    expect(container.querySelector('.ui-math-preview__detail')).toHaveTextContent(/expected '}'/);
     expect(container.querySelector('.ui-math-preview__source')).toHaveTextContent('\\frac{1');
-    expectHooksMatchSpec(container, 'MATH-PREVIEW', { slots: ['error', 'source'] });
+    expectHooksMatchSpec(container, 'MATH-PREVIEW', { slots: ['error', 'detail', 'source'] });
+  });
+
+  it('UIC-MATH-PREVIEW-1.2 lets the host replace the fixed message through the provider', async () => {
+    const { container } = render(
+      <UiProvider messages={{ mathInvalid: 'Not valid math code' }}>
+        <MathPreview source="\frac{1" />
+      </UiProvider>,
+    );
+    await waitFor(() => expect(rootOf(container)).toHaveAttribute('data-status', 'invalid'));
+    expect(container.querySelector('.ui-math-preview__error')).toHaveTextContent(
+      'Not valid math code',
+    );
   });
 
   it('UIC-MATH-PREVIEW-1.2 refuses long source and reports renderer failures', async () => {
@@ -100,6 +114,7 @@ describe('MathPreview', () => {
       'Longer than 2 characters, so not previewed.',
     );
     expect(renderer).not.toHaveBeenCalled();
+    expect(container.querySelector('.ui-math-preview__detail')).toBeNull();
     rerender(<MathPreview source="x+y" renderer={renderer} />);
     expect(await screen.findByText('Renderer offline.')).toBeInTheDocument();
   });

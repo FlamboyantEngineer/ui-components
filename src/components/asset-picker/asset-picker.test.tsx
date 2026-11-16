@@ -1,7 +1,8 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { AssetPicker, type AssetPickerItem } from './asset-picker.js';
 
 const assets: AssetPickerItem[] = [
@@ -52,6 +53,19 @@ describe('AssetPicker', () => {
     expectHooksMatchSpec(container, 'ASSET-PICKER', {
       slots: ['search', 'results', 'item', 'thumbnail', 'name', 'actions'],
     });
+  });
+
+  it('UIC-ASSET-PICKER-1.1 shows a labelled stand-in for a thumbnail that fails to load', async () => {
+    const { container } = renderPicker();
+    await waitFor(() => expect(within(grid()).getAllByRole('row')).toHaveLength(2));
+    const thumbnail = requireDefined(
+      container.querySelector<HTMLElement>('.ui-asset-picker__thumbnail'),
+    );
+
+    fireEvent.error(requireDefined(thumbnail.querySelector('img')));
+    expect(thumbnail).toHaveAttribute('data-status', 'error');
+    expect(thumbnail.querySelector('.ui-image__fallback')).toHaveTextContent('No preview');
+    expect(within(grid()).getByRole('row', { name: 'Loaf' })).toBeInTheDocument();
   });
 
   it('UIC-ASSET-PICKER-1.1 says when nothing matches and when the search fails', async () => {

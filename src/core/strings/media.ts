@@ -23,6 +23,8 @@ interface MediaStrings {
   assetResults: string;
   /** Says an asset picker's search found nothing. */
   assetsEmpty: string;
+  /** Stands in a result's thumbnail when the image fails to load. */
+  assetThumbnailUnavailable: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */

@@ -13,7 +13,7 @@ Verification: `src/components/math-preview/math-preview.test.tsx`, `e2e/math-pre
 
 ### UIC-MATH-PREVIEW-1.2 - Invalid source
 
-A source that does not typeset shall show the renderer's message in `ui-math-preview__error`, followed by the source as written in `ui-math-preview__source`. A source longer than `maxLength` characters (10000 by default) is not typeset; its error is the provider string `mathTooLong`. A renderer that throws or rejects shows its error's message.
+A source that does not typeset shall show the provider string `mathInvalid` in `ui-math-preview__error`, then the renderer's message, the reason, in `ui-math-preview__detail`, then the source as written in `ui-math-preview__source`; a host replaces the fixed message through the provider's strings. A source longer than `maxLength` characters (10000 by default) is not typeset; its error is the provider string `mathTooLong`. A source that is too long shows no detail. A renderer that throws or rejects shows its error's message as the detail.
 
 Implementation: `src/components/math-preview/math-preview.tsx`, `src/components/math-preview/math-render.ts`
 Verification: `src/components/math-preview/math-preview.test.tsx`, `e2e/math-preview.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/math-preview/math-field.test.tsx`, `e2e/math-previ
 
 ### UIC-MATH-PREVIEW-2.2 - Commit, restore and errors
 
-The source shall follow the field's value contract (`value`/`defaultValue`/`committedValue` with `onChange` and `onCommit`, UIC-FIELD-1). Enter breaks the line; focus leaving the field commits, and Escape on a changed source restores the committed source and goes no further, unless an input method is composing. When the source does not typeset, the reason is announced through a visually hidden status (`ui-math-field__status`, `role="status"`). `isReadOnly` and `isDisabled` lock the editor as for every field.
+The source shall follow the field's value contract (`value`/`defaultValue`/`committedValue` with `onChange` and `onCommit`, UIC-FIELD-1). Enter breaks the line; focus leaving the field commits, and Escape on a changed source restores the committed source and goes no further, unless an input method is composing. When the source does not typeset, `mathInvalid` and the reason are announced through a visually hidden status (`ui-math-field__status`, `role="status"`). `isReadOnly` and `isDisabled` lock the editor as for every field.
 
 Implementation: `src/components/math-preview/math-field.tsx`
 Verification: `src/components/math-preview/math-field.test.tsx`, `e2e/math-preview.spec.ts`
@@ -85,7 +85,8 @@ Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-prev
 | `ui-math-preview`          | root      |                                        | The preview.                                             |
 | `ui-math-preview__math`    | slot      |                                        | The typeset MathML.                                      |
 | `ui-math-preview__pending` | slot      |                                        | The note shown before anything has typeset.              |
-| `ui-math-preview__error`   | slot      |                                        | Why the source does not typeset.                         |
+| `ui-math-preview__error`   | slot      |                                        | That the source does not typeset, or is too long.        |
+| `ui-math-preview__detail`  | slot      |                                        | The renderer's reason, after the error.                  |
 | `ui-math-preview__source`  | slot      |                                        | The source as written, after an error.                   |
 | `ui-math-field`            | root      |                                        | The math field (also `ui-field`).                        |
 | `ui-math-field__editor`    | slot      |                                        | The source editor (also `ui-code-editor`).               |

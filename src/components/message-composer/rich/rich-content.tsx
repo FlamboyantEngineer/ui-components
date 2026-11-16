@@ -173,9 +173,11 @@ function useEmptyState(completions: RichCompletions) {
 function RichCompletionList({
   completions,
   rootRef,
+  boundary,
 }: {
   completions: RichCompletions;
   rootRef: RefObject<HTMLDivElement | null>;
+  boundary: Element | null | undefined;
 }) {
   const renderEmptyState = useEmptyState(completions);
   return (
@@ -187,6 +189,7 @@ function RichCompletionList({
       onOpenChange={(open) => (open ? undefined : completions.close())}
       onShownChange={completions.setShown}
       anchorRef={rootRef}
+      boundaryElement={boundary}
       items={completions.matches}
       activeKey={completions.activeItem?.id ?? null}
       onActiveKeyChange={(key) => completions.setActiveKey(String(key))}
@@ -263,7 +266,13 @@ export function RichComposerContent(editor: RichComposerEditorProps) {
         aria-placeholder={props.placeholder}
         aria-disabled={isEditable ? undefined : true}
       />
-      {hasCompletions ? <RichCompletionList completions={completions} rootRef={rootRef} /> : null}
+      {hasCompletions ? (
+        <RichCompletionList
+          completions={completions}
+          rootRef={rootRef}
+          boundary={props.completionBoundary}
+        />
+      ) : null}
       <VisuallyHidden role="status">{status}</VisuallyHidden>
     </>
   );

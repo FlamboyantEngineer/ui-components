@@ -65,6 +65,8 @@ export interface CompletionListProps extends RefProps<HTMLElement>, BaseProps, A
    * list below, as tall as the room below allows, so it never covers the line being typed.
    */
   shouldFlip?: boolean | undefined;
+  /** The element the list stays inside, such as an editor's stage. Defaults to the document's body. */
+  boundaryElement?: Element | null | undefined;
   items: readonly CompletionListItem[];
   /** The active option, which the editor names in `aria-activedescendant`. */
   activeKey: Key | null;
@@ -194,6 +196,11 @@ function useShownList({
   return isShown;
 }
 
+/** Whether the popover may flip above its anchor, and the element it stays inside. */
+function toPopoverBounds({ shouldFlip = true, boundaryElement }: CompletionListProps) {
+  return boundaryElement ? { shouldFlip, boundaryElement } : { shouldFlip };
+}
+
 /**
  * A list of completions for an editor that keeps focus and owns the caret: a listbox in a
  * non-modal popover against an anchor, with the active option's documentation and a footer. It
@@ -233,7 +240,7 @@ export function CompletionList(props: CompletionListProps) {
         triggerRef={anchorRef}
         {...(props.getTargetRect ? { getTargetRect: props.getTargetRect } : {})}
         placement="bottom start"
-        shouldFlip={props.shouldFlip ?? true}
+        {...toPopoverBounds(props)}
         shouldUpdatePosition={shouldUpdatePosition}
         offset={DEFAULT_POINT_OFFSET}
         style={{ ...triggerWidthProperty, zIndex }}

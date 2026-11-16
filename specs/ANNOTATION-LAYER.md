@@ -96,6 +96,27 @@ Verification: `src/components/annotation-layer/annotation-margin-icons.test.tsx`
 Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-marker.tsx`
 Verification: `src/components/annotation-layer/annotation-margin.test.tsx`, `e2e/annotation-layer.spec.ts`
 
+### UIC-ANNOTATION-LAYER-2.8 - Cards above the margin's top
+
+With `allowsOverflowAbove`, `stackAnnotationCards` (and the margin, through the prop of the same name) shall not hold the first card at the margin's top: where the cards before the active one do not fit between the top and the active card's anchor, they start above the top, so the active card stays level with its anchor even in a dense cluster at the start of the content. Below, cards already extend the margin's `min-height` (UIC-ANNOTATION-LAYER-2.2). The host's stylesheet lets the margin's overflow show.
+
+Implementation: `src/components/annotation-layer/stack-cards.ts`, `src/components/annotation-layer/annotation-margin.tsx`
+Verification: `src/components/annotation-layer/stack-cards.test.ts`
+
+### UIC-ANNOTATION-LAYER-2.9 - Focus leaving the margin
+
+With `clearsActiveOnBlur`, focus leaving the margin, and any popup a card opened elsewhere in the document, shall make no annotation active (`onCurrentKeyChange(null)`), once focus has settled outside. Focus moving between cards, or between a card and a popup it rendered, keeps the active annotation. Without it, the active annotation stays until another becomes active.
+
+Implementation: `src/components/annotation-layer/margin-focus.ts`, `src/components/annotation-layer/annotation-margin.tsx`
+Verification: `src/components/annotation-layer/annotation-margin.test.tsx`
+
+### UIC-ANNOTATION-LAYER-2.10 - Menus in a card
+
+Focus that lands on a control in a card that opens a menu or another popup (`aria-haspopup` other than `false`), or inside a popup a card rendered elsewhere in the document, shall not make the card's annotation active (UIC-ANNOTATION-LAYER-2.4), so the first press on an inactive card's menu button opens its menu without selecting the card or moving it. Focus on the card itself or any other control in it activates it as before.
+
+Implementation: `src/components/annotation-layer/margin-focus.ts`, `src/components/annotation-layer/annotation-margin.tsx`
+Verification: `src/components/annotation-layer/annotation-margin.test.tsx`
+
 ## UIC-ANNOTATION-LAYER-3 - Accessibility and hooks
 
 ### UIC-ANNOTATION-LAYER-3.1 - Decorative marks, listed cards

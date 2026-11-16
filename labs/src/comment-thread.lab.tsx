@@ -128,7 +128,7 @@ function LiveThread() {
   return (
     <div>
       <Switch isSelected={failNext} onChange={setFailNext}>
-        Fail the next reply, edit or delete
+        Fail the next reply, edit, delete or resolve
       </Switch>{' '}
       <Switch isSelected={canChange} onChange={setCanChange}>
         Allow changing my comments
@@ -137,7 +137,9 @@ function LiveThread() {
         quote={quote}
         onReply={reply}
         defaultResolved={false}
-        onResolvedChange={(isResolved) => setLastAction(isResolved ? 'resolved' : 'reopened')}
+        onResolvedChange={(isResolved) =>
+          settle(() => setLastAction(isResolved ? 'resolved' : 'reopened'))
+        }
         error={error}
         data-lab-thread="live"
       >

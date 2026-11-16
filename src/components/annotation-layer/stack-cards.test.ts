@@ -42,6 +42,17 @@ describe('stackAnnotationCards', () => {
     ]);
   });
 
+  it('UIC-ANNOTATION-LAYER-2.8 lets the cards before the active one start above the top with allowsOverflowAbove', () => {
+    expect(
+      stackAnnotationCards(cards, { currentKey: 'b', gap: 10, allowsOverflowAbove: true }),
+    ).toEqual([
+      { id: 'a', top: -40, isOrphaned: false },
+      { id: 'b', top: 20, isOrphaned: false },
+      { id: 'c', top: 120, isOrphaned: false },
+      { id: 'd', top: 300, isOrphaned: false },
+    ]);
+  });
+
   it('UIC-ANNOTATION-LAYER-2.2 places cards without an anchor after the others', () => {
     const placements = stackAnnotationCards(
       [

@@ -8,6 +8,7 @@ import {
 import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/index.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { ChatBubbleCheckGlyph } from '../../src/core/drawn-glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { StaggeredSheets, ZoomedReview } from './annotation-layer-cases.js';
@@ -180,8 +181,18 @@ function NumericAndTextIds() {
 function LiveReview() {
   const [currentKey, setCurrentKey] = useState<Key | null>(null);
   const [isLong, setLong] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const [clears, setClears] = useState(false);
   return (
     <div data-lab-demo="live">
+      <p>
+        <Switch isSelected={overflows} onChange={setOverflows}>
+          Let cards start above the margin
+        </Switch>{' '}
+        <Switch isSelected={clears} onChange={setClears}>
+          Clear the active note when focus leaves
+        </Switch>
+      </p>
       <p>
         <Button size="sm" onPress={() => setLong(!isLong)}>
           {isLong ? 'Remove the intro' : 'Add an intro'}
@@ -194,7 +205,12 @@ function LiveReview() {
         onCurrentKeyChange={setCurrentKey}
       >
         <Method prefix="live" isLong={isLong} />
-        <AnnotationMargin aria-label="Review notes" renderCard={renderCard} />
+        <AnnotationMargin
+          aria-label="Review notes"
+          renderCard={renderCard}
+          allowsOverflowAbove={overflows}
+          clearsActiveOnBlur={clears}
+        />
       </AnnotationLayer>
     </div>
   );

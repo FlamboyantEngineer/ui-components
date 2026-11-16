@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../../test/hooks.js';
 import { installEditorDom } from '../../../../test/rich-text-fixtures.js';
 import { CommentComposer, type CommentComposerProps } from '../comment-composer.js';
-import type { CommentMentionOptions, MentionCandidate } from '../comment-mentions.js';
+import {
+  type CommentMentionOptions,
+  type MentionCandidate,
+  serializeMention,
+} from '../comment-mentions.js';
 import { createCommentMentions } from './create-comment-mentions.js';
 
 installEditorDom();
@@ -34,6 +38,16 @@ function renderComposer(
   return { ...view, user, onSubmit, search, box };
 }
 
+/** A clipboard holding plain text, as a paste delivers it. */
+function pasteText(text: string) {
+  return {
+    types: ['text/plain'],
+    files: [],
+    items: [],
+    getData: (type: string) => (type === 'text/plain' ? text : ''),
+  } as unknown as DataTransfer;
+}
+
 describe('CommentComposer mentions', () => {
   it('UIC-COMMENT-COMPOSER-2.1 opens a suggestion list on @ that filters as the reader types', async () => {
     const { container, user, box, search } = renderComposer();
@@ -54,6 +68,64 @@ describe('CommentComposer mentions', () => {
       within(list).getByRole('option', { name: 'Lena Ortiz' }).id,
     );
     expectHooksMatchSpec(container, 'COMMENT-COMPOSER', { slots: ['field', 'actions', 'submit'] });
+  });
+
+  it('UIC-COMMENT-COMPOSER-2.1 narrows by a full name with spaces and stops once it finds nobody', async () => {
+    const { user, box, search } = renderComposer();
+    await user.click(box);
+    await user.keyboard('@Ana L');
+    const list = await screen.findByRole('listbox', { name: 'Suggestions' });
+    await waitFor(() => expect(within(list).getAllByRole('option')).toHaveLength(1));
+    expect(search).toHaveBeenLastCalledWith('Ana L', expect.any(AbortSignal));
+    await user.keyboard('x');
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    const asked = search.mock.calls.length;
+    await user.keyboard('yz more');
+    expect(search).toHaveBeenCalledTimes(asked);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.keyboard(' @Jon');
+    await waitFor(() => expect(search).toHaveBeenLastCalledWith('Jon', expect.any(AbortSignal)));
+    expect(await screen.findByRole('option', { name: 'Jon Berg' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMMENT-COMPOSER-2.5 turns pasted text into mentions through resolvePaste and keeps typed text plain', async () => {
+    const assistant = serializeMention({ kind: 'assistant', id: 'helper', name: 'Helper' });
+    const resolvePaste = vi.fn((text: string) =>
+      text.includes('@Helper')
+        ? text
+            .split(/(@Helper)/)
+            .filter(Boolean)
+            .map((part) =>
+              part === '@Helper'
+                ? {
+                    kind: 'mention' as const,
+                    text: assistant,
+                    id: 'helper',
+                    name: 'Helper',
+                    mentionKind: 'assistant',
+                  }
+                : { kind: 'text' as const, text: part },
+            )
+        : null,
+    );
+    const { user, box, onSubmit } = renderComposer({}, { resolvePaste });
+    await user.click(box);
+    await user.paste(pasteText('ask @Helper now'));
+    expect(resolvePaste).toHaveBeenCalledWith('ask @Helper now');
+    expect(within(box).getAllByText('Helper')).toHaveLength(1);
+    await user.keyboard(' typed @Helper');
+    await user.keyboard('{Escape}{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith(`ask ${assistant} now typed @Helper`);
+  });
+
+  it('UIC-COMMENT-COMPOSER-2.1 keeps the list inside the boundary the host names', async () => {
+    const stage = document.createElement('div');
+    const getListBoundary = vi.fn(() => stage);
+    const { user, box } = renderComposer({}, { getListBoundary });
+    await user.click(box);
+    await user.keyboard('@');
+    expect(await screen.findByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+    expect(getListBoundary).toHaveBeenCalled();
   });
 
   it('UIC-COMMENT-COMPOSER-2.1 aborts a search the reader has typed past and shows a failure', async () => {

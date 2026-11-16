@@ -64,6 +64,30 @@ function deferredSource() {
 }
 
 describe('RichMessageComposer custom triggers', () => {
+  it('UIC-MESSAGE-COMPOSER-4.13 lets a spaced query that finds nothing close the list and end the lookup', async () => {
+    const getCompletions = vi.fn((query: string) =>
+      TOOLS.filter((tool) => `${tool.label} text`.toLowerCase().startsWith(query.toLowerCase())),
+    );
+    const { user } = renderComposer({
+      triggers: [{ ...tools, allowsSpaces: true, getCompletions }],
+    });
+    await user.click(box());
+    await user.keyboard('$sum');
+    expect(await screen.findByRole('option', { name: 'Summarize Shorten a text' })).toBeVisible();
+    await user.keyboard('marize t');
+    expect(getCompletions).toHaveBeenLastCalledWith('summarize t', expect.anything());
+    expect(screen.getByRole('listbox', { name: 'Tools' })).toBeVisible();
+    await user.keyboard('o');
+    await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    expect(emptyNotice()).toBeNull();
+    const asked = getCompletions.mock.calls.length;
+    await user.keyboard('day');
+    expect(getCompletions).toHaveBeenCalledTimes(asked);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.keyboard('{Escape} $');
+    expect(await screen.findByRole('listbox', { name: 'Tools' })).toBeVisible();
+  });
+
   it('UIC-MESSAGE-COMPOSER-4.13 inserts a host entry as a token with its raw text, label and trigger identity', async () => {
     const { user, handle } = renderComposer();
     await user.click(box());

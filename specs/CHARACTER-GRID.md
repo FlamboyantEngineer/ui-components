@@ -36,10 +36,17 @@ Verification: `src/components/character-grid/character-filter.test.ts`, `src/com
 
 ### UIC-CHARACTER-GRID-1.5 - Font and columns
 
-With `fontFamily`, the cells and `ui-character-grid__preview-char` shall show their characters in that font, set inline, so a picker shows symbols as they will look in the text they go into. With `columns`, each section shall lay its cells out that many to a row (an inline `grid-template-columns` of equal tracks, with the host's stylesheet making the section a grid); the arrow keys move by the cells' positions as before. Without them the grid sets neither, and the host's stylesheet decides.
+With `fontFamily`, `fontWeight`, `fontStyle` and `color`, the cells and `ui-character-grid__preview-char` shall show their characters in that font family, weight, style and color, each set inline only when given, so a picker shows symbols as they will look at the caret in the text they go into; the size stays the host stylesheet's. With `columns`, each section shall lay its cells out that many to a row (an inline `grid-template-columns` of equal tracks, with the host's stylesheet making the section a grid); the arrow keys move by the cells' positions as before. Without them the grid sets neither, and the host's stylesheet decides.
 
 Implementation: `src/components/character-grid/character-grid.tsx`
 Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/character-grid.spec.ts`
+
+### UIC-CHARACTER-GRID-1.6 - Cell tooltips
+
+Each cell's character shall carry a native tooltip (`title`) reading the character and its code: `Alt+0` and its decimal code point for one code point up to U+00FF (`© Alt+0169`), else its code points in Unicode notation (`€ U+20AC`). The cell keeps its name as its accessible name.
+
+Implementation: `src/components/character-grid/character-grid.tsx`, `src/components/character-grid/character-filter.ts`
+Verification: `src/components/character-grid/character-filter.test.ts`, `src/components/character-grid/character-grid.test.tsx`
 
 ## UIC-CHARACTER-GRID-2 - Search, recent characters and hooks
 

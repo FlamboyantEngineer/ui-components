@@ -22,6 +22,7 @@ import {
   type CharacterGridCategory,
   type CharacterGridCharacter,
   filterCharacterCategories,
+  formatCharacterCode,
   formatCodePoints,
 } from './character-filter.js';
 import { useRecentCharacters } from './use-recent-characters.js';
@@ -40,6 +41,12 @@ export interface CharacterGridProps
   autoFocus?: boolean | undefined;
   /** The font the characters show in, such as the font of the text they go into. */
   fontFamily?: string | undefined;
+  /** The font weight the characters show in, such as that of the text they go into (`700`). */
+  fontWeight?: string | number | undefined;
+  /** The font style the characters show in, such as `italic`. */
+  fontStyle?: string | undefined;
+  /** The CSS color the characters show in, such as the color of the text they go into. */
+  color?: string | undefined;
   /** How many cells make a row of each section. Without it, the host's stylesheet decides. */
   columns?: number | undefined;
 }
@@ -71,9 +78,29 @@ function keepGridKeys(event: KeyboardEvent<HTMLElement>) {
   if (gridKeys.has(event.key)) event.stopPropagation();
 }
 
-/** The caller's font for the characters, as the cells and the preview show them. */
-function toFontStyle(fontFamily: string | undefined): CSSProperties | undefined {
-  return fontFamily ? { fontFamily } : undefined;
+type CharacterFont = Pick<CharacterGridProps, 'fontFamily' | 'fontWeight' | 'fontStyle' | 'color'>;
+
+/** The caller's font and color for the characters, as the cells and the preview show them. */
+function toFontStyle(font: CharacterFont): CSSProperties | undefined {
+  const entries = Object.entries(font).filter(([, value]) => value !== undefined && value !== '');
+  return entries.length > 0 ? (Object.fromEntries(entries) as CSSProperties) : undefined;
+}
+
+/**
+ * The grid's element, and the capture handler by which Down from the search field moves to the
+ * first cell: a search field with a key handler of its own would keep Escape from closing the
+ * surface around it.
+ */
+function useMoveToGrid() {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const moveToGrid = (event: KeyboardEvent<HTMLElement>) => {
+    const target = event.target as Element;
+    if (event.key !== 'ArrowDown' || isComposingKey(event.nativeEvent)) return;
+    if (!target.closest(`.${hooks.slotClass('search')}`)) return;
+    event.preventDefault();
+    gridRef.current?.querySelector<HTMLElement>(`.${hooks.slotClass('cell')}`)?.focus();
+  };
+  return { gridRef, moveToGrid };
 }
 
 function getCellKey(section: string, char: string): string {
@@ -86,13 +113,12 @@ function getCellKey(section: string, char: string): string {
  */
 function CharacterPreview({
   active,
-  fontFamily,
+  font,
 }: {
   active: ValueStore<CharacterGridCharacter | null>;
-  fontFamily: string | undefined;
+  font: CSSProperties | undefined;
 }) {
   const character = useStoreValue(active);
-  const font = toFontStyle(fontFamily);
   return (
     <div {...hooks.slot('preview')} aria-hidden="true">
       {character ? (
@@ -113,7 +139,7 @@ interface CharacterSectionsProps extends Pick<
   'aria-label' | 'aria-labelledby'
 > {
   sections: readonly CharacterSection[];
-  fontFamily: string | undefined;
+  font: CSSProperties | undefined;
   columns: number | undefined;
   gridRef: RefObject<HTMLDivElement | null>;
   onAction: (key: Key) => void;
@@ -123,14 +149,13 @@ interface CharacterSectionsProps extends Pick<
 /** The grid list: one section per category, headed by its label, one cell per character. */
 function CharacterSections({
   sections,
-  fontFamily,
+  font,
   columns,
   gridRef,
   onAction,
   onActiveChange,
   ...labelling
 }: CharacterSectionsProps) {
-  const font = toFontStyle(fontFamily);
   return (
     <GridList
       ref={gridRef}
@@ -160,7 +185,9 @@ function CharacterSections({
               style={font}
               onHoverStart={() => onActiveChange(character)}
             >
-              {character.char}
+              <span title={`${character.char} ${formatCharacterCode(character.char)}`}>
+                {character.char}
+              </span>
             </GridListItem>
           ))}
         </GridListSection>
@@ -205,32 +232,27 @@ export function CharacterGrid({
   persistKey,
   autoFocus = false,
   fontFamily,
+  fontWeight,
+  fontStyle,
+  color,
   columns,
   className,
   id,
   ...rest
 }: CharacterGridProps) {
+  const font = toFontStyle({ fontFamily, fontWeight, fontStyle, color });
   const strings = useUiStrings();
   const [query, setQuery] = useState('');
   const [active] = useState(() => createValueStore<CharacterGridCharacter | null>(null));
   const recent = useRecentCharacters(persistKey, categories);
   const { sections, byKey } = useSections(categories, query, recent.characters);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const { gridRef, moveToGrid } = useMoveToGrid();
   const labelledBy = rest['aria-labelledby'];
   const label = labelledBy ? undefined : (rest['aria-label'] ?? strings.characterGrid);
   const choose = (character: CharacterGridCharacter | undefined) => {
     if (!character) return;
     recent.remember(character);
     onSelect(character);
-  };
-  // Down from the search field moves to the first cell. A capture handler, since a search field
-  // with a key handler of its own would keep Escape from closing the surface around it.
-  const moveToGrid = (event: KeyboardEvent<HTMLElement>) => {
-    const target = event.target as Element;
-    if (event.key !== 'ArrowDown' || isComposingKey(event.nativeEvent)) return;
-    if (!target.closest(`.${hooks.slotClass('search')}`)) return;
-    event.preventDefault();
-    gridRef.current?.querySelector<HTMLElement>(`.${hooks.slotClass('cell')}`)?.focus();
   };
   return (
     <div
@@ -268,14 +290,14 @@ export function CharacterGrid({
           aria-label={label}
           aria-labelledby={labelledBy}
           sections={sections}
-          fontFamily={fontFamily}
+          font={font}
           columns={columns}
           gridRef={gridRef}
           onAction={(key) => choose(byKey.get(key))}
           onActiveChange={active.set}
         />
       )}
-      <CharacterPreview active={active} fontFamily={fontFamily} />
+      <CharacterPreview active={active} font={font} />
     </div>
   );
 }

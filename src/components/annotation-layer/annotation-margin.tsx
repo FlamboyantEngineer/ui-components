@@ -1,10 +1,8 @@
 'use client';
 
 import {
-  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
-  type Ref,
   type RefObject,
   useLayoutEffect,
   useRef,
@@ -19,6 +17,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { type Annotation, getLayerFrame } from './anchor-geometry.js';
+import { AnnotationCardEntry } from './annotation-card-entry.js';
 import { useAnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
 import {
@@ -26,6 +25,7 @@ import {
   type AnnotationMarkerState,
   type EntryPlace,
 } from './annotation-marker.js';
+import { useLeaveFocus } from './margin-focus.js';
 import { stackAnnotationCards } from './stack-cards.js';
 
 /** What a card shows about its annotation. */
@@ -57,6 +57,13 @@ export interface AnnotationMarginProps
    * each can follow its own page's edge; `undefined` leaves it where the stylesheet puts it.
    */
   getInlineOffset?: ((annotation: Annotation) => number | undefined) | undefined;
+  /**
+   * Lets cards start above the margin's top where the cards before the active one do not fit
+   * above it, so the active card stays level with its anchor. Defaults to `false`.
+   */
+  allowsOverflowAbove?: boolean | undefined;
+  /** Makes no annotation active once focus leaves the margin and its popups. Defaults to `false`. */
+  clearsActiveOnBlur?: boolean | undefined;
 }
 
 /** The margin's measurements: its top in the layer's content and each card's height. */
@@ -122,7 +129,11 @@ function useOpenKeys(
 }
 
 /** The cards' places beside their anchors, the margin's tab stop and the height that holds them. */
-function useMarginLayout(margin: HTMLElement | null, gap: number) {
+function useMarginLayout(
+  margin: HTMLElement | null,
+  options: { gap: number; allowsOverflowAbove: boolean; clearsActiveOnBlur: boolean },
+) {
+  const { gap, allowsOverflowAbove } = options;
   const context = useAnnotationContext();
   const { anchors, currentKey } = context;
   const { geometry, cards, register } = useMarginGeometry(margin, context.layer);
@@ -132,7 +143,7 @@ function useMarginLayout(margin: HTMLElement | null, gap: number) {
       anchorTop: top === null ? null : top - geometry.offset,
       height: geometry.heights.get(annotation.id) ?? 0,
     })),
-    { currentKey, gap },
+    { currentKey, gap, allowsOverflowAbove },
   );
   const tabStop = placements.some((card) => card.id === currentKey)
     ? currentKey
@@ -145,7 +156,8 @@ function useMarginLayout(margin: HTMLElement | null, gap: number) {
   const activate = (id: Key) => {
     if (id !== currentKey) context.setCurrentKey(id);
   };
-  return { ...context, placements, tabStop, height, byId, cards, register, activate };
+  const leave = useLeaveFocus(options.clearsActiveOnBlur, () => context.setCurrentKey(null));
+  return { ...context, placements, tabStop, height, byId, cards, register, activate, leave };
 }
 
 /** Keeps each annotation's element by its id, for moving focus between them. */
@@ -178,39 +190,6 @@ const toPlace = (top: number, inset: number | undefined): EntryPlace =>
     ? { position: 'absolute', top }
     : { position: 'absolute', top, insetInlineStart: inset };
 
-/** One annotation's card in the cards presentation, itself the list item that takes focus. */
-function AnnotationCardEntry({
-  cardRef,
-  isTabStop,
-  state,
-  style,
-  onFocus,
-  onKeyDown,
-  children,
-}: {
-  cardRef: Ref<HTMLDivElement>;
-  isTabStop: boolean;
-  state: AnnotationCardState;
-  style: CSSProperties;
-  onFocus: () => void;
-  onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      ref={cardRef}
-      role="listitem"
-      tabIndex={isTabStop ? 0 : -1}
-      {...hooks.slot('card', { active: state.isActive, orphaned: state.isOrphaned })}
-      style={style}
-      onFocus={onFocus}
-      onKeyDown={onKeyDown}
-    >
-      {children}
-    </div>
-  );
-}
-
 /**
  * Lays out a card for each annotation of the layer around it, level with its anchor and stacked
  * without overlap, the active card kept level with its anchor. The cards are a list; arrow keys,
@@ -227,13 +206,15 @@ export function AnnotationMargin({
   defaultOpenKeys,
   onOpenChange,
   getInlineOffset,
+  allowsOverflowAbove = false,
+  clearsActiveOnBlur = false,
   className,
   ...rest
 }: AnnotationMarginProps) {
   const strings = useUiStrings();
   const [margin, setMargin] = useState<HTMLDivElement | null>(null);
   const rootRefs = useMergedRefs(setMargin, ref);
-  const layout = useMarginLayout(margin, gap);
+  const layout = useMarginLayout(margin, { gap, allowsOverflowAbove, clearsActiveOnBlur });
   const { placements, currentKey, cards } = layout;
   const markers = useElementMap<HTMLButtonElement>();
   const { open, toggle } = useOpenKeys(openKeys, defaultOpenKeys, onOpenChange);
@@ -242,8 +223,6 @@ export function AnnotationMargin({
   const entry = (card: (typeof placements)[number], index: number) => {
     const annotation = requireDefined(layout.byId.get(card.id));
     const isActive = card.id === currentKey;
-    const isOpen = open.has(card.id);
-    const key = toKeyIdentity(card.id);
     const shared = {
       onFocus: () => layout.activate(card.id),
       style: toPlace(card.top, getInlineOffset?.(annotation)),
@@ -251,7 +230,7 @@ export function AnnotationMargin({
     if (!isIcons) {
       return (
         <AnnotationCardEntry
-          key={key}
+          key={toKeyIdentity(card.id)}
           {...shared}
           cardRef={layout.register(card.id)}
           isTabStop={card.id === layout.tabStop}
@@ -264,10 +243,10 @@ export function AnnotationMargin({
     }
     return (
       <AnnotationMarkerEntry
-        key={key}
+        key={toKeyIdentity(card.id)}
         {...shared}
         annotation={annotation}
-        state={{ isActive, isOrphaned: card.isOrphaned, isOpen }}
+        state={{ isActive, isOrphaned: card.isOrphaned, isOpen: open.has(card.id) }}
         index={index}
         total={placements.length}
         isTabStop={card.id === layout.tabStop}
@@ -275,11 +254,8 @@ export function AnnotationMargin({
         markerRef={markers.register(card.id)}
         renderMarker={renderMarker}
         renderCard={renderCard}
-        onToggle={() => toggle(card.id, !isOpen)}
-        onClose={() => {
-          toggle(card.id, false);
-          markers.elements.current.get(card.id)?.focus();
-        }}
+        onToggle={() => toggle(card.id, !open.has(card.id))}
+        onClose={() => toggle(card.id, false)}
         onMarkerKeyDown={(event) => onKeyDown(event, index)}
       />
     );
@@ -291,6 +267,7 @@ export function AnnotationMargin({
       {...rest}
       {...hooks.slot('margin', { presentation, empty: layout.anchors.length === 0 }, className)}
       ref={rootRefs}
+      {...layout.leave}
       role="list"
       style={{ position: 'relative', minHeight: layout.height }}
     >

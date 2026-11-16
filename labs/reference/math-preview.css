@@ -37,6 +37,13 @@
 
 .ui-math-preview__error {
   color: var(--ref-danger);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-math-preview__detail {
+  display: block;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-muted);
 }
 
 .ui-math-preview__source {
@@ -47,6 +54,7 @@
   overflow-wrap: anywhere;
 }
 
+.ui-math-preview[data-display='inline'] .ui-math-preview__detail,
 .ui-math-preview[data-display='inline'] .ui-math-preview__source {
   display: inline;
   margin-inline-start: 0.5em;

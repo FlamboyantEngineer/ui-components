@@ -46,6 +46,18 @@ describe('GridSizePicker', () => {
     expect(grid).toHaveAttribute('aria-describedby', 'heading');
   });
 
+  it('UIC-GRID-SIZE-PICKER-1.2 reads the readout from the provider, so a host can reword it', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <UiProvider messages={{ gridSize: 'Insert table: {rows} x {columns}' }}>
+        <GridSizePicker onSelect={() => {}} />
+      </UiProvider>,
+    );
+    expect(readout(container)).toHaveTextContent('Insert table: 1 x 1');
+    await user.hover(cell(3, 4));
+    expect(readout(container)).toHaveTextContent('Insert table: 3 x 4');
+  });
+
   it('UIC-GRID-SIZE-PICKER-1.2 previews the hovered cell and the cells within it', async () => {
     const user = userEvent.setup();
     const { container } = render(<GridSizePicker onSelect={() => {}} />);

@@ -109,12 +109,22 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
    * there unchanged in the same draft.
    */
   onPaste?: ((paste: MessageComposerPaste) => MessageComposerPasteResult) | undefined;
+  /** The element the completion list stays inside, such as an editor's stage. Defaults to the body. */
+  completionBoundary?: Element | null | undefined;
 }
 
 /** The rich text box alone, for a host component with its own buttons, keys and sending. */
 interface RichMessageFieldProps extends Pick<
   RichMessageComposerProps,
-  'className' | 'aria-label' | 'placeholder' | 'isDisabled' | 'triggers' | 'minRows' | 'maxRows'
+  | 'className'
+  | 'aria-label'
+  | 'placeholder'
+  | 'isDisabled'
+  | 'triggers'
+  | 'minRows'
+  | 'maxRows'
+  | 'onPaste'
+  | 'completionBoundary'
 > {
   value: MessageComposerMessage;
   onChange: (value: MessageComposerMessage) => void;

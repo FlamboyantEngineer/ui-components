@@ -119,7 +119,7 @@ export function MathField(props: MathFieldProps) {
     preview.status === 'invalid'
       ? preview.isTooLong
         ? strings.mathTooLong(maxLength)
-        : preview.message
+        : `${strings.mathInvalid}: ${preview.message}`
       : null;
   return (
     <Field
