@@ -15,6 +15,7 @@ describe('CodeEditor languages', () => {
       css: '.fruit { color: #123abc; }',
       sql: 'SELECT name FROM fruit;',
       python: 'def name():\n  return "Pear" # fruit',
+      java: 'public class Pear { int count = 12; }',
       markdown: '# Fruit\n**Pear** and `plum`',
       c: '#include <stdio.h>\nint count = 12; /* pears */',
       cpp: 'namespace fruit { class Pear {}; }',
@@ -31,6 +32,23 @@ describe('CodeEditor languages', () => {
       expect(tokens.some((token) => token.type)).toBe(true);
     }
     expect(resolveCodeTokenizer({ language: 'text' })).toBeUndefined();
+  });
+  it('UIC-CODE-EDITOR-12.1 marks the kinds of the Java preset', () => {
+    const tokens = requireDefined(resolveCodeTokenizer({ language: 'java' }))(
+      '@Override\npublic String name() { return "Pear"; } // fruit\nlong count = 0x1F_2AL;\nString text = """\n  ripe\n  """;',
+    );
+    expect(
+      tokens.filter((token) => token.type).map((token) => `${token.type}:${token.text}`),
+    ).toEqual([
+      'keyword:@Override',
+      'keyword:public',
+      'keyword:return',
+      'string:"Pear"',
+      'comment:// fruit',
+      'keyword:long',
+      'number:0x1F_2AL',
+      'string:"""\n  ripe\n  """',
+    ]);
   });
   it('UIC-CODE-EDITOR-12.1 marks the kinds of the C, C++, YAML, XML and shell presets', () => {
     const kinds = (language: CodeLanguage, source: string) =>

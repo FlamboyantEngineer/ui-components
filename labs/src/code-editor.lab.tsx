@@ -266,6 +266,14 @@ function AutocompleteDemo() {
       <p>
         Inserted: <output data-lab-output="autocomplete-market">{market}</output>
       </p>
+      <Editor
+        aria-label="Autocomplete below the caret only"
+        data-lab-editor="autocomplete-below"
+        size="sm"
+        initialValue="let total = "
+        completions={vocabulary}
+        shouldFlipCompletions={false}
+      />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'start' }}>
         {(['sm', 'md', 'lg'] as const).map((size) => (
           <Editor
@@ -448,7 +456,7 @@ mountLab(
     <div data-lab-family="surface">
       <LabSection
         title="Autocomplete"
-        description="Pass completions: a list of words ({ label, description }) or a source function that answers at once or with a promise. Suggestions open as you type a word and on Ctrl+Space with nothing typed. Arrow keys move, Enter or Tab inserts, a click inserts, Escape closes. In the first editor type ba and pick basket. In the second, type p and wait for the market's stalls, or type or and insert the order snippet: Tab moves from stall to crates. The three editors below scroll and resize: open the list near the bottom of each and it stays at the caret."
+        description="Pass completions: a list of words ({ label, description }) or a source function that answers at once or with a promise. Suggestions open as you type a word and on Ctrl+Space with nothing typed. Arrow keys move, Enter or Tab inserts, a click inserts, Escape closes. In the first editor type ba and pick basket. In the second, type p and wait for the market's stalls, or type or and insert the order snippet: Tab moves from stall to crates. The next editor keeps its list below the caret, shorter when the page leaves little room there, rather than opening it above. The three editors below scroll and resize: open the list near the bottom of each and it stays at the caret."
       >
         <AutocompleteDemo />
       </LabSection>

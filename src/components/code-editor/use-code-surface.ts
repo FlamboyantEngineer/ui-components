@@ -69,6 +69,7 @@ export function useCodeSurface(configuration: CodeSurfaceProps) {
     diagnostics,
     listDiagnostics,
     completions,
+    shouldFlipCompletions: _shouldFlipCompletions,
     renderHover,
     size: _size,
     resize: _resize,

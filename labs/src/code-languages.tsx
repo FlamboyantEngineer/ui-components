@@ -13,6 +13,7 @@ const samples: Record<CodeLanguage, string> = {
   css: '.fruit {\n  color: #228844;\n  padding: 12px;\n}',
   sql: 'SELECT name, count\nFROM fruit\nWHERE count > 10\nORDER BY name;',
   python: '# A fruit label\ndef label(fruit):\n    return f"Fresh {fruit}"',
+  java: '// A fruit basket\n@FunctionalInterface\npublic interface Label {\n  String name(int count);\n}\nLabel label = (count) -> "Pears: " + count;',
   markdown:
     '# Fruit basket\n\nA **fresh** pear and `12` plums.\n\n[Recipe](https://example.com/recipe)',
   c: '#include <stdio.h>\n\n/* Count the pears */\nint main(void) {\n  printf("%d pears\\n", 12);\n  return 0;\n}',

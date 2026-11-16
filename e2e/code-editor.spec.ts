@@ -432,6 +432,39 @@ test.describe('Code Editor lab', () => {
     await expect(input).toHaveValue('// Ask the market\norder(plums, 3)');
   });
 
+  test('UIC-CODE-EDITOR-4.5 keeps the list below the caret near the viewport bottom when it must not flip', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('no viewport');
+    const openNearBottom = async (name: string, label: string) => {
+      const surface = editor(page, name);
+      const input = surface.getByRole('textbox', { name: label });
+      await input.evaluate((node) => node.scrollIntoView({ block: 'end' }));
+      await page.evaluate(() => window.scrollBy(0, -24));
+      await input.focus();
+      await page.keyboard.press('End');
+      await page.keyboard.press('Control+Space');
+      await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+      const caret = await box(surface.locator('.ui-code-editor__caret'));
+      const popover = await box(page.locator('.ui-code-editor__popover'));
+      await page.keyboard.press('Escape');
+      return { caret, popover };
+    };
+    const flipping = await openNearBottom('autocomplete-words', 'Autocomplete from a word list');
+    expect(flipping.popover.y + flipping.popover.height).toBeLessThanOrEqual(flipping.caret.y + 1);
+    await expect(async () => {
+      const { caret, popover } = await openNearBottom(
+        'autocomplete-below',
+        'Autocomplete below the caret only',
+      );
+      expect(popover.y).toBeGreaterThanOrEqual(caret.y + caret.height - 1);
+      expect(popover.y + popover.height).toBeLessThanOrEqual(viewport.height + 1);
+    }).toPass();
+  });
+
   for (const size of ['sm', 'md', 'lg'] as const) {
     test(`UIC-CODE-EDITOR-4.5 keeps the list open at the caret after the ${size} editor scrolls`, async ({
       page,
