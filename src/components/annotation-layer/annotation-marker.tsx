@@ -3,10 +3,11 @@
 // The icons presentation of an annotation margin: a marker per annotation, which opens its card
 // below it (specs/ANNOTATION-LAYER.md, UIC-ANNOTATION-LAYER-2.5).
 
-import { type KeyboardEvent, type ReactNode, type Ref, useId } from 'react';
+import { type FocusEvent, type KeyboardEvent, type ReactNode, type Ref, useId } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { Annotation } from './anchor-geometry.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
+import { isActivatingFocus } from './margin-focus.js';
 
 /** What a marker shows about its annotation. */
 export interface AnnotationMarkerState {
@@ -46,7 +47,7 @@ interface AnnotationMarkerEntryProps {
 
 /**
  * A marker button that names its annotation and toggles its card, then the card while it is open.
- * Escape inside an open card, unless its content handled it, closes it.
+ * Escape inside an open card, unless its content handled it, closes it and focuses the marker.
  */
 export function AnnotationMarkerEntry({
   annotation,
@@ -70,6 +71,7 @@ export function AnnotationMarkerEntry({
     if (event.key !== 'Escape' || event.defaultPrevented || !state.isOpen) return;
     event.preventDefault();
     onClose();
+    event.currentTarget.querySelector<HTMLElement>(`.${hooks.slotClass('marker')}`)?.focus();
   };
   return (
     <div
@@ -81,7 +83,9 @@ export function AnnotationMarkerEntry({
         open: state.isOpen,
       })}
       style={style}
-      onFocus={onFocus}
+      onFocus={(event: FocusEvent<HTMLElement>) => {
+        if (isActivatingFocus(event)) onFocus();
+      }}
       onKeyDown={onKeyDown}
     >
       <button

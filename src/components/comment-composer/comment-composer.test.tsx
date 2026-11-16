@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -36,6 +36,7 @@ describe('CommentComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).toHaveBeenLastCalledWith('Ripe bananas\ntoday');
     expect(box).toHaveValue('');
+    await waitFor(() => expect(box).toHaveFocus());
     await user.type(box, 'Pears');
     await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenLastCalledWith('Pears');

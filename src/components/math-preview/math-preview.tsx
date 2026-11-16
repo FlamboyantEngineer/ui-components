@@ -65,8 +65,13 @@ export function MathPreviewContent({
     return (
       <>
         <span {...hooks.slot('error')}>
-          {preview.isTooLong ? strings.mathTooLong(maxLength) : preview.message}
+          {preview.isTooLong ? strings.mathTooLong(maxLength) : strings.mathInvalid}
         </span>{' '}
+        {preview.isTooLong ? null : (
+          <>
+            <span {...hooks.slot('detail')}>{preview.message}</span>{' '}
+          </>
+        )}
         <code {...hooks.slot('source')}>{source}</code>
       </>
     );

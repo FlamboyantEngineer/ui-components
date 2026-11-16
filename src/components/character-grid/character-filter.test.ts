@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { filterCharacterCategories, formatCodePoints } from './character-filter.js';
+import {
+  filterCharacterCategories,
+  formatCharacterCode,
+  formatCodePoints,
+} from './character-filter.js';
 
 const categories = [
   {
@@ -20,6 +24,17 @@ const categories = [
     ],
   },
 ];
+
+describe('formatCharacterCode', () => {
+  it('UIC-CHARACTER-GRID-1.6 writes an Alt code up to U+00FF and Unicode notation above', () => {
+    expect(formatCharacterCode('©')).toBe('Alt+0169');
+    expect(formatCharacterCode('A')).toBe('Alt+0065');
+    expect(formatCharacterCode('ÿ')).toBe('Alt+0255');
+    expect(formatCharacterCode('Ā')).toBe('U+0100');
+    expect(formatCharacterCode('€')).toBe('U+20AC');
+    expect(formatCharacterCode('e\u0301')).toBe('U+0065 U+0301');
+  });
+});
 
 describe('formatCodePoints', () => {
   it('UIC-CHARACTER-GRID-1.4 writes code points in Unicode notation', () => {

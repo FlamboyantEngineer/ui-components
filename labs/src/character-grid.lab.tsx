@@ -164,12 +164,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Font and columns"
-      description="The cells and the preview show the characters in a serif font, six to a row instead of the stylesheet's eight; the arrow keys follow the rows."
+      description="The cells and the preview show the characters in the caret's font: a bold italic serif in the accent color, six to a row instead of the stylesheet's eight; the arrow keys follow the rows. Hover a cell for its tooltip: the character and its Alt code up to U+00FF, else its Unicode code."
     >
       <CharacterGrid
         categories={symbols}
         onSelect={() => {}}
         fontFamily="Georgia, 'Times New Roman', serif"
+        fontWeight={700}
+        fontStyle="italic"
+        color="var(--ref-accent)"
         columns={6}
         aria-label="Serif symbols"
         data-lab-field="font"

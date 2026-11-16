@@ -21,6 +21,8 @@ export function createCommentMentions(options: CommentMentionOptions): CommentMe
     search: options.search,
     serialize: options.serialize ?? serializeMention,
     parse: options.parse ?? parseMentions,
+    resolvePaste: options.resolvePaste,
+    getListBoundary: options.getListBoundary,
     renderField: (field) => <CommentMentionField field={field} mentions={mentions} />,
   };
   return mentions;

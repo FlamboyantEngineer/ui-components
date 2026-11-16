@@ -287,7 +287,7 @@ The composer asks the source only while the list is wanted: the text box has foc
 - While a later answer is on its way, the list shows only the provider's `loading` string for that query, never an older query's options.
 - An answer for a query that is no longer current is ignored, so answers arriving out of order never show. So is an answer that arrives after the caret left the query, the list was dismissed, focus left or the composer unmounted.
 - A rejection or a synchronous throw shows the provider's `actionFailed` string, and nothing goes unhandled.
-- An empty answer shows `noResults`.
+- An empty answer shows `noResults`, except for a query holding a space in a trigger that allows spaces: the list closes, and the composer asks nothing more while the reader types on after that query from the same trigger character, so a name nobody has stops the search.
 
 While the list shows no option, Enter and Tab wait (so Enter does not send) and Escape closes the list. With options, the list's keys are those of UIC-MESSAGE-COMPOSER-4.4. Home, End and the side arrows stay with the caret, and moving the caret off the query closes the list. Pressing an option keeps the caret.
 

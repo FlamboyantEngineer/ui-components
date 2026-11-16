@@ -46,8 +46,20 @@
   object-fit: cover;
 }
 
-.ui-asset-picker__name {
+.ui-asset-picker__thumbnail .ui-image__fallback {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-asset-picker__name {
+  overflow: hidden;
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ui-asset-picker__actions {

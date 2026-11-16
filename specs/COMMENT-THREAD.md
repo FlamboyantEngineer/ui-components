@@ -27,9 +27,9 @@ Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comm
 
 ### UIC-COMMENT-THREAD-1.4 - Resolve and reopen
 
-The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened ([UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread)). With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it. With `resolveIconOnly`, the button shows only its glyph, named by the same string, which its tooltip shows on hover and keyboard focus (UIC-BUTTON-1.9); it flips and reports the state as before.
+The resolved state shall be controlled by `isResolved` or start at `defaultResolved`. While resolved, the root carries `data-resolved`, the header shows a success `Badge` in `ui-comment-thread__status` reading the provider's `resolved` string, and the composer is hidden: replying needs the thread reopened ([UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread)). With `onResolvedChange`, the header has a ghost `Button` in `ui-comment-thread__resolve`, reading `resolve` with the `check` glyph, or `reopen` with the `undo` glyph while resolved, that flips the state and reports it. When `onResolvedChange` returns a promise, the button is pending (UIC-BUTTON pending state: a spinner, `data-pending`, presses ignored) until it settles: the state flips once it resolves and stays on a rejection, which the host reports through `error`. With `resolveIconOnly`, the button shows only its glyph, named by the same string, which its tooltip shows on hover and keyboard focus (UIC-BUTTON-1.9); it flips and reports the state as before.
 
-Implementation: `src/components/comment-thread/comment-thread.tsx`
+Implementation: `src/components/comment-thread/comment-thread.tsx`, `src/components/comment-thread/use-resolved-state.ts`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-1.5 - Long threads

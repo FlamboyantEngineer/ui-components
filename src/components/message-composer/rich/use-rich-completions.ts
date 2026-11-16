@@ -38,6 +38,8 @@ interface RichCompletionsOptions {
 /** A vocabulary's answer to one query: its options, or that it is on its way or failed. */
 interface Answer {
   query: string;
+  /** Where the query's trigger sits and the text typed after it. */
+  range: { from: number; text: string };
   /** The key of the vocabulary that answered. */
   vocabulary: string;
   status: 'ready' | 'pending' | 'error';
@@ -81,6 +83,24 @@ function toQueryKey(range: TriggerRange | null): string {
   return range ? `${range.vocabulary.key}|${String(range.from)}|${range.query}` : '';
 }
 
+/** Whether the answer is that a query holding a space found nothing, which ends the lookup. */
+function isSpacedMiss(answer: Answer): boolean {
+  return answer.status === 'ready' && answer.items.length === 0 && /\s/.test(answer.range.text);
+}
+
+/**
+ * Whether the reader typed on after a query holding a space that found nothing: from the same
+ * trigger, a query that starts with it is not asked, so a name nobody has stops the search.
+ */
+function isExhausted(answer: Answer | null, range: TriggerRange | null): boolean {
+  if (!answer || !range || !isSpacedMiss(answer)) return false;
+  return (
+    answer.vocabulary === range.vocabulary.key &&
+    answer.range.from === range.from &&
+    range.query.startsWith(answer.range.text)
+  );
+}
+
 /**
  * Asks the vocabulary for the query's options while the list is wanted (the editor has focus and
  * the list is not dismissed), again whenever the query, its vocabulary or the draft's owner
@@ -94,13 +114,19 @@ function useAnswer(range: TriggerRange | null, owner: object, isWanted: boolean)
   const [answer, setAnswer] = useState<Answer | null>(null);
   // Declared before the effect, so the effect reads this render's range.
   const latestRange = useLatest(range);
+  const exhausted = isExhausted(answer, range);
   useLayoutEffect(() => {
     const current = latestRange.current;
-    if (!current || !vocabulary || !isWanted) return undefined;
+    if (!current || !vocabulary || !isWanted || exhausted) return undefined;
     const controller = new AbortController();
-    const settle = (next: Omit<Answer, 'query' | 'vocabulary'>) => {
+    const settle = (next: Pick<Answer, 'status' | 'items'>) => {
       if (!controller.signal.aborted)
-        setAnswer({ query: key, vocabulary: vocabulary.key, ...next });
+        setAnswer({
+          query: key,
+          vocabulary: vocabulary.key,
+          range: { from: current.from, text: current.query },
+          ...next,
+        });
     };
     let result: ReturnType<Vocabulary['lookUp']>;
     try {
@@ -117,7 +143,7 @@ function useAnswer(range: TriggerRange | null, owner: object, isWanted: boolean)
       );
     } else settle({ status: 'ready', items: result });
     return () => controller.abort();
-  }, [key, vocabulary, owner, isWanted, latestRange]);
+  }, [key, vocabulary, owner, isWanted, exhausted, latestRange]);
   if (!answer || !vocabulary || answer.query === key) return answer?.query === key ? answer : null;
   // Until this commit's effect asks again, before anything paints, the vocabulary's last answer
   // holds the list open, so it does not close and reopen on every key typed.
@@ -142,6 +168,7 @@ function insertPill(
 function hasContent(answer: Answer | null, range: TriggerRange | null): boolean {
   if (!answer || !range) return false;
   if (answer.items.length > 0) return true;
+  if (isSpacedMiss(answer)) return false;
   return answer.status !== 'ready' || range.vocabulary.showsEmpty;
 }
 

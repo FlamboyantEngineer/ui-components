@@ -67,7 +67,15 @@ test.describe('Comment Thread lab', () => {
     await expect(thread.getByRole('alert')).toHaveText(/could not be posted/);
     await expect(box).toHaveValue('This one fails');
 
-    await thread.getByRole('button', { name: 'Resolve' }).click();
+    // While the failure switch is on, resolving fails too: pending, then still open.
+    const resolve = thread.getByRole('button', { name: 'Resolve' });
+    await resolve.click();
+    await expect(resolve).toHaveAttribute('data-pending', 'true');
+    await expect(resolve).not.toHaveAttribute('data-pending');
+    await expect(thread).not.toHaveAttribute('data-resolved');
+    await page.getByRole('switch', { name: 'Fail the next reply' }).focus();
+    await page.keyboard.press('Space');
+    await resolve.click();
     await expect(page.locator('[data-lab-output="action"]')).toHaveText('resolved');
     await expect(thread).toHaveAttribute('data-resolved', 'true');
     await expect(thread.getByRole('textbox')).toHaveCount(0);

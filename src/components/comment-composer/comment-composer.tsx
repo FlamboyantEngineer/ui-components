@@ -106,9 +106,15 @@ function useComposerActions({
   const isPending = submission.isSubmitting;
   const text = draft.trim();
   const canSubmit = text !== '' && !isDisabled && !isPending;
-  const submit = () => {
+  /**
+   * Sends the draft when it can, then calls `onSent`: the submit button, disabled once the draft
+   * clears, moves focus on to the text box.
+   */
+  const submit = (onSent?: () => void) => {
+    if (!canSubmit) return;
     // The draft is sent as it stands, so a resolved submit clears it only while it is unchanged.
-    if (canSubmit) submission.send(draft, true, (sent) => onSubmit(sent.trim()));
+    submission.send(draft, true, (sent) => onSubmit(sent.trim()));
+    onSent?.();
   };
   const cancel = () => {
     submission.setDraft('');
@@ -185,6 +191,7 @@ export function CommentComposer({
   const strings = useUiStrings();
   const [rootRef, setRootRef] = useForwardedRef(ref);
   const requestFocus = useFocusRequest();
+  const focusTextBox = () => requestFocus(() => findTextBox(rootRef.current));
   const [draft, setDraft] = useDraft({ value, defaultValue, onChange, persistKey });
   const actions = useComposerActions({
     value,
@@ -224,7 +231,7 @@ export function CommentComposer({
             onPress={() => {
               actions.cancel();
               // The button goes once the draft clears, so focus moves on to the text box.
-              requestFocus(() => findTextBox(rootRef.current));
+              focusTextBox();
             }}
           >
             {strings.cancel}
@@ -237,7 +244,7 @@ export function CommentComposer({
           isDisabled={!actions.canSubmit && !actions.isPending}
           isPending={actions.isPending}
           shortcut="Ctrl+Enter"
-          onPress={actions.submit}
+          onPress={() => actions.submit(focusTextBox)}
         >
           {submitLabel ?? strings.comment}
         </Button>

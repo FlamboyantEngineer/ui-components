@@ -22,17 +22,19 @@ interface StackOptions {
   currentKey: Key | null;
   /** Space kept between two cards, in pixels. */
   gap: number;
+  /** Lets cards start above the margin's top, so the active card always stays level with its anchor. */
+  allowsOverflowAbove?: boolean | undefined;
 }
 
 /**
  * Stacks cards in the order of their anchors, each as close to its anchor as the cards before it
- * allow and never above the margin's top. The active card stays level with its anchor where the
+ * allow and never above the margin's top, unless `allowsOverflowAbove`. The active card stays level with its anchor where the
  * cards before it fit above it: they move up from it, and the cards after it move down. Cards whose
  * anchor is gone follow the others in their given order.
  */
 export function stackAnnotationCards(
   cards: readonly CardInput[],
-  { currentKey, gap }: StackOptions,
+  { currentKey, gap, allowsOverflowAbove = false }: StackOptions,
 ): CardPlacement[] {
   const anchored = cards
     .filter((card) => card.anchorTop !== null)
@@ -47,7 +49,7 @@ export function stackAnnotationCards(
     tops[index] = Math.min(requireDefined(tops[index]), below);
   }
   // Downwards from the margin's top: cards that did not fit above the active one push it down.
-  tops[0] = Math.max(0, tops[0] ?? 0);
+  tops[0] = allowsOverflowAbove ? (tops[0] ?? 0) : Math.max(0, tops[0] ?? 0);
   for (let index = 1; index < anchored.length; index += 1) {
     const above =
       requireDefined(tops[index - 1]) + requireDefined(anchored[index - 1]).height + gap;

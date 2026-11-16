@@ -43,6 +43,8 @@ function toMentionTrigger(mentions: CommentMentions, strings: UiStrings): Messag
   return {
     id: mentionTrigger,
     character: '@',
+    // A full name holds spaces; a spaced query that finds nobody closes the list.
+    allowsSpaces: true,
     getCompletions: (query, { signal }) =>
       mentions
         .search(query, signal)
@@ -74,6 +76,13 @@ function toMessage(text: string, segments: readonly CommentTextSegment[]): Messa
   return message;
 }
 
+/** Pasted text as the host resolves it into text and mentions, or nothing to paste it plainly. */
+function toPastedMessage(text: string, mentions: CommentMentions) {
+  const segments = mentions.resolvePaste?.(text);
+  if (!segments) return undefined;
+  return toMessage(segments.map((segment) => segment.text).join(''), segments);
+}
+
 /** The text box with mentions, as `createCommentMentions` draws it. */
 export function CommentMentionField({
   field,
@@ -96,6 +105,8 @@ export function CommentMentionField({
       autoFocus={field.autoFocus}
       minRows={2}
       triggers={triggers}
+      completionBoundary={mentions.getListBoundary?.()}
+      onPaste={mentions.resolvePaste ? ({ text }) => toPastedMessage(text, mentions) : undefined}
       value={message}
       onChange={(next) => field.onChange(next.text)}
     />

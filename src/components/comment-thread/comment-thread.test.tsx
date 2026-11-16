@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -111,6 +111,34 @@ describe('CommentThread', () => {
     expect(onResolvedChange).toHaveBeenLastCalledWith(false);
     expect(thread).not.toHaveAttribute('data-resolved');
     expect(screen.getByRole('textbox', { name: 'Reply' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMMENT-THREAD-1.4 holds Resolve pending until the returned promise settles', async () => {
+    const user = userEvent.setup();
+    const answers: { resolve: () => void; reject: (error: Error) => void }[] = [];
+    const onResolvedChange = vi.fn(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          answers.push({ resolve, reject });
+        }),
+    );
+    const { container } = render(
+      <CommentThread onResolvedChange={onResolvedChange}>{replies(1)}</CommentThread>,
+    );
+    const thread = container.querySelector('.ui-comment-thread') as HTMLElement;
+    const resolve = screen.getByRole('button', { name: 'Resolve' });
+    await user.click(resolve);
+    expect(resolve).toHaveAttribute('data-pending', 'true');
+    expect(thread).not.toHaveAttribute('data-resolved');
+    await user.click(resolve);
+    expect(onResolvedChange).toHaveBeenCalledTimes(1);
+    await act(async () => answers[0]?.reject(new Error('offline')));
+    expect(resolve).not.toHaveAttribute('data-pending');
+    expect(thread).not.toHaveAttribute('data-resolved');
+    await user.click(resolve);
+    await act(async () => answers[1]?.resolve());
+    expect(thread).toHaveAttribute('data-resolved', 'true');
+    expect(screen.getByRole('button', { name: 'Reopen' })).not.toHaveAttribute('data-pending');
   });
 
   it('UIC-COMMENT-THREAD-1.11 shows the Resolved chip icon-only, named and not a button', async () => {

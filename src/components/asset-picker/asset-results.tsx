@@ -51,7 +51,12 @@ export function AssetResults({ search, chosenKey, onChoose }: AssetResultsProps)
     >
       {(item) => (
         <CardGridItem id={item.id} textValue={item.name} {...hooks.slot('item')}>
-          <Image {...hooks.slot('thumbnail')} src={item.thumbnailSrc} alt="" />
+          <Image
+            {...hooks.slot('thumbnail')}
+            src={item.thumbnailSrc}
+            alt=""
+            fallback={strings.assetThumbnailUnavailable}
+          />
           <span {...hooks.slot('name')}>{item.name}</span>
         </CardGridItem>
       )}

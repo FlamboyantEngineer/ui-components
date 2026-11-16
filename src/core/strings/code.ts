@@ -13,6 +13,8 @@ interface CodeStrings {
   codeBlockApply: string;
   /** Says a math preview is typesetting its source. */
   mathPending: string;
+  /** Says a math source does not typeset, before the typesetter's own reason. */
+  mathInvalid: string;
   /** Says a math source is too long to preview, from the longest length previewed. */
   mathTooLong: (maxLength: number) => string;
   /** Names a math field's preview of its source. */
