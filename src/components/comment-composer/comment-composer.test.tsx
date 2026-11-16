@@ -23,6 +23,37 @@ describe('CommentComposer', () => {
     expectHooksMatchSpec(container, 'COMMENT-COMPOSER', { slots: ['field', 'actions', 'submit'] });
   });
 
+  it('UIC-COMMENT-COMPOSER-1.8 starts at minRows rows', () => {
+    render(<CommentComposer onSubmit={() => {}} minRows={1} />);
+    expect(screen.getByRole('textbox', { name: 'Add a comment' })).toHaveAttribute('rows', '1');
+  });
+
+  it('UIC-COMMENT-COMPOSER-1.8 shows its actions only on focus or with a draft, with actionsOnFocus', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <CommentComposer onSubmit={() => {}} actionsOnFocus />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    const box = screen.getByRole('textbox', { name: 'Add a comment' });
+    expect(screen.queryByRole('button', { name: 'Comment' })).not.toBeInTheDocument();
+    await user.click(box);
+    expect(screen.getByRole('button', { name: 'Comment' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(box).not.toHaveFocus();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    await user.click(box);
+    await user.type(box, 'Draft');
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    expect(screen.getByRole('button', { name: 'Comment' })).toBeEnabled();
+    await user.click(box);
+    await user.keyboard('{Escape}');
+    expect(box).toHaveValue('');
+    expect(box).not.toHaveFocus();
+    expect(screen.queryByRole('button', { name: 'Comment' })).not.toBeInTheDocument();
+  });
+
   it('UIC-COMMENT-COMPOSER-1.2 submits the trimmed text by button or chord, then clears', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

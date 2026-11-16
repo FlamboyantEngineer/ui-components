@@ -328,6 +328,7 @@
   "saveStatus": "{phase, select, dirty {Unsaved changes} saving {Saving…} saved {Saved} error {Not saved} other {Offline}}",
   "commentThread": "Comment thread",
   "commentActions": "Comment actions",
+  "moreActions": "More actions",
   "addComment": "Add a comment",
   "comment": "Comment",
   "reply": "Reply",

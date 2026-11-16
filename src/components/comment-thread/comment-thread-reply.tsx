@@ -19,6 +19,7 @@ import { Modal } from '../modal/modal.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { ReplyEditor, ReplyText } from './comment-reply-body.js';
 import { CommentThreadContext } from './comment-thread-context.js';
+import { FirstCommentMenuContext, usePublishedMenu } from './first-comment-menu.js';
 
 /** What a comment hands the editor that replaces its body while the reader edits it. */
 export interface CommentEditorOptions {
@@ -96,20 +97,26 @@ const hooks = createHooks('comment-thread-reply', [
 const editKey = 'edit';
 const deleteKey = 'delete';
 
-/** The comment's menu entries: the caller's actions, then Edit and Delete when offered. */
-function useMenuEntries({
-  actions = [],
-  onEdit,
-  onDelete,
-}: Pick<CommentThreadReplyProps, 'actions' | 'onEdit' | 'onDelete'>): MenuEntry[] {
+/**
+ * The comment's menu entries: the caller's actions, then Edit and Delete when offered; in a thread's
+ * header menu, Edit and Delete come first.
+ */
+function useMenuEntries(
+  {
+    actions = [],
+    onEdit,
+    onDelete,
+  }: Pick<CommentThreadReplyProps, 'actions' | 'onEdit' | 'onDelete'>,
+  isBuiltInFirst: boolean,
+): MenuEntry[] {
   const strings = useUiStrings();
-  return [
-    ...actions,
+  const builtIn = [
     ...(onEdit ? [{ id: editKey, label: strings.edit, icon: EditGlyph }] : []),
     ...(onDelete
       ? [{ id: deleteKey, label: strings.delete, icon: DeleteGlyph, tone: 'danger' as const }]
       : []),
   ];
+  return isBuiltInFirst ? [...builtIn, ...actions] : [...actions, ...builtIn];
 }
 
 type TimeOptions = Pick<CommentThreadReplyProps, 'fallbackAfterDays' | 'getNow' | 'timeZone'>;
@@ -163,26 +170,30 @@ function CommentMenu({
   const [isConfirming, setIsConfirming] = useState(false);
   // A confirmation whose Delete is withdrawn ends, rather than coming back with it.
   if (isConfirming && !onDelete) setIsConfirming(false);
-  const entries = useMenuEntries({ actions, onEdit, onDelete });
-  if (entries.length === 0) return null;
+  const isInHeader = useContext(FirstCommentMenuContext) !== null;
+  const entries = useMenuEntries({ actions, onEdit, onDelete }, isInHeader);
   const runAction = (key: Key) => {
     if (key === editKey && onEdit) onEditStart();
     else if (key === deleteKey && onDelete && confirmsDelete) setIsConfirming(true);
     else if (key === deleteKey && onDelete) void Promise.resolve(onDelete()).catch(() => {});
     else onAction?.(key);
   };
+  usePublishedMenu(entries, runAction, entries.length > 0);
+  if (entries.length === 0) return null;
   return (
     <>
-      <DropdownMenu
-        ref={menuRef}
-        label={strings.commentActions}
-        iconOnly
-        size="sm"
-        placement="bottom end"
-        className={hooks.slotClass('actions')}
-        items={entries}
-        onAction={runAction}
-      />
+      {isInHeader ? null : (
+        <DropdownMenu
+          ref={menuRef}
+          label={strings.commentActions}
+          iconOnly
+          size="sm"
+          placement="bottom end"
+          className={hooks.slotClass('actions')}
+          items={entries}
+          onAction={runAction}
+        />
+      )}
       {onDelete && confirmsDelete ? (
         <Modal
           role="alertdialog"

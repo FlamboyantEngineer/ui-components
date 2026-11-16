@@ -149,6 +149,8 @@ interface ContentStrings {
   commentThread: string;
   /** Names the menu of one comment's actions. */
   commentActions: string;
+  /** Names a comment thread's header menu. */
+  moreActions: string;
   /** Names the box that starts a comment thread. */
   addComment: string;
   /** Posts a new comment. */

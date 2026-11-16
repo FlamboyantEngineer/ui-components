@@ -1,10 +1,12 @@
 'use client';
 
-import type { KeyboardEvent } from 'react';
+import { type FocusEvent, type KeyboardEvent, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+import { containsFocus, getComposedActiveElement } from '../../utils/composed-focus.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { isHTMLElement } from '../../utils/is-element.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 import { useDraftSubmission } from '../../utils/use-draft-submission.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
@@ -40,6 +42,13 @@ export interface CommentComposerProps extends BaseProps, RefProps<HTMLDivElement
   isDisabled?: boolean | undefined;
   /** Focuses the text box when the composer mounts. */
   autoFocus?: boolean | undefined;
+  /** The rows the text box shows at least; it grows with its text from there. Defaults to 2. */
+  minRows?: number | undefined;
+  /**
+   * Shows Cancel and submit only while focus is in the composer or the draft is not empty. Cancel
+   * shows on focus even while the draft is empty, and then also takes focus out of the composer.
+   */
+  actionsOnFocus?: boolean | undefined;
   /**
    * Lets `@` mention people, from `createCommentMentions`: the draft and the submitted text hold
    * each mention as its token. Keep the object stable: a new one asks its source again.
@@ -89,10 +98,13 @@ function useComposerActions({
   onSubmit,
   onCancel,
   isDisabled,
+  isFocusCancel,
 }: Pick<CommentComposerProps, 'value' | 'persistKey' | 'onSubmit' | 'onCancel'> & {
   draft: string;
   setDraft: (next: string) => void;
   isDisabled: boolean;
+  /** Cancel is offered because focus is in a composer with `actionsOnFocus`. */
+  isFocusCancel: boolean;
 }) {
   const submission = useDraftSubmission({
     onSubmitError: keepDraft,
@@ -124,7 +136,8 @@ function useComposerActions({
     isPending,
     setDraft: submission.setDraft,
     canSubmit,
-    canCancel: (text !== '' || onCancel !== undefined) && !isPending && !isDisabled,
+    canCancel:
+      (text !== '' || onCancel !== undefined || isFocusCancel) && !isPending && !isDisabled,
     submit,
     cancel,
   };
@@ -134,7 +147,7 @@ function useComposerActions({
  * Submits on the chord, and cancels on Escape while there is something to cancel. A key that
  * belongs to an input method composition is left to the input method and the surface around.
  */
-function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
+function handleComposerKey(event: KeyboardEvent, actions: ComposerActions, cancel: () => void) {
   if (isComposingKey(event.nativeEvent)) return;
   if (isSubmitChord(event)) {
     event.preventDefault();
@@ -142,7 +155,7 @@ function handleComposerKey(event: KeyboardEvent, actions: ComposerActions) {
   } else if (event.key === 'Escape' && actions.canCancel) {
     event.preventDefault();
     event.stopPropagation();
-    actions.cancel();
+    cancel();
   }
 }
 
@@ -160,8 +173,62 @@ function ComposerField({
   mentions: CommentMentions | undefined;
 }) {
   if (mentions) return mentions.renderField(field);
+  return <TextField {...field} labelLayout="control-only" multiline tracksChanges={false} />;
+}
+
+/** Whether focus is in the composer: it enters, or leaves for somewhere outside it. */
+function useFocusWithin() {
+  const [isFocused, setIsFocused] = useState(false);
+  return {
+    isFocused,
+    focusHandlers: {
+      onFocus: () => setIsFocused(true),
+      onBlur: (event: FocusEvent<HTMLDivElement>) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsFocused(false);
+      },
+    },
+  };
+}
+
+/** Takes focus out of the composer, so a composer with `actionsOnFocus` folds its actions away. */
+function leaveComposer(root: HTMLElement | null) {
+  if (!root || !containsFocus(root)) return;
+  const active = getComposedActiveElement(root);
+  if (isHTMLElement(active)) active.blur();
+}
+
+/** Cancel, while there is something to cancel, and submit. */
+function ComposerButtons({
+  actions,
+  submitLabel,
+  cancel,
+  onSubmitted,
+}: {
+  actions: ComposerActions;
+  submitLabel: string;
+  cancel: () => void;
+  onSubmitted: () => void;
+}) {
+  const strings = useUiStrings();
   return (
-    <TextField {...field} labelLayout="control-only" multiline minRows={2} tracksChanges={false} />
+    <div {...hooks.slot('actions')}>
+      {actions.canCancel ? (
+        <Button size="sm" variant="ghost" className={hooks.slotClass('cancel')} onPress={cancel}>
+          {strings.cancel}
+        </Button>
+      ) : null}
+      <Button
+        size="sm"
+        variant="primary"
+        className={hooks.slotClass('submit')}
+        isDisabled={!actions.canSubmit && !actions.isPending}
+        isPending={actions.isPending}
+        shortcut="Ctrl+Enter"
+        onPress={() => actions.submit(onSubmitted)}
+      >
+        {submitLabel}
+      </Button>
+    </div>
   );
 }
 
@@ -183,6 +250,8 @@ export function CommentComposer({
   persistKey,
   isDisabled = false,
   autoFocus,
+  minRows = 2,
+  actionsOnFocus = false,
   mentions,
   className,
   ref,
@@ -192,6 +261,7 @@ export function CommentComposer({
   const [rootRef, setRootRef] = useForwardedRef(ref);
   const requestFocus = useFocusRequest();
   const focusTextBox = () => requestFocus(() => findTextBox(rootRef.current));
+  const { isFocused, focusHandlers } = useFocusWithin();
   const [draft, setDraft] = useDraft({ value, defaultValue, onChange, persistKey });
   const actions = useComposerActions({
     value,
@@ -201,14 +271,24 @@ export function CommentComposer({
     onSubmit,
     onCancel,
     isDisabled,
+    isFocusCancel: actionsOnFocus && isFocused,
   });
+  // Cancel clears the draft; the focus then moves on to the text box, as the button goes, or out of
+  // a composer whose actions show on focus, so they fold away.
+  const cancel = () => {
+    actions.cancel();
+    if (actionsOnFocus) leaveComposer(rootRef.current);
+    else focusTextBox();
+  };
   const fieldLabel = label ?? strings.addComment;
+  const showsActions = !actionsOnFocus || isFocused || draft.trim() !== '' || actions.isPending;
   return (
     <div
       {...rest}
       ref={setRootRef}
       {...hooks.root({ className, data: { disabled: isDisabled, pending: actions.isPending } })}
-      onKeyDown={(event) => handleComposerKey(event, actions)}
+      {...focusHandlers}
+      onKeyDown={(event) => handleComposerKey(event, actions, cancel)}
     >
       <ComposerField
         mentions={mentions}
@@ -220,35 +300,17 @@ export function CommentComposer({
           onChange: actions.setDraft,
           isDisabled,
           autoFocus,
+          minRows,
         }}
       />
-      <div {...hooks.slot('actions')}>
-        {actions.canCancel ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            className={hooks.slotClass('cancel')}
-            onPress={() => {
-              actions.cancel();
-              // The button goes once the draft clears, so focus moves on to the text box.
-              focusTextBox();
-            }}
-          >
-            {strings.cancel}
-          </Button>
-        ) : null}
-        <Button
-          size="sm"
-          variant="primary"
-          className={hooks.slotClass('submit')}
-          isDisabled={!actions.canSubmit && !actions.isPending}
-          isPending={actions.isPending}
-          shortcut="Ctrl+Enter"
-          onPress={() => actions.submit(focusTextBox)}
-        >
-          {submitLabel ?? strings.comment}
-        </Button>
-      </div>
+      {showsActions ? (
+        <ComposerButtons
+          actions={actions}
+          submitLabel={submitLabel ?? strings.comment}
+          cancel={cancel}
+          onSubmitted={focusTextBox}
+        />
+      ) : null}
     </div>
   );
 }

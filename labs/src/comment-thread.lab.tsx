@@ -7,6 +7,7 @@ import { Switch } from '../../src/components/switch/switch.js';
 import { LinkGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ActivityThread, HighlightThread } from './comment-thread-activity-cases.js';
+import { CommentThreadHeaderCases } from './comment-thread-header-cases.js';
 import {
   BuiltInMentionThread,
   MarkdownComments,
@@ -387,6 +388,7 @@ mountLab(
     >
       <CallerContent />
     </LabSection>
+    <CommentThreadHeaderCases />
     <CommentThreadZoneCases />
   </>,
 );

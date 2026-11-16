@@ -2,14 +2,12 @@
 
 import { isValidElement, type ReactNode, useEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Focusable } from '../../primitives/index.js';
 import { flattenChildren } from '../../utils/flatten-children.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
-import { Badge } from '../badge/badge.js';
+import type { AvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
 import {
   CommentComposer,
@@ -17,13 +15,20 @@ import {
 } from '../comment-composer/comment-composer.js';
 import type { CommentMentions } from '../comment-composer/comment-mentions.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import { Tooltip } from '../tooltip/tooltip.js';
+import type { MenuEntry } from '../menu/menu.js';
 import {
   type CommentThreadActivity,
   CommentThreadActivityList,
 } from './comment-thread-activity.js';
 import { CommentThreadContext, useThreadContext } from './comment-thread-context.js';
+import { CommentThreadHeader } from './comment-thread-header.js';
 import { commentThreadHooks as hooks } from './comment-thread-hooks.js';
+import {
+  createFirstCommentMenuStore,
+  FirstCommentMenuContext,
+  type FirstCommentMenuStore,
+  useFirstCommentMenu,
+} from './first-comment-menu.js';
 import { useResolvedState } from './use-resolved-state.js';
 
 export interface CommentThreadProps
@@ -48,6 +53,30 @@ export interface CommentThreadProps
    * label, which a tooltip shows on hover and keyboard focus. Defaults to text chips.
    */
   statusIconOnly?: boolean | undefined;
+  /** Moves Reopen into the header menu while the thread is resolved. */
+  resolveInMenu?: boolean | undefined;
+  /** The caller's controls in the header, after the resolve button, such as Accept and Reject. */
+  headerActions?: ReactNode;
+  /**
+   * Entries of a "More actions" menu at the header's end, shown also while the thread is resolved
+   * or read-only, such as Copy link.
+   */
+  menu?: readonly MenuEntry[] | undefined;
+  /** Called with the `id` of an entry of `menu` chosen. */
+  onAction?: ((key: Key) => void) | undefined;
+  /**
+   * Moves the opening comment's menu (its Edit, Delete and own actions) into the header menu, before
+   * `menu`; Edit there opens that comment's editor in place.
+   */
+  firstInMenu?: boolean | undefined;
+  /** Who starts a thread that has no comments yet, such as a change's discussion, shown in the header. */
+  author?: AvatarIdentity | undefined;
+  /** When `author` started it: an ISO 8601 date and time, shown live. */
+  time?: string | null | undefined;
+  /** Hides the composer, which stays mounted, while the thread is not selected. */
+  composerOnSelect?: boolean | undefined;
+  /** Offers a close button at the header's end, such as for a thread being started. */
+  onClose?: (() => void) | undefined;
   /** Indents every reply, whole, under the opening comment. */
   indentReplies?: boolean | undefined;
   /** Whether each comment's Delete asks for confirmation first; a comment's own prop wins. */
@@ -97,8 +126,11 @@ function CommentList({
   comments,
   visibleReplies,
   highlightedId,
+  firstMenu,
 }: Pick<CommentThreadProps, 'visibleReplies' | 'highlightedId'> & {
   comments: readonly ReactNode[];
+  /** Where the opening comment hands its menu to the header, with `firstInMenu`. */
+  firstMenu: FirstCommentMenuStore | null;
 }) {
   const strings = useUiStrings();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -131,7 +163,7 @@ function CommentList({
         ref={isHighlighted(first) ? highlightedRef : undefined}
         {...hooks.slot('item', { highlighted: isHighlighted(first) })}
       >
-        {first}
+        <FirstCommentMenuContext value={firstMenu}>{first}</FirstCommentMenuContext>
       </li>
       {hidden > 0 ? (
         <li {...hooks.slot('more', { reply: true })}>
@@ -172,75 +204,6 @@ function CommentList({
 }
 
 /**
- * The Resolved state chip: a text badge, or an icon-only one named by its label, focusable so the
- * tooltip that shows the label reaches keyboard readers too. It is an image, not a button.
- */
-function ResolvedStatus({ iconOnly }: { iconOnly: boolean | undefined }) {
-  const strings = useUiStrings();
-  if (!iconOnly) {
-    return (
-      <Badge tone="success" size="sm" className={hooks.slotClass('status')}>
-        {strings.resolved}
-      </Badge>
-    );
-  }
-  return (
-    <Tooltip content={strings.resolved}>
-      <Focusable>
-        <span
-          {...hooks.slot('status', { iconOnly: true })}
-          role="img"
-          aria-label={strings.resolved}
-          aria-describedby=""
-          tabIndex={0}
-        >
-          <Badge tone="success" size="sm" startIcon={CheckGlyph} aria-hidden>
-            {null}
-          </Badge>
-        </span>
-      </Focusable>
-    </Tooltip>
-  );
-}
-
-/** The quote, the resolved chip and the resolve button, when there is any of them. */
-function CommentThreadHeader({
-  quote,
-  isResolved,
-  onToggle,
-  isPending,
-  iconOnly,
-  statusIconOnly,
-}: Pick<CommentThreadProps, 'quote'> & {
-  isResolved: boolean;
-  onToggle: (() => void) | null;
-  isPending: boolean;
-  iconOnly: boolean;
-  statusIconOnly: boolean | undefined;
-}) {
-  const strings = useUiStrings();
-  const label = isResolved ? strings.reopen : strings.resolve;
-  const icon = isResolved ? UndoGlyph : CheckGlyph;
-  if (isEmptyNode(quote) && !isResolved && !onToggle) return null;
-  return (
-    <div {...hooks.slot('header')}>
-      {isEmptyNode(quote) ? null : <blockquote {...hooks.slot('quote')}>{quote}</blockquote>}
-      {isResolved ? <ResolvedStatus iconOnly={statusIconOnly} /> : null}
-      {onToggle ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={hooks.slotClass('resolve')}
-          onPress={onToggle}
-          isPending={isPending}
-          {...(iconOnly ? { icon, label, tooltip: label } : { startIcon: icon, children: label })}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-/**
  * The caller's composer, or the default one when the thread takes replies. While replying is not
  * possible it stays mounted but hidden, so an unsent reply and a pending one outlast a resolve or a
  * read-only spell.
@@ -273,9 +236,65 @@ function ThreadComposer({
   );
 }
 
+/** The comments, the activity, the error and the composer, under the header. */
+function ThreadBody({
+  comments,
+  visibleReplies,
+  highlightedId,
+  firstMenu,
+  activity,
+  error,
+  composer,
+  onReply,
+  mentions,
+  composerState,
+}: Pick<
+  CommentThreadProps,
+  'visibleReplies' | 'highlightedId' | 'activity' | 'error' | 'composer' | 'onReply' | 'mentions'
+> & {
+  comments: readonly ReactNode[];
+  firstMenu: FirstCommentMenuStore | null;
+  composerState: { isMounted: boolean; isHidden: boolean };
+}) {
+  return (
+    <>
+      <CommentList
+        visibleReplies={visibleReplies}
+        comments={comments}
+        highlightedId={highlightedId}
+        firstMenu={firstMenu}
+      />
+      <CommentThreadActivityList activity={activity} />
+      {isEmptyNode(error) ? null : (
+        <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
+      )}
+      {composerState.isMounted ? (
+        <ThreadComposer
+          composer={composer}
+          onReply={onReply}
+          mentions={mentions}
+          isFirst={comments.length === 0}
+          isHidden={composerState.isHidden}
+        />
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * Whether the composer is drawn and hidden: it mounts once replying is possible, then stays, hidden
+ * while it is not, and with `composerOnSelect` while the thread is not selected.
+ */
+function useComposerState(canReply: boolean, isShown: boolean) {
+  const [isMounted, setIsMounted] = useState(canReply);
+  if (canReply && !isMounted) setIsMounted(true);
+  return { isMounted: isMounted || canReply, isHidden: !canReply || !isShown };
+}
+
 /**
  * A discussion: the quoted anchor, an opening comment and its replies, resolve and reopen, an error
- * and a composer for the next reply. A long thread hides its middle replies behind a button.
+ * and a composer for the next reply. A long thread hides its middle replies behind a button. The
+ * header can hold the caller's controls, a menu, a close button and, before any comment, its author.
  */
 export function CommentThread({
   children,
@@ -283,73 +302,65 @@ export function CommentThread({
   isResolved,
   defaultResolved = false,
   onResolvedChange,
-  resolveIconOnly = false,
+  resolveIconOnly,
   statusIconOnly,
+  resolveInMenu,
+  headerActions,
+  menu,
+  onAction,
+  firstInMenu,
+  author,
+  time,
+  composerOnSelect,
+  onClose,
   indentReplies = false,
   isReadOnly = false,
   confirmsDelete,
   isSelected = false,
-  visibleReplies,
-  onReply,
-  composer,
-  mentions,
-  error,
-  activity,
-  highlightedId,
   className,
   ...rest
 }: CommentThreadProps) {
   const strings = useUiStrings();
-  const threadContext = useThreadContext(isReadOnly, mentions, confirmsDelete);
+  const threadContext = useThreadContext(isReadOnly, rest.mentions, confirmsDelete);
   const { resolved, isPending, toggle } = useResolvedState({
     isResolved,
     defaultResolved,
     onResolvedChange,
   });
+  const [firstMenuStore] = useState(createFirstCommentMenuStore);
+  const firstMenu = useFirstCommentMenu(firstInMenu ? firstMenuStore : null);
   const comments = flattenChildren(children);
-  // The composer mounts once replying is possible, then stays: hidden while it is not.
   const canReply = !isReadOnly && !resolved;
-  const [hasComposer, setHasComposer] = useState(canReply);
-  if (canReply && !hasComposer) setHasComposer(true);
+  const composerState = useComposerState(canReply, isSelected || !composerOnSelect);
+  const { visibleReplies, highlightedId, activity, error, composer, onReply, mentions, ...root } =
+    rest;
   return (
     <div
-      {...rest}
+      {...root}
       {...hooks.root({
         className,
         data: { resolved, readonly: isReadOnly, selected: isSelected, indentReplies },
       })}
       role="group"
       aria-label={
-        rest['aria-label'] ?? (rest['aria-labelledby'] ? undefined : strings.commentThread)
+        root['aria-label'] ?? (root['aria-labelledby'] ? undefined : strings.commentThread)
       }
     >
       <CommentThreadContext value={threadContext}>
         <CommentThreadHeader
-          quote={quote}
+          {...{ quote, statusIconOnly, resolveInMenu, headerActions, menu, onAction, onClose }}
+          {...{ author, time, isPending, firstMenu }}
           isResolved={resolved}
           onToggle={onResolvedChange && !isReadOnly ? toggle : null}
-          isPending={isPending}
           iconOnly={resolveIconOnly}
-          statusIconOnly={statusIconOnly}
+          hasComments={comments.length > 0}
         />
-        <CommentList
-          visibleReplies={visibleReplies}
+        <ThreadBody
+          {...{ visibleReplies, highlightedId, activity, error, composer, onReply, mentions }}
           comments={comments}
-          highlightedId={highlightedId}
+          firstMenu={firstInMenu ? firstMenuStore : null}
+          composerState={composerState}
         />
-        <CommentThreadActivityList activity={activity} />
-        {isEmptyNode(error) ? null : (
-          <InlineError className={hooks.slotClass('error')}>{error}</InlineError>
-        )}
-        {hasComposer ? (
-          <ThreadComposer
-            composer={composer}
-            onReply={onReply}
-            mentions={mentions}
-            isFirst={comments.length === 0}
-            isHidden={!canReply}
-          />
-        ) : null}
       </CommentThreadContext>
     </div>
   );

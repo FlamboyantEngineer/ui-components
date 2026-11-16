@@ -328,6 +328,7 @@
   "saveStatus": "{phase, select, dirty {Cambios sin guardar} saving {Guardando…} saved {Guardado} error {No guardado} other {Sin conexión}}",
   "commentThread": "Hilo de comentarios",
   "commentActions": "Acciones del comentario",
+  "moreActions": "Más acciones",
   "addComment": "Añadir un comentario",
   "comment": "Comentar",
   "reply": "Responder",
