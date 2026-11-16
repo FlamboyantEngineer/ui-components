@@ -170,7 +170,7 @@ export function CommentThreadHeader(props: CommentThreadHeaderProps) {
           {...author}
           size="sm"
           className={hooks.slotClass('author')}
-          description={<Attribution time={props.time} />}
+          description={props.time ? <Attribution time={props.time} /> : undefined}
         />
       ) : null}
       {isEmptyNode(quote) ? null : <blockquote {...hooks.slot('quote')}>{quote}</blockquote>}

@@ -43,7 +43,7 @@ export interface CommentThreadReplyProps
     RefProps<HTMLElement> {
   /** Who wrote the comment. */
   author: AvatarIdentity;
-  /** When it was posted: an ISO 8601 date and time. */
+  /** When it was posted: an ISO 8601 date and time. Without one, the comment shows no time. */
   time: string | null | undefined;
   /** Marks the comment as changed after it was posted. */
   isEdited?: boolean | undefined;
@@ -126,21 +126,24 @@ function CommentAuthor({
   timeOptions: TimeOptions;
 }) {
   const strings = useUiStrings();
+  // A comment without a time, such as a proposed change's own post, shows none.
+  const timeLine = time ? (
+    <Attribution time={time} {...timeOptions} className={hooks.slotClass('time')} />
+  ) : null;
+  const edited = isEdited ? <span {...hooks.slot('edited')}>{strings.edited}</span> : null;
   return (
     <UserIdentity
       {...author}
       size="sm"
       className={hooks.slotClass('author')}
       description={
-        <>
-          <Attribution time={time} {...timeOptions} className={hooks.slotClass('time')} />
-          {isEdited ? (
-            <>
-              {' '}
-              <span {...hooks.slot('edited')}>{strings.edited}</span>
-            </>
-          ) : null}
-        </>
+        timeLine || edited ? (
+          <>
+            {timeLine}
+            {timeLine && edited ? ' ' : null}
+            {edited}
+          </>
+        ) : undefined
       }
     />
   );

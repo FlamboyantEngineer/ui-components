@@ -116,6 +116,9 @@ describe('CommentThread header', () => {
   it('UIC-COMMENT-THREAD-1.17 shows the author of a thread with no comments yet', () => {
     const { container, rerender } = render(<CommentThread author={ana} time={null} />);
     expect(container.querySelector('.ui-comment-thread__author')).toHaveTextContent('Ana Lima');
+    expect(container.querySelector('.ui-comment-thread__author')).not.toHaveTextContent(
+      'Unknown time',
+    );
     rerender(
       <CommentThread author={ana} time={null}>
         <CommentThreadReply author={ana} time={null} text="First" />
