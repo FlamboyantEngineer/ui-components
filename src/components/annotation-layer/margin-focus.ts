@@ -2,16 +2,23 @@
 
 import { type FocusEvent, useEffect, useRef } from 'react';
 
+/** Whether the element is a button that opens a menu or another popup. */
+function isPopupButton(element: Element): boolean {
+  const popup = element.getAttribute('aria-haspopup');
+  if (popup === null || popup === 'false') return false;
+  return element.tagName === 'BUTTON' || element.getAttribute('role') === 'button';
+}
+
 /**
  * Whether focus entering an entry makes its annotation active: focus on the entry or a control in
- * it, but not on a control that opens a menu or another popup (so a card's menu opens without the
- * card moving), and not inside a popup it rendered elsewhere in the document.
+ * it, but not on a button that opens a menu or another popup (so a card's menu opens without the
+ * card moving), and not inside a popup it rendered elsewhere in the document. A text box that
+ * offers completions is not such a button: focus in it activates the entry.
  */
 export function isActivatingFocus(event: FocusEvent<HTMLElement>): boolean {
   const target = event.target as Element;
   if (!event.currentTarget.contains(target)) return false;
-  const popup = target.getAttribute('aria-haspopup');
-  return target === event.currentTarget || popup === null || popup === 'false';
+  return target === event.currentTarget || !isPopupButton(target);
 }
 
 /**

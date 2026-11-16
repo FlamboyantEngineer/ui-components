@@ -225,6 +225,36 @@ describe('CommentThreadReply', () => {
     expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
   });
 
+  it('UIC-COMMENT-THREAD-2.4 deletes at once without confirmation when the thread says so', async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn(() => Promise.reject(new Error('Offline.')));
+    const kept = vi.fn();
+    render(
+      <CommentThread confirmsDelete={false}>
+        <CommentThreadReply author={ana} time={null} text="Gone" onDelete={onDelete} />
+        <CommentThreadReply
+          author={{ name: 'Bo Chen', colorKey: 'bo' }}
+          time={null}
+          text="Kept"
+          onDelete={kept}
+          confirmsDelete
+        />
+      </CommentThread>,
+    );
+    const actionsOf = (name: string) =>
+      within(screen.getByRole('article', { name })).getByRole('button', {
+        name: 'Comment actions',
+      });
+    await user.click(actionsOf('Ana Lima'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await user.click(actionsOf('Bo Chen'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    expect(kept).not.toHaveBeenCalled();
+  });
+
   it('UIC-COMMENT-THREAD-2.4 deletes after confirmation', async () => {
     const onDelete = vi.fn();
     render(

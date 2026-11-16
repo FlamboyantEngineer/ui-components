@@ -124,6 +124,8 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `sr
 
 Delete shall open a danger `Modal` titled by the provider's `deleteComment` string with the `deleteCommentMessage` message and a `delete` confirm action; confirming calls `onDelete`, and cancelling changes nothing. A promise `onDelete` returns keeps the confirm action pending until it settles; the dialog closes once it resolves and stays open with the failure when it rejects ([UIC-MODAL-5.3](MODAL.md#uic-modal-53---failed-actions)).
 
+With `confirmsDelete={false}` on the comment, or on its `CommentThread` (the comment's own prop wins; both default to `true`), Delete shall call `onDelete` at once without the dialog, and a promise it rejects is the caller's to report.
+
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `src/components/comment-thread/comment-thread-reply-mutations.test.tsx`, `e2e/comment-thread.spec.ts`
 

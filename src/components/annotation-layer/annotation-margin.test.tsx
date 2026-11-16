@@ -30,6 +30,7 @@ function MenuCards({ clearsActiveOnBlur }: { clearsActiveOnBlur?: boolean }) {
                 Note {annotation.id}
                 {isActive ? ' (active)' : ''}
               </button>
+              <input aria-label={`Reply to ${annotation.id}`} aria-haspopup="listbox" />
               <button type="button" aria-haspopup="menu" onClick={() => setMenuFor(annotation.id)}>
                 More for {annotation.id}
               </button>
@@ -61,6 +62,13 @@ describe('AnnotationMargin', () => {
     expect(await screen.findByRole('menuitem', { name: 'Edit' })).toHaveFocus();
     expect(screen.getByRole('status')).toHaveTextContent('null');
     await user.click(screen.getByRole('button', { name: 'Note second' }));
+    expect(screen.getByRole('status')).toHaveTextContent('second');
+  });
+
+  it('UIC-ANNOTATION-LAYER-2.10 makes the card active when focus enters a text box that offers completions', async () => {
+    const user = userEvent.setup();
+    render(<MenuCards />);
+    await user.click(screen.getByRole('textbox', { name: 'Reply to second' }));
     expect(screen.getByRole('status')).toHaveTextContent('second');
   });
 

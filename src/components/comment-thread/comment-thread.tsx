@@ -1,6 +1,6 @@
 'use client';
 
-import { isValidElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { isValidElement, type ReactNode, useEffect, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { CheckGlyph, UndoGlyph } from '../../core/glyphs.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -22,7 +22,7 @@ import {
   type CommentThreadActivity,
   CommentThreadActivityList,
 } from './comment-thread-activity.js';
-import { CommentThreadContext } from './comment-thread-context.js';
+import { CommentThreadContext, useThreadContext } from './comment-thread-context.js';
 import { commentThreadHooks as hooks } from './comment-thread-hooks.js';
 import { useResolvedState } from './use-resolved-state.js';
 
@@ -50,6 +50,8 @@ export interface CommentThreadProps
   statusIconOnly?: boolean | undefined;
   /** Indents every reply, whole, under the opening comment. */
   indentReplies?: boolean | undefined;
+  /** Whether each comment's Delete asks for confirmation first; a comment's own prop wins. */
+  confirmsDelete?: boolean | undefined;
   /** Shows the comments without the composer, the resolve button or the comments' menus. */
   isReadOnly?: boolean | undefined;
   /** The thread is the current one, such as when its anchor is selected. */
@@ -285,6 +287,7 @@ export function CommentThread({
   statusIconOnly,
   indentReplies = false,
   isReadOnly = false,
+  confirmsDelete,
   isSelected = false,
   visibleReplies,
   onReply,
@@ -297,7 +300,7 @@ export function CommentThread({
   ...rest
 }: CommentThreadProps) {
   const strings = useUiStrings();
-  const threadContext = useMemo(() => ({ isReadOnly, mentions }), [isReadOnly, mentions]);
+  const threadContext = useThreadContext(isReadOnly, mentions, confirmsDelete);
   const { resolved, isPending, toggle } = useResolvedState({
     isResolved,
     defaultResolved,
@@ -313,12 +316,7 @@ export function CommentThread({
       {...rest}
       {...hooks.root({
         className,
-        data: {
-          resolved,
-          readonly: isReadOnly,
-          selected: isSelected,
-          indentReplies,
-        },
+        data: { resolved, readonly: isReadOnly, selected: isSelected, indentReplies },
       })}
       role="group"
       aria-label={
