@@ -112,7 +112,7 @@ Verification: `src/components/annotation-layer/annotation-margin.test.tsx`
 
 ### UIC-ANNOTATION-LAYER-2.10 - Menus in a card
 
-Focus that lands on a control in a card that opens a menu or another popup (`aria-haspopup` other than `false`), or inside a popup a card rendered elsewhere in the document, shall not make the card's annotation active (UIC-ANNOTATION-LAYER-2.4), so the first press on an inactive card's menu button opens its menu without selecting the card or moving it. Focus on the card itself or any other control in it activates it as before.
+Focus that lands on a button in a card that opens a menu or another popup (a button with `aria-haspopup` other than `false`), or inside a popup a card rendered elsewhere in the document, shall not make the card's annotation active (UIC-ANNOTATION-LAYER-2.4), so the first press on an inactive card's menu button opens its menu without selecting the card or moving it. Focus on the card itself or any other control in it activates it as before, including a text box that offers completions (`aria-haspopup="listbox"`), such as a reply composer.
 
 Implementation: `src/components/annotation-layer/margin-focus.ts`, `src/components/annotation-layer/annotation-margin.tsx`
 Verification: `src/components/annotation-layer/annotation-margin.test.tsx`
