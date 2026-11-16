@@ -105,16 +105,15 @@ describe('CommentThreadReply', () => {
     expect(time).toHaveTextContent('Apr 10, 2026');
   });
 
-  it('UIC-COMMENT-THREAD-2.1 shows the text without children, and an unknown time', () => {
+  it('UIC-COMMENT-THREAD-2.1 shows the text without children, and no time when it has none', () => {
     render(<CommentThreadReply author={ana} time={null} text="Pears are ripe" />);
     const article = screen.getByRole('article', { name: 'Ana Lima' });
     expect(article).not.toHaveAttribute('data-edited');
     expect(article.querySelector('.ui-comment-thread-reply__body')).toHaveTextContent(
       'Pears are ripe',
     );
-    expect(article.querySelector('.ui-comment-thread-reply__time')).toHaveTextContent(
-      'Unknown time',
-    );
+    expect(article.querySelector('.ui-comment-thread-reply__time')).toBeNull();
+    expect(article).not.toHaveTextContent('Unknown time');
     expect(article.querySelector('.ui-comment-thread-reply__edited')).toBeNull();
   });
 
@@ -127,6 +126,8 @@ describe('CommentThreadReply', () => {
         text="Hi"
         actions={[{ id: 'copy-link', label: 'Copy link', icon: LinkGlyph }]}
         onAction={onAction}
+        onEdit={() => {}}
+        onDelete={() => {}}
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Comment actions' });
@@ -137,7 +138,7 @@ describe('CommentThreadReply', () => {
       within(menu)
         .getAllByRole('menuitem')
         .map((item) => item.textContent),
-    ).toEqual(['Copy link']);
+    ).toEqual(['Edit', 'Delete', 'Copy link']);
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Copy link' }));
     expect(onAction).toHaveBeenCalledWith('copy-link');
     expectHooksMatchSpec(container, 'COMMENT-THREAD', {

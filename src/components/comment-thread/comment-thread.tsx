@@ -71,7 +71,7 @@ export interface CommentThreadProps
   firstInMenu?: boolean | undefined;
   /** Who starts a thread that has no comments yet, such as a change's discussion, shown in the header. */
   author?: AvatarIdentity | undefined;
-  /** When `author` started it: an ISO 8601 date and time, shown live. */
+  /** When `author` started it: an ISO 8601 date and time, shown live; without one, no time shows. */
   time?: string | null | undefined;
   /** Hides the composer, which stays mounted, while the thread is not selected. */
   composerOnSelect?: boolean | undefined;

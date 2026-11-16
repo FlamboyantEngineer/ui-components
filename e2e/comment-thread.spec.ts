@@ -113,6 +113,7 @@ test.describe('Comment Thread lab', () => {
     await expect(page.locator('[data-lab-output="action"]')).toHaveText('copy-link on comment 1');
 
     await menu.click();
+    await expect(page.getByRole('menuitem')).toHaveText(['Edit', 'Delete', 'Copy link']);
     await page.getByRole('menuitem', { name: 'Delete' }).click();
     const dialog = page.getByRole('alertdialog', { name: 'Delete comment' });
     await expect(dialog).toBeVisible();

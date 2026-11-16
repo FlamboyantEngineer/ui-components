@@ -118,7 +118,7 @@ Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
 
 ### UIC-COMMENT-THREAD-1.17 - Author before any comment
 
-`author` (an avatar identity) and `time` shall show, while the thread has no comments, as a `UserIdentity` in the header's `ui-comment-thread__author` slot with the live time, such as the discussion of a proposed change before anyone replies.
+`author` (an avatar identity) and `time` shall show, while the thread has no comments, as a `UserIdentity` in the header's `ui-comment-thread__author` slot with the live time (none when `time` is missing), such as the discussion of a proposed change before anyone replies.
 
 Implementation: `src/components/comment-thread/comment-thread-header.tsx`
 Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
@@ -134,14 +134,14 @@ Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
 
 ### UIC-COMMENT-THREAD-2.1 - Author, time and body
 
-`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, an [Attribution](ATTRIBUTION.md) of `time` alone (`ui-comment-thread-reply__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, the provider's `unknownTime` string when it is missing, and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name. The reference stylesheet indents the body, the reactions, an editor and its error past the small avatar, so their text lines up under the author's name, trims the outer margins of a body the host renders in blocks, and lets the composer fill the thread's width.
+`CommentThreadReply` shall render a `ui-comment-thread-reply` `<article>` whose `ui-comment-thread-reply__header` holds a small `UserIdentity` of `author` (`ui-comment-thread-reply__author`) with, on its description line, an [Attribution](ATTRIBUTION.md) of `time` alone (`ui-comment-thread-reply__time`) read against `getNow` with `fallbackAfterDays` and `timeZone`, and no time at all when `time` is missing (`null` or `undefined`), such as for a proposed change's own post, and, with `isEdited`, the provider's `edited` string in `ui-comment-thread-reply__edited` and `data-edited` on the root. The body follows in `ui-comment-thread-reply__body`: the children as the caller renders them, else `text`. `reactions`, such as a [Reaction Bar](REACTION-BAR.md), render after it in `ui-comment-thread-reply__reactions`. The article is named by the author's display name. The reference stylesheet indents the body, the reactions, an editor and its error past the small avatar, so their text lines up under the author's name, trims the outer margins of a body the host renders in blocks, and lets the composer fill the thread's width.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`
 
 ### UIC-COMMENT-THREAD-2.2 - Comment menu
 
-When the comment has `actions`, `onEdit` or `onDelete`, its header shall end with an icon-only `DropdownMenu` (`ui-comment-thread-reply__actions`) named by the provider's `commentActions` string, listing `actions`, then Edit (`edit` glyph) with `onEdit`, then Delete (`delete` glyph, `danger` tone) with `onDelete`. Choosing a caller action calls `onAction` with its `id`; the built-in actions use the ids `edit` and `delete`.
+When the comment has `actions`, `onEdit` or `onDelete`, its header shall end with an icon-only `DropdownMenu` (`ui-comment-thread-reply__actions`) named by the provider's `commentActions` string, listing Edit (`edit` glyph) with `onEdit`, then Delete (`delete` glyph, `danger` tone) with `onDelete`, then `actions`, so a caller's Copy link comes last. Choosing a caller action calls `onAction` with its `id`; the built-in actions use the ids `edit` and `delete`.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`
