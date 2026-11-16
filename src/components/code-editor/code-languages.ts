@@ -10,6 +10,7 @@ export type CodeLanguage =
   | 'css'
   | 'sql'
   | 'python'
+  | 'java'
   | 'markdown'
   | 'c'
   | 'cpp'
@@ -53,6 +54,16 @@ const c: CodeSyntax = [
   quoted,
   numeric,
   { type: 'keyword', pattern: new RegExp(`\\b(?:${cKeywords})\\b`) },
+];
+const javaKeywords =
+  'abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|false|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|null|package|private|protected|public|record|return|sealed|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|true|try|var|void|volatile|while|yield';
+const java: CodeSyntax = [
+  comment,
+  { type: 'string', pattern: /"""[\s\S]*?(?:"""|$)/ },
+  { type: 'string', pattern: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/ },
+  { type: 'keyword', pattern: /@\w+/ },
+  { type: 'number', pattern: /\b(?:0[xb][\da-f_]+|\d[\d_]*(?:\.\d+)?(?:e[+-]?\d+)?)[dfl]?\b/i },
+  { type: 'keyword', pattern: new RegExp(`\\b(?:${javaKeywords})\\b`) },
 ];
 const xml: CodeSyntax = [
   { type: 'comment', pattern: /<!--[\s\S]*?(?:-->|$)/ },
@@ -103,6 +114,7 @@ const presets: Record<Exclude<CodeLanguage, 'text' | 'json'>, CodeSyntax> = {
         /\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield)\b/,
     },
   ],
+  java,
   c,
   cpp: [{ type: 'keyword', pattern: new RegExp(`\\b(?:${cppKeywords})\\b`) }, ...c],
   yaml: [

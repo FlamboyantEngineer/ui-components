@@ -47,6 +47,8 @@ export interface CodeSurfaceProps extends BaseProps, CodeTextAreaProps {
   listDiagnostics?: boolean | undefined;
   /** A vocabulary for the word before the caret, or a source that completes the place at the caret. */
   completions?: readonly Completion[] | CompletionSource | undefined;
+  /** Opens the completion list above the caret when there is more room there. Defaults to `true`. */
+  shouldFlipCompletions?: boolean | undefined;
   /** Information for the hover tip at a source offset, shown with the problems marked there. */
   renderHover?: ((offset: number) => ReactNode) | undefined;
   /** Starting height. Defaults to `md`. */
@@ -114,6 +116,7 @@ function CodeEditorOverlays(props: {
   isListed: boolean;
   listId: string | undefined;
   caretRef: RefObject<HTMLSpanElement | null>;
+  shouldFlipCompletions: boolean | undefined;
 }) {
   const { model, diagnostics, listId } = props;
   return (
@@ -132,6 +135,7 @@ function CodeEditorOverlays(props: {
           listId={listId}
           anchorRef={props.caretRef}
           className={hooks.slotClass('popover')}
+          shouldFlip={props.shouldFlipCompletions}
         />
       ) : null}
       <CodeHoverTooltip model={model.hover} inputRef={model.layers.input} />
@@ -218,6 +222,7 @@ export function CodeSurface(props: CodeSurfaceProps) {
       <CodeEditorOverlays
         {...{ model, diagnostics, diagnosticsId, listId, caretRef }}
         isListed={problems.isListed}
+        shouldFlipCompletions={view.shouldFlipCompletions}
       />
     </div>
   );

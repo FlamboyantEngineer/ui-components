@@ -60,6 +60,11 @@ export interface CompletionListProps extends RefProps<HTMLElement>, BaseProps, A
    * in an editor that places no marker; null keeps it where it is.
    */
   getTargetRect?: (() => DOMRect | null) | undefined;
+  /**
+   * Opens above the anchor when there is more room there. Defaults to `true`; `false` keeps the
+   * list below, as tall as the room below allows, so it never covers the line being typed.
+   */
+  shouldFlip?: boolean | undefined;
   items: readonly CompletionListItem[];
   /** The active option, which the editor names in `aria-activedescendant`. */
   activeKey: Key | null;
@@ -86,6 +91,7 @@ interface ControlCompletionListProps {
   renderCompletion?: CompletionRenderer | undefined;
   /** The owning component's slot class for the list's popover. */
   className: string;
+  shouldFlip?: boolean | undefined;
 }
 
 const hooks = createHooks('completion-list', [
@@ -227,6 +233,7 @@ export function CompletionList(props: CompletionListProps) {
         triggerRef={anchorRef}
         {...(props.getTargetRect ? { getTargetRect: props.getTargetRect } : {})}
         placement="bottom start"
+        shouldFlip={props.shouldFlip ?? true}
         shouldUpdatePosition={shouldUpdatePosition}
         offset={DEFAULT_POINT_OFFSET}
         style={{ ...triggerWidthProperty, zIndex }}
@@ -282,6 +289,7 @@ export function ControlCompletionList({
   anchorRef,
   renderCompletion,
   className,
+  shouldFlip,
 }: ControlCompletionListProps) {
   // A parent layout update must not restart the position pause while it is being resumed.
   // Every lookup, including a caret move with equal matches, supplies a new options array.
@@ -293,6 +301,7 @@ export function ControlCompletionList({
     <CompletionList
       id={listId}
       className={className}
+      shouldFlip={shouldFlip}
       isOpen={model.isOpen}
       onOpenChange={(open) => (open ? undefined : model.close())}
       onShownChange={model.setShown}
