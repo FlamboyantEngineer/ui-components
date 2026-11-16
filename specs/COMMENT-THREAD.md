@@ -6,7 +6,7 @@
 
 ### UIC-COMMENT-THREAD-1.1 - Comments and anchor
 
-`CommentThread` shall render a `ui-comment-thread` element holding, in order: a `ui-comment-thread__header` when it has a quote, a resolved badge or a resolve button; the comments; the error; and the composer. `quote` renders in a `<blockquote>` in the `ui-comment-thread__quote` slot. The children, the opening comment first, render as an ordered list (`ui-comment-thread__comments`), each child in a `ui-comment-thread__item` list item; the children of a fragment, at any depth, count as children of their own, each keeping its identity, and a thread without children, or with only empty fragments, draws no list.
+`CommentThread` shall render a `ui-comment-thread` element holding, in order: a `ui-comment-thread__header` when it has a quote, a resolved badge, a resolve button or one of the header parts of [UIC-COMMENT-THREAD-1.14](#uic-comment-thread-114---header-controls-and-close) to [1.17](#uic-comment-thread-117---author-before-any-comment); the comments; the error; and the composer. `quote` renders in a `<blockquote>` in the `ui-comment-thread__quote` slot. The children, the opening comment first, render as an ordered list (`ui-comment-thread__comments`), each child in a `ui-comment-thread__item` list item; the children of a fragment, at any depth, count as children of their own, each keeping its identity, and a thread without children, or with only empty fragments, draws no list.
 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread.test.tsx`, `src/components/comment-thread/comment-thread-drafts.test.tsx`, `src/utils/flatten-children.test.tsx`, `e2e/comment-thread.spec.ts`
@@ -95,6 +95,41 @@ Verification: `src/components/comment-thread/comment-thread-activity.test.tsx`, 
 Implementation: `src/components/comment-thread/comment-thread.tsx`
 Verification: `src/components/comment-thread/comment-thread-activity.test.tsx`, `e2e/comment-thread.spec.ts`
 
+### UIC-COMMENT-THREAD-1.14 - Header controls and close
+
+`headerActions` shall be drawn in the header's `ui-comment-thread__header-actions` slot after the resolve button, such as icon-only Accept and Reject for a proposed change. `onClose` shall add an icon-only button named by the provider's `close` string in the `ui-comment-thread__close` slot at the header's end, which calls it, such as for a thread being started. Either one draws the header on its own.
+
+Implementation: `src/components/comment-thread/comment-thread-header.tsx`
+Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
+
+### UIC-COMMENT-THREAD-1.15 - Header menu
+
+`menu` (menu entries) shall add an icon-only `DropdownMenu` named by the provider's `moreActions` string in the `ui-comment-thread__menu` slot, after the header's controls and before the close button, which calls `onAction` with the chosen entry's `id`. The menu shows while the thread is resolved or read-only too, so a reader can still copy a link. With `firstInMenu`, the opening comment's own menu (its Edit and Delete, then its `actions`) moves into this menu ahead of `menu`, and the comment draws no menu of its own; Edit there opens that comment's editor in place, Delete its confirmation ([UIC-COMMENT-THREAD-2.4](#uic-comment-thread-24---deleting)), and its own actions call its `onAction`. An opening comment that offers nothing, or a read-only thread, leaves only `menu`. Keys the opening comment offers go to it before `onAction`.
+
+Implementation: `src/components/comment-thread/comment-thread-header.tsx`, `src/components/comment-thread/first-comment-menu.ts`, `src/components/comment-thread/comment-thread-reply.tsx`
+Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
+
+### UIC-COMMENT-THREAD-1.16 - Reopen in the menu
+
+With `resolveInMenu`, a resolved thread that offers Reopen ([UIC-COMMENT-THREAD-1.4](#uic-comment-thread-14---resolve-and-reopen)) shall show it as an entry of the header menu, after the opening comment's entries, instead of the header button. Resolve stays a button while the thread is open.
+
+Implementation: `src/components/comment-thread/comment-thread-header.tsx`
+Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
+
+### UIC-COMMENT-THREAD-1.17 - Author before any comment
+
+`author` (an avatar identity) and `time` shall show, while the thread has no comments, as a `UserIdentity` in the header's `ui-comment-thread__author` slot with the live time, such as the discussion of a proposed change before anyone replies.
+
+Implementation: `src/components/comment-thread/comment-thread-header.tsx`
+Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
+
+### UIC-COMMENT-THREAD-1.18 - Composer on selection
+
+With `composerOnSelect`, the composer slot shall carry `hidden` while `isSelected` is false, staying mounted with its draft as in [UIC-COMMENT-THREAD-1.9](#uic-comment-thread-19---replies-outlast-a-closed-thread).
+
+Implementation: `src/components/comment-thread/comment-thread.tsx`
+Verification: `src/components/comment-thread/comment-thread-header.test.tsx`
+
 ## UIC-COMMENT-THREAD-2 - Comments
 
 ### UIC-COMMENT-THREAD-2.1 - Author, time and body
@@ -178,10 +213,14 @@ Verification: `src/components/comment-thread/comment-text.test.tsx`, `e2e/commen
 | Hook                                 | Kind      | Values                     | Description                                                                                                                           |
 | ------------------------------------ | --------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `ui-comment-thread`                  | root      |                            | The `role="group"` thread.                                                                                                            |
-| `ui-comment-thread__header`          | slot      |                            | The quote, the resolved badge and the resolve button.                                                                                 |
+| `ui-comment-thread__header`          | slot      |                            | The author, the quote, the resolved badge, the resolve button, the caller's controls, the menu and the close button.                  |
+| `ui-comment-thread__author`          | slot      |                            | The author of a thread with no comments yet (also `ui-user-identity`).                                                                |
 | `ui-comment-thread__quote`           | slot      |                            | The quoted anchor (`<blockquote>`).                                                                                                   |
 | `ui-comment-thread__status`          | slot      |                            | The resolved badge (also `ui-badge`), or the icon-only chip's image that holds it.                                                    |
 | `ui-comment-thread__resolve`         | slot      |                            | The resolve or reopen button (also `ui-button`).                                                                                      |
+| `ui-comment-thread__header-actions`  | slot      |                            | The caller's `headerActions`.                                                                                                         |
+| `ui-comment-thread__menu`            | slot      |                            | The header menu button (also `ui-dropdown-menu`).                                                                                     |
+| `ui-comment-thread__close`           | slot      |                            | The close button (also `ui-button`).                                                                                                  |
 | `ui-comment-thread__comments`        | slot      |                            | The ordered list of comments.                                                                                                         |
 | `ui-comment-thread__item`            | slot      |                            | One comment's list item.                                                                                                              |
 | `ui-comment-thread__more`            | slot      |                            | The list item holding the button that reveals hidden replies.                                                                         |

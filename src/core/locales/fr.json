@@ -328,6 +328,7 @@
   "saveStatus": "{phase, select, dirty {Modifications non enregistrées} saving {Enregistrement…} saved {Enregistré} error {Non enregistré} other {Hors ligne}}",
   "commentThread": "Fil de commentaires",
   "commentActions": "Actions du commentaire",
+  "moreActions": "Plus d’actions",
   "addComment": "Ajouter un commentaire",
   "comment": "Commenter",
   "reply": "Répondre",

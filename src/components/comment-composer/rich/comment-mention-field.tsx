@@ -103,7 +103,7 @@ export function CommentMentionField({
       placeholder={field.placeholder}
       isDisabled={field.isDisabled}
       autoFocus={field.autoFocus}
-      minRows={2}
+      minRows={field.minRows}
       triggers={triggers}
       completionBoundary={mentions.getListBoundary?.()}
       onPaste={mentions.resolvePaste ? ({ text }) => toPastedMessage(text, mentions) : undefined}

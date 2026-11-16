@@ -53,6 +53,13 @@ The text box shall be the composer's only labelled control besides its buttons, 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
 
+### UIC-COMMENT-COMPOSER-1.8 - Compact start
+
+The text box shall show `minRows` rows at least, by default two, also with `mentions`. With `actionsOnFocus`, the `ui-comment-composer__actions` element shall show only while focus is in the composer, the draft is not blank or a submit is pending; while focus is in the composer, Cancel shows even for an empty draft. In that mode, Cancel and Escape clear the draft as before ([UIC-COMMENT-COMPOSER-1.4](#uic-comment-composer-14---cancelling)) and then take focus out of the composer, so the actions fold away.
+
+Implementation: `src/components/comment-composer/comment-composer.tsx`, `src/components/comment-composer/rich/comment-mention-field.tsx`
+Verification: `src/components/comment-composer/comment-composer.test.tsx`
+
 ## UIC-COMMENT-COMPOSER-2 - Mentions
 
 ### UIC-COMMENT-COMPOSER-2.1 - Suggestions

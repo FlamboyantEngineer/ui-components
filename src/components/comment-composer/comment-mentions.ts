@@ -65,6 +65,8 @@ export interface CommentMentionFieldProps {
   onChange: (value: string) => void;
   isDisabled: boolean;
   autoFocus: boolean | undefined;
+  /** The rows the text box shows at least while it is empty. */
+  minRows: number;
 }
 
 /** Mentions for comments, made by `createCommentMentions` from the `comment-composer/rich` entry point. */
