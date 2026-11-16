@@ -67,6 +67,11 @@ export interface CommentThreadReplyProps
    * keeps the confirmation pending until it resolves, and open with the failure when it rejects.
    */
   onDelete?: (() => void | Promise<unknown>) | undefined;
+  /**
+   * Whether Delete asks for confirmation first; with `false` it calls `onDelete` at once, and a
+   * rejected promise is the caller's to report. Defaults to the thread's, which defaults to `true`.
+   */
+  confirmsDelete?: boolean | undefined;
   /** Renders the editor in place of the default `CommentComposer`, for rich text. */
   renderEditor?: ((options: CommentEditorOptions) => ReactNode) | undefined;
   /**
@@ -148,7 +153,9 @@ function CommentMenu({
   onDelete,
   onEditStart,
   menuRef,
+  confirmsDelete,
 }: Pick<CommentThreadReplyProps, 'actions' | 'onAction' | 'onEdit' | 'onDelete'> & {
+  confirmsDelete: boolean;
   onEditStart: () => void;
   menuRef: Ref<HTMLButtonElement | HTMLAnchorElement>;
 }) {
@@ -160,7 +167,8 @@ function CommentMenu({
   if (entries.length === 0) return null;
   const runAction = (key: Key) => {
     if (key === editKey && onEdit) onEditStart();
-    else if (key === deleteKey && onDelete) setIsConfirming(true);
+    else if (key === deleteKey && onDelete && confirmsDelete) setIsConfirming(true);
+    else if (key === deleteKey && onDelete) void Promise.resolve(onDelete()).catch(() => {});
     else onAction?.(key);
   };
   return (
@@ -175,7 +183,7 @@ function CommentMenu({
         items={entries}
         onAction={runAction}
       />
-      {onDelete ? (
+      {onDelete && confirmsDelete ? (
         <Modal
           role="alertdialog"
           isOpen={isConfirming}
@@ -266,6 +274,7 @@ export function CommentThreadReply({
   onAction,
   onEdit,
   onDelete,
+  confirmsDelete: ownConfirmsDelete,
   renderEditor,
   mentions: ownMentions,
   fallbackAfterDays,
@@ -307,6 +316,7 @@ export function CommentThreadReply({
             onDelete={onDelete}
             onEditStart={openEditor}
             menuRef={menuRef}
+            confirmsDelete={ownConfirmsDelete ?? thread.confirmsDelete}
           />
         )}
       </div>

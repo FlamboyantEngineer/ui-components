@@ -96,6 +96,7 @@ function LiveThread() {
   const [comments, setComments] = useState(opening);
   const [failNext, setFailNext] = useState(false);
   const [canChange, setCanChange] = useState(true);
+  const [confirmsDelete, setConfirmsDelete] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState('nothing yet');
   const update = (id: number, change: (comment: LabComment) => LabComment) =>
@@ -132,9 +133,13 @@ function LiveThread() {
       </Switch>{' '}
       <Switch isSelected={canChange} onChange={setCanChange}>
         Allow changing my comments
+      </Switch>{' '}
+      <Switch isSelected={confirmsDelete} onChange={setConfirmsDelete}>
+        Confirm before deleting
       </Switch>
       <CommentThread
         quote={quote}
+        confirmsDelete={confirmsDelete}
         onReply={reply}
         defaultResolved={false}
         onResolvedChange={(isResolved) =>
@@ -317,7 +322,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live"
-      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen: an unsent reply waits, hidden, while the thread is resolved. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on."
+      description="Reply (Ctrl+Enter sends), react, edit or delete your own comments from their menu, copy a link, and resolve or reopen: an unsent reply waits, hidden, while the thread is resolved. Edits and deletes take a moment to save: the editor or the confirmation stays open, pending, until they do. Switch on the failure to see the error and the kept draft or edit. Switch off changing your comments while editing or confirming: the editor or confirmation ends, and does not come back when you switch it on. Switch off confirming to delete at once."
     >
       <LiveThread />
     </LabSection>
