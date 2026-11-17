@@ -10,6 +10,7 @@ import {
   bars3CenterMiddlePath,
   borderAllPath,
   chatBubbleCheckPath,
+  chatBubblePath,
   chatBubblePlusPath,
   chatBubbleXMarkPath,
   crossReferencePath,
@@ -82,6 +83,7 @@ export const Bars3CenterMiddleGlyph = /* @__PURE__ */ createGlyph(
   'bars-3-center-middle',
   bars3CenterMiddlePath,
 );
+export const ChatBubbleGlyph = /* @__PURE__ */ createGlyph('chat-bubble', chatBubblePath);
 export const ChatBubbleCheckGlyph = /* @__PURE__ */ createGlyph(
   'chat-bubble-check',
   chatBubbleCheckPath,

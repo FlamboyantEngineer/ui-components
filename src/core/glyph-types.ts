@@ -140,6 +140,7 @@ export type GlyphName =
   | 'theme-dark'
   | 'bars-3-bar'
   | 'bars-3-center-middle'
+  | 'chat-bubble'
   | 'chat-bubble-check'
   | 'chat-bubble-plus'
   | 'chat-bubble-x-mark'
