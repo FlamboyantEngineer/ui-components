@@ -75,6 +75,11 @@ export interface MenuProps
   renderEmptyState?: (() => ReactNode) | undefined;
   /** Row density. Submenus inherit it. Defaults to `md`. */
   size?: MenuSize | undefined;
+  /**
+   * Where focus goes as the menu shows: the menu itself (`true`), or its `first` or `last` item. A
+   * trigger's menu otherwise follows how it opened (UIC-MENU-4.1).
+   */
+  autoFocus?: boolean | 'first' | 'last' | undefined;
   /** Leads the menu with a search field that narrows the items while focus stays in it. */
   filterable?: boolean | undefined;
   /** Marks the text typed in the enclosing search field (its own, or a command palette's) in the labels. */
