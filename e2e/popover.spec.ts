@@ -112,6 +112,24 @@ test.describe('Popover lab', () => {
     await expect(draft).toHaveCount(0);
   });
 
+  test('UIC-POPOVER-1.5 takes no presses or focus while it fades out', async ({ page, lab }) => {
+    await lab.open('popover');
+    // A slow exit keeps the closing panel on the page long enough to look at.
+    await page.addStyleTag({
+      content: '.ui-popover[data-exiting] { animation-duration: 3s !important; }',
+    });
+    const trigger = matrixCell(page, 'placement=bottom arrow=arrow').locator('button');
+    await trigger.click();
+    const panel = page.locator('.ui-popover[data-lab-popover="bottom-arrow"]');
+    await expect(panel).not.toHaveAttribute('inert');
+    await panel.getByRole('button', { name: 'Close' }).click();
+    await expect(panel).toHaveAttribute('data-exiting', 'true');
+    await expect(panel).toHaveAttribute('inert', '');
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toHaveCount(0, { timeout: 10_000 });
+  });
+
   test('UIC-POPOVER-3.1 UIC-POPOVER-1.3 names a popover without a title and applies position options', async ({
     page,
     lab,
