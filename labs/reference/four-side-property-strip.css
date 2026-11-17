@@ -74,6 +74,30 @@
   }
 }
 
+/*
+ * In a narrow panel the strip tightens its gaps, its inputs' padding and their smallest width, but
+ * not what they hold, so values of four characters still show whole with the unit beside them.
+ */
+@container ui-property-panel (width < 22.5rem) {
+  .ui-four-side-property-strip .ui-property-strip {
+    column-gap: 2px;
+  }
+
+  .ui-four-side-property-strip__side + .ui-four-side-property-strip__side {
+    margin-inline-start: 2px;
+  }
+
+  .ui-four-side-property-strip[data-link='pairs']
+    .ui-four-side-property-strip__side:is([data-side='left'], [data-side='inline-start']) {
+    margin-inline-start: 8px;
+  }
+
+  .ui-four-side-property-strip .ui-four-side-property-strip__side > input {
+    min-width: 32px;
+    padding-inline: 3px;
+  }
+}
+
 /* |----icon----|: ticks up to the linked controls and a rule through the centred toggle. */
 .ui-four-side-property-strip__bracket {
   --ref-four-side-property-strip-rule: color-mix(in srgb, var(--ref-muted) 60%, transparent);

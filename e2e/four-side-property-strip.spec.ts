@@ -393,13 +393,33 @@ test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 reports linked edits to the page that own
   );
 });
 
-test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.2 shows the row description and a working action in a narrow panel', async ({
+test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.2 UIC-FOUR-SIDE-PROPERTY-STRIP-1.6 shows the row description, a working action and the whole strip in a narrow panel', async ({
   page,
   lab,
 }) => {
   await lab.open('four-side-property-strip');
   const demo = page.locator('[data-lab-described-strip]');
   await expect(demo.getByText('Space between the frame and its content.')).toBeVisible();
+  // Values of four characters show whole, and the unit stays beside them inside the panel.
+  await expect(demo.getByRole('textbox', { name: 'Inset top' })).toHaveValue('25.4');
+  expect(
+    await demo.evaluate((node) => {
+      const unit = node.querySelector('.ui-property-row__unit')?.getBoundingClientRect();
+      const inputs = [
+        ...node.querySelectorAll<HTMLInputElement>('.ui-four-side-property-strip__side > input'),
+      ];
+      const last = inputs.at(-1)?.getBoundingClientRect();
+      return {
+        inside: !!unit && unit.right <= node.getBoundingClientRect().right + 0.5,
+        beside:
+          !!unit &&
+          !!last &&
+          unit.left >= last.right &&
+          Math.abs(unit.top - last.top) < last.height,
+        whole: inputs.every((input) => input.scrollWidth <= input.clientWidth),
+      };
+    }),
+  ).toEqual({ inside: true, beside: true, whole: true });
   const reset = demo.getByRole('button', { name: 'Reset inset' });
   await reset.click();
   for (const side of ['top', 'bottom', 'left', 'right'])
