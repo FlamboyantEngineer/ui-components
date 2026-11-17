@@ -350,6 +350,19 @@ describe('CodeBlock', () => {
     expect(container.querySelector('.ui-code-block__line')).toBeNull();
   });
 
+  it('UIC-CODE-BLOCK-1.5 numbers from the first line number given', () => {
+    const { container } = render(<CodeBlock code={'a\nb\nc\n'} lineNumbers firstLineNumber={98} />);
+    const numbers = [...container.querySelectorAll('.ui-code-block__line-number')];
+    expect(numbers.map((number) => number.getAttribute('data-line-number'))).toEqual([
+      '98',
+      '99',
+      '100',
+    ]);
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre.style.getPropertyValue('--ui-code-block-line-number-digits')).toBe('3');
+    expect(container.querySelector('code')?.textContent).toBe('a\nb\nc\n');
+  });
+
   it('UIC-CODE-BLOCK-1.6 publishes whether long lines scroll or wrap', () => {
     const { container, rerender } = render(<CodeBlock code="a long line" />);
     const pre = container.querySelector('pre') as HTMLElement;

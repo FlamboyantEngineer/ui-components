@@ -12,6 +12,7 @@ import {
   codeBlockHooks as hooks,
   CodeTokens,
   countNumberedLines,
+  type NumberedLines,
   readCodeBlockValue,
   splitTerminalLines,
   type TerminalLine,
@@ -48,6 +49,8 @@ export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, Cod
   prompt?: string | undefined;
   /** Numbers the lines, from 1; the numbers stay out of the text, a selection and Copy. */
   lineNumbers?: boolean | undefined;
+  /** The number of the first line with `lineNumbers`, such as a snippet's line in its file. Defaults to 1. */
+  firstLineNumber?: number | undefined;
   /** `off` (the default) scrolls long lines sideways; `soft` wraps them. */
   wrap?: CodeEditorWrap | undefined;
 }
@@ -60,9 +63,19 @@ function readCopyLabel(strings: UiStrings, variant: CodeBlockVariant, commands: 
 }
 
 /** The digit count of the highest line number, from which the stylesheet sizes the gutter. */
-function readGutterStyle(numbered: number | null): CSSProperties | undefined {
+function readGutterStyle(numbered: NumberedLines | null): CSSProperties | undefined {
   if (numbered === null) return undefined;
-  return measuredProperty('code-block-line-number-digits', String(String(numbered).length));
+  const highest = numbered.first + numbered.count - 1;
+  return measuredProperty('code-block-line-number-digits', String(String(highest).length));
+}
+
+/** The lines numbered with `lineNumbers`, from the first line's number (a whole number from 1). */
+function readNumberedLines(code: string, firstLineNumber: number | undefined): NumberedLines {
+  const first = firstLineNumber;
+  return {
+    count: countNumberedLines(code.split('\n').length, code),
+    first: first !== undefined && Number.isInteger(first) && first > 0 ? first : 1,
+  };
 }
 
 /**
@@ -82,6 +95,7 @@ export function CodeBlock({
   tokenize,
   prompt = '$',
   lineNumbers = false,
+  firstLineNumber,
   wrap = 'off',
   className,
   id,
@@ -97,7 +111,7 @@ export function CodeBlock({
   );
   const commands = lines?.filter((line) => line.kind === 'command') ?? [];
   const value = readCodeBlockValue(code, commands);
-  const numbered = lineNumbers ? countNumberedLines(code.split('\n').length, code) : null;
+  const numbered = lineNumbers ? readNumberedLines(code, firstLineNumber) : null;
   return (
     <div
       ref={ref}

@@ -190,6 +190,14 @@ function LineNumbersDemo() {
         lineNumbers
       />
       <CodeBlock code={session} variant="terminal" lineNumbers />
+      <CodeBlock
+        code={numberedScript}
+        language="js"
+        title="From line 98"
+        tokenize={tokenizeScript}
+        lineNumbers
+        firstLineNumber={98}
+      />
       <div style={{ width: 320 }}>
         <CodeBlock
           code={wrappedScript}
@@ -300,7 +308,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Line numbers"
-      description="lineNumbers numbers each line in a gutter the stylesheet draws, so Copy, a selection and find take only the code. Blank lines keep their numbers; the empty line after a final line break gets none. A wrapped line keeps one number."
+      description="lineNumbers numbers each line in a gutter the stylesheet draws, so Copy, a selection and find take only the code. Blank lines keep their numbers; the empty line after a final line break gets none. firstLineNumber numbers a snippet from its line in its file. A wrapped line keeps one number."
     >
       <LineNumbersDemo />
     </LabSection>

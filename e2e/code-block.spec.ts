@@ -224,6 +224,12 @@ test.describe('Code Block lab', () => {
     await script.getByRole('button', { name: 'Copy code' }).click();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(expected);
 
+    const later = demo.getByRole('group', { name: 'From line 98' });
+    const laterNumbers = await later
+      .locator('.ui-code-block__line-number')
+      .evaluateAll((spans) => spans.map((span) => getComputedStyle(span, '::before').content));
+    expect(laterNumbers.slice(0, 3)).toEqual(['"98"', '"99"', '"100"']);
+
     const wrapped = demo.getByRole('group', { name: 'Wrapped' });
     const first = wrapped.locator('.ui-code-block__line').first();
     const rows = await first.evaluate(
