@@ -127,24 +127,28 @@ function Line({ number, kind, isBroken, children }: LineProps) {
   );
 }
 
+/** The numbered lines: how many, from the first, and the first one's number. */
+export interface NumberedLines {
+  readonly count: number;
+  readonly first: number;
+}
+
 /** The number of the line at `index`, or none past the numbered lines or without numbers. */
-function readLineNumber(index: number, numbered: number | null) {
-  return numbered !== null && index < numbered ? index + 1 : null;
+function readLineNumber(index: number, numbered: NumberedLines | null) {
+  return numbered !== null && index < numbered.count ? numbered.first + index : null;
 }
 
 interface CodeTokensProps {
   code: string;
   tokenize?: CodeTokenizer | undefined;
-  /** How many lines to number, from the first; `null` renders one run without lines. */
-  numbered: number | null;
+  /** The lines to number, from the first; `null` renders one run without lines. */
+  numbered: NumberedLines | null;
 }
 
 export function CodeTokens({ code, tokenize, numbered }: CodeTokensProps) {
   const tokens = useMemo(() => (tokenize ? tokenize(code) : [{ text: code }]), [code, tokenize]);
-  const lines = useMemo(
-    () => (numbered === null ? null : splitTokenLines(tokens)),
-    [numbered, tokens],
-  );
+  const isNumbered = numbered !== null;
+  const lines = useMemo(() => (isNumbered ? splitTokenLines(tokens) : null), [isNumbered, tokens]);
   if (!lines) return <Tokens tokens={tokens} />;
   return lines.map((line, index) => (
     <Line key={index} number={readLineNumber(index, numbered)} isBroken={index < lines.length - 1}>
@@ -156,8 +160,8 @@ export function CodeTokens({ code, tokenize, numbered }: CodeTokensProps) {
 interface TerminalLinesProps {
   lines: readonly TerminalLine[];
   prompt: string;
-  /** How many lines to number, from the first; `null` for none. */
-  numbered: number | null;
+  /** The lines to number, from the first; `null` for none. */
+  numbered: NumberedLines | null;
 }
 
 /** Terminal lines; the prompt is decoration, hidden from assistive technology and from Copy. */
