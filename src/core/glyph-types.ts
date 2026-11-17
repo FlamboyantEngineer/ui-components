@@ -41,6 +41,7 @@ export type GlyphName =
   | 'arrow-right'
   | 'close'
   | 'check'
+  | 'menu'
   | 'more'
   | 'more-vertical'
   | 'sort-ascending'
