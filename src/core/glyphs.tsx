@@ -20,6 +20,7 @@ import {
   arrowUturnLeftPath,
   arrowUturnRightPath,
   bars3BottomLeftPath,
+  bars3Path,
   bellPath,
   bellSlashPath,
   boldPath,
@@ -131,6 +132,7 @@ export const ArrowLeftGlyph = /* @__PURE__ */ createGlyph('arrow-left', arrowLef
 export const ArrowRightGlyph = /* @__PURE__ */ createGlyph('arrow-right', arrowRightPath);
 export const CloseGlyph = /* @__PURE__ */ createGlyph('close', xMarkPath);
 export const CheckGlyph = /* @__PURE__ */ createGlyph('check', checkPath);
+export const MenuGlyph = /* @__PURE__ */ createGlyph('menu', bars3Path);
 export const MoreGlyph = /* @__PURE__ */ createGlyph('more', ellipsisHorizontalPath);
 export const MoreVerticalGlyph = /* @__PURE__ */ createGlyph('more-vertical', ellipsisVerticalPath);
 export const SortAscendingGlyph = /* @__PURE__ */ createGlyph('sort-ascending', arrowUpPath);

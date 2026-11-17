@@ -164,6 +164,7 @@ export {
   ListNumberedGlyph,
   ListTaskGlyph,
   LockGlyph,
+  MenuGlyph,
   MinusGlyph,
   MoreGlyph,
   MoreVerticalGlyph,
