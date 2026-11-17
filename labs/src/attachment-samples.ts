@@ -59,6 +59,9 @@ export const kindSamples: Record<AttachmentKind, AttachmentData> = {
     mediaType: 'image/svg+xml',
     size: 1_840_000,
     url: harbour,
+    // The host knows the size, so the tile has the image's shape before it loads.
+    width: 1600,
+    height: 900,
   },
   pdf: {
     id: 'pdf',
@@ -99,6 +102,29 @@ export const tripAttachments: AttachmentData[] = [
   { id: 'dunes', name: 'Dunes.svg', mediaType: 'image/svg+xml', url: dunes },
   kindSamples.pdf,
   kindSamples.text,
+];
+
+const panorama = scene(3000, 600, '#c7d2fe', '#3730a3');
+const screenshot = scene(600, 2400, '#e9d5ff', '#6b21a8');
+
+/**
+ * Images of every shape, one per list: a landscape, a portrait, a square, a panorama wider than
+ * 3:1 and a screenshot taller than 1:2 (both cropped); the host gives the screenshot's size, so
+ * its tile has its shape before it loads.
+ */
+export const shapeAttachments: AttachmentData[] = [
+  { id: 'shape-harbour', name: 'Harbour.svg', mediaType: 'image/svg+xml', url: harbour },
+  { id: 'shape-tower', name: 'Tower.svg', mediaType: 'image/svg+xml', url: tower },
+  { id: 'shape-meadow', name: 'Meadow.svg', mediaType: 'image/svg+xml', url: meadow },
+  { id: 'shape-panorama', name: 'Ridge panorama.svg', mediaType: 'image/svg+xml', url: panorama },
+  {
+    id: 'shape-screenshot',
+    name: 'Long page.svg',
+    mediaType: 'image/svg+xml',
+    url: screenshot,
+    width: 600,
+    height: 2400,
+  },
 ];
 
 /** Files waiting in the composer: sent, uploading, failed and one more photo. */

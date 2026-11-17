@@ -55,6 +55,17 @@
   gap: 4px;
 }
 
+/* Images waiting to be sent stay small, each in its own shape. */
+.ui-message-composer__attachments
+  .ui-attachment[data-display='thumbnail']
+  .ui-attachment__thumbnail {
+  height: 112px;
+  min-width: 56px;
+  max-width: 336px;
+  min-height: 0;
+  max-height: none;
+}
+
 /*
  * The text area, or the rich composer's editable text box. ProseMirror needs the white-space,
  * wrapping and ligature rules on its content element (from prosemirror-view/style/prosemirror.css).

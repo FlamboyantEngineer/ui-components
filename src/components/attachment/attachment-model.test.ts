@@ -5,6 +5,7 @@ import {
   getAttachmentGlyph,
   getAttachmentImage,
   getAttachmentKind,
+  getImageSize,
   resolveAttachmentStatus,
   toAttachmentUrl,
 } from './attachment-model.js';
@@ -68,5 +69,16 @@ describe('attachment model', () => {
     expect(getAttachmentImage({ name: 'a.pdf', mediaType: 'application/pdf', url: '/a.pdf' })).toBe(
       undefined,
     );
+  });
+
+  it('UIC-ATTACHMENT-1.10 reads an image size only from two finite sides of at least a pixel', () => {
+    expect(getImageSize({ width: 1600, height: 900 })).toEqual({ width: 1600, height: 900 });
+    expect(getImageSize({ width: 799.6, height: 1.2 })).toEqual({ width: 800, height: 1 });
+    expect(getImageSize({ height: 900 })).toBeUndefined();
+    expect(getImageSize({ width: 1600, height: 0 })).toBeUndefined();
+    expect(getImageSize({ width: 0.4, height: 2 })).toBeUndefined();
+    expect(getImageSize({ width: -1, height: 2 })).toBeUndefined();
+    expect(getImageSize({ width: Number.POSITIVE_INFINITY, height: 2 })).toBeUndefined();
+    expect(getImageSize({ width: Number.NaN, height: 2 })).toBeUndefined();
   });
 });

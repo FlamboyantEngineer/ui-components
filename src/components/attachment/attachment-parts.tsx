@@ -38,9 +38,13 @@ export function useThumbnail(src: string | undefined) {
   };
 }
 
+/** An image's size in whole pixels, which its thumbnail carries as `width` and `height`. */
+type ImageSize = { width: number; height: number } | undefined;
+
 interface AttachmentThumbnailProps {
   src: string;
   name: string;
+  size: ImageSize;
   onPreview: (() => void) | undefined;
   /** Receives the src that failed. */
   onError: (src: string) => void;
@@ -53,10 +57,12 @@ interface AttachmentThumbnailProps {
 function ThumbnailImage({
   src,
   alt,
+  size,
   onError,
 }: {
   src: string;
   alt: string;
+  size: ImageSize;
   onError: (src: string) => void;
 }) {
   const fail = useCallback(() => onError(src), [onError, src]);
@@ -78,6 +84,8 @@ function ThumbnailImage({
       {...untrustedImageProps}
       src={src}
       alt={alt}
+      width={size?.width}
+      height={size?.height}
       onError={fail}
     />
   );
@@ -87,10 +95,16 @@ function ThumbnailImage({
  * An image attachment's thumbnail: a button that opens its preview, named for viewing the file,
  * else the image itself, named by the file name, since no name shows beside it.
  */
-export function AttachmentThumbnail({ src, name, onPreview, onError }: AttachmentThumbnailProps) {
+export function AttachmentThumbnail({
+  src,
+  name,
+  size,
+  onPreview,
+  onError,
+}: AttachmentThumbnailProps) {
   const strings = useUiStrings();
   if (!onPreview) {
-    return <ThumbnailImage key={src} src={src} alt={name} onError={onError} />;
+    return <ThumbnailImage key={src} src={src} alt={name} size={size} onError={onError} />;
   }
   return (
     <Button
@@ -99,7 +113,7 @@ export function AttachmentThumbnail({ src, name, onPreview, onError }: Attachmen
       aria-label={strings.viewAttachment(name)}
       onPress={onPreview}
     >
-      <ThumbnailImage key={src} src={src} alt="" onError={onError} />
+      <ThumbnailImage key={src} src={src} alt="" size={size} onError={onError} />
     </Button>
   );
 }
