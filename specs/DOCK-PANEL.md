@@ -89,17 +89,17 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-3.2 - Separator
 
-While docked, a `ResizeHandle` in a `ui-dock-panel__handle` slot shall resize the panel from its inner edge: a vertical bar beside a side edge and a horizontal one at the bottom, named by the provider's `resizePanel` string from the panel's label, controlling the body and reporting the size and its bounds. Moving it toward the main content grows the panel, in either reading direction. Expanded, it is in the tab order: the arrow keys step 10 pixels, Shift+arrows 2, and Home and End jump to the bounds. Collapsed, it stays visible and draggable but leaves the tab order (`tabIndex="-1"`): the toggle and the launchers expand the panel from the keyboard. It is disabled without an enabled pane. A pointer drag follows the pointer pixel for pixel in the panel's own pixels, under an ancestor scale too, and the root publishes `data-resizing` while it lasts.
+While docked, a `ResizeHandle` in a `ui-dock-panel__handle` slot shall resize the panel from its inner edge: a vertical bar beside a side edge and a horizontal one at the bottom, named by the provider's `resizePanel` string from the panel's label, controlling the body and reporting the size and its bounds. Moving it toward the main content grows the panel, in either reading direction. Expanded, it is in the tab order: the arrow keys step 10 pixels, Shift+arrows 2, and Home and End jump to the bounds. Collapsed, it stays visible and draggable but leaves the tab order (`tabIndex="-1"`): the toggle and the launchers expand the panel from the keyboard; with `resizableWhileCollapsed={false}` the collapsed panel has no separator at all. It is disabled without an enabled pane. A pointer drag follows the pointer pixel for pixel in the panel's own pixels, under an ancestor scale too, and the root publishes `data-resizing` while it lasts.
 
 Implementation: `src/components/dock-panel/dock-panel-parts.tsx`, `src/components/split-view/resize-handle.tsx`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ### UIC-DOCK-PANEL-3.3 - Drag to expand
 
-A primary drag on the collapsed separator shall expand the panel at its first move, reporting `onExpandedChange(true)` once, and keep resizing it in the same captured gesture, with no second press: the panel resumes its remembered size and the drag's travel moves it from there. A press released without moving leaves it collapsed and reports no size. A key step on a focused collapsed separator expands it the same way.
+Unless `resizableWhileCollapsed` is false (UIC-DOCK-PANEL-3.2), a primary drag on the collapsed separator shall expand the panel at its first move, reporting `onExpandedChange(true)` once, and keep resizing it in the same captured gesture, with no second press: the panel resumes its remembered size and the drag's travel moves it from there. A press released without moving leaves it collapsed and reports no size. A key step on a focused collapsed separator expands it the same way.
 
 Implementation: `src/components/dock-panel/use-dock-panel-size.ts`, `src/components/dock-panel/dock-panel-parts.tsx`
-Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
+Verification: `src/components/dock-panel/dock-panel.test.tsx`, `src/components/dock-panel/dock-panel-collapse.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ### UIC-DOCK-PANEL-3.4 - Preview, end and cancel
 
@@ -114,6 +114,13 @@ With `persistKey`, the panel shall restore its uncontrolled selection, expanded 
 
 Implementation: `src/components/dock-panel/use-dock-panel-state.ts`, `src/components/dock-panel/use-dock-panel-size.ts`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
+
+### UIC-DOCK-PANEL-3.6 - Collapsed by the layout
+
+While its parent's client size along the panel's axis (its width beside a side edge, its height at the bottom) is below `collapseBelow` pixels, and the panel is not an overlay (UIC-DOCK-PANEL-4.1), the panel shall stay collapsed and publish `data-collapse-forced`: it takes no inline size and renders no separator, and its toggle and launchers are disabled, so nothing expands it. Its expanded state is kept as it was, neither changed, reported nor saved, and once the parent has the room again the panel shows as that state says.
+
+Implementation: `src/components/dock-panel/dock-panel.tsx`, `src/components/dock-panel/dock-panel-parts.tsx`
+Verification: `src/components/dock-panel/dock-panel-collapse.test.tsx`, `e2e/dock-panel.spec.ts`
 
 ## UIC-DOCK-PANEL-4 - Overlay
 
@@ -155,6 +162,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 | `data-edge`                     | attribute | `start`, `end`           | The strip edge a fade covers.                                                    |
 | `data-expanded`                 | state     | `true`                   | The docked panel shows its selected pane.                                        |
 | `data-overlay`                  | state     | `true`                   | The parent is narrower than `overlayBelow`: the selected pane shows in a drawer. |
+| `data-collapse-forced`          | state     | `true`                   | The parent is smaller than `collapseBelow`: the panel stays collapsed.           |
 | `data-resizing`                 | state     | `true`                   | A pointer drag on the separator is in progress.                                  |
 | `data-selected`                 | state     | `true`                   | On a launcher, its pane is the selected one.                                     |
 | `data-hovered`                  | state     | `true`                   | On a launcher, the pointer is over it.                                           |
