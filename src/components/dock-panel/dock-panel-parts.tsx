@@ -38,6 +38,7 @@ interface BoundsOptions {
   maxSize: number;
   minMainSize: number | undefined;
   overlayBelow: number | undefined;
+  collapseBelow: number | undefined;
 }
 
 interface DockPanelSeparatorProps {
@@ -115,13 +116,18 @@ export function readEnabledKeys(panes: readonly PaneEntry[]): Key[] {
  * parent is measured when it resizes, never during a drag.
  */
 export function useDockPanelBounds(rootRef: RefObject<HTMLElement | null>, options: BoundsOptions) {
-  const { position, minSize, maxSize, minMainSize, overlayBelow } = options;
+  const { position, minSize, maxSize, minMainSize, overlayBelow, collapseBelow } = options;
   const parent = useElementSize(rootRef, { parent: true, box: 'client' });
-  if (parent === null) return { isOverlay: false, largest: Math.max(minSize, maxSize) };
+  if (parent === null) {
+    return { isOverlay: false, isCollapseForced: false, largest: Math.max(minSize, maxSize) };
+  }
   const extent = position === 'bottom' ? parent.height : parent.width;
   const room = minMainSize === undefined ? maxSize : Math.min(maxSize, extent - minMainSize);
+  const isOverlay = overlayBelow !== undefined && parent.width < overlayBelow;
   return {
-    isOverlay: overlayBelow !== undefined && parent.width < overlayBelow,
+    isOverlay,
+    // The drawer, below its own width, takes over from a forced collapse.
+    isCollapseForced: !isOverlay && collapseBelow !== undefined && extent < collapseBelow,
     largest: Math.max(minSize, room),
   };
 }
@@ -271,10 +277,12 @@ function DockPanelDrawer({ position, entry, state, holderRef }: DockPanelDrawerP
  */
 export function useDockPanelOpenState(
   state: DockPanelState,
-  isOverlay: boolean,
+  { isOverlay, isCollapseForced }: { isOverlay: boolean; isCollapseForced: boolean },
 ): DockPanelOpenState {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   if (!isOverlay && isDrawerOpen) setDrawerOpen(false);
+  // Collapsed by the layout: nothing opens it, and the expanded state it keeps is left as it is.
+  if (isCollapseForced) return { selectedKey: null, isOpen: false, setOpen: () => undefined };
   return isOverlay
     ? { selectedKey: state.selectedKey, isOpen: isDrawerOpen, setOpen: setDrawerOpen }
     : {

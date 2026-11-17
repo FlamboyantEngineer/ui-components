@@ -378,6 +378,23 @@ test.describe('Dock Panel lab', () => {
     await expect(panel.getByRole('textbox', { name: 'Link draft' })).toHaveValue('Kept');
   });
 
+  test('UIC-DOCK-PANEL-3.6 stays collapsed while the layout has no room, and expands again with it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dock-panel');
+    const panel = page.getByRole('region', { name: 'Outline', exact: true });
+    await expect(panel).toHaveAttribute('data-collapse-forced', 'true');
+    await expect(panel.getByRole('button', { name: 'Expand Outline' })).toBeDisabled();
+    await expect(panel.getByRole('separator')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Widen the layout' }).click();
+    await expect(panel).not.toHaveAttribute('data-collapse-forced');
+    await expect(panel).toHaveAttribute('data-expanded', 'true');
+    await panel.getByRole('button', { name: 'Collapse Outline' }).click();
+    // Collapsed by the reader, it has no separator to drag either.
+    await expect(panel.getByRole('separator')).toHaveCount(0);
+  });
+
   test('UIC-DOCK-PANEL-1.1 is as tall as its selected pane in a host with no height, and fills a host with one', async ({
     page,
     lab,

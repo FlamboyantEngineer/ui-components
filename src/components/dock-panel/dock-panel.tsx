@@ -66,6 +66,14 @@ export interface DockPanelProps extends RefProps<HTMLElement>, BaseProps {
   persistKey?: string | undefined;
   /** Below this parent width, in pixels, the selected pane shows in a drawer over the page. */
   overlayBelow?: number | undefined;
+  /**
+   * Below this parent size along its axis, in pixels, the panel stays collapsed: its toggle,
+   * launchers and separator are disabled, and its expanded state is kept, neither changed nor
+   * reported, for when the room comes back.
+   */
+  collapseBelow?: number | undefined;
+  /** Whether the collapsed panel keeps its separator, which a drag expands it by. Defaults to `true`. */
+  resizableWhileCollapsed?: boolean | undefined;
   /** Draws a decorative fade over each edge of the tabs or launchers that hides some. Defaults to `true`; `false` draws none. */
   showEdgeFades?: boolean | undefined;
 }
@@ -101,6 +109,8 @@ interface DockPanelLayoutProps {
   open: DockPanelOpenState;
   isShown: boolean;
   isOverlay: boolean;
+  isCollapseForced: boolean;
+  resizableWhileCollapsed: boolean;
   bodyId: string;
   resetKey: object;
   minSize: number;
@@ -115,13 +125,17 @@ interface DockPanelLayoutProps {
  */
 function DockPanelLayout(props: DockPanelLayoutProps) {
   const { label, position, panes, state, focus, open, isShown, isOverlay, bodyId } = props;
-  const { showEdgeFades } = props;
-  const launchers = panes.map((pane) => pane.launcher);
+  const { showEdgeFades, isCollapseForced } = props;
+  const launchers = panes.map((pane) =>
+    isCollapseForced ? { ...pane.launcher, isDisabled: true } : pane.launcher,
+  );
+  const hasSeparator =
+    !isOverlay && !isCollapseForced && (isShown || props.resizableWhileCollapsed);
   // The tabs render from the props this render collects, refs included.
   if (useIsHidden()) return <DockPanelTabList {...{ label, focus }} panes={launchers} />;
   return (
     <>
-      {isOverlay ? null : (
+      {!hasSeparator ? null : (
         <DockPanelSeparator
           {...{ label, position, state, bodyId }}
           {...{ minSize: props.minSize, maxSize: props.maxSize, resetKey: props.resetKey }}
@@ -154,8 +168,9 @@ function DockPanelLayout(props: DockPanelLayoutProps) {
  * A panel against an edge of an application frame. Expanded, it shows one horizontal strip of
  * tabs, one per pane, beside a collapse button, above the selected pane; collapsed, a 40 pixel rail
  * of launchers (vertical labels beside a side edge) that expand it. A separator on its inner edge
- * resizes it, and expands it when dragged while collapsed. Panes stay mounted while hidden; below
- * `overlayBelow` the selected pane opens in a drawer. The selection, expanded state and size are
+ * resizes it, and expands it when dragged while collapsed unless `resizableWhileCollapsed` is
+ * false. Panes stay mounted while hidden; below `overlayBelow` the selected pane opens in a drawer,
+ * and below `collapseBelow` the panel stays collapsed. The selection, expanded state and size are
  * each controlled or held by the panel, which saves them under `persistKey`.
  */
 export function DockPanel({
@@ -169,6 +184,8 @@ export function DockPanel({
   maxSize = 640,
   minMainSize,
   overlayBelow,
+  collapseBelow,
+  resizableWhileCollapsed = true,
   showEdgeFades = true,
   className,
   id,
@@ -178,8 +195,8 @@ export function DockPanel({
   const rootRef = useRef<HTMLElement>(null);
   const rootRefs = useMergedRefs(rootRef, ref);
   const [isResizing, setResizing] = useState(false);
-  const { isOverlay, largest } = useDockPanelBounds(rootRef, {
-    ...{ position, minSize, maxSize, minMainSize, overlayBelow },
+  const { isOverlay, isCollapseForced, largest } = useDockPanelBounds(rootRef, {
+    ...{ position, minSize, maxSize, minMainSize, overlayBelow, collapseBelow },
   });
   const panes = readPanes(children);
   const state = useDockPanelState({
@@ -188,14 +205,20 @@ export function DockPanel({
     enabledKeys: readEnabledKeys(panes),
     maxSize: largest,
   });
-  const isShown = state.isExpanded && !isOverlay && state.selectedKey !== null;
+  const isShown = state.isExpanded && !isOverlay && !isCollapseForced && state.selectedKey !== null;
   const focus = useDockPanelFocus({
     openKey: isShown ? state.selectedKey : null,
     rootRef,
   });
-  const open = useDockPanelOpenState(state, isOverlay);
+  const open = useDockPanelOpenState(state, { isOverlay, isCollapseForced });
   const resetKey = useCollapseKey(isShown, state.sizeOwner);
-  const data = { position, expanded: isShown, overlay: isOverlay, resizing: isResizing };
+  const data = {
+    position,
+    expanded: isShown,
+    overlay: isOverlay,
+    collapseForced: isCollapseForced,
+    resizing: isResizing,
+  };
 
   return (
     <section
@@ -214,6 +237,7 @@ export function DockPanel({
         <DockPanelLayout
           {...{ label, position, panes, state, focus, open, isShown, isOverlay, bodyId, resetKey }}
           {...{ minSize, maxSize: largest, showEdgeFades, onResizingChange: setResizing }}
+          {...{ isCollapseForced, resizableWhileCollapsed }}
         />
       </Tabs>
     </section>

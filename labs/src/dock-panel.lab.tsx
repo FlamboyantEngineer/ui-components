@@ -293,6 +293,37 @@ function Console() {
   );
 }
 
+function CollapsedByLayout() {
+  const [isWide, setWide] = useState(false);
+  return (
+    <>
+      <p>
+        <button type="button" onClick={() => setWide(!isWide)}>
+          {isWide ? 'Narrow the layout' : 'Widen the layout'}
+        </button>
+      </p>
+      <Frame
+        position="end"
+        width={isWide ? 800 : 560}
+        height={220}
+        data-lab-frame="collapse-forced"
+        panel={
+          <DockPanel label="Outline" collapseBelow={700} resizableWhileCollapsed={false}>
+            <DockPanelPane id="headings" label="Headings" icon={HelpGlyph}>
+              <p>The headings of the page.</p>
+            </DockPanelPane>
+          </DockPanel>
+        }
+      >
+        <p>
+          Below 700 pixels the page needs the room: the panel stays collapsed and nothing expands
+          it. Collapsed, it has no separator to drag.
+        </p>
+      </Frame>
+    </>
+  );
+}
+
 function Narrow() {
   const [isWide, setWide] = useState(false);
   return (
@@ -607,6 +638,12 @@ mountLab(
       description="Below overlayBelow the panel keeps its launcher rail and a launcher opens its pane in a drawer; Escape closes it and focus returns to the launcher. The panes move between the drawer and the docked panel without mounting again, so a draft typed in either survives the frame changing width."
     >
       <Narrow />
+    </LabSection>
+    <LabSection
+      title="Collapsed by the layout"
+      description="Below collapseBelow the panel stays collapsed, its toggle and launchers disabled, and expands again as it was once the room comes back. With resizableWhileCollapsed off, the collapsed panel has no separator."
+    >
+      <CollapsedByLayout />
     </LabSection>
     <LabSection
       title="Content-sized host"
