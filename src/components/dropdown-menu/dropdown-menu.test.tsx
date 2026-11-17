@@ -106,6 +106,17 @@ describe('DropdownMenu', () => {
     expect(await screen.findByRole('menu')).toHaveAccessibleName('Tools');
   });
 
+  it('UIC-DROPDOWN-MENU-1.3 focuses the item autoFocus names on a menu opened by the caller', async () => {
+    const { rerender } = render(
+      <DropdownMenu label="Edit" items={items} isOpen={false} autoFocus="first" />,
+    );
+    rerender(<DropdownMenu label="Edit" items={items} isOpen autoFocus="first" />);
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Cut' })).toHaveFocus());
+    rerender(<DropdownMenu label="Edit" items={items} isOpen={false} />);
+    rerender(<DropdownMenu label="Edit" items={items} isOpen />);
+    await waitFor(() => expect(screen.getByRole('menu')).toHaveFocus());
+  });
+
   it('UIC-DROPDOWN-MENU-1.4 passes menu props, children and the derived size to the menu', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();

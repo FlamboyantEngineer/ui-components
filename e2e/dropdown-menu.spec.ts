@@ -116,6 +116,8 @@ test.describe('Dropdown Menu lab', () => {
     await expect(area.locator('[data-lab-output="open"]')).toHaveText('true');
     await page.keyboard.press('Escape');
     await expect(area.locator('[data-lab-output="open"]')).toHaveText('false');
+    await area.getByRole('button', { name: 'Open on the first item' }).click();
+    await expect(popovers(page).getByRole('menuitem').first()).toBeFocused();
   });
 
   test('UIC-DROPDOWN-MENU-1.1 stays accessible in the dark theme', async ({ page, lab }) => {

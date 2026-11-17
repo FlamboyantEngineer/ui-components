@@ -64,6 +64,7 @@ type DropdownMenuMenuProps = Pick<
   | 'disallowEmptySelection'
   | 'shouldCloseOnSelect'
   | 'filterable'
+  | 'autoFocus'
   | 'aria-label'
   | 'aria-labelledby'
 >;
@@ -208,6 +209,7 @@ export function DropdownMenu({
   disallowEmptySelection,
   shouldCloseOnSelect,
   filterable,
+  autoFocus,
   'aria-label': menuLabel,
   'aria-labelledby': menuLabelledBy,
   size = 'md',
@@ -226,6 +228,7 @@ export function DropdownMenu({
     disallowEmptySelection,
     shouldCloseOnSelect,
     filterable,
+    autoFocus,
     'aria-label': menuLabel,
     'aria-labelledby': menuLabelledBy,
     size: menuSize ?? (size === 'xs' ? 'sm' : size),

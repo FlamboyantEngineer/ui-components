@@ -261,9 +261,29 @@ function NestedAtEdges() {
 
 function Controlled() {
   const [open, setOpen] = useState(false);
+  // Opened from the button beside it, the menu focuses its first item, as a shortcut would.
+  const [first, setFirst] = useState(false);
+  const change = (next: boolean) => {
+    setOpen(next);
+    if (!next) setFirst(false);
+  };
   return (
     <>
-      <DropdownMenu label="Controlled" items={editEntries} isOpen={open} onOpenChange={setOpen} />
+      <DropdownMenu
+        label="Controlled"
+        items={editEntries}
+        isOpen={open}
+        onOpenChange={change}
+        autoFocus={first ? 'first' : undefined}
+      />
+      <Button
+        onPress={() => {
+          setFirst(true);
+          setOpen(true);
+        }}
+      >
+        Open on the first item
+      </Button>
       <p>
         Open: <output data-lab-output="open">{String(open)}</output>
       </p>

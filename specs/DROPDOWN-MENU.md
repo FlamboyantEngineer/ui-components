@@ -20,7 +20,7 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdo
 
 ### UIC-DROPDOWN-MENU-1.3 - Popup wiring
 
-The trigger shall carry React Aria's `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels unless `aria-label` or `aria-labelledby` names it. It publishes `data-open` while the menu is open, and opens it on press, Enter or Space and on Arrow Down or Arrow Up, which focus the first or last item. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
+The trigger shall carry React Aria's `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels unless `aria-label` or `aria-labelledby` names it. It publishes `data-open` while the menu is open, and opens it on press, Enter or Space and on Arrow Down or Arrow Up, which focus the first or last item. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled. A menu the caller opens, by `isOpen` or `defaultOpen`, takes focus itself, or its first or last item when `autoFocus` is `first` or `last`, as a key the caller handles opening it would.
 
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
