@@ -25,6 +25,7 @@ export {
   Bars3CenterMiddleGlyph,
   CellAlignmentGlyph,
   ChatBubbleCheckGlyph,
+  ChatBubbleGlyph,
   ChatBubblePlusGlyph,
   ChatBubbleXMarkGlyph,
   CrossReferenceGlyph,
