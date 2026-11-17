@@ -14,6 +14,7 @@ import {
   getAttachmentGlyph,
   getAttachmentImage,
   getAttachmentKind,
+  getImageSize,
   resolveAttachmentStatus,
   toAttachmentUrl,
 } from './attachment-model.js';
@@ -75,6 +76,8 @@ export function Attachment({
   size,
   url,
   thumbnailUrl,
+  width,
+  height,
   status: givenStatus,
   progress,
   error,
@@ -106,6 +109,7 @@ export function Attachment({
         <AttachmentThumbnail
           src={thumbnail.src}
           name={name}
+          size={getImageSize({ width, height })}
           onPreview={onPreview}
           onError={thumbnail.onError}
         />

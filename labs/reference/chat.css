@@ -137,12 +137,12 @@
   padding-block: 2px;
 }
 
-.ui-chat__queue-attachments .ui-attachment[data-display='thumbnail'] {
-  width: 56px;
-}
-
-.ui-chat__queue-attachments .ui-attachment__thumbnail {
+.ui-chat__queue-attachments .ui-attachment[data-display='thumbnail'] .ui-attachment__thumbnail {
   height: 40px;
+  min-width: 20px;
+  max-width: 120px;
+  min-height: 0;
+  max-height: none;
 }
 
 .ui-chat__queue-attachments .ui-attachment__download {

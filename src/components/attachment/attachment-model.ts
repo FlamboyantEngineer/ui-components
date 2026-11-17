@@ -28,6 +28,10 @@ export interface AttachmentData {
   url?: string | undefined;
   /** A smaller image to show in place of `url`. */
   thumbnailUrl?: string | undefined;
+  /** An image's width in pixels: with `height`, the thumbnail has the image's shape before it loads. */
+  width?: number | undefined;
+  /** An image's height in pixels. */
+  height?: number | undefined;
   /** Defaults to `error` when there is an `error`, else `complete`. */
   status?: AttachmentStatus | undefined;
   /** The uploaded share, from 0 to 1, while uploading; without it the progress is indeterminate. */
@@ -128,6 +132,17 @@ export function getAttachmentImage(
 ): string | undefined {
   if (getAttachmentKind(data.mediaType, data.name) !== 'image') return undefined;
   return toAttachmentUrl(data.thumbnailUrl) ?? toAttachmentUrl(data.url);
+}
+
+/** An image's size as whole pixels, when both sides are finite and at least one pixel. */
+export function getImageSize(
+  data: Pick<AttachmentData, 'width' | 'height'>,
+): { width: number; height: number } | undefined {
+  const width = Math.round(data.width ?? Number.NaN);
+  const height = Math.round(data.height ?? Number.NaN);
+  return width >= 1 && height >= 1 && Number.isFinite(width) && Number.isFinite(height)
+    ? { width, height }
+    : undefined;
 }
 
 /** The URL when it is relative or uses a scheme an attachment may show, else `undefined`. */

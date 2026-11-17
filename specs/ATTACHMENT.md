@@ -1,6 +1,6 @@
 # Chat Attachment
 
-`Attachment` is one file attached to a message or to the composer, drawn from plain data (`AttachmentData`: `id`, `name`, `mediaType`, `size`, `url`, `thumbnailUrl`, `status`, `progress`, `error`): an image shows as a thumbnail, any other file as a chip with its type glyph, name and size. It shows the upload's progress or its error with Retry, a download link once complete and, for the composer, a remove button. `AttachmentList` lists the attachments of one message or of the composer: its images open the library's [Media Viewer](MEDIA-VIEWER.md) to page through them, and removing an attachment keeps the reader's focus in place. The host uploads the files and reports their status; the components hold no files.
+`Attachment` is one file attached to a message or to the composer, drawn from plain data (`AttachmentData`: `id`, `name`, `mediaType`, `size`, `url`, `thumbnailUrl`, `width`, `height`, `status`, `progress`, `error`): an image shows as a thumbnail, any other file as a chip with its type glyph, name and size. It shows the upload's progress or its error with Retry, a download link once complete and, for the composer, a remove button. `AttachmentList` lists the attachments of one message or of the composer: its images open the library's [Media Viewer](MEDIA-VIEWER.md) to page through them, and removing an attachment keeps the reader's focus in place. The host uploads the files and reports their status; the components hold no files.
 
 ## UIC-ATTACHMENT-1 - Attachment
 
@@ -66,6 +66,13 @@ Verification: `src/components/attachment/attachment-model.test.ts`, `src/compone
 
 Implementation: `src/components/attachment/attachment.tsx`
 Verification: `src/components/attachment/attachment.test.tsx`
+
+### UIC-ATTACHMENT-1.10 - Image size
+
+A shown thumbnail shall carry the data's `width` and `height`, rounded to whole pixels, as its `width` and `height` attributes when both are finite and at least one pixel, so the browser gives it the image's shape before the image loads; otherwise it carries neither, and the loaded image gives the shape.
+
+Implementation: `src/components/attachment/attachment.tsx`, `src/components/attachment/attachment-parts.tsx`, `src/components/attachment/attachment-model.ts`
+Verification: `src/components/attachment/attachment-images.test.tsx`, `src/components/attachment/attachment-model.test.ts`, `e2e/attachment.spec.ts`
 
 ## UIC-ATTACHMENT-2 - Attachment list
 

@@ -193,4 +193,48 @@ test.describe('Chat Attachment lab', () => {
     await demo.getByRole('button', { name: 'View Harbour.svg' }).click();
     await expect(demo.locator('[data-lab-output="previews"]')).toHaveText('1');
   });
+
+  test('UIC-ATTACHMENT-1.10 shows each image preview in its own shape, cropping only extreme ones', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('attachment');
+    const demo = page.locator('[data-lab-demo="shapes"]');
+    // Width over height of each previewed image, within a pixel of rounding.
+    const expected: [string, number][] = [
+      ['Harbour.svg', 1600 / 900],
+      ['Tower.svg', 700 / 1200],
+      ['Meadow.svg', 1],
+      ['Ridge panorama.svg', 3],
+      ['Long page.svg', 0.5],
+    ];
+    for (const [name, ratio] of expected) {
+      const preview = demo
+        .getByRole('list', { name, exact: true })
+        .getByRole('button', { name: `View ${name}` });
+      // Thumbnails load lazily, so each is brought into view; its shape follows the load.
+      await preview.scrollIntoViewIfNeeded();
+      await expect
+        .poll(async () => {
+          const box = await preview.boundingBox();
+          return box ? Math.abs(box.width - box.height * ratio) : Infinity;
+        }, name)
+        .toBeLessThanOrEqual(2);
+      const box = await preview.boundingBox();
+      expect(box, name).not.toBeNull();
+      if (!box) continue;
+      expect(box.width, name).toBeLessThanOrEqual(320);
+      expect(box.height, name).toBeLessThanOrEqual(240);
+      expect(Math.max(box.width, box.height), name).toBeGreaterThan(200);
+    }
+    const row = demo.getByRole('list', { name: 'Together' });
+    await row.scrollIntoViewIfNeeded();
+    for (const [name, ratio] of expected) {
+      const box = await row.getByRole('button', { name: `View ${name}` }).boundingBox();
+      expect(box, name).not.toBeNull();
+      if (!box) continue;
+      expect(Math.round(box.height), name).toBe(160);
+      expect(Math.abs(box.width - 160 * ratio), name).toBeLessThanOrEqual(2);
+    }
+  });
 });

@@ -11,6 +11,7 @@ import {
   attachmentKinds,
   composerAttachments,
   kindSamples,
+  shapeAttachments,
   thumbnailAttachments,
   tripAttachments,
 } from './attachment-samples.js';
@@ -169,6 +170,23 @@ function ThumbnailGallery() {
   );
 }
 
+/** Each image alone in its list, so each takes its single-image size, then all of them together. */
+function Shapes() {
+  return (
+    <div data-lab-demo="shapes">
+      {shapeAttachments.map((attachment) => (
+        <AttachmentList
+          key={attachment.id}
+          aria-label={attachment.name}
+          attachments={[attachment]}
+        />
+      ))}
+      <h3 id="shape-row">Together</h3>
+      <AttachmentList aria-labelledby="shape-row" attachments={shapeAttachments} />
+    </div>
+  );
+}
+
 /** How long the emptying gallery waits before its owner clears it. */
 const clearDelay = 1500;
 
@@ -240,6 +258,12 @@ mountLab(
       description="A list named by its heading: the photos open the media viewer on the pressed one, with the other photos to page through; the PDF and the text file are chips."
     >
       <Gallery />
+    </LabSection>
+    <LabSection
+      title="Image shapes"
+      description="Each image keeps its own shape, from the size the host gives or the loaded image, within 320 by 240 alone and at a shared 160 row height together. A panorama wider than 3:1 and a screenshot taller than 1:2 are cropped, keeping the middle across and the top down. The host gives the screenshot's width and height, so its tile has its shape before the image loads."
+    >
+      <Shapes />
     </LabSection>
     <LabSection
       title="Thumbnail and original"
