@@ -195,6 +195,7 @@ export function PopoverPanel({
   style,
   isOpen,
   onOpenChange,
+  render,
   ...rest
 }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
@@ -225,6 +226,12 @@ export function PopoverPanel({
             translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
           })}
           ref={panelRefs}
+          // While it fades out, a closed panel takes no presses or focus (browsers also leave inert
+          // content out of the accessibility tree), so a second click cannot act on it again.
+          render={(props, { isExiting }) => {
+            const panelProps = { ...props, inert: isExiting || undefined };
+            return render ? render(panelProps) : <div {...panelProps} />;
+          }}
         >
           {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
           <FormBoundary>{children}</FormBoundary>
