@@ -55,13 +55,16 @@ function OwnedSides({ link }: { link: FourSidePropertyStripLink }) {
   );
 }
 
-/** A narrow row with the row's own description and a Reset action. */
+/**
+ * A narrow row with the row's own description and a Reset action, whose values of four characters
+ * still fit beside the unit.
+ */
 function DescribedRow() {
   const [value, setValue] = useState<FourSideValues<BoxSide, string>>({
-    top: '12',
-    bottom: '12',
-    left: '20',
-    right: '20',
+    top: '25.4',
+    bottom: '25.4',
+    left: '19.1',
+    right: '19.1',
   });
   const isDefault = sides.every((side) => value[side] === '0');
   return (
