@@ -59,8 +59,11 @@
 @import url('reference/dropdown-menu.css') layer(ui-reference);
 @import url('reference/emoji-picker.css') layer(ui-reference);
 @import url('reference/empty-state.css') layer(ui-reference);
+<<<<<<< HEAD
 @import url('reference/equipment-stack.css') layer(ui-reference);
 @import url('reference/event-timeline.css') layer(ui-reference);
+=======
+>>>>>>> origin/dev
 @import url('reference/expand-toggle.css') layer(ui-reference);
 @import url('reference/expression-field.css') layer(ui-reference);
 @import url('reference/facet-list.css') layer(ui-reference);
