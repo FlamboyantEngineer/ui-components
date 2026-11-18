@@ -175,8 +175,10 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box.locator('a')).toHaveAttribute('href', 'https://example.com/day');
     await expect(box.locator('a')).toHaveText('day');
     await expect(box).toBeFocused();
+    // Put the caret inside the link whether the applied link left it selected or collapsed at its
+    // end, where an exclusive link mark no longer applies.
+    await page.keyboard.press('End');
     await page.keyboard.press('ArrowLeft');
-    await page.keyboard.press('ArrowRight');
     await expect(toolbar.getByRole('button', { name: 'Link' })).toHaveAttribute(
       'aria-pressed',
       'true',
