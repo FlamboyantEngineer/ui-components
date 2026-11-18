@@ -723,5 +723,13 @@
   "chatComposerHint": "{shortcut} で{action, select, queue {キューに追加} steer {方向を変更} save {保存} other {送信}}",
   "chatReorderQueued": "待機中のメッセージ {position} を並べ替え",
   "chatQueueActions": "待機中のメッセージ {position} の操作",
-  "chatSteer": "方向を変更"
+  "chatSteer": "方向を変更",
+  "signalPlot": "信号トレース",
+  "signalPlotHint": "左右の矢印キーで移動、プラスとマイナスで拡大縮小、0でリセットします。",
+  "signalTimeRange": "{from}～{to}",
+  "signalCursor": "カーソル{cursor}",
+  "signalTimeDifference": "時間差: {value}",
+  "signalReadings": "カーソルの読み取り値",
+  "signalChannel": "チャンネル",
+  "signalTime": "時間"
 }

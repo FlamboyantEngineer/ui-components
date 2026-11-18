@@ -137,6 +137,7 @@ export * from './components/segmented-choice/index.js';
 export * from './components/select-field/index.js';
 export * from './components/separator/index.js';
 export * from './components/shortcut/index.js';
+export * from './components/signal-traces/index.js';
 export * from './components/signature-pad/index.js';
 export * from './components/skeleton/index.js';
 export * from './components/split-view/index.js';

@@ -1,0 +1,161 @@
+/* Signal Traces: stacked channel bands, a solid trace over a dashed reference and a faint envelope,
+   two cursor lines with grab handles, and a compact readings table. */
+
+.ui-signal-traces {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-signal-traces__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-signal-traces__zoom-in,
+.ui-signal-traces__zoom-out,
+.ui-signal-traces__reset {
+  flex: none;
+}
+
+.ui-signal-traces__range {
+  margin-inline-start: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-signal-traces__plot {
+  min-width: 0;
+  border-radius: var(--ref-radius-sm);
+  cursor: grab;
+  user-select: none;
+}
+
+.ui-signal-traces__plot:active {
+  cursor: grabbing;
+}
+
+.ui-signal-traces__plot:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-signal-traces__drawing {
+  display: block;
+  overflow: visible;
+}
+
+.ui-signal-traces__value-axis,
+.ui-signal-traces__time-axis {
+  pointer-events: none;
+}
+
+.ui-signal-traces__label {
+  fill: var(--ref-text);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-signal-traces__label .ui-signal-traces__unit {
+  fill: var(--ref-muted);
+  font-weight: normal;
+}
+
+.ui-signal-traces__readout .ui-signal-traces__unit {
+  color: var(--ref-muted);
+}
+
+.ui-signal-traces__channel {
+  --ref-signal-traces-color: var(--ref-category-3);
+}
+
+.ui-signal-traces__channel[data-channel='0'] {
+  --ref-signal-traces-color: var(--ref-category-0);
+}
+
+.ui-signal-traces__channel[data-channel='1'] {
+  --ref-signal-traces-color: var(--ref-category-1);
+}
+
+.ui-signal-traces__channel[data-channel='2'] {
+  --ref-signal-traces-color: var(--ref-category-2);
+}
+
+.ui-signal-traces__trace {
+  stroke: var(--ref-signal-traces-color);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.ui-signal-traces__reference {
+  stroke: var(--ref-muted);
+  stroke-width: 1px;
+  stroke-dasharray: 5 4;
+}
+
+.ui-signal-traces__envelope {
+  fill: var(--ref-signal-traces-color);
+  fill-opacity: 0.14;
+  stroke: none;
+}
+
+.ui-signal-traces__empty {
+  fill: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-signal-traces__cursor-line {
+  stroke: var(--ref-text);
+  stroke-width: 1px;
+}
+
+.ui-signal-traces__cursor-line[data-cursor='2'] {
+  stroke-dasharray: 3 2;
+}
+
+.ui-signal-traces__cursor {
+  width: 12px;
+  margin-inline-start: -6px;
+  border-radius: var(--ref-radius-xs);
+  cursor: ew-resize;
+}
+
+.ui-signal-traces__cursor:hover {
+  background: var(--ref-hover);
+}
+
+.ui-signal-traces__cursor:focus-visible {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-signal-traces__cursor[data-outside] {
+  border-inline: 2px dotted var(--ref-muted);
+}
+
+.ui-signal-traces__readout {
+  width: auto;
+  border-collapse: collapse;
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-signal-traces__readout :is(th, td) {
+  padding: 2px 12px 2px 0;
+  border-bottom: 1px solid var(--ref-border);
+  text-align: start;
+}
+
+.ui-signal-traces__readout :is(td, thead th:not(:first-child)) {
+  min-width: 96px;
+  text-align: end;
+}
+
+.ui-signal-traces__delta {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}

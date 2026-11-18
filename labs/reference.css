@@ -135,6 +135,7 @@
 @import url('reference/select-field.css') layer(ui-reference);
 @import url('reference/separator.css') layer(ui-reference);
 @import url('reference/shortcut.css') layer(ui-reference);
+@import url('reference/signal-traces.css') layer(ui-reference);
 @import url('reference/signature-pad.css') layer(ui-reference);
 @import url('reference/skeleton.css') layer(ui-reference);
 @import url('reference/split-view.css') layer(ui-reference);

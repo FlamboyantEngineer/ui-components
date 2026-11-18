@@ -723,5 +723,13 @@
   "chatComposerHint": "{shortcut} para {action, select, queue {poner en cola} steer {redirigir} save {guardar} other {enviar}}",
   "chatReorderQueued": "Reordenar mensaje en cola {position}",
   "chatQueueActions": "Acciones del mensaje en cola {position}",
-  "chatSteer": "Redirigir"
+  "chatSteer": "Redirigir",
+  "signalPlot": "Trazas de señal",
+  "signalPlotHint": "Las flechas izquierda y derecha desplazan, más y menos acercan y alejan, 0 restablece.",
+  "signalTimeRange": "{from} a {to}",
+  "signalCursor": "Cursor {cursor}",
+  "signalTimeDifference": "Diferencia de tiempo: {value}",
+  "signalReadings": "Lecturas de los cursores",
+  "signalChannel": "Canal",
+  "signalTime": "Tiempo"
 }

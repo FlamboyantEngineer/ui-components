@@ -723,5 +723,13 @@
   "chatComposerHint": "{shortcut} to {action, select, queue {queue} steer {steer} save {save} other {send}}",
   "chatReorderQueued": "Reorder queued message {position}",
   "chatQueueActions": "Actions for queued message {position}",
-  "chatSteer": "Steer"
+  "chatSteer": "Steer",
+  "signalPlot": "Signal traces",
+  "signalPlotHint": "Left and right arrows pan, plus and minus zoom, 0 resets.",
+  "signalTimeRange": "{from} to {to}",
+  "signalCursor": "Cursor {cursor}",
+  "signalTimeDifference": "Time difference: {value}",
+  "signalReadings": "Cursor readings",
+  "signalChannel": "Channel",
+  "signalTime": "Time"
 }

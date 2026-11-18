@@ -33,6 +33,7 @@ export { redlineStrings } from './redline.js';
 export { relationStrings } from './relation.js';
 export { reviewStrings } from './review.js';
 export { richTextStrings } from './rich-text.js';
+export { signalStrings } from './signal.js';
 export { structureStrings } from './structure.js';
 export { tableStrings } from './table.js';
 export { timelineStrings } from './timeline.js';
