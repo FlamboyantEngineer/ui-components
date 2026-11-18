@@ -1,0 +1,94 @@
+/* Image Hotspots: a zoom control over a bounded, scrolling viewport of an image with hotspot buttons. */
+
+.ui-image-hotspots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-image-hotspots__zoom {
+  align-self: flex-start;
+}
+
+/* The viewport is bounded, so the fit has a box to fill; auto margins centre the canvas while it fits. */
+.ui-image-hotspots__viewport {
+  display: flex;
+  box-sizing: border-box;
+  height: 320px;
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-image-hotspots__viewport:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-image-hotspots__canvas {
+  flex: none;
+  margin: auto;
+}
+
+.ui-image-hotspots__image {
+  display: block;
+  user-select: none;
+}
+
+.ui-image-hotspots__error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+  text-align: center;
+}
+
+/* A hotspot is a frame over its part of the image: the tone's color, filled while pressed. */
+.ui-image-hotspots__hotspot.ui-button:not([data-tone]) {
+  --ref-tone: var(--ref-accent);
+}
+
+.ui-image-hotspots__hotspot.ui-button {
+  box-sizing: border-box;
+  border: 2px solid var(--ref-tone);
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-tone) 8%, transparent);
+  cursor: pointer;
+}
+
+.ui-image-hotspots__hotspot.ui-button[data-hovered] {
+  background: color-mix(in srgb, var(--ref-tone) 20%, transparent);
+}
+
+.ui-image-hotspots__hotspot.ui-button[data-selected] {
+  background: color-mix(in srgb, var(--ref-tone) 40%, transparent);
+  box-shadow: inset 0 0 0 2px var(--ref-canvas);
+}
+
+.ui-image-hotspots__hotspot.ui-button[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-image-hotspots__hotspot.ui-button[data-disabled] {
+  border-style: dashed;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* The message hangs under its hotspot, in its tone. */
+.ui-image-hotspots__message {
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-tone-fill, var(--ref-surface));
+  color: var(--ref-on-tone-fill, var(--ref-text));
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+  pointer-events: none;
+}

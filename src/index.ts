@@ -79,6 +79,7 @@ export * from './components/hover-card/preview.js';
 export * from './components/html-markup/index.js';
 export * from './components/icon/index.js';
 export * from './components/image/index.js';
+export * from './components/image-hotspots/index.js';
 export * from './components/inline-edit/index.js';
 export * from './components/inline-error/index.js';
 export * from './components/inline-text-field/index.js';
