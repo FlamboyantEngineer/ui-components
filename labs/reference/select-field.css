@@ -516,3 +516,59 @@
 .ui-select-field[data-icons] .ui-select-field__trigger {
   width: calc(var(--ui-select-field-label-width, 96px) + 64px);
 }
+
+/* Native mode: the platform's own select and picker, framed like the other fields' controls. */
+.ui-select-field__native {
+  min-width: 0;
+  max-width: 100%;
+  height: var(--ref-control-height);
+  padding: 0 4px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-select-field__native:hover:enabled {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-select-field__native:focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-select-field[data-dirty] .ui-select-field__native {
+  border-color: var(--ref-dirty);
+}
+
+.ui-select-field__native[aria-invalid='true'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-select-field[data-validation='warning'] .ui-select-field__native {
+  border-color: var(--ref-warning);
+}
+
+.ui-select-field__native[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-select-field__native option {
+  color: var(--ref-text);
+}
+
+/* Read-only keeps the choice readable and focusable; disabled, by the field or a fieldset, dims it. */
+.ui-select-field__native[aria-readonly='true'] {
+  border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+  cursor: default;
+}
+
+.ui-select-field__native:disabled {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}
