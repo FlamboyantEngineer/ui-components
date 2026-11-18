@@ -376,9 +376,20 @@ function Form() {
 }
 
 const paragraphStyles: SelectFieldOption[] = [
-  { id: 'body', label: 'Body text', shortcut: 'Ctrl+Alt+0' },
-  { id: 'heading-1', label: 'Heading 1', description: 'Chapter titles', shortcut: 'Ctrl+Alt+1' },
-  { id: 'heading-2', label: 'Heading 2', shortcut: 'Ctrl+Alt+2' },
+  { id: 'body', label: 'Body text', shortcut: 'Ctrl+Alt+0', tooltip: 'Body text (Ctrl+Alt+0)' },
+  {
+    id: 'heading-1',
+    label: 'Heading 1',
+    description: 'Chapter titles',
+    shortcut: 'Ctrl+Alt+1',
+    tooltip: 'Heading 1 (Ctrl+Alt+1)',
+  },
+  {
+    id: 'heading-2',
+    label: 'Heading 2',
+    shortcut: 'Ctrl+Alt+2',
+    tooltip: 'Heading 2 (Ctrl+Alt+2)',
+  },
   { id: 'quote', label: 'Quote' },
 ];
 
@@ -471,7 +482,7 @@ mountLab(
       </LabSection>
       <LabSection
         title="Shortcuts"
-        description="Each style shows its keyboard chord at the end of its row, in the reader's platform notation; the chords are display only."
+        description="Each style shows its keyboard chord at the end of its row, in the reader's platform notation; the chords are display only. Hover a style, or move to it with the arrow keys, for its hint beside the list; Quote has none."
       >
         <SelectField
           label="Paragraph style"

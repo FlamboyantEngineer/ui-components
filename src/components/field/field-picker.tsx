@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useState } from 'react';
 import type { ComponentHooks } from '../../core/hooks.js';
 import type { Key, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -12,6 +12,7 @@ import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { Shortcut } from '../shortcut/shortcut.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { PickerOption } from './field-picker-items.js';
+import { PickerOptionTooltip } from './field-picker-tooltip.js';
 
 /** The search state a picker's empty list reports. */
 type PickerSearchStatus = Pick<
@@ -106,21 +107,24 @@ export function PickerOptionRow({
   renderLead,
   renderOption,
 }: PickerOptionRowProps) {
+  // The row, which an option's hint is positioned against.
+  const [row, setRow] = useState<HTMLDivElement | null>(null);
   return (
     <ListBoxItem
+      ref={setRow}
       id={id}
       textValue={option.label}
       isDisabled={isDisabled ?? option.isDisabled}
       className={hooks.slotClass('option')}
     >
-      {(row) => {
+      {(item) => {
         const state: SelectableState = {
-          isSelected: row.isSelected,
-          isFocused: row.isFocused,
-          isFocusVisible: row.isFocusVisible,
-          isHovered: row.isHovered,
-          isPressed: row.isPressed,
-          isDisabled: row.isDisabled,
+          isSelected: item.isSelected,
+          isFocused: item.isFocused,
+          isFocusVisible: item.isFocusVisible,
+          isHovered: item.isHovered,
+          isPressed: item.isPressed,
+          isDisabled: item.isDisabled,
         };
         return (
           <>
@@ -133,6 +137,9 @@ export function PickerOptionRow({
                 hooks={hooks}
                 highlightMatches={highlightMatches}
               />
+            )}
+            {isEmptyNode(option.tooltip) ? null : (
+              <PickerOptionTooltip anchor={row} content={option.tooltip} state={state} />
             )}
           </>
         );
