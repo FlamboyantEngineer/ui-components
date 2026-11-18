@@ -13,10 +13,10 @@ Verification: `src/components/image-hotspots/image-hotspots.test.tsx`, `e2e/imag
 
 ### UIC-IMAGE-HOTSPOTS-1.2 - Fit and zoom
 
-The caller shall give the image's intrinsic `width` and `height` in pixels. At 100% the canvas is the largest box of the image's proportions that fits inside the viewport's client box, and the zoom scales it; the image fills the canvas. Before the viewport is measured the canvas takes the intrinsic size. The zoom is `zoom` (controlled, in percent of that fit) or `defaultZoom` (uncontrolled, `100` by default), and every request reaches `onZoomChange`. The zoom control steps through `defaultZoomLevels`; inside the viewport, `+` or `=` asks for the next level up and `-` for the next level down, without a modifier key. `showZoomReset` adds the zoom control's reset button, which asks for 100%. When the canvas grows or shrinks, the point at the viewport's centre stays in place.
+The caller shall give the image's intrinsic `width` and `height` in pixels. The canvas is laid out as [Media Viewer](MEDIA-VIEWER.md#uic-media-viewer-21---fit-zoom-and-pan) lays out its images (`layoutMedia`): at 100% it fits inside the viewport's client box and is never larger than the intrinsic size, and the zoom scales that fit; the image fills the canvas. Before the viewport is measured the canvas takes the intrinsic size. The zoom is `zoom` (controlled, in percent of that fit) or `defaultZoom` (uncontrolled, `100` by default), and every request reaches `onZoomChange`. The zoom control steps through `defaultZoomLevels`; inside the viewport, `+` or `=` asks for the next level up and `-` for the next level down, without a modifier key. `showZoomReset` adds the zoom control's reset button, which asks for 100%. A new zoom keeps the point at the viewport's centre in place. With `zoomsOnWheel`, the wheel over the viewport and a touchpad pinch step the zoom as in Media Viewer (UIC-MEDIA-VIEWER-2.5), keeping the point under the pointer in place; both surfaces share one zoomable viewport (`useZoomViewport`).
 
-Implementation: `src/components/image-hotspots/image-hotspots.tsx`, `src/components/image-hotspots/hotspot-layout.ts`, `src/components/image-hotspots/use-centred-zoom.ts`
-Verification: `src/components/image-hotspots/image-hotspots.test.tsx`, `src/components/image-hotspots/hotspot-layout.test.ts`, `e2e/image-hotspots.spec.ts`
+Implementation: `src/components/image-hotspots/image-hotspots.tsx`, `src/utils/layout-media.ts`, `src/utils/use-zoom-viewport.ts`
+Verification: `src/components/image-hotspots/image-hotspots.test.tsx`, `e2e/image-hotspots.spec.ts`
 
 ### UIC-IMAGE-HOTSPOTS-1.3 - Placing hotspots
 
@@ -48,9 +48,9 @@ Verification: `src/components/image-hotspots/image-hotspots.test.tsx`, `e2e/imag
 
 ### UIC-IMAGE-HOTSPOTS-1.7 - Changing the image
 
-The root shall publish the image's load status as `data-status`: `loading` from each new `src` until it loads, then `loaded`, or `error` when it fails. A new `src` replaces the `<img>`, so a report from the previous image never settles the new one. A failed image leaves the canvas and its hotspots in place and shows the provider's `imageLoadFailed` string, from `alt` (or `src` when `alt` is blank), as an alert (`ui-image-hotspots__error`).
+The root shall publish the image's load status as `data-status`, tracked as [Image](IMAGE.md) tracks its own (`useImageLoading`): `loading` from each new `src` until it loads, then `loaded`, or `error` when it fails or `src` is blank. A new `src` replaces the `<img>`, so a report from the previous image never settles the new one. A failed image leaves the canvas and its hotspots in place and shows the provider's `imageLoadFailed` string, from `alt` (or `src` when `alt` is blank), as an alert (`ui-image-hotspots__error`).
 
-Implementation: `src/components/image-hotspots/image-hotspots.tsx`
+Implementation: `src/components/image-hotspots/image-hotspots.tsx`, `src/utils/use-image-loading.ts`
 Verification: `src/components/image-hotspots/image-hotspots.test.tsx`, `e2e/image-hotspots.spec.ts`
 
 ### UIC-IMAGE-HOTSPOTS-1.8 - Hooks and caller attributes

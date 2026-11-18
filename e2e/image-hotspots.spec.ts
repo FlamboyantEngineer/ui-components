@@ -88,6 +88,48 @@ test.describe('Image Hotspots lab', () => {
     await expectOnPowerSwitch(surface);
   });
 
+  test('UIC-IMAGE-HOTSPOTS-1.2 keeps the centre in place as it zooms, and zooms with the wheel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('image-hotspots');
+    const demo = frontPanel(page);
+    const zoom = demo.locator('[data-lab-output="zoom"]');
+    const viewport = demo.getByRole('group', { name: 'Front panel controls' });
+    await expect(demo.locator('.ui-image-hotspots')).toHaveAttribute('data-status', 'loaded');
+    // The point of the canvas at the viewport's centre, from 0 to 1 across it.
+    const centre = () =>
+      viewport.evaluate((element) => {
+        const canvas = element.querySelector('.ui-image-hotspots__canvas');
+        const box = canvas?.getBoundingClientRect();
+        const view = element.getBoundingClientRect();
+        if (!box) return null;
+        return {
+          x: (view.left + view.width / 2 - box.left) / box.width,
+          y: (view.top + view.height / 2 - box.top) / box.height,
+        };
+      });
+    await viewport.focus();
+    await page.keyboard.press('+');
+    await page.keyboard.press('+');
+    await expect(zoom).toHaveText('150');
+    await viewport.evaluate((element) => element.scrollBy({ left: 120, top: 40 }));
+    const before = requireDefined(await centre());
+    await page.keyboard.press('+');
+    await expect(zoom).toHaveText('200');
+    await expect(async () => {
+      const after = requireDefined(await centre());
+      expect(after.x).toBeCloseTo(before.x, 2);
+      expect(after.y).toBeCloseTo(before.y, 2);
+    }).toPass();
+
+    await viewport.hover();
+    await page.mouse.wheel(0, 100);
+    await expect(zoom).toHaveText('150');
+    await page.mouse.wheel(0, -100);
+    await expect(zoom).toHaveText('200');
+  });
+
   test('UIC-IMAGE-HOTSPOTS-1.4 presses hotspots from the keyboard and shows a shared state on both', async ({
     page,
     lab,

@@ -132,6 +132,28 @@ describe('ImageHotspots', () => {
     expect(onZoomChange).not.toHaveBeenCalled();
   });
 
+  it('UIC-IMAGE-HOTSPOTS-1.2 steps the zoom with the wheel only with zoomsOnWheel', () => {
+    const onZoomChange = vi.fn();
+    const { rerender } = renderSurface({ onZoomChange });
+    const viewport = screen.getByRole('group', { name: 'Front panel' });
+    expect(fireEvent.wheel(viewport, { deltaY: -100 })).toBe(true);
+    expect(onZoomChange).not.toHaveBeenCalled();
+    rerender(
+      <ImageHotspots
+        aria-label="Front panel"
+        src="/panel-a.svg"
+        alt="Front panel drawing"
+        width={400}
+        height={200}
+        hotspots={hotspots}
+        onZoomChange={onZoomChange}
+        zoomsOnWheel
+      />,
+    );
+    expect(fireEvent.wheel(viewport, { deltaY: -100 })).toBe(false);
+    expect(onZoomChange).toHaveBeenLastCalledWith(125);
+  });
+
   it('UIC-IMAGE-HOTSPOTS-1.2 follows a controlled zoom and offers the reset button', async () => {
     const user = userEvent.setup();
     const onZoomChange = vi.fn();

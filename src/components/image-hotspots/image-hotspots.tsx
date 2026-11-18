@@ -1,16 +1,18 @@
 'use client';
 
-import { type KeyboardEvent, useId, useRef, useState } from 'react';
+import { type KeyboardEvent, useId, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { layoutMedia } from '../../utils/layout-media.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { useImageLoading } from '../../utils/use-image-loading.js';
+import { useZoomViewport } from '../../utils/use-zoom-viewport.js';
 import { Button } from '../button/button.js';
 import { defaultZoomLevels, findNextZoomLevel, ZoomControl } from '../zoom-control/index.js';
-import { clampHotspotRect, fitImage, type HotspotRect } from './hotspot-layout.js';
-import { useCentredZoom } from './use-centred-zoom.js';
+import { clampHotspotRect, type HotspotRect } from './hotspot-layout.js';
 
 /** One pressable area of the image. */
 export interface ImageHotspotsItem extends HotspotRect {
@@ -50,9 +52,12 @@ export interface ImageHotspotsProps
   onZoomChange?: ((zoom: number) => void) | undefined;
   /** Adds a reset button to the zoom control that returns to 100%. */
   showZoomReset?: boolean | undefined;
+  /**
+   * The wheel over the viewport, and a touchpad pinch, step the zoom through its levels instead of
+   * scrolling, keeping the point under the pointer in place.
+   */
+  zoomsOnWheel?: boolean | undefined;
 }
-
-type ImageStatus = 'loading' | 'loaded' | 'error';
 
 const hooks = createHooks('image-hotspots', [
   'zoom',
@@ -121,14 +126,43 @@ function Hotspot({
   );
 }
 
-/** The load status of the image at `src`; a new address starts loading again. */
-function useImageStatus(src: string) {
-  const [settled, setSettled] = useState<{ src: string; status: ImageStatus } | null>(null);
-  const status: ImageStatus = settled?.src === src ? settled.status : 'loading';
-  return {
-    status,
-    settle: (next: Exclude<ImageStatus, 'loading'>) => setSettled({ src, status: next }),
+/**
+ * The surface's zoom over the shared zoomable viewport: the canvas size for the zoom, the `+` and
+ * `-` keys and, with `zoomsOnWheel`, the wheel.
+ */
+function useSurfaceZoom(
+  options: Pick<ImageHotspotsProps, 'zoom' | 'defaultZoom' | 'onZoomChange' | 'zoomsOnWheel'> & {
+    natural: { width: number; height: number };
+  },
+) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const stage = useElementSize(viewportRef, { box: 'client' }) ?? { width: 0, height: 0 };
+  const [zoom, setZoom] = useControllableState(
+    options.zoom,
+    options.defaultZoom ?? 100,
+    options.onZoomChange,
+  );
+  const { canvas } = layoutMedia({ natural: options.natural, stage, zoom, rotation: 0 });
+  const step = (direction: 1 | -1) => {
+    const next = findNextZoomLevel(defaultZoomLevels, zoom, direction);
+    if (next !== undefined) setZoom(next);
+    return next;
   };
+  useZoomViewport({
+    viewportRef,
+    canvasRef,
+    zoom,
+    onStep: options.zoomsOnWheel ? step : undefined,
+    isReady: true,
+  });
+  const onKeyDown = (event: KeyboardEvent) => {
+    const direction = toZoomStep(event);
+    if (direction === null) return;
+    event.preventDefault();
+    step(direction);
+  };
+  return { viewportRef, canvasRef, zoom, setZoom, canvas, onKeyDown };
 }
 
 /**
@@ -145,9 +179,10 @@ export function ImageHotspots({
   hotspots,
   onAction,
   zoom: givenZoom,
-  defaultZoom = 100,
+  defaultZoom,
   onZoomChange,
   showZoomReset = false,
+  zoomsOnWheel = false,
   className,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -155,21 +190,17 @@ export function ImageHotspots({
   ...rest
 }: ImageHotspotsProps) {
   const strings = useUiStrings();
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const viewport = useElementSize(viewportRef, { box: 'client' });
-  const [zoom, setZoom] = useControllableState(givenZoom, defaultZoom, onZoomChange);
-  const image = useImageStatus(src);
-  const drawn = fitImage({ width, height, viewport, zoom });
-  useCentredZoom(viewportRef, drawn.width);
-  const onKeyDown = (event: KeyboardEvent) => {
-    const step = toZoomStep(event);
-    if (step === null) return;
-    event.preventDefault();
-    const next = findNextZoomLevel(defaultZoomLevels, zoom, step);
-    if (next !== undefined) setZoom(next);
-  };
+  const { viewportRef, canvasRef, zoom, setZoom, canvas, onKeyDown } = useSurfaceZoom({
+    natural: { width, height },
+    zoom: givenZoom,
+    defaultZoom,
+    onZoomChange,
+    zoomsOnWheel,
+  });
+  const { imageRef, generation, settle, status: loading } = useImageLoading([src.trim()]);
+  const status = loading === 'idle' ? 'error' : loading;
   return (
-    <div {...rest} {...hooks.root({ className, props: rest, data: { status: image.status } })}>
+    <div {...rest} {...hooks.root({ className, props: rest, data: { status } })}>
       <ZoomControl
         className={hooks.slotClass('zoom')}
         value={zoom}
@@ -189,19 +220,22 @@ export function ImageHotspots({
       >
         <div
           {...hooks.slot('canvas')}
-          style={{ position: 'relative', width: drawn.width, height: drawn.height }}
+          ref={canvasRef}
+          style={{ position: 'relative', width: canvas.width, height: canvas.height }}
         >
           <img
-            key={src}
+            // A new element per request, so events of a departed image never reach the handlers.
+            key={generation}
             {...hooks.slot('image')}
+            ref={imageRef}
             src={src}
             alt={alt}
             draggable={false}
-            onLoad={() => image.settle('loaded')}
-            onError={() => image.settle('error')}
+            onLoad={() => settle('loaded')}
+            onError={() => settle('error')}
             style={{ width: '100%', height: '100%' }}
           />
-          {image.status === 'error' ? (
+          {status === 'error' ? (
             <span {...hooks.slot('error')} role="alert">
               {strings.imageLoadFailed(alt.trim() || src)}
             </span>

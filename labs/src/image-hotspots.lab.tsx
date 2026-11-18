@@ -55,6 +55,7 @@ function FrontPanel() {
         zoom={zoom}
         onZoomChange={setZoom}
         showZoomReset
+        zoomsOnWheel
         onAction={(id) => {
           setLog((entries) => [...entries.slice(-5), id]);
           setState((current) => applyAction(current, id));
@@ -119,7 +120,7 @@ mountLab(
   <>
     <LabSection
       title="Caller-owned panel"
-      description="The caller holds every state. Power, Output A and Output B are toggles; Output A also has an inset copy that shows the same state. With the power off the outputs refuse presses. The fuse holder is disabled with a visible warning until the fuse is fitted. Focus the image and press + or - to zoom, Tab to reach each hotspot and Enter or Space to press it."
+      description="The caller holds every state. Power, Output A and Output B are toggles; Output A also has an inset copy that shows the same state. With the power off the outputs refuse presses. The fuse holder is disabled with a visible warning until the fuse is fitted. Focus the image and press + or -, or roll the wheel over it, to zoom, Tab to reach each hotspot and Enter or Space to press it."
     >
       <FrontPanel />
     </LabSection>
