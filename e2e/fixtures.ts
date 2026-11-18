@@ -22,6 +22,41 @@ export interface LabFixture {
   errors: string[];
 }
 
+type AxeResults = Awaited<ReturnType<AxeBuilder['analyze']>>;
+
+/**
+ * The violations without `scrollable-region-focusable` on a scrolling block inside a chat message.
+ * The transcript is one Tab stop, so it takes every control inside a message out of the tab order
+ * (`tabindex="-1"`) until the reader enters the message with Enter, and a scrolling code block or
+ * table is reached there; a test of each such block checks that path.
+ */
+async function withoutRovingScrollers(
+  page: Page,
+  violations: AxeResults['violations'],
+): Promise<AxeResults['violations']> {
+  const kept = [];
+  for (const violation of violations) {
+    if (violation.id !== 'scrollable-region-focusable') {
+      kept.push(violation);
+      continue;
+    }
+    const targets = violation.nodes.map((node) => String(node.target[0]));
+    const isRoving = await page.evaluate(
+      (selectors) =>
+        selectors.every((selector) => {
+          const element = document.querySelector(selector);
+          return (
+            element?.getAttribute('tabindex') === '-1' &&
+            element.closest('.ui-chat-transcript__feed article') !== null
+          );
+        }),
+      targets,
+    );
+    if (!isRoving) kept.push(violation);
+  }
+  return kept;
+}
+
 /** The lab a page shows, from its file name. */
 function labName(page: Page): string {
   return new URL(page.url()).pathname.replace(/^.*\//, '').replace(/\.html$/, '');
@@ -63,9 +98,8 @@ export const test = base.extend<{ lab: LabFixture }>({
           .options({ resultTypes: ['violations', 'incomplete'] })
           .setLegacyMode(page.frames().length === 1)
           .analyze();
-        expect(results.violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual(
-          [],
-        );
+        const violations = await withoutRovingScrollers(page, results.violations);
+        expect(violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
         const accepted = acceptedIncomplete[labName(page)] ?? {};
         const undecided = results.incomplete
           .filter((result) => !ungatedIncompleteRules.has(result.id) && !(result.id in accepted))

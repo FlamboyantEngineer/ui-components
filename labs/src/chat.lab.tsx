@@ -24,6 +24,7 @@ import { ChatStateCases } from './chat-state-cases.js';
 import { ChatSurfaceCases } from './chat-surface-cases.js';
 import { ChatThinkingCases } from './chat-thinking-cases.js';
 import { ChatThinkingStyles } from './chat-thinking-styles.js';
+import { ChatWideContentCases } from './chat-wide-content-cases.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const people = {
@@ -92,6 +93,7 @@ mountLab(
     <ChatSurfaceCases />
     <ChatStateCases />
     <ChatDisplayCases />
+    <ChatWideContentCases />
     <ChatLongCases />
     <ChatNativeCases />
     <LabSection

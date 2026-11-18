@@ -74,6 +74,25 @@
   line-height: 1.45;
 }
 
+/*
+ * A table scrolls sideways in its frame when it is wider than the document, and its cells break
+ * between words (or inside a word longer than the column), never mid-word to fit.
+ */
+.ui-markdown__table {
+  margin-block: 8px;
+  overflow-x: auto;
+  overflow-wrap: break-word;
+}
+
+.ui-markdown__table > .ui-prose-table {
+  margin-block: 0;
+}
+
+.ui-markdown__table[data-overflowing]:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: calc(-1 * var(--ref-focus-inset));
+}
+
 .ui-markdown__task {
   list-style: none;
   margin-inline-start: -1.5em;

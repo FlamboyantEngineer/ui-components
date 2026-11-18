@@ -138,8 +138,13 @@
   flex: none;
 }
 
+/*
+ * One column no wider than the message, so wide content such as a long line of code scrolls or
+ * wraps inside it rather than widening the bubble past the transcript.
+ */
 .ui-chat-message__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   min-width: 0;
 }

@@ -105,6 +105,8 @@ function InlineOptionsHost() {
           currentUserId={readerId}
           getNow={() => new Date('2026-04-20T10:30:00')}
           scrollMode="follow"
+          // The icon stays for the whole reply, not only its first word, so it can be seen drawn.
+          thinkingUntil="end"
           thinkingIcon={
             <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
               <circle cx="8" cy="8" r="6" />
