@@ -1,0 +1,64 @@
+/* Equipment Stack */
+
+/* Faces are sized only by aspect-ratio and never by their content, so their heights add up exactly. */
+
+.ui-equipment-stack {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.3;
+}
+
+.ui-equipment-stack__face {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px 12px;
+  box-sizing: border-box;
+  aspect-ratio: var(--ui-equipment-stack-ratio, 1) / var(--ui-equipment-stack-units, 1);
+  min-height: 0;
+  overflow: clip;
+  padding: 0 12px;
+  border-block-end: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+}
+
+.ui-equipment-stack__face:last-child {
+  border-block-end: 0;
+}
+
+.ui-equipment-stack__face[data-missing] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ref-surface) 0 6px,
+    color-mix(in srgb, var(--ref-text) var(--ref-tint-subtle), var(--ref-surface)) 6px 12px
+  );
+  color: var(--ref-muted);
+}
+
+.ui-equipment-stack__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-equipment-stack__readout {
+  font-family: var(--ref-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-equipment-stack__status,
+.ui-equipment-stack__placeholder {
+  white-space: nowrap;
+  color: var(--ref-muted);
+}
