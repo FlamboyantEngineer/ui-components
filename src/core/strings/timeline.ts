@@ -45,6 +45,12 @@ interface TimelineStrings {
   timelineItemCount: (count: number) => string;
   /** Tells that an item depends on nothing. */
   timelineNone: string;
+  /** Describes an event timeline marker by its formatted elapsed time. */
+  eventTimelineAt: (at: string) => string;
+  /** Describes an event timeline interval by its formatted start and duration. */
+  eventTimelineInterval: (at: string, duration: string) => string;
+  /** Heads the event timeline table's column of event names. */
+  eventTimelineEventColumn: string;
 }
 
 /** The module's text, with the message values each text function reads its arguments as. */
@@ -58,5 +64,7 @@ export const timelineStrings = defineStrings<TimelineStrings>({
   timelineItemActions: (item) => ({ item }),
   timelineAssignedTo: (names) => ({ names }),
   timelineDuration: (days) => ({ days }),
+  eventTimelineAt: (at) => ({ at }),
+  eventTimelineInterval: (at, duration) => ({ at, duration }),
   timelineItemCount: (count) => ({ count }),
 });

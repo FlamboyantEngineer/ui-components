@@ -1,0 +1,192 @@
+/* Event Timeline: toned markers and short bars in stacked lanes over a thin numeric axis. */
+
+.ui-event-timeline {
+  --ref-event-timeline-lane: 28px;
+  --ref-event-timeline-gutter: 24px;
+
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-event-timeline__label {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+/* The plot and the axis share one inset track, so ticks and events line up and end labels fit. */
+.ui-event-timeline__plot,
+.ui-event-timeline__axis,
+.ui-event-timeline__empty {
+  position: relative;
+  margin-inline: var(--ref-event-timeline-gutter);
+}
+
+.ui-event-timeline__plot {
+  height: calc(var(--ui-event-timeline-lanes) * var(--ref-event-timeline-lane));
+  /* Labels past the end are cut at the gutter; focus rings keep a little room. */
+  overflow-x: clip;
+  overflow-clip-margin: var(--ref-event-timeline-gutter);
+}
+
+.ui-event-timeline__empty {
+  margin-block: 0;
+  padding-block: 8px;
+  color: var(--ref-muted);
+}
+
+.ui-event-timeline__event {
+  position: absolute;
+  top: calc(var(--ui-event-lane) * var(--ref-event-timeline-lane) + 4px);
+  box-sizing: border-box;
+  height: calc(var(--ref-event-timeline-lane) - 8px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ref-radius-xs);
+  background: none;
+  color: var(--ref-text);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  cursor: default;
+}
+
+/* A marker is a 12px target centred on its time, drawn as a toned line with a dot. */
+.ui-event-timeline__event[data-kind='marker'] {
+  width: 12px;
+  margin-inline-start: -6px;
+}
+
+.ui-event-timeline__event::before {
+  position: absolute;
+  inset-block: 0;
+  content: '';
+  background: var(--ref-tone);
+}
+
+.ui-event-timeline__event[data-kind='marker']::before {
+  inset-inline-start: 5px;
+  width: 2px;
+  border-radius: var(--ref-radius-full);
+}
+
+/* An interval fills its exact span; a span too short to see still shows a 2px bar. */
+.ui-event-timeline__event[data-kind='interval']::before {
+  inset-inline-start: 0;
+  width: max(100%, 2px);
+  border-radius: var(--ref-radius-xs);
+  background: var(--ref-tone-fill);
+}
+
+.ui-event-timeline__event[data-clipped='start']::before,
+.ui-event-timeline__event[data-clipped='both']::before {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.ui-event-timeline__event[data-clipped='end']::before,
+.ui-event-timeline__event[data-clipped='both']::before {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.ui-event-timeline__event-label {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(100% + 4px);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ui-event-timeline__event[data-kind='marker'] .ui-event-timeline__event-label {
+  inset-inline-start: 100%;
+}
+
+.ui-event-timeline__event[data-current] .ui-event-timeline__event-label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ui-event-timeline__event[data-current]::before {
+  box-shadow:
+    0 0 0 2px var(--ref-canvas),
+    0 0 0 3px var(--ref-tone);
+}
+
+.ui-event-timeline__event:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-event-timeline__axis {
+  height: 40px;
+  border-top: 1px solid var(--ref-border-strong);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-event-timeline__tick {
+  position: absolute;
+  top: 0;
+  height: 4px;
+  border-inline-start: 1px solid var(--ref-border-strong);
+}
+
+.ui-event-timeline__tick-label {
+  position: absolute;
+  top: 6px;
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+.ui-event-timeline__tick-label:dir(rtl) {
+  translate: 50% 0;
+}
+
+.ui-event-timeline__unit {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  color: var(--ref-text);
+}
+
+.ui-event-timeline__details {
+  display: grid;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-event-timeline__details-label {
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-event-timeline__details-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 12px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-event-timeline__details-list dt {
+  color: var(--ref-muted);
+}
+
+.ui-event-timeline__details-list dd {
+  margin: 0;
+}
+
+.ui-event-timeline__details-body {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-event-timeline__table {
+  font-variant-numeric: tabular-nums;
+}

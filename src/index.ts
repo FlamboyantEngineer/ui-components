@@ -60,6 +60,7 @@ export * from './components/drawer/index.js';
 export * from './components/dropdown-menu/index.js';
 export * from './components/emoji-picker/index.js';
 export * from './components/empty-state/index.js';
+export * from './components/event-timeline/index.js';
 export * from './components/expand-toggle/index.js';
 export * from './components/expression-field/index.js';
 export * from './components/facet-list/index.js';
