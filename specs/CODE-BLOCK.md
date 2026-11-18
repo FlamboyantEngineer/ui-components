@@ -22,14 +22,14 @@ Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.s
 
 While the code is wider or taller than its `<pre>`, so the `<pre>` scrolls (measured after each render, the first with the resize observer's first report where the window has one, so a page that mounts many blocks is laid out once for them all, whenever the `<pre>` resizes, whenever its content changes in the document, such as tokens highlighted asynchronously or their classes and styles, and whenever the document's fonts finish loading), the `<pre>` shall publish `data-overflowing` and join the tab order, so a keyboard reader can reach it and scroll it with the arrow keys, and drop both as soon as it fits again; the block's group names its context. It takes no landmark role, so a transcript of many blocks adds no landmarks. Code that fits adds no tab stop.
 
-Implementation: `src/components/code-block/code-block.tsx`, `src/components/code-block/use-scroll-overflow.ts`
+Implementation: `src/components/code-block/code-block.tsx`, `src/utils/use-scroll-overflow.ts`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
 ### UIC-CODE-BLOCK-1.4 - Highlighting
 
-With `tokenize`, a `code` block shall split its code into tokens that cover it exactly, in order ([UIC-CODE-EDITOR-1.2](CODE-EDITOR.md#uic-code-editor-12---tokens)); each token with a `type` renders in a `ui-code-block__token` span carrying `data-token` with that type, and tokens without one render as plain text. Without `tokenize` the code is one plain run. [Code Editor](CODE-EDITOR.md#uic-code-editor-121---built-in-and-custom-syntax)'s `resolveCodeTokenizer` gives the editor's language presets, or a tokenizer for custom syntax rules, in this form.
+With `tokenize`, a `code` block shall split its code into tokens that cover it exactly, in order ([UIC-CODE-EDITOR-1.2](CODE-EDITOR.md#uic-code-editor-12---tokens)); each token with a `type` renders in a `ui-code-block__token` span carrying `data-token` with that type, and tokens without one render as plain text. Without `tokenize`, a block whose `language` names one of [Code Editor](CODE-EDITOR.md#uic-code-editor-121---built-in-and-custom-syntax)'s presets, by its name or a common short name and ignoring case, highlights with that preset: `json` (`jsonc`, `json5`), `javascript` (`js`, `jsx`, `mjs`, `cjs`), `typescript` (`ts`, `tsx`, `mts`, `cts`), `html` (`htm`, `xhtml`), `css`, `sql`, `python` (`py`), `java`, `markdown` (`md`), `c` (`h`), `cpp` (`c++`, `cc`, `cxx`, `hpp`, `hh`), `yaml` (`yml`), `xml` (`svg`, `xsl`, `plist`) and `shell` (`sh`, `bash`, `zsh`, `ksh`). Any other language, or none, leaves the code one plain run. `resolveCodeTokenizer` gives the editor's language presets, or a tokenizer for custom syntax rules, in this form.
 
-Implementation: `src/components/code-block/code-block-content.tsx`, `labs/reference/code-block.css`
+Implementation: `src/components/code-block/code-block.tsx`, `src/components/code-block/code-block-languages.ts`, `src/components/code-block/code-block-content.tsx`, `labs/reference/code-block.css`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
 ### UIC-CODE-BLOCK-1.5 - Line numbers
@@ -75,9 +75,9 @@ Verification: `src/components/code-block/code-block-content.test.ts`, `src/compo
 
 ### UIC-CODE-BLOCK-4.1 - Code block override
 
-`createCodeBlockOverride(options)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that draws every code block node, fenced or indented, as a `CodeBlock` of its text headed by its fence language, and leaves every other node to the default rendering. A `console`, `terminal` or `shell-session` fence is a `terminal` block. `tokenizers` maps fence languages to `tokenize` functions, read from its own entries only: a fence language the map does not register, even one an ordinary object inherits (`constructor`, `toString`, `__proto__`), draws plain code, while an entry the map does register under such a name highlights; `onApply` shows Apply on every block and receives the block's value and its fence language (`null` without one); `applyLabel` names it. A streaming `Markdown` shows an unclosed fence through it as a growing block.
+`createCodeBlockOverride(options)` shall return a `renderNode` for [Markdown](MARKDOWN.md) that draws every code block node, fenced or indented, as a `CodeBlock` of its text headed by its fence language, and leaves every other node to the default rendering. A `console`, `terminal` or `shell-session` fence is a `terminal` block. A plain-text fence (`text`, `txt`, `plain` or `plaintext`, ignoring case) holds prose rather than code, so its block wraps long lines (`wrap="soft"`); every other block keeps them on one row and scrolls sideways. `tokenizers` maps fence languages to `tokenize` functions, read from its own entries only: a fence language the map does not register, even one an ordinary object inherits (`constructor`, `toString`, `__proto__`), keeps the built-in highlighting of its language ([UIC-CODE-BLOCK-1.4](#uic-code-block-14---highlighting)), which draws an unknown language plain, while an entry the map does register under such a name highlights with it; `onApply` shows Apply on every block and receives the block's value and its fence language (`null` without one); `applyLabel` names it. A streaming `Markdown` shows an unclosed fence through it as a growing block.
 
-Implementation: `src/components/code-block/markdown-code-block.tsx`
+Implementation: `src/components/code-block/markdown-code-block.tsx`, `src/components/code-block/code-block-languages.ts`
 Verification: `src/components/code-block/markdown-code-block.test.tsx`, `src/components/code-block/markdown-code-languages.test.tsx`, `e2e/code-block.spec.ts`
 
 ## UIC-CODE-BLOCK-5 - Integration

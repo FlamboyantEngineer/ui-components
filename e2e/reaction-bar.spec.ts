@@ -151,12 +151,16 @@ test.describe('Reaction Bar host cases', () => {
     await expect(picker).toContainText(/could not/i);
     await expect(loads).toHaveText('fails');
     await page.keyboard.press('Escape');
+    // The picker must be gone before the next presses, or one lands on it while it closes.
+    await expect(picker).toBeHidden();
 
-    await demo
+    const afterASecond = demo
       .getByRole('radiogroup', { name: 'The loader answers' })
-      .getByRole('radio', { name: 'after a second' })
-      .click();
+      .getByRole('radio', { name: 'after a second' });
+    await afterASecond.click();
+    await expect(afterASecond).toBeChecked();
     await add.click();
+    await expect(picker).toBeVisible();
     await expect(loads).toHaveText('fails, after a second');
     await expect(picker.getByRole('grid').first()).toBeVisible();
     await page.keyboard.type('bread');

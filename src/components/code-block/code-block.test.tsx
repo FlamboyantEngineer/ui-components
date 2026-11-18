@@ -96,6 +96,40 @@ describe('CodeBlock', () => {
     expectHooksMatchSpec(container, 'CODE-BLOCK', { slots: ['token'] });
   });
 
+  it('UIC-CODE-BLOCK-1.4 highlights by its language, short name or case, without a tokenizer', () => {
+    for (const language of ['typescript', 'ts', 'TSX', 'js']) {
+      const { container, unmount } = render(
+        <CodeBlock code="const a = 12; // total" language={language} />,
+      );
+      const tokens = [...container.querySelectorAll('.ui-code-block__token')];
+      expect(tokens.map((token) => token.getAttribute('data-token'))).toEqual([
+        'keyword',
+        'number',
+        'comment',
+      ]);
+      expect(container.querySelector('code')).toHaveTextContent('const a = 12; // total');
+      unmount();
+    }
+    const { container } = render(<CodeBlock code="def total(): return 12" language="py" />);
+    expect(container.querySelector('[data-token="keyword"]')).toHaveTextContent('def');
+  });
+
+  it('UIC-CODE-BLOCK-1.4 keeps plain text, unknown languages and none as one plain run', () => {
+    for (const language of ['text', 'txt', 'ruby', 'constructor', '__proto__', undefined]) {
+      const { container, unmount } = render(<CodeBlock code="const a = 12;" language={language} />);
+      expect(container.querySelector('.ui-code-block__token')).toBeNull();
+      unmount();
+    }
+  });
+
+  it('UIC-CODE-BLOCK-1.4 prefers the caller tokenizer to the highlighting of its language', () => {
+    const { container } = render(
+      <CodeBlock code="const a = 12; // total" language="ts" tokenize={tokenize} />,
+    );
+    const tokens = [...container.querySelectorAll('.ui-code-block__token')];
+    expect(tokens.map((token) => token.getAttribute('data-token'))).toEqual(['keyword', 'number']);
+  });
+
   it('UIC-CODE-BLOCK-2.1 copies the code exactly as given', async () => {
     const user = userEvent.setup();
     render(<CodeBlock code={`  ${snippet}\n`} language="ts" />);
