@@ -36,4 +36,5 @@ export const selectFieldHooks = createHooks('select-field', [
   'value-label',
   'chevron',
   'clear',
+  'native',
 ]);

@@ -18,6 +18,7 @@ import { OpenStates } from './select-field-open-cases.js';
 import { Paged } from './select-field-paged.js';
 import { StyledValueField, TriggerRefField } from './select-field-trigger-cases.js';
 import { iconsChoices } from './select-icons.js';
+import { nativeChoices } from './select-native.js';
 import { treeChoices } from './select-tree.js';
 
 const fruit: SelectFieldOption[] = [
@@ -397,6 +398,7 @@ mountLab(
   <>
     {treeChoices}
     {iconsChoices}
+    {nativeChoices}
     <div data-lab-family="list">
       <LabSection
         title="Primitive keys"

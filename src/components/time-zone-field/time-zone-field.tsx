@@ -22,7 +22,7 @@ import {
 
 const timeZoneFieldHooks = createHooks('time-zone-field', []);
 
-type SelectListProps = Exclude<SelectFieldProps<'single'>, { mode: 'tree' }>;
+type SelectListProps = Exclude<SelectFieldProps<'single'>, { mode: 'tree' | 'native' }>;
 
 /** The select props a time zone field passes on: all but its options and its value's type. */
 type PassedProps = Omit<
