@@ -151,6 +151,8 @@ test.describe('Reaction Bar host cases', () => {
     await expect(picker).toContainText(/could not/i);
     await expect(loads).toHaveText('fails');
     await page.keyboard.press('Escape');
+    // The closing picker still covers the page while it exits; a press then lands on its underlay.
+    await expect(picker).toBeHidden();
 
     await demo
       .getByRole('radiogroup', { name: 'The loader answers' })
