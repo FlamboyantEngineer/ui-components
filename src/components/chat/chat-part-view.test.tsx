@@ -311,6 +311,16 @@ describe('ChatParts part views', () => {
     );
   });
 
+  it('UIC-CHAT-28.4 highlights a code part by its language', () => {
+    render(
+      <ChatParts
+        parts={[{ type: 'code', code: 'def soak(): pass', language: 'python', title: 'soak.py' }]}
+      />,
+    );
+    const block = screen.getByRole('group', { name: 'soak.py' });
+    expect(block.querySelector('[data-token="keyword"]')).toHaveTextContent('def');
+  });
+
   it('UIC-CHAT-28.5 renders a diff under its title', () => {
     const { container } = render(
       <ChatParts

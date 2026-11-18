@@ -5,6 +5,7 @@ import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useScrollOverflow } from '../../utils/use-scroll-overflow.js';
 import { Button } from '../button/button.js';
 import type { CodeEditorWrap, CodeTokenizer } from '../code-editor/code-editor.js';
 import { CopyButton } from '../copy-button/copy-button.js';
@@ -18,7 +19,7 @@ import {
   type TerminalLine,
   TerminalLines,
 } from './code-block-content.js';
-import { useScrollOverflow } from './use-scroll-overflow.js';
+import { findLanguageTokenizer } from './code-block-languages.js';
 
 export type { CodeBlockOverrideOptions } from './markdown-code-block.js';
 export { createCodeBlockOverride } from './markdown-code-block.js';
@@ -43,7 +44,10 @@ export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, Cod
   onApply?: ((code: string) => void) | undefined;
   /** Names the Apply action. Defaults to the provider's `codeBlockApply` string. */
   applyLabel?: string | undefined;
-  /** Splits the code of a `code` block into typed tokens for highlighting, as `CodeEditor` does. */
+  /**
+   * Splits the code of a `code` block into typed tokens for highlighting, as `CodeEditor` does.
+   * Defaults to the built-in highlighting of `language`, such as `ts`, `py` or `json`.
+   */
   tokenize?: CodeTokenizer | undefined;
   /** The prompt that starts a command line of a `terminal` block. Defaults to `$`. */
   prompt?: string | undefined;
@@ -153,7 +157,11 @@ export function CodeBlock({
           {lines ? (
             <TerminalLines lines={lines} prompt={prompt} numbered={numbered} />
           ) : (
-            <CodeTokens code={code} tokenize={tokenize} numbered={numbered} />
+            <CodeTokens
+              code={code}
+              tokenize={tokenize ?? findLanguageTokenizer(language)}
+              numbered={numbered}
+            />
           )}
         </code>
       </pre>
