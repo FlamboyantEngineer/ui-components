@@ -245,3 +245,84 @@ test.describe('Plain reply width', () => {
     await expect(writing).toHaveAttribute('aria-busy', 'true');
   });
 });
+
+test.describe('Chat wide content', () => {
+  test('UIC-CHAT-TRANSCRIPT-2.14 UIC-CHAT-26.2 UIC-CHAT-28.4 keeps wide content inside the chat and highlights code', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const demo = page.locator('[data-lab-demo="wide-content"]');
+    for (const bubble of [false, true]) {
+      if (bubble) {
+        const option = demo.getByRole('checkbox', { name: 'Background on replies' });
+        await option.focus();
+        await page.keyboard.press('Space');
+        await expect(option).toBeChecked();
+        await expect(demo.locator('article[data-message-id="wide-2"]')).toHaveAttribute(
+          'data-variant',
+          'bubble',
+        );
+      }
+      const feed = demo.locator('.ui-chat-transcript__feed');
+      await expect(demo.locator('article[data-message-id="wide-3"] .ui-code-block')).toBeVisible();
+      const overflow = await feed.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        // Content inside its own scrolling frame, such as a code block's lines, may run past it.
+        const isClipped = (child: Element) => {
+          for (let up = child.parentElement; up && up !== element; up = up.parentElement) {
+            if (getComputedStyle(up).overflowX !== 'visible') return true;
+          }
+          return false;
+        };
+        const contents = [...element.querySelectorAll('.ui-chat-message__content')];
+        const outside = contents
+          .flatMap((content) => [content, ...content.querySelectorAll('*')])
+          .filter(
+            (child) => child.getBoundingClientRect().right > bounds.right + 1 && !isClipped(child),
+          );
+        return { contents: contents.length, outside: outside.length };
+      });
+      expect(overflow).toEqual({ contents: 3, outside: 0 });
+    }
+    const prose = demo.getByRole('group', { name: 'text' }).locator('pre');
+    await expect(prose).toHaveAttribute('data-wrap', 'soft');
+    expect(await prose.evaluate((pre) => pre.scrollWidth - pre.clientWidth)).toBe(0);
+    const script = demo.getByRole('group', { name: 'ts' }).locator('pre');
+    await expect(script).toHaveAttribute('data-overflowing', 'true');
+    await expect(script).toHaveCSS('overflow-x', 'auto');
+    await expect(script.locator('.ui-code-block__token[data-token="keyword"]').first()).toHaveText(
+      'export',
+    );
+    const python = demo.getByRole('group', { name: 'check_routes.py' });
+    await expect(python.locator('.ui-code-block__token[data-token="keyword"]').first()).toHaveText(
+      'def',
+    );
+    // The transcript is one Tab stop: entering the reply puts its scrolling blocks in the tab order.
+    const reply = demo.locator('article[data-message-id="wide-2"]');
+    await expect(script).toHaveAttribute('tabindex', '-1');
+    await reply.focus();
+    await page.keyboard.press('Enter');
+    await expect(script).toHaveAttribute('tabindex', '0');
+    while (!(await script.evaluate((pre) => pre === document.activeElement))) {
+      await page.keyboard.press('Tab');
+    }
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => script.evaluate((pre) => pre.scrollLeft)).toBeGreaterThan(0);
+    await page.keyboard.press('Tab');
+    await expect(demo.locator('.ui-markdown__table')).toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="wide-content"]');
+    const frame = demo.locator('.ui-markdown__table');
+    await expect(frame).toHaveCSS('overflow-x', 'auto');
+    await expect(frame).toHaveAttribute('data-overflowing', 'true');
+    const table = frame.locator('.ui-prose-table');
+    const cell = table.getByRole('cell', { name: 'Saturday' });
+    // A cell breaks between words, never inside one to fit: its one word stays on one line.
+    const lineCount = await cell.evaluate((td) => {
+      const range = td.ownerDocument.createRange();
+      range.selectNodeContents(td);
+      return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size;
+    });
+    expect(lineCount).toBe(1);
+  });
+});

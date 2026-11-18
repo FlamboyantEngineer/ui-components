@@ -1,8 +1,14 @@
 import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Markdown } from './markdown.js';
 import { parseMarkdown } from './parse-markdown.js';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('Markdown wide tables', () => {
   for (const input of ['text', 'document']) {
@@ -42,4 +48,23 @@ describe('Markdown wide tables', () => {
       expect(cells.at(-1)).toBeEmptyDOMElement();
     });
   }
+
+  it('UIC-MARKDOWN-2.5 frames a table, which joins the tab order only while it overflows', async () => {
+    const user = userEvent.setup();
+    const source = '| Day | Place |\n| --- | --- |\n| Friday | Harbour |';
+    const { container, rerender } = render(<Markdown source={source} />);
+    const frame = container.querySelector('.ui-markdown__table') as HTMLElement;
+    expect(frame).toContainElement(screen.getByRole('table'));
+    expect(frame).not.toHaveAttribute('tabindex');
+    expect(frame).not.toHaveAttribute('data-overflowing');
+    vi.spyOn(frame, 'scrollWidth', 'get').mockReturnValue(900);
+    vi.spyOn(frame, 'clientWidth', 'get').mockReturnValue(300);
+    rerender(<Markdown source={`${source} with a long view |`} />);
+    expect(frame).toHaveAttribute('data-overflowing', 'true');
+    expect(frame).toHaveAttribute('tabindex', '0');
+    expect(frame).not.toHaveAttribute('role');
+    await user.tab();
+    expect(frame).toHaveFocus();
+    expectHooksMatchSpec(container, 'MARKDOWN', { slots: ['table'] });
+  });
 });

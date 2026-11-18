@@ -1,9 +1,9 @@
 'use client';
 
 import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { isOverflowing } from '../../utils/is-overflowing.js';
-import { listenFontsLoaded } from '../../utils/listen-fonts-loaded.js';
-import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { isOverflowing } from './is-overflowing.js';
+import { listenFontsLoaded } from './listen-fonts-loaded.js';
+import { useResizeObserver } from './use-resize-observer.js';
 
 /** Content changes that can widen or lengthen the text without resizing the element: nodes, text, classes, styles. */
 const contentChanges: MutationObserverInit = {

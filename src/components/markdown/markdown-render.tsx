@@ -1,6 +1,5 @@
 'use client';
 import { createElement, Fragment, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
 import { mapTreeToDepth } from '../../utils/map-tree.js';
 import { maxMarkupDepth } from '../../utils/markup.js';
 import { untrustedImageProps } from '../../utils/safe-url.js';
@@ -9,6 +8,7 @@ import { Link } from '../link/link.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { Separator } from '../separator/separator.js';
 import { TextMatch } from '../text-match/text-match.js';
+import { markdownHooks as hooks } from './markdown-hooks.js';
 import type {
   MarkdownBlock,
   MarkdownImage,
@@ -18,6 +18,7 @@ import type {
   MarkdownTable,
 } from './markdown-nodes.js';
 import type { MarkdownNodePlace, MarkdownRenderNode } from './markdown-place.js';
+import { MarkdownTableFrame } from './markdown-table-frame.js';
 
 export interface RenderContext {
   /** The caller's `renderNode`. */
@@ -40,16 +41,6 @@ interface RenderEntry extends MarkdownNodePlace {
   isTight: boolean;
   key?: number;
 }
-
-export const markdownHooks = createHooks('markdown', [
-  'code-block',
-  'code',
-  'task',
-  'image',
-  'image-link',
-]);
-
-const hooks = markdownHooks;
 
 const externalUrl = /^https?:/i;
 
@@ -251,7 +242,11 @@ function renderTable(node: MarkdownTable, context: RenderContext) {
     key: String(index),
     cells: row.map((cell, column) => ({ key: String(column), content: renderAll(cell, context) })),
   }));
-  return <ProseTable header={header} rows={rows} />;
+  return (
+    <MarkdownTableFrame>
+      <ProseTable header={header} rows={rows} />
+    </MarkdownTableFrame>
+  );
 }
 
 /** A task item: a read-only checkbox labelled by the item's first paragraph, then the rest. */
