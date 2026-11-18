@@ -6,18 +6,18 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { layoutMedia, type MediaSize } from '../../utils/layout-media.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { useZoomViewport } from '../../utils/use-zoom-viewport.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
-import { layoutMedia, type MediaSize } from './media-layout.js';
 import {
   isImageItem,
   mediaViewerHooks as hooks,
   type MediaViewerItem,
 } from './media-viewer-parts.js';
 import type { MediaImageRequest } from './use-image-request.js';
-import { useWheelZoom } from './use-wheel-zoom.js';
 
 interface MediaStageProps {
   item: MediaViewerItem;
@@ -144,7 +144,7 @@ export function MediaStage(props: MediaStageProps) {
   const stage = useElementSize(viewportRef, { box: 'client' });
   const isImage = isImageItem(item);
   const canvasRef = useRef<HTMLDivElement>(null);
-  useWheelZoom({
+  useZoomViewport({
     viewportRef,
     canvasRef,
     zoom: props.zoom,
