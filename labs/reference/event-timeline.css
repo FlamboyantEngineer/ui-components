@@ -142,7 +142,7 @@
   white-space: nowrap;
 }
 
-.ui-event-timeline__tick-label:dir(rtl) {
+[dir='rtl'] .ui-event-timeline__tick-label {
   translate: 50% 0;
 }
 
