@@ -127,10 +127,10 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 
 ### UIC-MARKDOWN-2.5 - Tables
 
-A table shall render through [Prose Table](PROSE-TABLE.md), its columns aligned as the divider row says.
+A table shall render through [Prose Table](PROSE-TABLE.md), its columns aligned as the divider row says, inside a `ui-markdown__table` frame. While the table is wider than its frame, so the frame scrolls sideways (measured as [UIC-CODE-BLOCK-1.3](CODE-BLOCK.md#uic-code-block-13---keyboard-scrolling) measures a code block), the frame shall publish `data-overflowing` and join the tab order, so a keyboard reader can reach it and scroll it with the arrow keys, and drop both as soon as the table fits again. The reference stylesheet scrolls the frame sideways and breaks its cells' text between words rather than inside them, so a wide table never widens the document.
 
-Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
-Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-tables.test.tsx`, `e2e/markdown.spec.ts`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`, `src/components/markdown/markdown-table-frame.tsx`, `src/utils/use-scroll-overflow.ts`, `labs/reference/markdown.css`
+Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/markdown-tables.test.tsx`, `e2e/markdown.spec.ts`, `e2e/chat-display.spec.ts`
 
 ### UIC-MARKDOWN-2.6 - Task items
 
@@ -212,13 +212,15 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 
 ## Hooks
 
-| Hook                      | Kind      | Values | Description                                 |
-| ------------------------- | --------- | ------ | ------------------------------------------- |
-| `ui-markdown`             | root      |        | The `<div>` holding the document.           |
-| `ui-markdown__code-block` | slot      |        | A code block's `<pre>`.                     |
-| `ui-markdown__code`       | slot      |        | Inline `<code>`.                            |
-| `ui-markdown__task`       | slot      |        | A task item's `<li>`, around its Checkbox.  |
-| `ui-markdown__image`      | slot      |        | An `<img>`.                                 |
-| `ui-markdown__image-link` | slot      |        | An image drawn as a link, or as its text.   |
-| `data-language`           | attribute |        | On a code block, the language of its fence. |
-| `data-streaming`          | state     | `true` | On the root, while `isStreaming`.           |
+| Hook                      | Kind      | Values | Description                                                           |
+| ------------------------- | --------- | ------ | --------------------------------------------------------------------- |
+| `ui-markdown`             | root      |        | The `<div>` holding the document.                                     |
+| `ui-markdown__code-block` | slot      |        | A code block's `<pre>`.                                               |
+| `ui-markdown__code`       | slot      |        | Inline `<code>`.                                                      |
+| `ui-markdown__table`      | slot      |        | The frame around a table; scrolls sideways.                           |
+| `ui-markdown__task`       | slot      |        | A task item's `<li>`, around its Checkbox.                            |
+| `ui-markdown__image`      | slot      |        | An `<img>`.                                                           |
+| `ui-markdown__image-link` | slot      |        | An image drawn as a link, or as its text.                             |
+| `data-language`           | attribute |        | On a code block, the language of its fence.                           |
+| `data-streaming`          | state     | `true` | On the root, while `isStreaming`.                                     |
+| `data-overflowing`        | state     | `true` | On a table's frame, while the table overflows it and it is focusable. |

@@ -42,6 +42,33 @@ describe('createCodeBlockOverride', () => {
     expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
   });
 
+  it('UIC-CODE-BLOCK-4.1 wraps a plain-text fence and keeps code on one row', () => {
+    const source = ['```text', 'prose', '```', '', '```TXT', 'more prose', '```', '', answer].join(
+      '\n',
+    );
+    render(<Markdown source={source} renderNode={createCodeBlockOverride()} />);
+    const wrapOf = (name: string) =>
+      screen.getByRole('group', { name }).querySelector('pre')?.getAttribute('data-wrap');
+    expect(wrapOf('text')).toBe('soft');
+    expect(wrapOf('TXT')).toBe('soft');
+    expect(wrapOf('ts')).toBe('off');
+    expect(wrapOf('Code')).toBe('off');
+  });
+
+  it('UIC-CODE-BLOCK-4.1 keeps the built-in highlighting of a language the map does not register', () => {
+    const source = ['```py', 'def plan(): pass', '```', '', answer].join('\n');
+    render(
+      <Markdown
+        source={source}
+        renderNode={createCodeBlockOverride({ tokenizers: { ts: tokenizeScript } })}
+      />,
+    );
+    const python = screen.getByRole('group', { name: 'py' });
+    expect(python.querySelector('[data-token="keyword"]')).toHaveTextContent('def');
+    const script = screen.getByRole('group', { name: 'ts' });
+    expect(script.querySelectorAll('.ui-code-block__token')).toHaveLength(1);
+  });
+
   it('UIC-CODE-BLOCK-4.1 highlights by fence language and applies with the language', async () => {
     const user = userEvent.setup();
     const onApply = vi.fn();

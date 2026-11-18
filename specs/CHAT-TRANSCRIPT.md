@@ -152,6 +152,13 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `labs/reference/chat-transcript.css`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-display.spec.ts`
 
+### UIC-CHAT-TRANSCRIPT-2.14 - Wide content
+
+The reference stylesheet shall keep every message within the transcript's width, whatever its content: `ui-chat-message__body` lays its parts out in one column no wider than the message, so prose, long words, links and inline code wrap within it, a code block scrolls sideways inside its own frame (or wraps, for a plain-text block, [UIC-CODE-BLOCK-4.1](CODE-BLOCK.md#uic-code-block-41---code-block-override)), and a wide table scrolls sideways inside its own frame ([UIC-MARKDOWN-2.5](MARKDOWN.md#uic-markdown-25---tables)). No content widens a bubble or the feed, or clips at the transcript's edge.
+
+Implementation: `labs/reference/chat-transcript.css`
+Verification: `e2e/chat-display.spec.ts`
+
 ## UIC-CHAT-TRANSCRIPT-3 - Navigation and announcements
 
 ### UIC-CHAT-TRANSCRIPT-3.1 - One tab stop

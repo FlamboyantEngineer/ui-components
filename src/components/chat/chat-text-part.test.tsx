@@ -92,6 +92,19 @@ describe('ChatParts text', () => {
     });
   });
 
+  it('UIC-CHAT-26.2 highlights fenced code by its language and wraps a plain-text fence', () => {
+    const text = ['```ts', 'const total = 2;', '```', '', '```text', 'A long prompt.', '```'].join(
+      '\n',
+    );
+    render(<ChatParts parts={[{ type: 'text', text }]} />);
+    const script = screen.getByRole('group', { name: 'ts' });
+    expect(script.querySelector('[data-token="keyword"]')).toHaveTextContent('const');
+    expect(script.querySelector('pre')).toHaveAttribute('data-wrap', 'off');
+    const prose = screen.getByRole('group', { name: 'text' });
+    expect(prose.querySelector('.ui-code-block__token')).toBeNull();
+    expect(prose.querySelector('pre')).toHaveAttribute('data-wrap', 'soft');
+  });
+
   it('UIC-CHAT-26.2 cites the sources of every sources part, in order', () => {
     render(
       <ChatParts
