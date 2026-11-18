@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { expect, it } from 'vitest';
 import {
   AssetPlacementComposition,
   CalendarEditorComposition,
+  FieldRowsComposition,
   TimelineEditorComposition,
 } from './composition-editors.js';
 import { FormulaBarComposition, TableWorkflowComposition } from './composition-editors-grid.js';
@@ -72,4 +73,20 @@ it('UIC-TABLE-20.1 keeps raw source and reference state in the host', async () =
   expect(screen.getByRole('textbox', { name: 'Raw cell content' })).toHaveValue('=SUM(A2:A4)');
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(screen.getByText('A1: =SUM(A2:A4)')).toBeInTheDocument();
+});
+
+it('UIC-COMPOSITION-6.4 adds, removes and locks host-owned typed rows', async () => {
+  const user = userEvent.setup();
+  render(<FieldRowsComposition />);
+  const add = screen.getByRole('button', { name: 'Add step' });
+  await user.click(add);
+  await waitFor(() => expect(screen.getByRole('button', { name: /Step 3 kind/ })).toHaveFocus());
+  await user.click(screen.getByRole('button', { name: 'Remove step 3' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: /Step 2 kind/ })).toHaveFocus());
+  await user.click(screen.getByRole('button', { name: 'Remove step 1' }));
+  expect(screen.getByRole('button', { name: 'Remove step 1' })).toBeDisabled();
+  expect(screen.getByRole('textbox', { name: 'Target (%)' })).toHaveValue('80');
+  await user.click(screen.getByRole('switch', { name: 'Lock sequence' }));
+  expect(screen.getByRole('textbox', { name: 'Target (%)' })).toBeDisabled();
+  expect(screen.getByRole('textbox', { name: 'Target (%)' })).toHaveValue('80');
 });

@@ -121,14 +121,14 @@ Verification: `e2e/composition-collections.spec.ts`
 
 ### UIC-COMPOSITION-6.3 - Copyable editor layouts
 
-The discoverable `composition-editors` lab shall show six independent host recipes: event drafts, timeline drafts, asset placement, raw source editing, selected-row actions and state visualizations. Each uses library controls with the shared reference stylesheet and layout props, without recipe-specific visual styles. At compact and wide widths controls shall remain usable without overlap or page overflow, while contained component scrollers remain available.
+The discoverable `composition-editors` lab shall show seven independent host recipes: event drafts, timeline drafts, asset placement, typed rows, raw source editing, selected-row actions and state visualizations. Each uses library controls with the shared reference stylesheet and layout props, without recipe-specific visual styles. At compact and wide widths controls shall remain usable without overlap or page overflow, while contained component scrollers remain available.
 
 Implementation: `labs/composition-editors.html`, `labs/src/composition-editors.lab.tsx`, `labs/src/composition-editors.tsx`, `labs/src/composition-editors-grid.tsx`, `docs/HOST-COMPOSITIONS.md`
 Verification: `e2e/composition-editors.spec.ts`
 
 ### UIC-COMPOSITION-6.4 - Host editor interactions
 
-The editor recipes shall demonstrate host-owned draft validation and commit, selected-row bulk actions with explicitly scoped CSV preview, source apply/cancel, and asynchronous asset selection followed by proportional dimensions and placement. Generic CalendarView, Timeline, AssetPicker, Table, CodeEditor and field interactions remain with the library. Copying a recipe shall not require a public wrapper that combines these host policies.
+The editor recipes shall demonstrate host-owned draft validation and commit, selected-row bulk actions with explicitly scoped CSV preview, source apply/cancel, asynchronous asset selection followed by proportional dimensions and placement, and ordered typed rows whose select chooses the row's numeric field and its limits, added and removed by the host within row count bounds, with focus moved after each edit and every field disabled through a fieldset. Generic CalendarView, Timeline, AssetPicker, Table, CodeEditor, Fieldset and field interactions remain with the library. Copying a recipe shall not require a public wrapper that combines these host policies.
 
 Implementation: `labs/src/composition-editors.tsx`, `labs/src/composition-editors-grid.tsx`
 Verification: `e2e/composition-editors.spec.ts`

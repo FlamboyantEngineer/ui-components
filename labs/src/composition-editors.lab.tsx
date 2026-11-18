@@ -2,6 +2,7 @@ import { LabSection, mountLab } from './chrome/index.js';
 import {
   AssetPlacementComposition,
   CalendarEditorComposition,
+  FieldRowsComposition,
   TimelineEditorComposition,
 } from './composition-editors.js';
 import {
@@ -29,6 +30,12 @@ mountLab(
       description="Asynchronous asset selection followed by host dimensions, alternative text and placement."
     >
       <AssetPlacementComposition />
+    </LabSection>
+    <LabSection
+      title="Typed rows"
+      description="Each row's kind chooses its numeric field and that field's limits. The host adds and removes rows between one and five, moves focus after each, and locks every field through the fieldset."
+    >
+      <FieldRowsComposition />
     </LabSection>
     <LabSection
       title="Raw source editing"

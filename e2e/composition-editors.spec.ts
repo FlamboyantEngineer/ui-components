@@ -18,7 +18,7 @@ test('UIC-COMPOSITION-6.3 keeps editor recipes usable with reference styling at 
   await expect(page.locator('#ui-lab-stylesheet')).toHaveAttribute('href', /reference\.css/);
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
-    await expectCompositionGeometry(page, 6);
+    await expectCompositionGeometry(page, 7);
   }
 });
 
@@ -88,5 +88,37 @@ test('UIC-COMPOSITION-6.4 composes asynchronous asset selection with proportiona
   await expect(
     placement.getByText('Sample image: A sample, 400 pixels, start', { exact: true }),
   ).toBeVisible();
-  await expectCompositionGeometry(page, 6);
+  await expectCompositionGeometry(page, 7);
+});
+
+test("UIC-COMPOSITION-6.4 switches a typed row's numeric field and bounds host-owned rows", async ({
+  page,
+  lab,
+}) => {
+  await lab.open('composition-editors');
+  const rows = section(page, 'Typed rows');
+  await rows.getByRole('button', { name: /Step 1 kind/ }).click();
+  await page.getByRole('option', { name: 'Repeat', exact: true }).click();
+  const count = rows.getByRole('textbox', { name: 'Count', exact: true });
+  await expect(count).toHaveValue('3');
+  await expect(rows.getByRole('textbox', { name: 'Duration (s)' })).toHaveCount(0);
+  await count.fill('40');
+  await count.press('Tab');
+  await expect(rows).toContainText('Enter 20 or less.');
+  await expect(rows.getByRole('textbox', { name: 'Target (%)' })).toHaveValue('80');
+
+  const add = rows.getByRole('button', { name: 'Add step', exact: true });
+  await add.click();
+  await expect(rows.getByRole('button', { name: /Step 3 kind/ })).toBeFocused();
+  await add.click();
+  await add.click();
+  await expect(add).toBeDisabled();
+  await rows.getByRole('button', { name: 'Remove step 1', exact: true }).click();
+  await expect(rows.getByRole('button', { name: /Step 1 kind/ })).toBeFocused();
+  await expect(rows.getByRole('textbox', { name: 'Target (%)' })).toHaveValue('80');
+
+  await rows.getByText('Lock sequence').click();
+  await expect(rows.getByRole('textbox', { name: 'Target (%)' })).toBeDisabled();
+  await expect(rows.getByRole('textbox', { name: 'Target (%)' })).toHaveValue('80');
+  await expect(add).toBeDisabled();
 });

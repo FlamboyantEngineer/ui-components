@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AssetPicker, type AssetPickerItem } from '../../src/components/asset-picker/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { CalendarView, type CalendarViewEvent } from '../../src/components/calendar-view/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
+import { Fieldset } from '../../src/components/field/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { Modal } from '../../src/components/modal/modal.js';
 import { NumberField } from '../../src/components/number-field/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { SelectField } from '../../src/components/select-field/index.js';
+import { Switch } from '../../src/components/switch/index.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Timeline, type TimelineItem } from '../../src/components/timeline/index.js';
+import { DeleteGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 
 /** The host owns draft validation and saves; the calendar owns date geometry and navigation. */
 export function CalendarEditorComposition() {
@@ -212,6 +216,127 @@ export function AssetPlacementComposition() {
         </Stack>
       ) : null}
       <output aria-live="polite">{saved}</output>
+    </Stack>
+  );
+}
+
+type SequenceKind = 'hold' | 'ramp' | 'repeat';
+
+interface SequenceStep {
+  id: string;
+  kind: SequenceKind;
+  amount: number | null;
+}
+
+/** Each kind's numeric field: the host's label, limits, step and starting value. */
+const sequenceKinds: Record<
+  SequenceKind,
+  { label: string; min: number; max: number; step: number; initial: number }
+> = {
+  hold: { label: 'Duration (s)', min: 0.1, max: 600, step: 0.1, initial: 5 },
+  ramp: { label: 'Target (%)', min: 0, max: 100, step: 1, initial: 50 },
+  repeat: { label: 'Count', min: 1, max: 20, step: 1, initial: 3 },
+};
+
+const sequenceKindOptions = [
+  { id: 'hold', label: 'Hold' },
+  { id: 'ramp', label: 'Ramp' },
+  { id: 'repeat', label: 'Repeat' },
+];
+
+const minSteps = 1;
+const maxSteps = 5;
+
+/**
+ * Ordered typed rows: each row's select chooses which numeric field it shows and that field's
+ * limits. The host owns the rows, their ids, the row count bounds and focus after an add or a
+ * removal; the fieldset disables every field at once while the values stay visible.
+ */
+export function FieldRowsComposition() {
+  const [steps, setSteps] = useState<SequenceStep[]>([
+    { id: 'warm-up', kind: 'hold', amount: 30 },
+    { id: 'rise', kind: 'ramp', amount: 80 },
+  ]);
+  const [nextId, setNextId] = useState(1);
+  const [isLocked, setLocked] = useState(false);
+  // The row whose kind select takes focus once the rows render, or the add button ('').
+  const pendingFocus = useRef<string | null>(null);
+  const triggers = useRef(new Map<string, HTMLButtonElement>());
+  const addButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const id = pendingFocus.current;
+    pendingFocus.current = null;
+    if (id !== null) (id === '' ? addButton.current : triggers.current.get(id))?.focus();
+  }, [steps]);
+  const update = (changed: SequenceStep) =>
+    setSteps((current) => current.map((step) => (step.id === changed.id ? changed : step)));
+  const remove = (index: number) => {
+    const next = steps[index + 1] ?? steps[index - 1];
+    setSteps(steps.filter((_, at) => at !== index));
+    pendingFocus.current = next?.id ?? '';
+  };
+  return (
+    <Stack space="md">
+      <Switch isSelected={isLocked} onChange={setLocked}>
+        Lock sequence
+      </Switch>
+      <Fieldset legend="Test sequence" isDisabled={isLocked}>
+        <Stack space="sm" align="start">
+          {steps.map((step, index) => {
+            const field = sequenceKinds[step.kind];
+            return (
+              <Cluster key={step.id} space="sm" align="end" wrap="wrap">
+                <SelectField
+                  label={`Step ${index + 1} kind`}
+                  options={sequenceKindOptions}
+                  value={step.kind}
+                  triggerRef={(element) => {
+                    if (element) triggers.current.set(step.id, element);
+                    else triggers.current.delete(step.id);
+                  }}
+                  onChange={(key) => {
+                    const kind = key as SequenceKind | null;
+                    if (kind && kind !== step.kind)
+                      update({ ...step, kind, amount: sequenceKinds[kind].initial });
+                  }}
+                />
+                <NumberField
+                  // Another kind is another field: its limits and validation start over.
+                  key={step.kind}
+                  label={field.label}
+                  minValue={field.min}
+                  maxValue={field.max}
+                  step={field.step}
+                  commitBehavior="validate"
+                  value={step.amount}
+                  onChange={(amount) => update({ ...step, amount })}
+                />
+                <Button
+                  icon={DeleteGlyph}
+                  variant="ghost"
+                  label={`Remove step ${index + 1}`}
+                  isDisabled={isLocked || steps.length <= minSteps}
+                  onPress={() => remove(index)}
+                />
+              </Cluster>
+            );
+          })}
+          <Button
+            ref={addButton}
+            variant="ghost"
+            startIcon={PlusGlyph}
+            isDisabled={isLocked || steps.length >= maxSteps}
+            onPress={() => {
+              const id = `step-${nextId}`;
+              setSteps([...steps, { id, kind: 'hold', amount: sequenceKinds.hold.initial }]);
+              setNextId(nextId + 1);
+              pendingFocus.current = id;
+            }}
+          >
+            Add step
+          </Button>
+        </Stack>
+      </Fieldset>
     </Stack>
   );
 }
