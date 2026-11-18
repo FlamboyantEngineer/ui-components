@@ -77,6 +77,7 @@
 @import url('reference/html-markup.css') layer(ui-reference);
 @import url('reference/icon.css') layer(ui-reference);
 @import url('reference/image.css') layer(ui-reference);
+@import url('reference/image-hotspots.css') layer(ui-reference);
 @import url('reference/inline-edit.css') layer(ui-reference);
 @import url('reference/inline-error.css') layer(ui-reference);
 @import url('reference/inline-text-field.css') layer(ui-reference);

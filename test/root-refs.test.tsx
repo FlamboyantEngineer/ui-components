@@ -76,6 +76,7 @@ import { HoverCard, HoverCardTrigger } from '../src/components/hover-card/hover-
 import { PreviewTrigger } from '../src/components/hover-card/preview-trigger.js';
 import { HtmlMarkup } from '../src/components/html-markup/html-markup.js';
 import { Image } from '../src/components/image/image.js';
+import { ImageHotspots } from '../src/components/image-hotspots/image-hotspots.js';
 import { InlineEdit } from '../src/components/inline-edit/inline-edit.js';
 import { ListView, ListViewItem, ListViewSection } from '../src/components/list-row/index.js';
 import { LoadingCard, LoadingRegion } from '../src/components/loading-overlay/index.js';
@@ -832,6 +833,20 @@ const restCases: Record<string, RootRefCase> = {
     root: 'ui-avatar',
   },
   Image: { element: (ref) => <Image ref={ref} src="/photo.jpg" alt="Photo" />, root: 'ui-image' },
+  ImageHotspots: {
+    element: (ref) => (
+      <ImageHotspots
+        ref={ref}
+        aria-label="Panel"
+        src="/panel.png"
+        alt="Panel"
+        width={400}
+        height={200}
+        hotspots={[]}
+      />
+    ),
+    root: 'ui-image-hotspots',
+  },
   CardGrid: {
     element: (ref) => (
       <CardGrid ref={ref} aria-label="Cards">
