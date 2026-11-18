@@ -1,5 +1,5 @@
 import { defineStrings } from '../message-format.js';
-/** Strings of step list editors, field row lists and form layout designers. */
+/** Strings of step list editors and form layout designers. */
 interface EditingStrings {
   /** Names a step from its number (`Step 2`). */
   stepLabel: (number: string) => string;
@@ -17,16 +17,6 @@ interface EditingStrings {
   insertStepBelow: string;
   /** Shown in place of a step list that has no steps. */
   noSteps: string;
-  /** Names a field row list that has no name of its own. */
-  fieldRows: string;
-  /** Names a field row from its number (`Row 2`). */
-  fieldRowLabel: (number: string) => string;
-  /** Names a field row's remove button, from its number. */
-  removeFieldRow: (number: string) => string;
-  /** Adds a row at the end of a field row list. */
-  addFieldRow: string;
-  /** Shown in place of a field row list that has no rows. */
-  noFieldRows: string;
   /** Names a form layout designer's canvas. */
   formLayoutCanvas: string;
   /** Names a form layout designer's palette of nodes to add. */
@@ -57,8 +47,6 @@ export const editingStrings = defineStrings<EditingStrings>({
   stepActions: (number) => ({ number }),
   moveStep: (number) => ({ number }),
   stepMoved: (position, count) => ({ position, count }),
-  fieldRowLabel: (number) => ({ number }),
-  removeFieldRow: (number) => ({ number }),
   formLayoutDropAtEnd: (container) => ({ container }),
   formLayoutMove: (node) => ({ node }),
   formLayoutRemove: (node) => ({ node }),
