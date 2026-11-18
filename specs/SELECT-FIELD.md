@@ -1,6 +1,6 @@
 # Select Field
 
-`SelectField` chooses one or several values, with `selectionMode="single"` or `"multiple"`. `mode="list"` (the default) accepts flat icon/text options and headed groups through `options`; `mode="tree"` accepts hierarchical `items`, text and child accessors, lazy loading, selection propagation and label/path display. Both modes provide the field's validation, dirty state, restore, undo, forms and menu. Icons belong to ordinary options.
+`SelectField` chooses one or several values, with `selectionMode="single"` or `"multiple"`. `mode="list"` (the default) accepts flat icon/text options and headed groups through `options`; `mode="tree"` accepts hierarchical `items`, text and child accessors, lazy loading, selection propagation and label/path display; `mode="native"` draws one choice as the platform's own `<select>` ([UIC-SELECT-FIELD-14](#uic-select-field-14---native-presentation)). Every mode provides the field's validation, dirty state, restore, undo, forms and menu. Icons belong to ordinary options.
 
 ## UIC-SELECT-FIELD-1 - Field
 
@@ -398,13 +398,51 @@ The edits (`{ added, removed }`) shall be controllable through `edits` with `onE
 Implementation: `src/components/select-field/use-select-membership.ts`
 Verification: `src/components/select-field/use-select-membership.test.tsx`
 
+## UIC-SELECT-FIELD-14 - Native presentation
+
+### UIC-SELECT-FIELD-14.1 - Structure
+
+With `mode="native"`, `SelectField` shall render the field around a frame (`ui-select-field__frame`) holding a real HTML `<select>` (`ui-select-field__native`), so the platform draws the closed control and its own picker and the browser's keyboard and type-ahead apply. The root publishes `data-mode="native"` and `data-selection-mode="single"`: a native select chooses one value. The `<select>` carries the control's id, so the field's `<label>` names it (or `aria-label` in the `control-only` layout), and the field's description, decoration and message describe it. `options` takes the list mode's options and groups: each option is an `<option>` drawing its `label`, a disabled option stays listed and the platform refuses it, and a group with a text `label` is an `<optgroup>`; a group without one lists its options in place. Icons, descriptions, shortcuts and option tooltips are not drawn. `selectRef` receives the `<select>`, joined to the field's own ref, as `triggerRef` does in the other modes (UIC-SELECT-FIELD-2.4). `autoComplete` passes the browser's autofill hint to the `<select>`.
+
+Implementation: `src/components/select-field/select-native-field.tsx`, `src/components/select-field/select-field.tsx`
+Verification: `src/components/select-field/select-native-field.test.tsx`, `e2e/select-field-native.spec.ts`
+
+### UIC-SELECT-FIELD-14.2 - Value, commit and forms
+
+The value shall be the chosen option's `id` or `null`, as a single list select's (UIC-SELECT-FIELD-1.2). Each `<option>` takes its id's text as its `value`, and a pick reads the chosen option by its place, so numeric and text ids reach `onChange` and `onCommit` as given; a native select tells options apart by their text, so it shows the first of several ids with the same spelling. Every pick sets the value and commits it at once. With `name`, the `<select>` itself submits the chosen id's text (and the field's `form`), so the browser leaves it out while it is disabled; no hidden input is added. The field base's restore button, undo, redo and menu apply as in the list mode (UIC-SELECT-FIELD-1.4).
+
+Implementation: `src/components/select-field/select-native-field.tsx`
+Verification: `src/components/select-field/select-native-field.test.tsx`, `e2e/select-field-native.spec.ts`
+
+### UIC-SELECT-FIELD-14.3 - Empty option and changing options
+
+While nothing usable is chosen (the value is `null`, or no option has its id), the `<select>` shall lead with an empty option (`value=""`) showing `placeholder` (by default the provider string `selectPlaceholder`), which the reader cannot pick, and publish `data-placeholder`; while the value is an id no option has, it also publishes `data-missing`. Such a value fills nothing: a required field reports it missing, and the field never changes the value itself. With `emptyLabel`, the empty option is always listed with that label and picking it commits `null`. When `options` change, the chosen option stays selected while some option still has its id, the empty option shows while none does, and it is selected again once its option returns. Because the empty option leads with an empty value, it is the native placeholder option, so a required native select on it reports `valueMissing`.
+
+Implementation: `src/components/select-field/select-native-field.tsx`
+Verification: `src/components/select-field/select-native-field.test.tsx`, `e2e/select-field-native.spec.ts`
+
+### UIC-SELECT-FIELD-14.4 - Validation and locks
+
+The field base's validation shall apply: the `<select>` publishes `aria-invalid`, `aria-errormessage` naming the field's message and `aria-required`. In the `native` validation behavior it also carries `required`, so the browser blocks a submit without a choice and the field's message replaces the browser's (UIC-FIELD-3.10). A disabled field disables the `<select>`. An enclosing disabled `<fieldset>`, the library's or a plain one, disables the `<select>` natively: the platform refuses picks and the form leaves it out of its data and its checks, while the value stays visible. A read-only field keeps the `<select>` enabled, focusable and showing its value, with `aria-readonly`; a press keeps focus without opening the picker, the keys that open the picker or change the choice (Enter, the arrow keys, Home, End, Page Up, Page Down, F4 and printable keys, unless Ctrl or Meta is held) do nothing, and a change that still reaches it is refused, so the shown choice stays the value.
+
+Implementation: `src/components/select-field/select-native-field.tsx`
+Verification: `src/components/select-field/select-native-field.test.tsx`, `e2e/select-field-native.spec.ts`
+
+### UIC-SELECT-FIELD-14.5 - Previous value
+
+While the field is dirty and its committed value names an option, the frame shall show that option's label as a `FieldPreviousValue` (`ui-select-field__previous`) before the `<select>`, placed by the field's `changeLayout` as in UIC-SELECT-FIELD-2.3.
+
+Implementation: `src/components/select-field/select-native-field.tsx`
+Verification: `src/components/select-field/select-native-field.test.tsx`
+
 ## Hooks
 
 | Hook                                  | Kind      | Values                                     | Description                                                                                                                |
 | ------------------------------------- | --------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `ui-select-field`                     | root      |                                            | The field root (also `ui-field`).                                                                                          |
 | `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.                                                             |
-| `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                                                                  |
+| `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger (the native select in `native` mode).                                             |
+| `ui-select-field__native`             | slot      |                                            | The native `<select>` in `native` mode.                                                                                    |
 | `ui-select-field__chip-frame`         | slot      |                                            | With `chipPlacement="inside"`: holds the chips, then the select.                                                           |
 | `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                                                                        |
 | `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-button`).                                                                     |
@@ -442,8 +480,8 @@ Verification: `src/components/select-field/use-select-membership.test.tsx`
 | `--ui-select-field-label-width`       | property  |                                            | The widest option label or placeholder, in pixels.                                                                         |
 | `data-virtualized`                    | state     | `true`                                     | On the listbox: `virtualized` lays out only the options in view; the list takes the popover's width rather than sizing it. |
 | `data-icons`                          | state     | `true`                                     | On the root: some option has an icon.                                                                                      |
-| `data-placeholder`                    | state     | `true`                                     | On the value: nothing is chosen.                                                                                           |
-| `data-missing`                        | state     | `true`                                     | On the value or a chip: no option names the chosen id.                                                                     |
+| `data-placeholder`                    | state     | `true`                                     | On the value or the native select: nothing is chosen.                                                                      |
+| `data-missing`                        | state     | `true`                                     | On the value, a chip or the native select: no option names the chosen id.                                                  |
 | `data-change`                         | state     | `added`                                    | On a chip: the edit added this value.                                                                                      |
 | `data-open`                           | state     | `true`                                     | The list is open (React Aria, on the select).                                                                              |
 | `data-focused`                        | state     | `true`                                     | Focused (React Aria).                                                                                                      |
@@ -469,4 +507,4 @@ Verification: `src/components/select-field/use-select-membership.test.tsx`
 | `ui-select-field__dialog`             | slot      |                                            | The dialog inside the popover.                                                                                             |
 | `ui-select-field__tree`               | slot      |                                            | The tree (also `ui-tree`).                                                                                                 |
 | `data-value-display`                  | attribute | `label`, `path`                            | On the root: how chosen nodes read.                                                                                        |
-| `data-mode`                           | attribute | `list`, `tree`                             | Choice presentation.                                                                                                       |
+| `data-mode`                           | attribute | `list`, `tree`, `native`                   | Choice presentation.                                                                                                       |

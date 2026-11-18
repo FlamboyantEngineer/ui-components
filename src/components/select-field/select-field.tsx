@@ -13,6 +13,7 @@ import {
 import type { TreeItemData } from '../tree/tree.js';
 import { SelectControl } from './select-control.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
+import { SelectNativeField, type SelectNativeFieldProps } from './select-native-field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { isNoSelection, type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
@@ -128,18 +129,23 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
   );
 }
 
-export type SelectFieldMode = 'list' | 'tree';
+export type SelectFieldMode = 'list' | 'tree' | 'native';
 export type SelectFieldProps<
   M extends SelectFieldSelectionMode = 'single',
   T extends TreeItemData = TreeItemData,
-> = SelectListFieldProps<M> | SelectTreeFieldProps<T, M>;
+> = SelectListFieldProps<M> | SelectTreeFieldProps<T, M> | SelectNativeFieldProps;
 
-/** A field choosing one or several values from a list, icon choices or a searchable tree. */
+/**
+ * A field choosing one or several values from a list, icon choices or a searchable tree, or one
+ * value from the platform's own select.
+ */
 export function SelectField<
   M extends SelectFieldSelectionMode = 'single',
   T extends TreeItemData = TreeItemData,
 >(props: SelectFieldProps<M, T>) {
-  return props.mode === 'tree' ? <SelectTreeField {...props} /> : <SelectListField {...props} />;
+  if (props.mode === 'tree') return <SelectTreeField {...props} />;
+  if (props.mode === 'native') return <SelectNativeField {...props} />;
+  return <SelectListField {...props} />;
 }
 
 export type { SelectKeysValue } from './select-control.js';
