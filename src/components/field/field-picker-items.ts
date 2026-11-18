@@ -20,6 +20,12 @@ export interface PickerOption {
    * shortcut the host handles itself. It is display only: the picker binds no key.
    */
   shortcut?: ShortcutProps['chord'] | undefined;
+  /**
+   * A hint shown beside the row while it is hovered (after the tooltip delay) or has keyboard
+   * focus, and describing it while shown, such as the option's name with its shortcut. Not
+   * interactive.
+   */
+  tooltip?: ReactNode;
   isDisabled?: boolean | undefined;
 }
 

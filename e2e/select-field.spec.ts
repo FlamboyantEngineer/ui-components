@@ -752,4 +752,20 @@ test.describe('Select Field trigger ref', () => {
     expect(Math.abs((chord?.y ?? 0) - (label?.y ?? 0))).toBeLessThan(8);
     await expect(page.getByRole('option', { name: 'Quote' })).toBeVisible();
   });
+
+  test('UIC-FIELD-11.3 shows an option hint beside the hovered row', async ({ page, lab }) => {
+    await lab.open('select-field');
+    await field(page, 'shortcuts')
+      .getByRole('button', { name: /Paragraph style/ })
+      .click();
+    const heading = page.getByRole('option', { name: /^Heading 2/ });
+    await heading.hover();
+    const hint = page.getByRole('tooltip');
+    await expect(hint).toHaveText('Heading 2 (Ctrl+Alt+2)');
+    const [row, box] = await Promise.all([heading.boundingBox(), hint.boundingBox()]);
+    // Beside the row, not over it.
+    expect(box?.x ?? 0).toBeGreaterThanOrEqual((row?.x ?? 0) + (row?.width ?? 0) - 1);
+    await page.getByRole('option', { name: 'Quote' }).hover();
+    await expect(hint).toBeHidden();
+  });
 });
