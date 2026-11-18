@@ -151,11 +151,14 @@ test.describe('Reaction Bar host cases', () => {
     await expect(picker).toContainText(/could not/i);
     await expect(loads).toHaveText('fails');
     await page.keyboard.press('Escape');
+    // A press while the picker is still closing lands on its dismissal, not on the radio or the button.
+    await expect(picker).toHaveCount(0);
 
-    await demo
+    const later = demo
       .getByRole('radiogroup', { name: 'The loader answers' })
-      .getByRole('radio', { name: 'after a second' })
-      .click();
+      .getByRole('radio', { name: 'after a second' });
+    await later.click();
+    await expect(later).toBeChecked();
     await add.click();
     await expect(loads).toHaveText('fails, after a second');
     await expect(picker.getByRole('grid').first()).toBeVisible();
