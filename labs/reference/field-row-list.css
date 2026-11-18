@@ -1,0 +1,63 @@
+/* Field Row List: numbered rows of caller fields, each with a remove button, then an add button. */
+
+.ui-field-row-list {
+  gap: 6px;
+  padding: 0;
+  border: 0;
+}
+
+.ui-field-row-list[data-disabled] {
+  border-style: none;
+}
+
+.ui-field-row-list__rows {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-field-row-list__row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 32px;
+  align-items: start;
+  gap: 8px;
+}
+
+.ui-field-row-list__number {
+  padding-top: 6px;
+  color: var(--ref-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.ui-field-row-list__row:has(.ui-field__label) .ui-field-row-list__number {
+  padding-top: 28px;
+}
+
+.ui-field-row-list__fields {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  align-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-field-row-list__remove {
+  justify-self: end;
+}
+
+.ui-field-row-list__row:has(.ui-field__label) .ui-field-row-list__remove {
+  margin-top: 22px;
+}
+
+.ui-field-row-list__empty,
+.ui-field-row-list__add {
+  justify-self: start;
+}
+
+.ui-field-row-list__add {
+  align-self: start;
+}

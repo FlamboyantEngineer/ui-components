@@ -63,6 +63,7 @@
 @import url('reference/expression-field.css') layer(ui-reference);
 @import url('reference/facet-list.css') layer(ui-reference);
 @import url('reference/field.css') layer(ui-reference);
+@import url('reference/field-row-list.css') layer(ui-reference);
 @import url('reference/file-field.css') layer(ui-reference);
 @import url('reference/file-upload.css') layer(ui-reference);
 @import url('reference/filter-bar.css') layer(ui-reference);

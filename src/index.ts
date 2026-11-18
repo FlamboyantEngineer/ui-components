@@ -64,6 +64,7 @@ export * from './components/expand-toggle/index.js';
 export * from './components/expression-field/index.js';
 export * from './components/facet-list/index.js';
 export * from './components/field/index.js';
+export * from './components/field-row-list/index.js';
 export * from './components/file-field/index.js';
 export * from './components/file-upload/index.js';
 export * from './components/filter-bar/index.js';

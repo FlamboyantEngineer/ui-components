@@ -66,6 +66,7 @@ import {
 } from '../src/components/emoji-picker/index.js';
 import { FacetList } from '../src/components/facet-list/facet-list.js';
 import { FieldPreviousValue } from '../src/components/field/field-previous-value.js';
+import { FieldRowList } from '../src/components/field-row-list/field-row-list.js';
 import { FileField } from '../src/components/file-field/file-field.js';
 import { FileUpload } from '../src/components/file-upload/file-upload.js';
 import { FilterBar } from '../src/components/filter-bar/filter-bar.js';
@@ -706,6 +707,10 @@ const panelCases: Record<string, RootRefCase> = {
       <FacetList ref={ref} label="City" options={[{ value: 'oslo', label: 'Oslo', count: 2 }]} />
     ),
     root: 'ui-facet-list',
+  },
+  FieldRowList: {
+    element: (ref) => <FieldRowList ref={ref} rows={[{ id: 1 }]} renderRow={() => 'Fields'} />,
+    root: 'ui-field-row-list',
   },
   FilterBar: {
     element: (ref) => <FilterBar ref={ref} fields={[]} value={[]} />,
