@@ -408,3 +408,105 @@ it('UIC-CANVAS-VIEWPORT-1.5 UIC-DRAG-INTERACTIONS-1.1 opts into middle-drag pan 
   await user.pointer({ keys: '[MouseLeft]', target: handle });
   expect(gesture.onCommit).toHaveBeenCalledTimes(1);
 });
+
+it('UIC-CANVAS-VIEWPORT-1.6 restores an exact controlled viewport and caps fit independently', () => {
+  const controllerRef = createRef<CanvasViewportController>();
+  const onViewportChange = vi.fn();
+  const initial = { x: 5, y: 9, zoom: 100 };
+  const saved = { x: -33.75, y: 41.125, zoom: 425 };
+  const draw = (viewport: typeof initial) => (
+    <CanvasViewport
+      aria-label="Drawing"
+      controllerRef={controllerRef}
+      viewport={viewport}
+      onViewportChange={onViewportChange}
+    >
+      <svg />
+    </CanvasViewport>
+  );
+  const { rerender } = render(draw(initial));
+  setSurfaceBox({ width: 400, height: 280 });
+  const camera = requireDefined(controllerRef.current);
+  act(() => camera.setViewport(saved));
+  expect(onViewportChange).toHaveBeenLastCalledWith(saved);
+  expect(camera.getViewport()).toEqual(initial);
+
+  rerender(draw(saved));
+  expect(camera.getViewport()).toEqual(saved);
+  expect(world()).toHaveStyle({ transform: 'translate(-33.75px, 41.125px) scale(4.25)' });
+  act(() => camera.fitToBounds({ x: 0, y: 0, width: 100, height: 100 }, { maxZoom: 80 }));
+  expect(onViewportChange).toHaveBeenLastCalledWith({ x: 160, y: 100, zoom: 80 });
+});
+
+it('UIC-CANVAS-VIEWPORT-1.5 disables drag panning while plain-wheel zoom remains available', async () => {
+  const user = userEvent.setup();
+  const onViewportChange = vi.fn();
+  render(
+    <CanvasViewport
+      aria-label="Drawing"
+      onViewportChange={onViewportChange}
+      gesturePolicy={{ panButton: 'none', wheel: 'zoom' }}
+    >
+      <svg />
+    </CanvasViewport>,
+  );
+  await user.pointer([
+    { keys: '[MouseLeft>]', target: surface(), coords: { clientX: 10, clientY: 10 } },
+    { coords: { clientX: 20, clientY: 20 } },
+    { keys: '[/MouseLeft]' },
+    { keys: '[MouseMiddle>]', target: surface(), coords: { clientX: 10, clientY: 10 } },
+    { coords: { clientX: 20, clientY: 20 } },
+    { keys: '[/MouseMiddle]' },
+  ]);
+  expect(onViewportChange).not.toHaveBeenCalled();
+  fireEvent.wheel(surface(), { deltaY: -300 });
+  expect(onViewportChange).toHaveBeenCalledExactlyOnceWith({ x: 0, y: 0, zoom: 200 });
+});
+
+function SvgPort({ onTap, dragThreshold }: { onTap: () => void; dragThreshold: number }) {
+  const bindings = useCanvasAnchor('port', { onTap, dragThreshold });
+  return <circle {...bindings} role="button" tabIndex={0} aria-label="Input port" r={10} />;
+}
+
+it.each([
+  { dragThreshold: 0, tapDistance: 0 },
+  { dragThreshold: 6, tapDistance: 4 },
+])(
+  'UIC-CANVAS-VIEWPORT-3.3 handles a tap and starts a preview after $dragThreshold client pixels of movement',
+  async ({ dragThreshold, tapDistance }) => {
+    const user = userEvent.setup();
+    const onTap = vi.fn();
+    const onConnectionPreview = vi.fn();
+    render(
+      <CanvasViewport aria-label="Drawing" onConnectionPreview={onConnectionPreview}>
+        <svg>
+          <CanvasElement elementId="input" position={{ x: 0, y: 0 }}>
+            <SvgPort onTap={onTap} dragThreshold={dragThreshold} />
+          </CanvasElement>
+        </svg>
+      </CanvasViewport>,
+    );
+    const port = screen.getByRole('button', { name: 'Input port' });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: port, coords: { clientX: 10, clientY: 10 } },
+      { target: surface(), coords: { clientX: 10 + tapDistance, clientY: 10 } },
+      { keys: '[/MouseLeft]' },
+    ]);
+    expect(onTap).toHaveBeenCalledExactlyOnceWith({ elementId: 'input', anchorId: 'port' });
+    expect(onConnectionPreview).not.toHaveBeenCalled();
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: port, coords: { clientX: 10, clientY: 10 } },
+      { target: surface(), coords: { clientX: 20, clientY: 10 } },
+      { coords: { clientX: 10, clientY: 10 } },
+    ]);
+    expect(onConnectionPreview).toHaveBeenLastCalledWith({
+      source: { elementId: 'input', anchorId: 'port' },
+      target: null,
+      point: { x: 10, y: 10 },
+    });
+    await user.keyboard('{Escape}');
+    await user.pointer({ keys: '[/MouseLeft]', target: surface() });
+    expect(onConnectionPreview).toHaveBeenLastCalledWith(null);
+    expect(onTap).toHaveBeenCalledTimes(1);
+  },
+);

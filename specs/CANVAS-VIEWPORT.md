@@ -34,9 +34,16 @@ Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/ca
 
 ### UIC-CANVAS-VIEWPORT-1.5 - Alternate gestures
 
-With `gesturePolicy.panButton: 'middle'`, a middle-button drag anywhere in the scene shall pan and suppress browser autoscroll. Primary presses remain available for scene gesture claims and controls. With `gesturePolicy.wheel: 'zoom'`, a plain vertical wheel shall zoom at the pointer, alongside Ctrl and Command zoom. Scrollable children keep plain wheels they can consume, and a horizontal-only plain wheel stays with the browser or the child.
+With `gesturePolicy.panButton: 'middle'`, a middle-button drag anywhere in the scene shall pan and suppress browser autoscroll. With `panButton: 'none'`, drag panning is disabled. In both modes, primary presses remain available for scene gesture claims and controls. With `gesturePolicy.wheel: 'zoom'`, a plain vertical wheel shall zoom at the pointer, alongside Ctrl and Command zoom. Scrollable children keep plain wheels they can consume, and a horizontal-only plain wheel stays with the browser or the child.
 
 Implementation: `src/components/canvas-viewport/use-canvas-pointer.ts`, `src/utils/use-canvas-wheel.ts`, `src/utils/use-pointer-drag.ts`
+Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
+
+### UIC-CANVAS-VIEWPORT-1.6 - Restoring a camera
+
+`setViewport` shall request the exact pan and positive finite zoom in the supplied camera state. Controlled viewports report the request through `onViewportChange` and follow the camera passed by the caller. Uncontrolled viewports apply the state directly. The options form of `fitToBounds` shall accept `padding` and a positive `maxZoom` percentage, up to the normal 400% ceiling. Numeric padding remains supported.
+
+Implementation: `src/components/canvas-viewport/use-canvas-camera.ts`
 Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
 
 ## UIC-CANVAS-VIEWPORT-2 - Interaction
@@ -71,6 +78,15 @@ Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/ca
 Implementation: `src/components/canvas-viewport/use-canvas-anchor.ts`, `src/components/canvas-viewport/use-canvas-connection.ts`
 Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
 
+### UIC-CANVAS-VIEWPORT-3.3 - SVG ports, taps and validation
+
+A caller may spread `useCanvasAnchor(anchorId, options)` on a labelled SVG marker with `role="button"` and `tabIndex={0}`. Enter, Space and assistive activation follow the keyboard connection flow. A primary release before the pointer crosses `dragThreshold` calls `onTap` with the anchor endpoint, if supplied. The threshold is measured in client pixels and defaults to 3. A connection drag starts previewing once it crosses that threshold and remains a drag if the pointer returns to its origin. Escape and other cancellations clear an active preview without connecting or tapping. Middle-button pan starts no port gesture.
+
+If supplied, `canConnect` shall test both endpoints before a candidate appears as a preview target and before a pointer or keyboard connection reaches `onConnect`. Rejected candidates leave the preview target null. The pointer still supplies its world point for drawing a free preview.
+
+Implementation: `src/components/canvas-viewport/use-canvas-anchor.ts`, `src/components/canvas-viewport/use-canvas-connection.ts`
+Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
+
 ## Hooks
 
 | Hook                           | Kind | Values | Description                             |
@@ -79,5 +95,5 @@ Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/ca
 | `ui-canvas-viewport__surface`  | slot |        | The clipped pan and zoom surface.       |
 | `ui-canvas-viewport__world`    | slot |        | The shared transform and caller layers. |
 | `ui-canvas-viewport__controls` | slot |        | Untransformed caller controls.          |
-| `ui-canvas-viewport__anchor`   | slot |        | A caller-rendered anchor button.        |
+| `ui-canvas-viewport__anchor`   | slot |        | A caller-rendered button or SVG anchor. |
 | `ui-canvas-element`            | root |        | A positioned SVG group.                 |

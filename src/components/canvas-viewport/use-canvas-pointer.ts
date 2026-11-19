@@ -88,6 +88,7 @@ function getDragHandlers(options: CanvasPointerOptions, claims: WeakMap<Event, C
         onStart?.();
         return { kind: 'item', claim, start: camera.clientToWorld(client) };
       }
+      if (panButton === 'none') return null;
       const isMiddle = panButton === 'middle';
       if (
         isMiddle

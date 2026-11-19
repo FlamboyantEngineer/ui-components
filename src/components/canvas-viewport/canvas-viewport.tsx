@@ -52,6 +52,7 @@ export function useCanvasViewport(): CanvasViewportController {
 
 /** A pan and zoom surface with caller-rendered SVG and HTML layers. */
 export function CanvasViewport({
+  canConnect,
   className,
   children,
   controls,
@@ -71,7 +72,11 @@ export function CanvasViewport({
     onViewportChange,
     zoomsOnWheel: gesturePolicy?.wheel === 'zoom',
   });
-  const { connections, cancelKeyboard } = useCanvasConnection({ onConnect, onConnectionPreview });
+  const { connections, cancelKeyboard } = useCanvasConnection({
+    canConnect,
+    onConnect,
+    onConnectionPreview,
+  });
   const { claimGesture, pointerProps } = useCanvasPointer({
     element,
     camera,

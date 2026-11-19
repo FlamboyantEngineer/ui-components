@@ -20,7 +20,11 @@ import { requireDefined } from '../../utils/require-defined.js';
 import { useCanvasWheel } from '../../utils/use-canvas-wheel.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
-import type { CanvasViewportController, CanvasViewportProps } from './canvas-viewport-types.js';
+import type {
+  CanvasFitOptions,
+  CanvasViewportController,
+  CanvasViewportProps,
+} from './canvas-viewport-types.js';
 
 interface CanvasCameraOptions extends Pick<
   CanvasViewportProps,
@@ -32,10 +36,8 @@ interface CanvasCameraOptions extends Pick<
 
 type CanvasCamera = Omit<CanvasViewportController, 'claimGesture'>;
 
-interface FitOptions {
+interface FitOptions extends CanvasFitOptions {
   bounds: CanvasBounds;
-  padding?: number | undefined;
-  maxZoom?: number | undefined;
 }
 
 const maxZoom = requireDefined(defaultZoomLevels[defaultZoomLevels.length - 1]);
@@ -54,6 +56,7 @@ function toClientPoint(element: HTMLElement | null, local: CanvasPoint): CanvasP
 interface CameraSnapshot {
   element: HTMLElement | null;
   viewport: CanvasViewportState;
+  setViewport: CanvasCamera['setViewport'];
   fit: (options: FitOptions) => void;
   zoomAt: (zoom: number, at: CanvasPoint) => void;
 }
@@ -61,6 +64,7 @@ interface CameraSnapshot {
 function getCanvasCommands(latest: RefObject<CameraSnapshot>): CanvasCamera {
   return {
     getViewport: () => latest.current.viewport,
+    setViewport: (viewport) => latest.current.setViewport(viewport),
     clientToWorld: (point) => {
       const { viewport, element } = latest.current;
       return toCanvasWorldPoint(viewport, toLocalPoint(element, point));
@@ -79,7 +83,10 @@ function getCanvasCommands(latest: RefObject<CameraSnapshot>): CanvasCamera {
         height: (height * 100) / viewport.zoom,
       };
     },
-    fitToBounds: (bounds, padding = 24) => latest.current.fit({ bounds, padding }),
+    fitToBounds: (bounds, options) => {
+      const fit = typeof options === 'number' ? { padding: options } : options;
+      latest.current.fit({ bounds, padding: fit?.padding ?? 24, maxZoom: fit?.maxZoom });
+    },
     zoomTo: (zoom, client) => {
       const { element, zoomAt } = latest.current;
       const size = readSize(element);
@@ -106,7 +113,8 @@ export function useCanvasCamera(element: HTMLElement | null, options: CanvasCame
     const size = readSize(element);
     if (!size.width || !size.height) return;
     const inset = clamp(padding, 0, (Math.min(size.width, size.height) - 1) / 2);
-    setViewport(fitCanvasViewport({ bounds, size, zoomRange: [minZoom, limit], padding: inset }));
+    const ceiling = limit > 0 ? clamp(limit, minZoom, maxZoom) : maxZoom;
+    setViewport(fitCanvasViewport({ bounds, size, zoomRange: [minZoom, ceiling], padding: inset }));
   };
   useCanvasWheel(element, {
     viewport,
@@ -116,7 +124,7 @@ export function useCanvasCamera(element: HTMLElement | null, options: CanvasCame
     getSize: () => readSize(element),
   });
 
-  const latest = useLatest({ element, viewport, fit, zoomAt });
+  const latest = useLatest({ element, viewport, setViewport, fit, zoomAt });
   // The scene reads the camera from its handlers without subscribing to camera renders.
   const camera = useMemo(() => getCanvasCommands(latest), [latest]);
   const stepZoom = (direction: 1 | -1) => {

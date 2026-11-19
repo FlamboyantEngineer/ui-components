@@ -15,6 +15,7 @@ import {
   initialLinks,
   initialParts,
 } from './canvas-viewport-assembly.js';
+import { SwitchableScenes } from './canvas-viewport-scenes.js';
 import { LabSection, mountLab } from './chrome/index.js';
 
 const AssemblyScene = memo(Assembly);
@@ -137,6 +138,12 @@ mountLab(
       description="Drag a part by its title and resize it by its corner. Drag from Source to Receiver to add a link, or try Spare to see a rejected target. With the keyboard, activate Source with Enter or Space, Tab to Receiver, then activate Receiver. Escape ends an unfinished gesture. Ctrl or Command with the wheel zooms at the pointer. The alternate gestures pan with the middle button and zoom with the plain wheel."
     >
       <EditableAssembly />
+    </LabSection>
+    <LabSection
+      title="Switchable scenes"
+      description="Tap an SVG port to inspect it. Drag Input to Output to connect. Drag with the middle button to pan and use the wheel to zoom. Each scene remembers its camera."
+    >
+      <SwitchableScenes />
     </LabSection>
     <LabSection
       title="Large scene"

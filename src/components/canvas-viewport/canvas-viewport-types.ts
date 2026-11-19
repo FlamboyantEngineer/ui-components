@@ -25,17 +25,26 @@ export interface CanvasGesture {
   onCancel: () => void;
 }
 
+export interface CanvasFitOptions {
+  /** Even padding in viewport layout pixels. Defaults to 24. */
+  padding?: number | undefined;
+  /** Upper limit for the fitted zoom, as a positive percentage. Defaults to 400. */
+  maxZoom?: number | undefined;
+}
+
 export interface CanvasViewportController {
   /** Reads the camera currently drawn. */
   getViewport: () => CanvasViewportState;
+  /** Requests exact pan and zoom values from a saved camera state. */
+  setViewport: (viewport: CanvasViewportState) => void;
   /** Converts a client point in the viewport's document to world coordinates. */
   clientToWorld: (point: CanvasPoint) => CanvasPoint;
   /** Converts a world point to client coordinates in the viewport's document. */
   worldToClient: (point: CanvasPoint) => CanvasPoint;
   /** Reads the visible world rectangle, or null before the viewport has room. */
   getVisibleWorldBounds: () => CanvasBounds | null;
-  /** Centres these bounds with padding in layout pixels. */
-  fitToBounds: (bounds: CanvasBounds, padding?: number) => void;
+  /** Centres these bounds with the requested fit options or a numeric padding. */
+  fitToBounds: (bounds: CanvasBounds, options?: number | CanvasFitOptions) => void;
   /** Zooms to a percentage around a client point, or the viewport centre. */
   zoomTo: (zoom: number, client?: CanvasPoint) => void;
   /** Claims the primary pointer press from a scene item's onPointerDown. */
@@ -60,8 +69,8 @@ export interface CanvasConnectionPreview {
 }
 
 export interface CanvasGesturePolicy {
-  /** The button that pans. Defaults to a primary drag on the background. */
-  panButton?: 'primary' | 'middle' | undefined;
+  /** The button that pans, or 'none' to disable drag panning. Defaults to 'primary'. */
+  panButton?: 'primary' | 'middle' | 'none' | undefined;
   /** What an unmodified wheel does. Defaults to pan. Ctrl and Command always zoom. */
   wheel?: 'pan' | 'zoom' | undefined;
 }
@@ -82,11 +91,13 @@ export interface CanvasViewportProps
   defaultViewport?: CanvasViewportState | undefined;
   /** Called with each requested camera change. */
   onViewportChange?: ((viewport: CanvasViewportState) => void) | undefined;
-  /** Opts into middle-button pan or plain-wheel zoom. */
+  /** Configures drag panning and unmodified wheel input. */
   gesturePolicy?: CanvasGesturePolicy | undefined;
   /** Access to the viewport from outside the scene. */
   controllerRef?: Ref<CanvasViewportController> | undefined;
-  /** Reports a connection attempt for the caller to validate and commit. */
+  /** Accepts a candidate before it appears as a preview target or reaches onConnect. */
+  canConnect?: ((connection: CanvasConnection) => boolean) | undefined;
+  /** Reports a connection attempt for the caller to commit. */
   onConnect?: ((connection: CanvasConnection) => void) | undefined;
   /** Reports a connection preview, or null when it ends or is abandoned. */
   onConnectionPreview?: ((preview: CanvasConnectionPreview | null) => void) | undefined;

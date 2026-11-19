@@ -227,3 +227,122 @@ test('UIC-CANVAS-VIEWPORT-1.4 pans the large scene as one layer', async ({ page,
   });
   await expect(scene.locator('path')).toHaveCount(300);
 });
+
+test('UIC-CANVAS-VIEWPORT-3.3 taps an SVG port, then drags from it and highlights only an accepted target', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('canvas-viewport');
+  const view = page.getByRole('group', { name: 'Switchable scenes' });
+  const input = view.getByRole('button', { name: 'Input port' });
+  const output = view.getByRole('button', { name: 'Output port' });
+  const service = view.getByRole('button', { name: 'Service port' });
+  const preview = world(view).locator('path[stroke-dasharray]');
+  await input.scrollIntoViewIfNeeded();
+  const start = await centre(input);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 4, start.y);
+  await expect(preview).toHaveCount(0);
+  await page.mouse.up();
+  await expect(view.getByRole('status')).toHaveText('Inspecting Input port');
+
+  const rejected = await centre(service);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(rejected.x, rejected.y, { steps: 5 });
+  await expect(preview).toBeVisible();
+  await expect(service).toHaveAttribute('fill', 'var(--ref-canvas)');
+  await page.mouse.up();
+  await expect(preview).toHaveCount(0);
+  await expect(view.getByRole('status')).toHaveText('Inspecting Input port');
+
+  const accepted = await centre(output);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(accepted.x, accepted.y, { steps: 5 });
+  await expect(output).toHaveAttribute('fill', 'var(--ref-accent)');
+  await page.mouse.up();
+  await expect(view.getByRole('status')).toHaveText('Connected input to output');
+  await expect(output).toHaveAttribute('fill', 'var(--ref-canvas)');
+  await expect(preview).toHaveCount(0);
+});
+
+test('UIC-CANVAS-VIEWPORT-1.5 UIC-CANVAS-VIEWPORT-3.3 pans from an SVG port without tapping or connecting', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('canvas-viewport');
+  const view = page.getByRole('group', { name: 'Switchable scenes' });
+  const input = view.getByRole('button', { name: 'Input port' });
+  await input.scrollIntoViewIfNeeded();
+  const start = await centre(input);
+  const before = await camera(view);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(start.x + 45, start.y + 20, { steps: 5 });
+  await expect(world(view).locator('path')).toHaveCount(0);
+  await page.mouse.up({ button: 'middle' });
+  expect(await camera(view)).toEqual({ x: before.x + 45, y: before.y + 20, scale: before.scale });
+  await expect(view.getByRole('status')).toBeEmpty();
+  await expect(input).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('UIC-CANVAS-VIEWPORT-1.6 fits a new scene with a zoom cap and restores each camera on return', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('canvas-viewport');
+  const view = page.getByRole('group', { name: 'Switchable scenes' });
+  const input = view.getByRole('button', { name: 'Input port' });
+  await input.scrollIntoViewIfNeeded();
+  const point = await centre(input);
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.wheel(0, -117);
+  await expect.poll(async () => (await camera(view)).scale).toBeGreaterThan(1);
+  const overview = await world(view).evaluate((layer) => layer.style.transform);
+
+  await view.getByRole('button', { name: 'Show detail' }).click();
+  await expect(view.getByRole('group', { name: 'Detail scene' })).toBeVisible();
+  expect((await camera(view)).scale).toBeCloseTo(0.65, 5);
+  const detailPoint = await centre(input);
+  await page.mouse.move(detailPoint.x, detailPoint.y);
+  await page.mouse.wheel(0, -205);
+  await expect.poll(async () => (await camera(view)).scale).toBeGreaterThan(0.65);
+  const detail = await world(view).evaluate((layer) => layer.style.transform);
+
+  await view.getByRole('button', { name: 'Show overview' }).click();
+  await expect(view.getByRole('group', { name: 'Overview scene' })).toBeVisible();
+  await expect(world(view)).toHaveCSS('transform', /^matrix\(/);
+  expect(await world(view).evaluate((layer) => layer.style.transform)).toBe(overview);
+  await view.getByRole('button', { name: 'Show detail' }).click();
+  expect(await world(view).evaluate((layer) => layer.style.transform)).toBe(detail);
+});
+
+test('UIC-CANVAS-VIEWPORT-3.3 keeps keyboard connections and Escape cancellation on SVG ports', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('canvas-viewport');
+  const view = page.getByRole('group', { name: 'Switchable scenes' });
+  const input = view.getByRole('button', { name: 'Input port' });
+  const output = view.getByRole('button', { name: 'Output port' });
+  const preview = world(view).locator('path[stroke-dasharray]');
+  await drag(page, input, { x: 34, y: 12 }, false);
+  await expect(preview).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await page.mouse.up();
+  await expect(preview).toHaveCount(0);
+  await expect(view.getByRole('status')).toBeEmpty();
+
+  await input.press('Enter');
+  await expect(input).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(input).toHaveAttribute('aria-pressed', 'false');
+  await input.press('Enter');
+  await page.keyboard.press('Tab');
+  await expect(output).toBeFocused();
+  await output.press('Space');
+  await expect(view.getByRole('status')).toHaveText('Connected input to output');
+  await expect(input).toHaveAttribute('aria-pressed', 'false');
+});

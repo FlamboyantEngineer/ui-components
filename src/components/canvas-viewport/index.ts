@@ -10,10 +10,11 @@ export type {
   CanvasAnchorEndpoint,
   CanvasConnection,
   CanvasConnectionPreview,
+  CanvasFitOptions,
   CanvasGesture,
   CanvasGesturePolicy,
   CanvasGesturePosition,
   CanvasViewportController,
   CanvasViewportProps,
 } from './canvas-viewport-types.js';
-export { useCanvasAnchor } from './use-canvas-anchor.js';
+export { type CanvasAnchorOptions, useCanvasAnchor } from './use-canvas-anchor.js';
