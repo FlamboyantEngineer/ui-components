@@ -6,10 +6,10 @@ Internal helpers share pointer ownership, capture cleanup, native drag arming, i
 
 ### UIC-DRAG-INTERACTIONS-1.1 - Starting
 
-`usePointerDrag` shall start from a primary pointer's primary-button press only when enabled and its start callback returns gesture data. A refused press shall produce no move or end callbacks.
+`usePointerDrag` shall start from a primary pointer's primary-button press when enabled and its start callback returns gesture data. `allowsMiddleButton` also admits a middle press from the primary pointer. A refused press shall produce no move or end callbacks.
 
 Implementation: `src/utils/use-pointer-drag.ts`
-Verification: `src/utils/use-pointer-drag.test.tsx`
+Verification: `src/utils/use-pointer-drag.test.tsx`, `src/components/canvas-viewport/canvas-viewport.test.tsx`
 
 ### UIC-DRAG-INTERACTIONS-1.2 - Pointer ownership
 

@@ -67,6 +67,34 @@ test('UIC-CANVAS-VIEWPORT-1.1 UIC-CANVAS-VIEWPORT-1.2 UIC-CANVAS-VIEWPORT-1.3 ke
   await view.getByRole('button', { name: 'Stand anchor' }).click({ trial: true });
 });
 
+test('UIC-CANVAS-VIEWPORT-1.5 pans over a shape with the middle button and zooms at the plain wheel', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('canvas-viewport');
+  const view = assembly(page);
+  await page.getByRole('button', { name: 'Use middle drag and wheel zoom' }).click();
+  const frame = view.locator('[data-lab-handle="move-frame"]');
+  await frame.scrollIntoViewIfNeeded();
+  const point = await centre(frame);
+  const before = await camera(view);
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(point.x + 36, point.y + 18, { steps: 4 });
+  await page.mouse.up({ button: 'middle' });
+  expect(await camera(view)).toEqual({ x: before.x + 36, y: before.y + 18, scale: before.scale });
+  await expect(view.locator('path[d^="M 184 79"]')).toHaveCount(1);
+
+  const anchor = view.getByRole('button', { name: 'Source anchor' });
+  const pinned = await centre(anchor);
+  await page.mouse.move(pinned.x, pinned.y);
+  await page.mouse.wheel(0, -150);
+  await expect.poll(async () => (await camera(view)).scale).toBeGreaterThan(1);
+  const zoomed = await centre(anchor);
+  expect(Math.abs(zoomed.x - pinned.x)).toBeLessThan(1);
+  expect(Math.abs(zoomed.y - pinned.y)).toBeLessThan(1);
+});
+
 test('UIC-CANVAS-VIEWPORT-2.1 UIC-CANVAS-VIEWPORT-2.2 UIC-CANVAS-VIEWPORT-3.1 keeps paths and embedded controls attached during move and resize', async ({
   page,
   lab,
@@ -78,14 +106,21 @@ test('UIC-CANVAS-VIEWPORT-2.1 UIC-CANVAS-VIEWPORT-2.2 UIC-CANVAS-VIEWPORT-3.1 ke
   const source = view.getByRole('button', { name: 'Source anchor' });
   const mark = view.getByRole('button', { name: 'Mark', exact: true });
   await expect(view.locator('path[d^="M 184 79"]')).toHaveCount(1);
+  await source.press('Enter');
+  await view.getByRole('button', { name: 'Receiver anchor' }).press('Space');
+  const childWire = view.locator('path[d$=", 299 94"]');
+  await expect(childWire).toHaveAttribute('d', /^M 145 87 C /);
   const markBefore = await centre(mark);
   const sourceBefore = await centre(source);
   await drag(page, frame, { x: 34, y: 11 });
   expect((await centre(source)).x).toBeCloseTo(sourceBefore.x + 34);
   expect((await centre(mark)).y).toBeCloseTo(markBefore.y + 11);
   await expect(view.locator('path[d^="M 218 90"]')).toHaveCount(1);
+  await expect(childWire).toHaveAttribute('d', /^M 179 98 C /);
   await drag(page, resize, { x: 35, y: 20 });
   await expect(view.locator('path[d^="M 253 100"]')).toHaveCount(1);
+  await expect(childWire).toHaveAttribute('d', /^M 179 98 C /);
+  expect((await centre(source)).x).toBeCloseTo(sourceBefore.x + 34);
 
   const unmark = view.getByRole('button', { name: 'Unmark', exact: true });
   await mark.click();

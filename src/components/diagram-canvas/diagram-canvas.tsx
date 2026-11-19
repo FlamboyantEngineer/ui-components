@@ -6,9 +6,11 @@ import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
-import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useLatest } from '../../utils/use-latest.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { CanvasViewportSurface, useCanvasPointer } from '../canvas-viewport/canvas-viewport.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { DiagramEdges } from './diagram-edges.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -25,13 +27,13 @@ import {
 } from './diagram-palette.js';
 import { DiagramToolbar, type DiagramView } from './diagram-toolbar.js';
 import type { DiagramEdgeRouting } from './edge-route.js';
-import { useBackgroundPointer } from './use-background-pointer.js';
 import type { DiagramConnection } from './use-diagram-connect.js';
 import {
   type DiagramController,
   type DiagramMessage,
   useDiagramController,
 } from './use-diagram-controller.js';
+import { useMarquee } from './use-marquee.js';
 import { useNodeFocusRecovery } from './use-node-focus-recovery.js';
 
 export type { DiagramEdge, DiagramNode, DiagramPort, DiagramViewport } from './diagram-model.js';
@@ -182,12 +184,15 @@ function DiagramViewportArea<T>({
   const strings = useUiStrings();
   const ref = useRef<HTMLDivElement>(null);
   useNodeFocusRecovery(ref);
-  const viewportRef = useMemo(
-    () => mergeRefs(ref, controller.setViewportElement),
-    [controller.setViewportElement],
-  );
-  const { viewport, stepZoom } = controller.view;
-  const { marquee, pointerProps } = useBackgroundPointer(controller, selectionMode);
+  const viewportRef = useMergedRefs(ref, controller.setViewportElement);
+  const { viewport, stepZoom, camera, setViewport } = controller.view;
+  const { marquee, background } = useMarquee(controller, selectionMode);
+  const { pointerProps } = useCanvasPointer({
+    element: controller.viewportElement,
+    camera,
+    setViewport,
+    background,
+  });
   const { dropProps, isDropTarget } = usePaletteDrop({ ref, palette });
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     // A control inside that handled the key keeps it.
@@ -205,47 +210,43 @@ function DiagramViewportArea<T>({
   };
   // The viewport takes focus, without joining the Tab order, when the last node is removed.
   return (
-    <div
-      {...hooks.slot('viewport', { dropTarget: isDropTarget })}
-      ref={viewportRef}
-      tabIndex={-1}
-      style={{ position: 'relative', touchAction: 'none' }}
-      {...mergeProps(dropProps, pointerProps, {
-        onKeyDown,
-        // Focusing a node scrolls its clipped container; the view pans with its transform instead.
-        onScroll: (event: { currentTarget: HTMLElement }) => event.currentTarget.scrollTo(0, 0),
-      })}
+    <CanvasViewportSurface
+      viewport={viewport}
+      surfaceProps={{
+        ...hooks.slot('viewport', { dropTarget: isDropTarget }),
+        ref: viewportRef,
+        tabIndex: -1,
+        ...mergeProps(dropProps, pointerProps, {
+          onKeyDown,
+          // Focus scrolls the clipped container; the camera pans with its transform instead.
+          onScroll: (event: { currentTarget: HTMLElement }) => event.currentTarget.scrollTo(0, 0),
+        }),
+      }}
+      worldClassName={hooks.slotClass('content')}
+      overlays={
+        <>
+          {controller.nodes.length === 0 ? (
+            <p {...hooks.slot('empty')}>{strings.diagramEmpty}</p>
+          ) : null}
+          {marquee ? (
+            <div
+              {...hooks.slot('marquee')}
+              style={{
+                position: 'absolute',
+                left: marquee.x,
+                top: marquee.y,
+                width: marquee.width,
+                height: marquee.height,
+              }}
+            />
+          ) : null}
+          {showMinimap ? <DiagramMinimap controller={controller} /> : null}
+        </>
+      }
     >
-      <div
-        {...hooks.slot('content')}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          transformOrigin: '0 0',
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom / 100})`,
-        }}
-      >
-        <DiagramEdges controller={controller} routing={routing} />
-        <DiagramNodes controller={controller} renderNode={renderNode} />
-      </div>
-      {controller.nodes.length === 0 ? (
-        <p {...hooks.slot('empty')}>{strings.diagramEmpty}</p>
-      ) : null}
-      {marquee ? (
-        <div
-          {...hooks.slot('marquee')}
-          style={{
-            position: 'absolute',
-            left: marquee.x,
-            top: marquee.y,
-            width: marquee.width,
-            height: marquee.height,
-          }}
-        />
-      ) : null}
-      {showMinimap ? <DiagramMinimap controller={controller} /> : null}
-    </div>
+      <DiagramEdges controller={controller} routing={routing} />
+      <DiagramNodes controller={controller} renderNode={renderNode} />
+    </CanvasViewportSurface>
   );
 }
 

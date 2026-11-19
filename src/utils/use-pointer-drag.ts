@@ -14,6 +14,8 @@ interface PointerDragOptions<E extends Element, T> {
    * `cancelsOnUnmount`, for a preview that lives above the element owning the gesture.
    */
   onCancel?: ((state: T) => void) | undefined;
+  /** Also accept a middle-button press from the primary pointer. */
+  allowsMiddleButton?: boolean | undefined;
   /** Keeps the browser from starting a native drag during the captured gesture. */
   preventsNativeDrag?: boolean | undefined;
   /** Escape in the owner document abandons the active gesture. */
@@ -73,6 +75,10 @@ function watchGesture(
   };
 }
 
+function isDragButton(button: number, allowsMiddleButton: boolean | undefined): boolean {
+  return button === 0 || (button === 1 && allowsMiddleButton === true);
+}
+
 /**
  * One primary-pointer gesture at a time. Moves and endings from other pointers are ignored;
  * release, cancellation, lost capture and unmount share the same capture cleanup. A gesture whose
@@ -83,7 +89,7 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
   const active = useRef<PointerDrag<E, T> | null>(null);
   const onCancel = useLatest(options.onCancel);
   const cancelsOnUnmount = useLatest(options.cancelsOnUnmount ?? false);
-  const isDisabled = options.isDisabled ?? false;
+  const { allowsMiddleButton, isDisabled = false } = options;
   const cancel = useCallback(() => {
     const drag = active.current;
     active.current = null;
@@ -119,14 +125,18 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
   };
   return {
     onPointerDown: (event: PointerEvent<E>) => {
-      if (isDisabled || event.button !== 0 || event.isPrimary === false) return;
+      if (
+        isDisabled ||
+        event.isPrimary === false ||
+        !isDragButton(event.button, allowsMiddleButton)
+      )
+        return;
       // A primary press while a gesture is active means its release went unseen: it is stale.
       const stale = cancel();
       if (stale) options.onEnd?.(event, stale.state, true);
       const state = options.onStart(event);
       if (state === null) return;
-      const { pointerId } = event;
-      const unwatch = watchGesture(event.currentTarget, pointerId, {
+      const unwatch = watchGesture(event.currentTarget, event.pointerId, {
         cancelsOnEscape: options.cancelsOnEscape,
         preventsNativeDrag: options.preventsNativeDrag,
         onAbandon: () => {
@@ -135,7 +145,7 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
         },
       });
       active.current = {
-        pointerId,
+        pointerId: event.pointerId,
         element: event.currentTarget,
         state,
         resetKey: options.resetKey,

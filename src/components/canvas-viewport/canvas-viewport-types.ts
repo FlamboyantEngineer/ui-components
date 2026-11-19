@@ -59,6 +59,13 @@ export interface CanvasConnectionPreview {
   point: CanvasPoint | null;
 }
 
+export interface CanvasGesturePolicy {
+  /** The button that pans. Defaults to a primary drag on the background. */
+  panButton?: 'primary' | 'middle' | undefined;
+  /** What an unmodified wheel does. Defaults to pan. Ctrl and Command always zoom. */
+  wheel?: 'pan' | 'zoom' | undefined;
+}
+
 export interface CanvasViewportProps
   extends
     BaseProps,
@@ -75,6 +82,8 @@ export interface CanvasViewportProps
   defaultViewport?: CanvasViewportState | undefined;
   /** Called with each requested camera change. */
   onViewportChange?: ((viewport: CanvasViewportState) => void) | undefined;
+  /** Opts into middle-button pan or plain-wheel zoom. */
+  gesturePolicy?: CanvasGesturePolicy | undefined;
   /** Access to the viewport from outside the scene. */
   controllerRef?: Ref<CanvasViewportController> | undefined;
   /** Reports a connection attempt for the caller to validate and commit. */

@@ -2,7 +2,6 @@
 
 import { type RefCallback, useCallback, useMemo, useState } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
-import { toLocalPoint } from '../../utils/element-scale.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import { type DiagramLinks, indexDiagramLinks } from './diagram-links.js';
@@ -12,7 +11,6 @@ import {
   type DiagramViewport,
   findDiagramBounds,
   resolveNodeRect,
-  toDiagramPoint,
 } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';
 import {
@@ -60,8 +58,8 @@ export interface DiagramController {
   moves: NodeMoves;
   connect: DiagramConnect;
   view: DiagramViewportState;
-  viewportElement: HTMLElement | null;
-  setViewportElement: (element: HTMLElement | null) => void;
+  viewportElement: HTMLDivElement | null;
+  setViewportElement: (element: HTMLDivElement | null) => void;
   /** The ref callback that registers a node's element, or a port's, as a connection target. */
   registerTarget: (target: DiagramTarget) => RefCallback<HTMLElement>;
   focusNode: (id: Key) => void;
@@ -133,7 +131,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
   const { edges, isEditing } = options;
   const links = useMemo(() => indexDiagramLinks(options.nodes, edges), [options.nodes, edges]);
   const [message, announce] = useAnnouncer();
-  const [viewportElement, setViewportElement] = useState<HTMLElement | null>(null);
+  const [viewportElement, setViewportElement] = useState<HTMLDivElement | null>(null);
   const bounds = useMemo(
     () => findDiagramBounds(options.nodes.map(resolveNodeRect)),
     [options.nodes],
@@ -162,7 +160,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
   });
   const [registry] = useState(createTargetRegistry);
   const toDiagram = (clientX: number, clientY: number) =>
-    toDiagramPoint(view.viewport, toLocalPoint(viewportElement, { x: clientX, y: clientY }));
+    view.camera.clientToWorld({ x: clientX, y: clientY });
   return {
     nodes: applyPreview(options.nodes, moves.preview),
     edges,

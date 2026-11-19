@@ -61,11 +61,13 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ## UIC-DIAGRAM-CANVAS-3 - Pan and zoom
 
+The diagram uses the [Canvas Viewport](CANVAS-VIEWPORT.md) camera, surface and pointer handling with its own styling hooks and graph commands.
+
 ### UIC-DIAGRAM-CANVAS-3.1 - Panning
 
 The viewport (`{ x, y, zoom }`: the pan offset in screen pixels and the zoom in percent) shall be `viewport` (controlled) or held from `defaultViewport`, and every change calls `onViewportChange`. Dragging the background pans the view, and so does the wheel without a modifier. The wheel counts its steps in pixels, a line as 16 pixels and a page as the viewport's size. A wheel that a scrollable element inside a node can still scroll in its direction, or that a handler inside already consumed, belongs to that element and leaves the view alone; at the element's end the wheel pans again. Horizontal ownership follows the physical wheel direction at both limits in LTR and RTL content, including nested elements whose directions differ. Under an ancestor's axis-aligned `transform: scale()`, panning, the marquee, moving nodes, connecting and zooming at a point measure the pointer in the viewport's own layout pixels, so each follows the pointer; rotated or skewed ancestors are not supported.
 
-Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/use-background-pointer.ts`, `src/utils/wheel-scroll.ts`, `src/utils/element-scale.ts`
+Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/canvas-viewport/use-canvas-pointer.ts`, `src/components/canvas-viewport/canvas-viewport-surface.tsx`, `src/utils/use-canvas-wheel.ts`, `src/utils/element-scale.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`, `src/utils/element-scale.test.ts`, `src/utils/wheel-scroll.test.ts`
 
 ### UIC-DIAGRAM-CANVAS-3.2 - Zooming
@@ -109,7 +111,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 In multiple selection, a Shift drag on the background shall draw a marquee (`ui-diagram-canvas__marquee`) and select the nodes it touches when released. Cancellation or lost capture shall discard the marquee without changing the selection.
 
-Implementation: `src/components/diagram-canvas/use-background-pointer.ts`
+Implementation: `src/components/diagram-canvas/use-marquee.ts`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-4.3 - Moving by pointer

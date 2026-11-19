@@ -11,10 +11,16 @@ import {
 } from 'react';
 import { isNode } from '../../utils/is-element.js';
 import { canvasViewportHooks as hooks } from './canvas-viewport-hooks.js';
+import { CanvasViewportSurface } from './canvas-viewport-surface.js';
 import type { CanvasViewportController, CanvasViewportProps } from './canvas-viewport-types.js';
 import { useCanvasCamera } from './use-canvas-camera.js';
 import { CanvasConnectionContext, useCanvasConnection } from './use-canvas-connection.js';
 import { useCanvasPointer } from './use-canvas-pointer.js';
+
+// Compositions with their own markup hooks and camera commands share these internals.
+export { CanvasViewportSurface } from './canvas-viewport-surface.js';
+export { useCanvasCamera } from './use-canvas-camera.js';
+export { useCanvasPointer } from './use-canvas-pointer.js';
 
 const CanvasViewportContext = createContext<CanvasViewportController | null>(null);
 
@@ -52,22 +58,25 @@ export function CanvasViewport({
   controllerRef,
   viewport: viewportProp,
   defaultViewport,
+  gesturePolicy,
   onViewportChange,
   onConnect,
   onConnectionPreview,
   ...rest
 }: CanvasViewportProps) {
   const [element, setElement] = useState<HTMLDivElement | null>(null);
-  const { camera, viewport, setViewport, stepZoom, reveal } = useCanvasCamera(element, {
+  const { camera, viewport, setViewport, stepZoom, revealElement } = useCanvasCamera(element, {
     viewport: viewportProp,
     defaultViewport,
     onViewportChange,
+    zoomsOnWheel: gesturePolicy?.wheel === 'zoom',
   });
   const { connections, cancelKeyboard } = useCanvasConnection({ onConnect, onConnectionPreview });
   const { claimGesture, pointerProps } = useCanvasPointer({
     element,
     camera,
     setViewport,
+    panButton: gesturePolicy?.panButton,
     onStart: cancelKeyboard,
   });
   const controller = useMemo(() => ({ ...camera, claimGesture }), [camera, claimGesture]);
@@ -83,31 +92,26 @@ export function CanvasViewport({
           style={{ position: 'relative' }}
           {...getCanvasFocusProps(stepZoom, cancelKeyboard)}
         >
-          <div
-            {...hooks.slot('surface')}
-            {...pointerProps}
-            ref={setElement}
-            style={{ position: 'absolute', inset: 0, touchAction: 'none' }}
-            onFocus={(event) => {
-              if (
-                event.currentTarget.contains(event.target) &&
-                event.target.matches(':focus-visible')
-              )
-                reveal(event.target);
+          <CanvasViewportSurface
+            viewport={viewport}
+            surfaceProps={{
+              ...hooks.slot('surface'),
+              ...pointerProps,
+              ref: setElement,
+              style: { position: 'absolute', inset: 0 },
+              onFocus: (event) => {
+                if (
+                  event.currentTarget.contains(event.target) &&
+                  event.target.matches(':focus-visible')
+                )
+                  revealElement(event.target);
+              },
             }}
+            worldClassName={hooks.slotClass('world')}
+            worldStyle={{ right: 0, bottom: 0 }}
           >
-            <div
-              {...hooks.slot('world')}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                transformOrigin: '0 0',
-                transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom / 100})`,
-              }}
-            >
-              {children}
-            </div>
-          </div>
+            {children}
+          </CanvasViewportSurface>
           {controls != null ? <div {...hooks.slot('controls')}>{controls}</div> : null}
         </div>
       </CanvasConnectionContext>

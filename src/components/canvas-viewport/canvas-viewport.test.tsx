@@ -366,3 +366,45 @@ it('UIC-CANVAS-VIEWPORT-1.4 pans 100 elements and 300 paths without rerunning th
   expect(screen.getByLabelText('Large drawing')).toBe(large);
   expect(route).toHaveBeenCalledTimes(300);
 });
+
+it('UIC-CANVAS-VIEWPORT-1.5 UIC-DRAG-INTERACTIONS-1.1 opts into middle-drag pan and plain-wheel zoom while primary claims still work', async () => {
+  const user = userEvent.setup();
+  const ref = createRef<CanvasViewportController>();
+  const gesture = { onCommit: vi.fn(), onCancel: vi.fn() };
+  render(
+    <CanvasViewport
+      aria-label="Drawing"
+      controllerRef={ref}
+      gesturePolicy={{ panButton: 'middle', wheel: 'zoom' }}
+    >
+      <ResizeHandle gesture={gesture} />
+    </CanvasViewport>,
+  );
+  const api = requireDefined(ref.current);
+  const handle = screen.getByRole('button', { name: 'Resize' });
+  setSurfaceBox({ width: 400, height: 280 });
+  await user.pointer([
+    { keys: '[MouseLeft>]', target: surface(), coords: { clientX: 60, clientY: 90 } },
+    { coords: { clientX: 95, clientY: 110 } },
+    { keys: '[/MouseLeft]' },
+  ]);
+  expect(api.getViewport()).toEqual({ x: 0, y: 0, zoom: 100 });
+  await user.pointer([
+    { keys: '[MouseMiddle>]', target: handle, coords: { clientX: 60, clientY: 90 } },
+    { coords: { clientX: 95, clientY: 110 } },
+    { keys: '[/MouseMiddle]' },
+  ]);
+  expect(api.getViewport()).toEqual({ x: 35, y: 20, zoom: 100 });
+  expect(gesture.onCommit).not.toHaveBeenCalled();
+
+  const client = { x: 75, y: 120 };
+  const point = api.clientToWorld(client);
+  fireEvent.wheel(surface(), { deltaX: 20, clientX: client.x, clientY: client.y });
+  expect(api.getViewport().zoom).toBe(100);
+  fireEvent.wheel(surface(), { deltaY: -300, clientX: client.x, clientY: client.y });
+  expect(api.getViewport().zoom).toBe(200);
+  expect(api.worldToClient(point)).toEqual(client);
+
+  await user.pointer({ keys: '[MouseLeft]', target: handle });
+  expect(gesture.onCommit).toHaveBeenCalledTimes(1);
+});

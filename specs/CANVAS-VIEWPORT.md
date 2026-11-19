@@ -29,7 +29,14 @@ Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/ca
 
 A camera-only change shall update one world transform. Stable scene children keep their component instances, so a pan can draw 100 elements and 300 paths without rerunning caller path generation.
 
-Implementation: `src/components/canvas-viewport/canvas-viewport.tsx`
+Implementation: `src/components/canvas-viewport/canvas-viewport-surface.tsx`
+Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
+
+### UIC-CANVAS-VIEWPORT-1.5 - Alternate gestures
+
+With `gesturePolicy.panButton: 'middle'`, a middle-button drag anywhere in the scene shall pan and suppress browser autoscroll. Primary presses remain available for scene gesture claims and controls. With `gesturePolicy.wheel: 'zoom'`, a plain vertical wheel shall zoom at the pointer, alongside Ctrl and Command zoom. Scrollable children keep plain wheels they can consume, and a horizontal-only plain wheel stays with the browser or the child.
+
+Implementation: `src/components/canvas-viewport/use-canvas-pointer.ts`, `src/utils/use-canvas-wheel.ts`, `src/utils/use-pointer-drag.ts`
 Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`, `e2e/canvas-viewport.spec.ts`
 
 ## UIC-CANVAS-VIEWPORT-2 - Interaction

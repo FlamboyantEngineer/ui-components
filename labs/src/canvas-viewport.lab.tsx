@@ -31,6 +31,7 @@ function EditableAssembly() {
   const [layout, setLayout] = useState(initialParts);
   const [status, setStatus] = useState('');
   const [narrow, setNarrow] = useState(false);
+  const [alternateGestures, setAlternateGestures] = useState(false);
   const onConnect = (connection: CanvasConnection) => {
     const { source, target } = connection;
     if (!canConnectAssembly(connection)) {
@@ -52,6 +53,7 @@ function EditableAssembly() {
       <div style={{ maxWidth: narrow ? 410 : 660 }}>
         <CanvasViewport
           aria-label="Editable assembly"
+          gesturePolicy={alternateGestures ? { panButton: 'middle', wheel: 'zoom' } : undefined}
           viewport={viewport}
           onViewportChange={setViewport}
           controllerRef={controller}
@@ -84,6 +86,9 @@ function EditableAssembly() {
       </div>
       <Button size="sm" onPress={() => setNarrow(!narrow)}>
         {narrow ? 'Widen pane' : 'Narrow pane'}
+      </Button>
+      <Button size="sm" onPress={() => setAlternateGestures(!alternateGestures)}>
+        {alternateGestures ? 'Use default gestures' : 'Use middle drag and wheel zoom'}
       </Button>
       <p role="status">{status}</p>
     </>
@@ -129,7 +134,7 @@ mountLab(
   <>
     <LabSection
       title="Assembly editor"
-      description="Drag a part by its title and resize it by its corner. Drag from Source to Receiver to add a link, or try Spare to see a rejected target. With the keyboard, activate Source with Enter or Space, Tab to Receiver, then activate Receiver. Escape ends an unfinished gesture. Ctrl or Command with the wheel zooms at the pointer."
+      description="Drag a part by its title and resize it by its corner. Drag from Source to Receiver to add a link, or try Spare to see a rejected target. With the keyboard, activate Source with Enter or Space, Tab to Receiver, then activate Receiver. Escape ends an unfinished gesture. Ctrl or Command with the wheel zooms at the pointer. The alternate gestures pan with the middle button and zoom with the plain wheel."
     >
       <EditableAssembly />
     </LabSection>

@@ -14,6 +14,7 @@ interface CanvasWheelOptions {
   viewport: CanvasViewportState;
   setViewport: (viewport: CanvasViewportState) => void;
   zoomTo: (zoom: number, at: CanvasPoint) => void;
+  zoomsOnWheel?: boolean | undefined;
   getSize: () => { width: number; height: number };
 }
 
@@ -33,10 +34,12 @@ export function useCanvasWheel(element: HTMLElement | null, state: CanvasWheelOp
     // scrolling or zooming.
     const onWheel = (event: WheelEvent) => {
       if (event.defaultPrevented) return;
-      const { viewport, setViewport, zoomTo, getSize } = latest.current;
+      const { viewport, setViewport, zoomTo, getSize, zoomsOnWheel } = latest.current;
       const step = toWheelPixels(event, getSize());
-      const isZoom = event.ctrlKey || event.metaKey;
-      if (!isZoom && findWheelScroller(event.target, element, step)) return;
+      const isModified = event.ctrlKey || event.metaKey;
+      if (!isModified && findWheelScroller(event.target, element, step)) return;
+      const isZoom = isModified || zoomsOnWheel;
+      if (isZoom && step.y === 0 && !isModified) return;
       event.preventDefault();
       if (isZoom) {
         const at = toLocalPoint(element, { x: event.clientX, y: event.clientY });

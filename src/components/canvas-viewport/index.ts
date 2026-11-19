@@ -11,6 +11,7 @@ export type {
   CanvasConnection,
   CanvasConnectionPreview,
   CanvasGesture,
+  CanvasGesturePolicy,
   CanvasGesturePosition,
   CanvasViewportController,
   CanvasViewportProps,
