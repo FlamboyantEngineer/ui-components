@@ -1,21 +1,42 @@
 'use client';
 
-// The parts a custom card header composes: the title that names the card and the whole-card action.
-
 import { createContext, type ReactNode, type RefCallback, useContext } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
 import { type CardActionOptions, CardActionTitle } from './card-action.js';
+import { cardHooks as hooks } from './card-hooks.js';
+
+export interface CardHeaderProps extends BaseProps, RefProps<HTMLElement> {
+  children?: ReactNode;
+}
+
+export interface CardDescriptionProps extends BaseProps, RefProps<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+export interface CardActionProps extends BaseProps, RefProps<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+export interface CardContentProps
+  extends BaseProps, RefProps<HTMLDivElement>, Pick<NativeProps<'div'>, 'hidden'> {
+  children?: ReactNode;
+}
+
+export interface CardFooterProps
+  extends BaseProps, RefProps<HTMLElement>, Pick<NativeProps<'footer'>, 'hidden'> {
+  children?: ReactNode;
+}
 
 export interface CardTitleProps extends RefProps<HTMLHeadingElement>, Omit<BaseProps, 'id'> {
   /** The title's content, which names the card. */
   children?: ReactNode;
 }
 
-export interface CardActionProps extends Omit<BaseProps, 'id'>, AriaLabellingProps {
+export interface CardTitleActionProps extends Omit<BaseProps, 'id'>, AriaLabellingProps {
   /** The action's content, usually the title text. */
   children?: ReactNode;
 }
@@ -66,7 +87,7 @@ export function CardTitle({ ref, children, className, ...rest }: CardTitleProps)
  * with the action hook class, which clicks anywhere on the card activate. Without a card action it
  * renders its children as they are.
  */
-export function CardAction({ children, className, ...rest }: CardActionProps) {
+export function CardTitleAction({ children, className, ...rest }: CardTitleActionProps) {
   const parts = useContext(CardHeaderContext);
   if (!parts?.action.isActionable) return <>{children}</>;
   const { action } = parts;
@@ -80,4 +101,29 @@ export function CardAction({ children, className, ...rest }: CardActionProps) {
       {children}
     </CardActionTitle>
   );
+}
+
+/** A custom header with a title, a description and contextual actions. */
+export function CardHeader({ className, ...rest }: CardHeaderProps) {
+  return <header {...rest} {...hooks.slot('header', undefined, className)} />;
+}
+
+/** Supporting text under the title. */
+export function CardDescription({ className, ...rest }: CardDescriptionProps) {
+  return <div {...rest} {...hooks.slot('description', undefined, className)} />;
+}
+
+/** Contextual controls in the header, independent of the whole-card action. */
+export function CardAction({ className, ...rest }: CardActionProps) {
+  return <div {...rest} {...hooks.slot('actions', undefined, className)} />;
+}
+
+/** The main content, subject to the card's loading and expanded state. */
+export function CardContent({ className, ...rest }: CardContentProps) {
+  return <div {...rest} {...hooks.slot('body', undefined, className)} />;
+}
+
+/** Closing content such as secondary actions or metadata. */
+export function CardFooter({ className, ...rest }: CardFooterProps) {
+  return <footer {...rest} {...hooks.slot('footer', undefined, className)} />;
 }

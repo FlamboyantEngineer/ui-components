@@ -1,10 +1,10 @@
 'use client';
 
 import { Fragment } from 'react';
-import { useUiStrings } from '../../core/provider.js';
 import { Avatar, resolveAvatarColor, splitAvatarIdentity } from '../avatar/avatar.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { AvatarGroupPerson, AvatarGroupProps } from './avatar-group.js';
+import { AvatarGroupCount } from './avatar-group-count.js';
 import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 import { AvatarGroupOverflowMenu } from './avatar-group-overflow-menu.js';
 import type { AvatarGroupWindow } from './avatar-group-window.js';
@@ -42,7 +42,6 @@ function AvatarGroupOverflow({
   presence: AvatarGroupWindow;
   label?: string | undefined;
 }) {
-  const strings = useUiStrings();
   if (count === 0) return null;
   if (label && overflow === 'menu' && hidden.length > 0) {
     return (
@@ -55,11 +54,7 @@ function AvatarGroupOverflow({
       />
     );
   }
-  return (
-    <span {...hooks.slot('overflow')} {...(label ? { role: 'img', 'aria-label': label } : {})}>
-      {strings.overflowCount(count)}
-    </span>
-  );
+  return <AvatarGroupCount count={count} label={label} decorative={!label} />;
 }
 
 /** The same people and overflow in stacked, spaced or decorative-dot layouts. */

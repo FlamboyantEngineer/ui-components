@@ -131,7 +131,7 @@ describe('ShortcutScope and useShortcut', () => {
     ['the command palette', 'ui-command-palette', {}, false],
     ['a modal tour', 'ui-tour', {}, false],
     ['a leaving drawer', 'ui-drawer', { 'data-exiting': 'true' }, true],
-    ['a non-modal modal', 'ui-modal', { 'data-non-modal': 'true' }, true],
+    ['a non-modal modal', 'ui-dialog', { 'data-non-modal': 'true' }, true],
     ['a non-modal tour', 'ui-tour', { 'data-non-modal': 'true' }, true],
   ] as const)(
     'UIC-SHORTCUT-4.2 holds document-wide shortcuts from a press inside %s as it should',

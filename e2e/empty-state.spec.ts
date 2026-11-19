@@ -89,3 +89,11 @@ test.describe('Empty State lab', () => {
     ).not.toBe('0s');
   });
 });
+
+test('UIC-EMPTY-STATE-3.1 lays out composed media, text and action', async ({ lab, page }) => {
+  await lab.open('empty-state');
+  const title = page.getByRole('heading', { name: 'No matching cities' });
+  await expect(title).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Clear filters' })).toBeVisible();
+  await expect(page.locator('.ui-empty-state__media')).toHaveAttribute('aria-hidden', 'true');
+});

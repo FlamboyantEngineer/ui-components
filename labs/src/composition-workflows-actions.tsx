@@ -5,9 +5,9 @@ import { Button } from '../../src/components/button/button.js';
 import { Card } from '../../src/components/card/card.js';
 import { ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { Choice } from '../../src/components/choice-group/index.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import {
   SignaturePad,
   type SignatureValue,
@@ -34,7 +34,8 @@ export function TransitionComposition() {
           onAction={() => setOpen(true)}
         />
       </Cluster>
-      <Modal
+      <Dialog
+        isDismissable={false}
         isOpen={open}
         onOpenChange={setOpen}
         title="Archive item"
@@ -49,7 +50,7 @@ export function TransitionComposition() {
         }}
       >
         <TextField label="Reason" value={reason} onChange={setReason} isRequired />
-      </Modal>
+      </Dialog>
     </Stack>
   );
 }
@@ -159,7 +160,7 @@ export function SigningComposition() {
   const [result, setResult] = useState('No signature saved');
   return (
     <Stack space="md">
-      <ModalTrigger
+      <DialogTrigger
         onOpenChange={(open) => {
           if (open) {
             setCredential('');
@@ -168,7 +169,8 @@ export function SigningComposition() {
         }}
       >
         <Button>Add signature</Button>
-        <Modal
+        <Dialog
+          isDismissable={false}
           title="Sign sample item"
           description="For this example, enter orchard to simulate verification."
           primaryAction={{
@@ -198,8 +200,8 @@ export function SigningComposition() {
               isRequired
             />
           </Stack>
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       <p role="status">{result}</p>
     </Stack>
   );

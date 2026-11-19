@@ -6,9 +6,9 @@ import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-gr
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { Combobox } from '../../src/components/combobox/combobox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
 import { ProblemList } from '../../src/components/problem-list/problem-list.js';
@@ -275,9 +275,9 @@ function OverlaysInForm() {
     >
       <ProblemList />
       <TextField label="Heading" name="heading" isRequired />
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Rename</Button>
-        <Modal title="Rename">
+        <Dialog isDismissable={false} title="Rename">
           <Form
             aria-label="Rename"
             validationBehavior="aria"
@@ -286,8 +286,8 @@ function OverlaysInForm() {
             <TextField label="New name" name="name" isRequired autoFocus />
             <Button type="submit">Apply</Button>
           </Form>
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       <PopoverTrigger>
         <Button>Add a note</Button>
         <Popover aria-label="Note">

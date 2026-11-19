@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { CommentComposer } from './comment-composer.js';
 
 const box = () => screen.getByRole<HTMLTextAreaElement>('textbox');
@@ -69,9 +69,9 @@ describe('CommentComposer keys during composition', () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(
-      <Modal isOpen onOpenChange={onOpenChange} title="Reply">
+      <Dialog isOpen onOpenChange={onOpenChange} title="Reply">
         <CommentComposer defaultValue="Draft" onSubmit={() => {}} />
-      </Modal>,
+      </Dialog>,
     );
     pressComposing({ key: 'Escape', isComposing: true, keyCode: 229 });
     expect(onOpenChange).not.toHaveBeenCalled();

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { Drawer, type DrawerProps, DrawerTrigger } from '../../src/components/drawer/drawer.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { DrawerCoverageSections } from './drawer-coverage-cases.js';
@@ -224,9 +224,9 @@ mountLab(
       title="Drawer from a modal"
       description="Open Trip settings, then Pick a city: the drawer opened from the dialog takes the dialog's layer and slides in above its scrim and panel."
     >
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Trip settings</Button>
-        <Modal title="Trip settings" data-lab-modal="settings">
+        <Dialog title="Trip settings" data-lab-modal="settings">
           <DrawerTrigger>
             <Button>Pick a city</Button>
             <Drawer title="Cities" showCloseButton data-lab-drawer="from-modal">
@@ -237,8 +237,8 @@ mountLab(
               </ul>
             </Drawer>
           </DrawerTrigger>
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
     </LabSection>
     <LabSection
       title="Escape handled inside"

@@ -1,0 +1,30 @@
+.ui-textarea {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.ui-textarea::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-textarea[data-focus-visible] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-textarea[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-textarea[data-disabled] {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}

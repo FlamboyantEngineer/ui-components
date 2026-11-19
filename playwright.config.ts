@@ -44,7 +44,7 @@ export default defineConfig({
     {
       name: 'mobile-webkit',
       use: { ...devices['iPhone 13'] },
-      testMatch: /modal-tall-form\.spec\.ts$/,
+      testMatch: /dialog-tall-form\.spec\.ts$/,
     },
   ],
 });

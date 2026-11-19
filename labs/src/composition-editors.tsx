@@ -4,9 +4,9 @@ import { Button } from '../../src/components/button/button.js';
 import { CalendarView, type CalendarViewEvent } from '../../src/components/calendar-view/index.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
+import { Dialog } from '../../src/components/dialog/dialog.js';
 import { Fieldset } from '../../src/components/field/index.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { Modal } from '../../src/components/modal/modal.js';
 import { NumberField } from '../../src/components/number-field/index.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { SelectField } from '../../src/components/select-field/index.js';
@@ -31,7 +31,8 @@ export function CalendarEditorComposition() {
           setEvents((current) => current.map((event) => (event.id === next.id ? next : event)))
         }
       />
-      <Modal
+      <Dialog
+        isDismissable={false}
         isOpen={draft !== null}
         onOpenChange={(open) => {
           if (!open) setDraft(null);
@@ -66,7 +67,7 @@ export function CalendarEditorComposition() {
             );
           }}
         />
-      </Modal>
+      </Dialog>
     </Stack>
   );
 }
@@ -91,7 +92,8 @@ export function TimelineEditorComposition() {
           )
         }
       />
-      <Modal
+      <Dialog
+        isDismissable={false}
         isOpen={draft !== null}
         onOpenChange={(open) => {
           if (!open) setDraft(null);
@@ -133,7 +135,7 @@ export function TimelineEditorComposition() {
             setDraft((current) => current && { ...current, progress: (value ?? 0) / 100 })
           }
         />
-      </Modal>
+      </Dialog>
     </Stack>
   );
 }

@@ -1,6 +1,6 @@
 # Drawer
 
-`Drawer` is a panel that slides in from an edge of the viewport over a page it blocks, for navigation, filters, details or a task that keeps the page in view: a title, an optional close button, a body and a footer, sharing [Modal](MODAL.md)'s vocabulary. It is built on React Aria's `SheetTrigger`, `SheetOverlay`, `SheetBackdrop`, `Sheet` and `SheetContent`, which slide it in and out by scrolling, so a swipe or a scroll toward its edge dismisses it natively, and provide snap points, nesting, the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration.
+`Drawer` is a panel that slides in from an edge of the viewport over a page it blocks, for navigation, filters, details or a task that keeps the page in view: a title, an optional close button, a body and a footer, sharing [Dialog](DIALOG.md)'s vocabulary. It is built on React Aria's `SheetTrigger`, `SheetOverlay`, `SheetBackdrop`, `Sheet` and `SheetContent`, which slide it in and out by scrolling, so a swipe or a scroll toward its edge dismisses it natively, and provide snap points, nesting, the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration. Use [Sheet](DIALOG.md#uic-dialog-83---sheet) for a dialog positioned at a viewport edge with ordinary dialog dismissal.
 
 ## UIC-DRAWER-1 - Overlay
 
@@ -8,7 +8,7 @@
 
 `DrawerTrigger` shall hold one pressable trigger, such as a `Button`, and a `Drawer`, and add no element of its own; pressing the trigger opens the drawer. `isOpen` with `onOpenChange`, on the trigger or on a drawer outside a trigger, controls it, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. While open the drawer renders, in an overlay at the end of the document body, the `ui-drawer` overlay covering the page, the `ui-drawer__backdrop`, the `ui-drawer__panel` that slides and the `ui-drawer__dialog` element with `role="dialog"` filling it. A closed drawer renders nothing.
 
-Implementation: `src/components/drawer/drawer.tsx`, `src/components/portal/portal.tsx`, `src/components/modal/modal-presentations.tsx`
+Implementation: `src/components/drawer/drawer.tsx`, `src/components/portal/portal.tsx`, `src/components/dialog/dialog-presentations.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-1.2 - Position

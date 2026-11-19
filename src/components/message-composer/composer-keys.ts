@@ -81,6 +81,14 @@ function matchesAny(event: ComposerKey, chords: readonly ShortcutChord[]): boole
   return chords.some((chord) => matchesChord(event, chord));
 }
 
+/** Whether this key event sends a message, leaving input method events to the browser. */
+export function matchesComposerSubmitKey(
+  event: ComposerKey,
+  chords: readonly ShortcutChord[],
+): boolean {
+  return !isComposingKey(event) && matchesAny(event, chords);
+}
+
 function toRecallDirection(event: ComposerKey): RecallDirection | null {
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return null;
   if (event.key === 'ArrowUp') return 'older';

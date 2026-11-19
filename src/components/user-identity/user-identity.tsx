@@ -7,7 +7,6 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import {
   Avatar,
-  type AvatarBadgeProps,
   type AvatarIdentity,
   type AvatarProps,
   getDisplayName,
@@ -22,8 +21,7 @@ export type UserIdentitySize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 export interface UserIdentityProps
   extends
     AvatarIdentity,
-    AvatarBadgeProps,
-    Pick<AvatarProps, 'colorCount'>,
+    Pick<AvatarProps, 'badge' | 'badgeLabel' | 'badgePlacement' | 'colorCount'>,
     BaseProps,
     RefProps<HTMLSpanElement> {
   /** A secondary line under the name: an email, a role, a timestamp. Blank values draw no line. */

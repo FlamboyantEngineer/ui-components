@@ -177,7 +177,15 @@ test.describe('Load More lab', () => {
     );
     await expect(custom).toHaveText('Show older messages (12 remaining)');
     await expect(custom).toHaveAccessibleName('Show older messages (12 remaining) messages');
-    for (const variant of ['primary', 'tertiary', 'danger', 'accent', 'chip', 'link', 'bare']) {
+    for (const variant of [
+      'primary',
+      'tertiary',
+      'destructive',
+      'accent',
+      'chip',
+      'link',
+      'bare',
+    ]) {
       await expect(
         matrixCell(page, `variant=${variant} size=sm`).locator('.ui-load-more'),
       ).toHaveAttribute('data-variant', variant);

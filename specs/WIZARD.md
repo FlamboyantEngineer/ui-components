@@ -1,6 +1,6 @@
 # Wizard
 
-`Wizard` frames a task done in steps, such as a file import or a new project: the list of [Steps](STEPS.md), the current step's panel, and Back, Skip, Next and Finish. The panel and its buttons are a [Form](FORM.md), so Next checks the step's fields exactly as a submit does, then the step's own check, which may be asynchronous, before moving on. Focus moves to each new step's heading. It renders inline or as the body of a [Modal](MODAL.md).
+`Wizard` frames a task done in steps, such as a file import or a new project: the list of [Steps](STEPS.md), the current step's panel, and Back, Skip, Next and Finish. The panel and its buttons are a [Form](FORM.md), so Next checks the step's fields exactly as a submit does, then the step's own check, which may be asynchronous, before moving on. Focus moves to each new step's heading. It renders inline or as the body of a [Dialog](DIALOG.md).
 
 ## UIC-WIZARD-1 - Structure
 
@@ -101,7 +101,7 @@ Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
 ### UIC-WIZARD-3.2 - Inside a modal
 
-A wizard shall work as the body of a [Modal](MODAL.md) that has no built-in actions: its buttons are the dialog's only footer, `onCancel` can close the dialog, and focus stays inside the dialog as the steps change.
+A wizard shall work as the body of a [Dialog](DIALOG.md) that has no built-in actions: its buttons are the dialog's only footer, `onCancel` can close the dialog, and focus stays inside the dialog as the steps change.
 
 Implementation: `src/components/wizard/wizard.tsx`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`

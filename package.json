@@ -125,10 +125,20 @@
       "import": "./dist/components/text-diff/inline.js",
       "default": "./dist/components/text-diff/inline.js"
     },
-    "./modal/controller": {
-      "types": "./dist/components/modal/controller.d.ts",
-      "import": "./dist/components/modal/controller.js",
-      "default": "./dist/components/modal/controller.js"
+    "./dialog/controller": {
+      "types": "./dist/components/dialog/controller.d.ts",
+      "import": "./dist/components/dialog/controller.js",
+      "default": "./dist/components/dialog/controller.js"
+    },
+    "./select": {
+      "types": "./dist/components/select-field/composed.d.ts",
+      "import": "./dist/components/select-field/composed.js",
+      "default": "./dist/components/select-field/composed.js"
+    },
+    "./radio-group": {
+      "types": "./dist/components/choice-group/radio-group.d.ts",
+      "import": "./dist/components/choice-group/radio-group.js",
+      "default": "./dist/components/choice-group/radio-group.js"
     },
     "./tooltip/truncation": {
       "types": "./dist/components/tooltip/truncation.d.ts",

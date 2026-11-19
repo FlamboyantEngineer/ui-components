@@ -317,3 +317,29 @@ test.describe('Dropdown Menu lab', () => {
     }
   });
 });
+
+test('UIC-DROPDOWN-MENU-2.1 navigates composed submenus inside a dialog and restores focus', async ({
+  lab,
+  page,
+}) => {
+  await lab.open('dropdown-menu');
+  const opener = page.getByRole('button', { name: 'Open workspace settings' });
+  await opener.focus();
+  await opener.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'Workspace settings' });
+  const trigger = dialog.getByRole('button', { name: 'View settings' });
+  await trigger.focus();
+  await trigger.press('ArrowDown');
+  const menu = page.getByRole('menu', { name: 'View settings' });
+  await expect(menu.getByRole('menuitemradio', { name: 'Comfortable' })).toBeFocused();
+  await page.keyboard.press('End');
+  await page.keyboard.press('ArrowRight');
+  const timeline = page.getByRole('menuitemradio', { name: 'Timeline' });
+  await expect(timeline).toBeVisible();
+  await timeline.click();
+  await expect(menu).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(opener).toBeFocused();
+});

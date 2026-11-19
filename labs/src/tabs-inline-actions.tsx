@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Cluster } from '../../src/components/layout/layout.js';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/tabs/tabs.js';
 import { InfoGlyph, PlusGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
@@ -31,30 +31,34 @@ export function InlineActionTabs({ overflow = 'scroll' }: { overflow?: 'scroll' 
         <div dir={rtl ? 'rtl' : 'ltr'}>
           <Tabs selectedKey={selected} onSelectionChange={setSelected} isDisabled={disabled}>
             <Cluster wrap="nowrap" space="none" justify="between" fill>
-              <TabList
+              <TabsList
                 aria-label={`Mailbox ${overflow}`}
                 overflow={overflow}
                 renderAfterTab={renderAfterTab}
               >
-                <Tab id="inbox">Inbox</Tab>
-                {changed ? <Tab id=" reports ">Reports</Tab> : <Tab id="drafts">Drafts</Tab>}
-                <Tab id="archive" isDisabled>
+                <TabsTrigger id="inbox">Inbox</TabsTrigger>
+                {changed ? (
+                  <TabsTrigger id=" reports ">Reports</TabsTrigger>
+                ) : (
+                  <TabsTrigger id="drafts">Drafts</TabsTrigger>
+                )}
+                <TabsTrigger id="archive" isDisabled>
                   Archive
-                </Tab>
-                <Tab id="settings">Settings</Tab>
-              </TabList>
+                </TabsTrigger>
+                <TabsTrigger id="settings">Settings</TabsTrigger>
+              </TabsList>
               <Cluster role="toolbar" aria-label="Mailbox actions" justify="end" grow="none">
                 <Button icon={InfoGlyph} label="Refresh" size="sm" />
               </Cluster>
             </Cluster>
-            <TabPanel id="inbox">Inbox messages.</TabPanel>
+            <TabsContent id="inbox">Inbox messages.</TabsContent>
             {changed ? (
-              <TabPanel id=" reports ">Report messages.</TabPanel>
+              <TabsContent id=" reports ">Report messages.</TabsContent>
             ) : (
-              <TabPanel id="drafts">Draft messages.</TabPanel>
+              <TabsContent id="drafts">Draft messages.</TabsContent>
             )}
-            <TabPanel id="archive">Archived messages.</TabPanel>
-            <TabPanel id="settings">Mailbox settings.</TabPanel>
+            <TabsContent id="archive">Archived messages.</TabsContent>
+            <TabsContent id="settings">Mailbox settings.</TabsContent>
           </Tabs>
         </div>
       </UiProvider>

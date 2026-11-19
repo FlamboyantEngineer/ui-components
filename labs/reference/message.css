@@ -1,0 +1,31 @@
+/* Message */
+
+.ui-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.ui-message__content {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-message[data-align='end'] > .ui-message__content {
+  align-items: flex-end;
+}
+
+.ui-message__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.ui-message[data-align='end'] > .ui-message__footer {
+  justify-content: flex-end;
+}

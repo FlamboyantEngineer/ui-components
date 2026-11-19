@@ -146,7 +146,7 @@ test.describe('Chat Message Actions lab', () => {
     await expect(dialog).toBeVisible();
     await expect(own).toHaveAttribute('data-open', 'true');
     await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
-    await expectSettled(page.locator('.ui-modal-overlay, .ui-modal').first());
+    await expectSettled(page.locator('.ui-dialog').first());
     await lab.expectAccessible('[role="alertdialog"]');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

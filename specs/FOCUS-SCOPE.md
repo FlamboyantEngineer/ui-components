@@ -1,6 +1,6 @@
 # Focus Scope
 
-`FocusScope` manages focus for a region of content: it can keep Tab and Shift+Tab inside the region (a focus trap), move focus into it when it mounts and return focus when it unmounts. It is built on React Aria's `FocusScope` (from `react-aria`), the same scope React Aria's dialogs, popovers and menus use, so scopes nest with them. Unlike React Aria's, which renders no element, it wraps its content in one element with a hook so a host can target the region. `useFocusManager` returns a library `FocusManager` that moves focus within the nearest scope, for arrow-key navigation the caller builds. [Modal](MODAL.md) manages its own focus; use a focus scope for regions that are not dialogs, such as an inline editor or a panel that takes over the keyboard while open.
+`FocusScope` manages focus for a region of content: it can keep Tab and Shift+Tab inside the region (a focus trap), move focus into it when it mounts and return focus when it unmounts. It is built on React Aria's `FocusScope` (from `react-aria`), the same scope React Aria's dialogs, popovers and menus use, so scopes nest with them. Unlike React Aria's, which renders no element, it wraps its content in one element with a hook so a host can target the region. `useFocusManager` returns a library `FocusManager` that moves focus within the nearest scope, for arrow-key navigation the caller builds. [Dialog](DIALOG.md) manages its own focus; use a focus scope for regions that are not dialogs, such as an inline editor or a panel that takes over the keyboard while open.
 
 ## UIC-FOCUS-SCOPE-1 - Contract
 
@@ -50,7 +50,7 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scop
 
 ### UIC-FOCUS-SCOPE-2.5 - Initial focus
 
-`initialFocus`, a ref or a function returning an element inside the scope (the vocabulary of [Modal](MODAL.md#uic-modal-34---chosen-focus-targets)), shall receive focus when the scope mounts, ahead of `autoFocus`'s first tabbable element. When it names no element in the document, the scope falls back to `autoFocus`.
+`initialFocus`, a ref or a function returning an element inside the scope (the vocabulary of [Dialog](DIALOG.md#uic-dialog-34---chosen-focus-targets)), shall receive focus when the scope mounts, ahead of `autoFocus`'s first tabbable element. When it names no element in the document, the scope falls back to `autoFocus`.
 
 Implementation: `src/components/focus-scope/focus-scope.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scope.spec.ts`

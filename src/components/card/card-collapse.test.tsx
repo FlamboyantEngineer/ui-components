@@ -7,7 +7,7 @@ import { deepActive, inShadow, ShadowHost, shadowRootOf } from '../../../test/sh
 import { UiProvider } from '../../core/provider.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Board } from '../board/board.js';
-import { Card, CardAction, CardGrid, CardGridItem, CardTitle } from './index.js';
+import { Card, CardGrid, CardGridItem, CardTitle, CardTitleAction } from './index.js';
 
 /** A fake `ResizeObserver` whose `resize` reports a new border box for an observed element. */
 function installResizeObserver() {
@@ -560,7 +560,7 @@ describe('Card adaptive presentation', () => {
           header={
             <>
               <CardTitle>
-                <CardAction>Record</CardAction>
+                <CardTitleAction>Record</CardTitleAction>
               </CardTitle>
               <label>
                 Note <input />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '../../src/components/icon/icon.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/tabs/tabs.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { StarGlyph } from '../../src/core/glyphs.js';
 import { LabSection } from './chrome/index.js';
@@ -37,17 +37,17 @@ function ForceMountedPanels() {
         Keep hidden panels mounted
       </Switch>
       <Tabs key={String(isForced)}>
-        <TabList aria-label="Day notes">
+        <TabsList aria-label="Day notes">
           {notes.map((note) => (
-            <Tab key={note.id} id={note.id}>
+            <TabsTrigger key={note.id} id={note.id}>
               {note.label}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {notes.map((note) => (
-          <TabPanel key={note.id} id={note.id} shouldForceMount={isForced}>
+          <TabsContent key={note.id} id={note.id} shouldForceMount={isForced}>
             <DraftPanelContent day={note.label} onMount={onMount} />
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p>
@@ -70,13 +70,13 @@ function ComposedTabs() {
           <div {...props} data-lab-swapped="tabs" data-lab-orientation={state.orientation} />
         )}
       >
-        <TabList
+        <TabsList
           aria-label="Composed tabs"
           render={(props, state) => (
             <div {...props} data-lab-swapped="list" data-lab-orientation={state.orientation} />
           )}
         >
-          <Tab
+          <TabsTrigger
             id="starred"
             textValue="Starred"
             aria-label="Starred"
@@ -89,8 +89,8 @@ function ComposedTabs() {
             )}
           >
             <Icon icon={StarGlyph} />
-          </Tab>
-          <Tab
+          </TabsTrigger>
+          <TabsTrigger
             id="recent"
             textValue="Recent"
             onContextMenu={(event) => {
@@ -102,11 +102,11 @@ function ComposedTabs() {
             )}
           >
             Recent
-          </Tab>
-          <Tab id="shared">Shared</Tab>
-        </TabList>
+          </TabsTrigger>
+          <TabsTrigger id="shared">Shared</TabsTrigger>
+        </TabsList>
         {['starred', 'recent', 'shared'].map((id) => (
-          <TabPanel
+          <TabsContent
             key={id}
             id={id}
             render={(props, state) => (
@@ -118,7 +118,7 @@ function ComposedTabs() {
             )}
           >
             {`The ${id} files.`}
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p>
@@ -133,18 +133,18 @@ function IconTabInMenu() {
   return (
     <div data-lab-case="text-value" style={{ width: 200 }}>
       <Tabs>
-        <TabList aria-label="Reading list" overflow="menu">
-          <Tab id="overview">Overview</Tab>
-          <Tab id="activity">Activity</Tab>
-          <Tab id="archive">Archive</Tab>
-          <Tab id="starred" textValue="Starred" aria-label="Starred">
+        <TabsList aria-label="Reading list" overflow="menu">
+          <TabsTrigger id="overview">Overview</TabsTrigger>
+          <TabsTrigger id="activity">Activity</TabsTrigger>
+          <TabsTrigger id="archive">Archive</TabsTrigger>
+          <TabsTrigger id="starred" textValue="Starred" aria-label="Starred">
             <Icon icon={StarGlyph} />
-          </Tab>
-        </TabList>
+          </TabsTrigger>
+        </TabsList>
         {['overview', 'activity', 'archive', 'starred'].map((id) => (
-          <TabPanel key={id} id={id}>
+          <TabsContent key={id} id={id}>
             {`The ${id} list.`}
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
     </div>
@@ -162,7 +162,7 @@ export function TabsCompositionCases() {
       </LabSection>
       <LabSection
         title="Swapped elements, text values and context menus"
-        description="Tabs, TabList, Tab and TabPanel each render through the caller's element, which receives the props and the state (orientation, selection, focus) and shows them as data attributes. Right-click or press the context menu key on Starred or Recent and the caller's onContextMenu reports it."
+        description="Tabs, TabsList, TabsTrigger and TabsContent each render through the caller's element, which receives the props and the state (orientation, selection, focus) and shows them as data attributes. Right-click or press the context menu key on Starred or Recent and the caller's onContextMenu reports it."
       >
         <ComposedTabs />
       </LabSection>

@@ -13,7 +13,7 @@ import { walkTree } from '../../utils/walk-tree.js';
 import { Button } from '../button/button.js';
 import { Choice, ChoiceGroup } from '../choice-group/choice-group.js';
 import { type DateRangeValue, DateTimeField } from '../date-time-field/date-time-field.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { NumberField } from '../number-field/number-field.js';
 import { TextField } from '../text-field/text-field.js';
 import {
@@ -153,7 +153,7 @@ export function TableColumnFilter<T extends TableRow>(props: TableColumnFilterPr
         excludeFromTabOrder
         className={hooks.slotClass('column-filter')}
       />
-      <Modal
+      <Dialog
         title={title}
         placement="bottom start"
         size="sm"
@@ -174,7 +174,7 @@ export function TableColumnFilter<T extends TableRow>(props: TableColumnFilterPr
         >
           <TableFilterField {...props} />
         </Provider>
-      </Modal>
+      </Dialog>
     </DialogTrigger>
   );
 }

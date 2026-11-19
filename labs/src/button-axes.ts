@@ -6,7 +6,7 @@ export const buttonVariants: ButtonVariant[] = [
   'primary',
   'secondary',
   'tertiary',
-  'danger',
+  'destructive',
   'ghost',
   'accent',
   'chip',

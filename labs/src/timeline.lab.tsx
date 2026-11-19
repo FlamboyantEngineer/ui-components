@@ -454,7 +454,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Task menus and editor"
-      description="An item context menu reports the chosen action to the host. Mark complete and Remove demonstrate host-owned updates. Editing forms are host compositions of Modal and fields; see the composition examples. Assignees and links remain part of the timeline presentation."
+      description="An item context menu reports the chosen action to the host. Mark complete and Remove demonstrate host-owned updates. Editing forms are host compositions of Dialog and fields; see the composition examples. Assignees and links remain part of the timeline presentation."
     >
       <TaskEditingDemo />
     </LabSection>

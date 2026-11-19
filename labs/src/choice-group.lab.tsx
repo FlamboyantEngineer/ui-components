@@ -5,6 +5,7 @@ import {
   ChoiceGroup,
   type ChoiceRenderState,
 } from '../../src/components/choice-group/choice-group.js';
+import { RadioGroup, RadioGroupItem } from '../../src/components/choice-group/index.js';
 import { Form } from '../../src/components/form/form.js';
 import type { ControlSize } from '../../src/core/props.js';
 import { multipleChoices } from './choice-group-multiple.js';
@@ -183,6 +184,14 @@ function InputRefs() {
 
 mountLab(
   <>
+    <LabSection title="Radio group parts">
+      <RadioGroup name="view" label="View" defaultValue="grid">
+        <RadioGroupItem value="grid">Grid</RadioGroupItem>
+        <RadioGroupItem value="list" description="Shows more detail">
+          List
+        </RadioGroupItem>
+      </RadioGroup>
+    </LabSection>
     {multipleChoices}
     <div data-lab-family="single">
       <LabSection title="Layouts and states" description="Every label layout against every state.">

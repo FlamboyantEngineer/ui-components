@@ -23,8 +23,8 @@ export interface TabsRenderState {
   orientation: Orientation;
 }
 
-/** The states a `TabPanel` passes to `render` with its element's props. */
-export interface TabPanelRenderState {
+/** The states a `TabsContent` passes to `render` with its element's props. */
+export interface TabsContentRenderState {
   isFocused: boolean;
   isFocusVisible: boolean;
   /** A force-mounted panel whose tab is not selected. */
@@ -52,21 +52,21 @@ export interface TabsProps extends BaseProps, RefProps<HTMLDivElement> {
   keyboardActivation?: TabsKeyboardActivation | undefined;
   /** Tab block size. Defaults to `md`. */
   size?: TabsSize | undefined;
-  /** The `TabList` and the `TabPanel`s. */
+  /** The `TabsList` and the `TabsContent`s. */
   children?: ReactNode;
   /** Replaces the root `<div>` with the caller's own, given its props and state. */
   render?: ElementRender<'div', TabsRenderState> | undefined;
 }
 
-export interface TabPanelProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
-  /** Pairs the panel with the `Tab` of the same `id`. */
+export interface TabsContentProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
+  /** Pairs the panel with the `TabsTrigger` of the same `id`. */
   id?: Key | undefined;
   /** Keeps the panel mounted, inert and hidden, while its tab is not selected. */
   shouldForceMount?: boolean | undefined;
   /** The panel's content. */
   children?: ReactNode;
   /** Replaces the panel's `<div>` with the caller's own, given its props and state. */
-  render?: ElementRender<'div', TabPanelRenderState> | undefined;
+  render?: ElementRender<'div', TabsContentRenderState> | undefined;
 }
 
 type SelectionOptions = Pick<
@@ -101,7 +101,7 @@ function usePersistedSelection({
 }
 
 /**
- * Switches between peer sections of one surface: a `TabList` of `Tab`s and their `TabPanel`s. With
+ * Switches between peer sections of one surface: a `TabsList` of `TabsTrigger`s and their `TabsContent`s. With
  * `persistKey` it remembers the selected tab through the provider's storage.
  */
 export function Tabs({
@@ -147,7 +147,7 @@ export function Tabs({
 }
 
 /** The content shown for the tab with the same `id`. */
-export function TabPanel({ className, id, ...rest }: TabPanelProps) {
+export function TabsContent({ className, id, ...rest }: TabsContentProps) {
   return (
     <AriaTabPanel
       {...rest}
@@ -157,16 +157,16 @@ export function TabPanel({ className, id, ...rest }: TabPanelProps) {
   );
 }
 
-export type { TabProps } from './tab.js';
-export { Tab } from './tab.js';
+export type { TabsTriggerProps } from './tab.js';
+export { TabsTrigger } from './tab.js';
 export type {
-  TabListOverflow,
-  TabListProps,
-  TabListRenderState,
   TabMenuAction,
   TabMenuIcons,
   TabMenuItems,
   TabMove,
   TabNameValidate,
+  TabsListOverflow,
+  TabsListProps,
+  TabsListRenderState,
 } from './tab-list.js';
-export { TabList } from './tab-list.js';
+export { TabsList } from './tab-list.js';

@@ -91,3 +91,12 @@ A `ContextMenu` shall sit on `layer` (`context-menu` by default), so it stacks a
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/menu/menu-popover.tsx`
 Verification: `src/components/context-menu/context-menu.test.tsx`, `e2e/context-menu.spec.ts`
+
+## UIC-CONTEXT-MENU-3 - Composed menu parts
+
+### UIC-CONTEXT-MENU-3.1 - Content and submenus
+
+`ContextMenuContent` draws a `Menu` inside a `ContextMenu` or `ContextMenuTrigger`. Import `ContextMenuGroup`, `ContextMenuItem` and `ContextMenuSeparator` with it. `ContextMenuSub` pairs an item with `ContextMenuSubContent`, which positions a nested `ContextMenuContent`. The aliases use the same items and groups as `Menu`, retaining action routing, selection roles, keyboard access and focus restoration.
+
+Implementation: `src/components/context-menu/index.ts`, `src/components/context-menu/context-menu.tsx`
+Verification: `src/components/context-menu/context-menu-parts.test.tsx`

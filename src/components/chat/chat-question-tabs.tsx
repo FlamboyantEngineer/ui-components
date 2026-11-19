@@ -5,7 +5,7 @@ import { CheckGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { readOwn } from '../../utils/read-own.js';
-import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs/tabs.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   type ChatQuestionAnsweredMark,
@@ -54,11 +54,11 @@ export function QuestionTabs({
       selectedKey={current?.id}
       onSelectionChange={select}
     >
-      <TabList aria-label={strings.questionSteps} scrollButtons>
+      <TabsList aria-label={strings.questionSteps} scrollButtons>
         {questions.map((item, index) => {
           const isAnswered = isQuestionAnswered(item, readOwn(drafts, item.id));
           return (
-            <Tab
+            <TabsTrigger
               key={item.id}
               id={item.id}
               {...hooks.slot('tab', { answered: isAnswered })}
@@ -66,10 +66,10 @@ export function QuestionTabs({
               aria-describedby={isAnswered ? answeredId : undefined}
             >
               {item.header || strings.questionStep(index + 1)}
-            </Tab>
+            </TabsTrigger>
           );
         })}
-      </TabList>
+      </TabsList>
       <span {...hooks.slot('progress')}>
         <span aria-hidden="true">{strings.questionCounter(step + 1, questions.length)}</span>
         <VisuallyHidden as="span">
@@ -81,9 +81,9 @@ export function QuestionTabs({
       </span>
       {/* One panel per tab, as the tabs register them by key; only the selected one renders. */}
       {questions.map((item) => (
-        <TabPanel key={item.id} id={item.id} className={hooks.slotClass('panel')}>
+        <TabsContent key={item.id} id={item.id} className={hooks.slotClass('panel')}>
           {item.id === current?.id ? children : null}
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );

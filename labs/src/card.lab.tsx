@@ -2,7 +2,17 @@ import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { Card, type CardVariant } from '../../src/components/card/card.js';
-import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
+import {
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardGrid,
+  CardGridItem,
+  CardHeader,
+  CardTitle,
+  CardTitleAction,
+} from '../../src/components/card/index.js';
 import { NumberField } from '../../src/components/number-field/index.js';
 import { Section } from '../../src/components/section-header/section-header.js';
 import type { Density, Selection } from '../../src/core/props.js';
@@ -168,11 +178,11 @@ function ActionDemo() {
             href="#gardens"
             header={
               <CardTitle>
-                <CardAction>Botanic gardens</CardAction>
+                <CardTitleAction>Botanic gardens</CardTitleAction>
               </CardTitle>
             }
           >
-            A custom header whose CardAction is the card action.
+            A custom header whose CardTitleAction is the card action.
           </Card>
         </div>
       </div>
@@ -293,6 +303,19 @@ function SwitchingDemo() {
 
 mountLab(
   <>
+    <LabSection title="Composed card">
+      <Card isCollapsible>
+        <CardHeader>
+          <CardTitle>Field notes</CardTitle>
+          <CardDescription>Observations from the west trail</CardDescription>
+          <CardAction>
+            <Button size="sm">Edit notes</Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent>Three new sightings</CardContent>
+        <CardFooter>Updated Monday</CardFooter>
+      </Card>
+    </LabSection>
     <LabSection
       title="Variants, densities and states"
       description="Every surface and density, resting, selected, interactive (hover it) and flush."

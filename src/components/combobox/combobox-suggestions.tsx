@@ -1,7 +1,8 @@
 'use client';
 
 import { type ReactNode, type RefObject, useContext, useId } from 'react';
-import type { ControlSize, SelectableState } from '../../core/props.js';
+import type { OverlayPositionProps } from '../../core/events.js';
+import type { BaseProps, ControlSize, RefProps, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Collection,
@@ -51,6 +52,7 @@ interface ComboboxOptionDisplay {
 }
 
 interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
+  popoverProps?: (BaseProps & OverlayPositionProps & RefProps<HTMLElement>) | undefined;
   size: ControlSize;
   /** The suggestions, in display order. */
   items: Iterable<ComboboxItem>;
@@ -213,6 +215,12 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   useOpenState(props.isOpen);
   const { inputText, completion, listHeader, inputRef } = props;
   const filterText = completion?.text === inputText ? completion.typed : inputText;
+  const {
+    className,
+    offset = DEFAULT_DROPDOWN_OFFSET,
+    containerPadding = DEFAULT_OVERLAY_GUTTER,
+    ...popover
+  } = props.popoverProps ?? {};
   return (
     <>
       <PopoverPresence
@@ -221,13 +229,14 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
         onClose={() => state?.close()}
       />
       <Popover
-        {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
+        {...popover}
+        {...hooks.slot('popover', { layer: 'dropdown', size: props.size }, className)}
         isOpen={isShown}
         onOpenChange={(open) => {
           if (!open) state?.close();
         }}
-        offset={DEFAULT_DROPDOWN_OFFSET}
-        containerPadding={DEFAULT_OVERLAY_GUTTER}
+        offset={offset}
+        containerPadding={containerPadding}
         style={style}
         // Focus leaving the popover closes it, unless it returns to the input from the list header.
         shouldCloseOnInteractOutside={(element) => element !== inputRef.current}

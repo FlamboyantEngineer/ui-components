@@ -777,3 +777,15 @@ test('UIC-CARD-6.2 collapses and expands each record from its toggle and row 4 f
   await expect(output).toHaveText('true');
   await expect(demo.getByRole('button', { name: 'Collapse row 4' })).toBeVisible();
 });
+
+test('UIC-CARD-8.1 collapses the composed body and footer', async ({ lab, page }) => {
+  await lab.open('card');
+  const card = page.getByRole('region', { name: 'Field notes' });
+  await expect(card.getByRole('button', { name: 'Edit notes' })).toBeVisible();
+  await expect(card.getByText('Three new sightings')).toBeVisible();
+  const toggle = card.getByRole('button', { name: 'Details Field notes' });
+  await toggle.press('Enter');
+  await expect(card.getByText('Three new sightings')).toBeHidden();
+  await expect(card.getByText('Updated Monday')).toBeHidden();
+  await expect(card.getByRole('button', { name: 'Edit notes' })).toBeVisible();
+});

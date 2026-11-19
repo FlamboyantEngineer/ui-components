@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog } from '../../src/components/dialog/dialog.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { ListView, ListViewItem, ListViewSection } from '../../src/components/list-row/index.js';
-import { Modal } from '../../src/components/modal/modal.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { Tree } from '../../src/components/tree/tree.js';
 import type { Key } from '../../src/core/props.js';
@@ -82,7 +82,7 @@ function renameRevision(
   }));
 }
 
-/** The host owns revision data, comparison and restore policy; Modal owns async action feedback. */
+/** The host owns revision data, comparison and restore policy; Dialog owns async action feedback. */
 export function RevisionCollectionRecipe() {
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [restoring, setRestoring] = useState(false);
@@ -129,7 +129,7 @@ export function RevisionCollectionRecipe() {
         Current: {current}
         {comparison ? `; Comparing ${comparison}` : ''}
       </output>
-      <Modal
+      <Dialog
         title="Restore revision"
         description="Replace the current draft with the selected revision?"
         isOpen={restoring}

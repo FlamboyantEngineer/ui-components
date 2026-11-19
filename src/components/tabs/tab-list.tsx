@@ -42,23 +42,23 @@ export type { TabNameValidate } from './tab-rename.js';
 export type { TabMove } from './tab-reorder.js';
 
 /** `scroll` lets an overflowing list scroll; `menu` collapses the tabs that do not fit into a menu. */
-export type TabListOverflow = 'scroll' | 'menu';
+export type TabsListOverflow = 'scroll' | 'menu';
 
-/** The state a `TabList` passes to `render` with its element's props. */
-export interface TabListRenderState {
+/** The state a `TabsList` passes to `render` with its element's props. */
+export interface TabsListRenderState {
   orientation: Orientation;
 }
 
-export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
-  /** The `Tab`s. */
+export interface TabsListProps extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
+  /** The `TabsTrigger`s. */
   children?: ReactNode;
   /** Replaces the list's `<div>` with the caller's own, given its props and state. */
-  render?: ElementRender<'div', TabListRenderState> | undefined;
+  render?: ElementRender<'div', TabsListRenderState> | undefined;
   /**
    * What a horizontal list does with tabs that do not fit: `scroll` (the default) or `menu`, which
    * keeps the selected tab and as many others as fit and lists the rest in a "more" menu.
    */
-  overflow?: TabListOverflow | undefined;
+  overflow?: TabsListOverflow | undefined;
   /**
    * Draws previous and next buttons beside a horizontal list that scrolls, at an edge hiding tabs.
    * The list takes the mouse wheel with or without them.
@@ -98,7 +98,7 @@ export interface TabListProps extends BaseProps, AriaLabellingProps, RefProps<HT
 
 interface ListKeyOptions {
   state: TabListState<object> | null;
-  onRemove: TabListProps['onRemove'];
+  onRemove: TabsListProps['onRemove'];
   rename: TabRename | null;
   onReorderKey: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
 }
@@ -107,10 +107,10 @@ type ListKeyHandlers = Pick<JSX.IntrinsicElements['div'], 'onKeyDown' | 'onKeyDo
 
 /** Adds the list's keys to its element, which React Aria keeps its own keyboard handling on. */
 function renderListKeys(
-  render: TabListProps['render'],
+  render: TabsListProps['render'],
   handlers: ListKeyHandlers,
   hasActions = false,
-): TabListProps['render'] {
+): TabsListProps['render'] {
   return (props, state) => {
     const merged = mergeProps(props, handlers);
     if (hasActions) {
@@ -183,7 +183,7 @@ function listKeyShortcuts(options: {
  */
 function useTabActions(
   props: Pick<
-    TabListProps,
+    TabsListProps,
     | 'onRemove'
     | 'onRename'
     | 'validateName'
@@ -265,7 +265,7 @@ function useTabActions(
  * collapses the tabs that do not fit into a "more" menu; it can draw scroll buttons, removable tabs
  * and an add button, rename and reorder its tabs, and give each tab a menu of its actions.
  */
-export function TabList({
+export function TabsList({
   overflow = 'scroll',
   scrollButtons = false,
   showEdgeFades = true,
@@ -281,7 +281,7 @@ export function TabList({
   className,
   ref,
   ...rest
-}: TabListProps) {
+}: TabsListProps) {
   const state = useContext(TabListStateContext);
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
   const shape = resolveTabListParts({ orientation, overflow, scrollButtons, showEdgeFades });

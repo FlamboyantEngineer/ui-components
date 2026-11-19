@@ -572,3 +572,13 @@
   color: var(--ref-muted);
   cursor: not-allowed;
 }
+
+.ui-select-field__select:has(> .ui-select-field__select-label) {
+  flex-direction: column;
+  align-items: start;
+  gap: 4px;
+}
+
+.ui-select-field__select-label {
+  font-weight: var(--ref-font-weight-medium);
+}

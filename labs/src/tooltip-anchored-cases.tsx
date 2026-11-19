@@ -1,6 +1,6 @@
 import { type RefObject, useId, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal } from '../../src/components/modal/modal.js';
+import { Dialog } from '../../src/components/dialog/dialog.js';
 import {
   AnchoredTooltip,
   type AnchoredTooltipRelationship,
@@ -20,16 +20,16 @@ function ModalHint() {
   return (
     <div data-lab-demo="anchored-modal">
       <Button onPress={() => setOpen(true)}>Open build details</Button>
-      <Modal
+      <Dialog
         isOpen={isOpen}
         onOpenChange={setOpen}
         title="Build details"
         cancelAction={{ label: 'Close' }}
       >
-        <span ref={anchor} role="status" aria-label="Modal build status">
+        <span ref={anchor} role="status" aria-label="Dialog build status">
           Passing
         </span>
-      </Modal>
+      </Dialog>
       <AnchoredTooltip
         isOpen={isOpen}
         anchor={anchor}

@@ -26,7 +26,7 @@ function Viewer(props: Partial<MediaViewerProps>) {
 }
 
 function title() {
-  return document.querySelector('.ui-modal__title')?.textContent;
+  return document.querySelector('.ui-dialog__title')?.textContent;
 }
 
 /** Reports the viewport's client size to the stage, as a browser would. */
@@ -99,11 +99,11 @@ describe('MediaViewer', () => {
     const dialog = screen.getByRole('dialog', { name: 'Harbour.jpg' });
     expect(dialog).toHaveAccessibleDescription('Boats at dawn');
     const root = document.querySelector('.ui-media-viewer');
-    expect(root).toHaveClass('ui-modal', 'extra');
+    expect(root).toHaveClass('ui-dialog', 'extra');
     expect(root).toHaveAttribute('data-size', 'full');
     expect(root).toHaveAttribute('data-body-layout', 'column');
     expect(root).toHaveAttribute('data-test', 'viewer');
-    expect(document.querySelector('.ui-modal__actions')).toBeNull();
+    expect(document.querySelector('.ui-dialog__actions')).toBeNull();
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expectHooksMatchSpec(document.body, 'MEDIA-VIEWER', { callerAttributes: ['data-test'] });

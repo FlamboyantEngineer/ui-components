@@ -17,13 +17,11 @@ import type {
 } from '../../core/events.js';
 import { CloseGlyph } from '../../core/glyphs.js';
 import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Dialog,
   DialogTrigger,
-  Heading,
   OverlayArrow,
   OverlayTriggerStateContext,
   Popover as AriaPopover,
@@ -38,6 +36,8 @@ import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useScrollGuardedState } from '../../utils/use-scroll-guarded-state.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { popoverHooks as hooks } from './popover-hooks.js';
+import { PopoverDescriptionContext, PopoverHeader, PopoverTitle } from './popover-parts.js';
 import { PopoverPresence } from './popover-presence.js';
 import { usePopoverGutter } from './use-popover-gutter.js';
 
@@ -96,6 +96,8 @@ export interface PopoverProps
   'aria-label'?: string | undefined;
   /** Names the dialog by another element. */
   'aria-labelledby'?: string | undefined;
+  /** Describes the dialog by another element, overriding its `PopoverDescription`. */
+  'aria-describedby'?: string | undefined;
   /** Shows a close button in the header. */
   showCloseButton?: boolean | undefined;
   /** Shows an arrow pointing at the trigger. */
@@ -104,11 +106,10 @@ export interface PopoverProps
   children?: ReactNode | ((renderProps: PopoverRenderProps) => ReactNode);
 }
 
-interface PopoverHeaderProps extends Pick<PopoverProps, 'title' | 'showCloseButton'> {
+interface DefaultPopoverHeaderProps extends Pick<PopoverProps, 'title' | 'showCloseButton'> {
   onClose: () => void;
 }
 
-const hooks = createHooks('popover', ['arrow', 'dialog', 'header', 'title', 'close', 'body']);
 const PopoverTriggerContext = createContext(false);
 
 /** The opener toggles on press; its focus must not close the popover before that press ends. */
@@ -125,16 +126,12 @@ function useTriggerDismissal(
   return inTrigger && isNonModal ? onOutside : shouldClose;
 }
 
-function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) {
+function DefaultPopoverHeader({ title, showCloseButton, onClose }: DefaultPopoverHeaderProps) {
   const strings = useUiStrings();
   if (isEmptyNode(title) && !showCloseButton) return null;
   return (
-    <div {...hooks.slot('header')}>
-      {isEmptyNode(title) ? null : (
-        <Heading slot="title" className={hooks.slotClass('title')}>
-          {title}
-        </Heading>
-      )}
+    <PopoverHeader>
+      {isEmptyNode(title) ? null : <PopoverTitle>{title}</PopoverTitle>}
       {showCloseButton ? (
         <Button
           icon={CloseGlyph}
@@ -144,7 +141,7 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
           onPress={onClose}
         />
       ) : null}
-    </div>
+    </PopoverHeader>
   );
 }
 
@@ -256,10 +253,12 @@ export function Popover({
   id,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledby,
+  'aria-describedby': ariaDescribedby,
   className,
   ...rest
 }: PopoverProps) {
   const trigger = useContext(OverlayTriggerStateContext);
+  const [descriptionId, setDescriptionId] = useState<string>();
   const shouldCloseOnInteractOutside = useTriggerDismissal(
     rest.shouldCloseOnInteractOutside,
     rest.isNonModal === true,
@@ -279,6 +278,7 @@ export function Popover({
           id={id}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledby}
+          aria-describedby={ariaDescribedby ?? descriptionId}
           className={hooks.slotClass('dialog')}
           // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element: an
           // Escape the content already handled stops there, before React Aria's popover closes.
@@ -291,12 +291,14 @@ export function Popover({
             />
           )}
         >
-          <PopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
+          <DefaultPopoverHeader title={title} showCloseButton={showCloseButton} onClose={close} />
           {children === undefined || children === null ? null : (
             <div {...hooks.slot('body')}>
-              <HeadingLevelContext value={dialogTitleLevel}>
-                {typeof children === 'function' ? children({ close }) : children}
-              </HeadingLevelContext>
+              <PopoverDescriptionContext value={setDescriptionId}>
+                <HeadingLevelContext value={dialogTitleLevel}>
+                  {typeof children === 'function' ? children({ close }) : children}
+                </HeadingLevelContext>
+              </PopoverDescriptionContext>
             </div>
           )}
         </Dialog>
@@ -305,4 +307,10 @@ export function Popover({
   );
 }
 
+export type {
+  PopoverDescriptionProps,
+  PopoverHeaderProps,
+  PopoverTitleProps,
+} from './popover-parts.js';
+export { PopoverDescription, PopoverHeader, PopoverTitle } from './popover-parts.js';
 export { PopoverPresence } from './popover-presence.js';

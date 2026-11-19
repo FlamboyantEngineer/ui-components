@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { CodeEditor } from '../../src/components/code-editor/code-editor.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
 import { Table } from '../../src/components/table/table.js';
@@ -76,9 +76,9 @@ export function HeaderFilter() {
   const [sorted, setSorted] = useState(0);
   return (
     <div data-lab-demo="header-filter">
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Filter fruit</Button>
-        <Modal
+        <Dialog
           title="Filter fruit"
           primaryAction={{
             label: 'Apply',
@@ -103,8 +103,8 @@ export function HeaderFilter() {
               row.name.toLowerCase().includes(query.toLowerCase()),
             )}
           />
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       <output aria-label="Applied filters">{saved}</output>
       <output aria-label="Header sorts">{sorted}</output>
     </div>

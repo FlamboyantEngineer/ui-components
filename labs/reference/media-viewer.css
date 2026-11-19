@@ -1,6 +1,6 @@
 /* Media Viewer: a full-size modal with a stage, header controls and a thumbnail strip. */
 
-.ui-media-viewer .ui-modal__body {
+.ui-media-viewer .ui-dialog__body {
   min-height: 0;
   padding: 0;
 }
@@ -9,20 +9,20 @@
  * In a narrow viewer the title and Close share the first row and the controls wrap onto the rows
  * below, rather than squeezing the title to nothing.
  */
-.ui-media-viewer .ui-modal__dialog {
+.ui-media-viewer .ui-dialog__dialog {
   container: ui-media-viewer / inline-size;
 }
 
 @container ui-media-viewer (width <= 37.5rem) {
-  .ui-media-viewer .ui-modal__header {
+  .ui-media-viewer .ui-dialog__header {
     flex-wrap: wrap;
   }
 
-  .ui-media-viewer .ui-modal__heading {
+  .ui-media-viewer .ui-dialog__heading {
     flex-basis: calc(100% - 48px);
   }
 
-  .ui-media-viewer .ui-modal__header-actions {
+  .ui-media-viewer .ui-dialog__header-actions {
     flex: 1 1 100%;
     flex-wrap: wrap;
     order: 1;

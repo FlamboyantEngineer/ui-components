@@ -16,7 +16,8 @@ it('UIC-CHOICE-GROUP-1.1 UIC-CHOICE-GROUP-4.1 UIC-SELECT-FIELD-9.1 UIC-CODE-EDIT
   expectTypeOf<CodeEditorProps>().toEqualTypeOf<CodeEditorFieldProps | CodeEditorSurfaceProps>();
   expectTypeOf<CodeEditorSurfaceProps['variant']>().toEqualTypeOf<'surface'>();
   expectTypeOf<PublicApi>().not.toHaveProperty('CheckboxGroup');
-  expectTypeOf<PublicApi>().not.toHaveProperty('RadioGroup');
+  expectTypeOf<PublicApi>().toHaveProperty('RadioGroup');
+  expectTypeOf<PublicApi>().toHaveProperty('RadioGroupItem');
   expectTypeOf<PublicApi>().not.toHaveProperty('Radio');
   expectTypeOf<PublicApi>().not.toHaveProperty('IconSelectField');
   expectTypeOf<PublicApi>().not.toHaveProperty('TreeSelectField');

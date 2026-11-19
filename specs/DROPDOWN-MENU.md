@@ -74,6 +74,15 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdo
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`
 
+## UIC-DROPDOWN-MENU-2 - Composed dropdown menu
+
+### UIC-DROPDOWN-MENU-2.1 - Trigger and content
+
+`DropdownMenuRoot` connects a caller-supplied `Button` to `DropdownMenuContent`. The content puts a `Menu` in an anchored popup and keeps its top-level selection through close and reopen. `DropdownMenuItem`, `DropdownMenuGroup` and `DropdownMenuSeparator` can be imported from the same entry. `DropdownMenuSub` pairs the item opening a submenu with its own `DropdownMenuContent`, using the existing submenu keyboard and placement behavior. A separately selectable group can hold its selection in the caller using `selectedKeys` and `onSelectionChange`.
+
+Implementation: `src/components/dropdown-menu/dropdown-menu-content.tsx`, `src/components/dropdown-menu/index.ts`
+Verification: `src/components/dropdown-menu/dropdown-menu-content.test.tsx`, `e2e/dropdown-menu.spec.ts`
+
 ## Hooks
 
 | Hook                       | Kind  | Values | Description                                                           |

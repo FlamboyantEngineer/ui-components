@@ -18,3 +18,9 @@ export type {
   ComboboxVariant,
 } from './combobox.js';
 export { Combobox } from './combobox.js';
+export {
+  ComboboxContent,
+  type ComboboxContentProps,
+  ComboboxInput,
+  type ComboboxInputProps,
+} from './combobox-parts.js';

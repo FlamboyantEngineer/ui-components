@@ -364,7 +364,7 @@ test('UIC-LOADING-OVERLAY-2.3 announces a full-screen cover over a dialog and bl
     () =>
       document
         .elementFromPoint(innerWidth / 2, innerHeight / 2)
-        ?.closest('.ui-loading-overlay, .ui-modal')?.classList[0] ?? '',
+        ?.closest('.ui-loading-overlay, .ui-dialog')?.classList[0] ?? '',
   );
   expect(owner).toBe('ui-loading-overlay');
   await page.clock.runFor(2000);

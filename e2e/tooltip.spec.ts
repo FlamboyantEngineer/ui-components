@@ -19,6 +19,27 @@ async function usePointer(page: Page) {
 }
 
 test.describe('Tooltip lab', () => {
+  test('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.4 describes a composed trigger on focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const demo = page.locator('[data-lab-demo="composed-hint"]');
+    const trigger = demo.getByRole('button', { name: 'Export', exact: true });
+    const panel = page.getByRole('tooltip', { name: 'Downloads a CSV file' });
+
+    await demo.scrollIntoViewIfNeeded();
+    await demo.getByRole('button', { name: 'Previous control' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(trigger).toBeFocused();
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveAttribute('data-variant', 'info');
+    await expect(trigger).toHaveAccessibleDescription('Downloads a CSV file');
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-TOOLTIP-1.3 Escape remains available to the owning surface', async ({ page, lab }) => {
     await lab.open('tooltip');
     const demo = page.locator('[data-lab-demo="escape-owner"]');
@@ -215,13 +236,13 @@ test.describe('Anchored tooltip lab', () => {
     const hint = page.getByRole('tooltip', { name: 'All modal checks passed' });
     await expect(hint).toBeVisible();
     await expect(
-      dialog.getByRole('status', { name: 'Modal build status' }),
+      dialog.getByRole('status', { name: 'Dialog build status' }),
     ).toHaveAccessibleDescription('All modal checks passed');
     expect(
       await hint.evaluate((node) => node.closest('[inert],[aria-hidden="true"]') === null),
     ).toBe(true);
     await expect(hint).toHaveAttribute('data-layer', 'tooltip');
-    await dialog.locator('.ui-modal__cancel').click();
+    await dialog.locator('.ui-dialog__cancel').click();
     await expect(hint).toHaveCount(0);
   });
 

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Tab, TabList, type TabListProps, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  type TabsListProps,
+  TabsTrigger,
+} from '../../src/components/tabs/tabs.js';
 import { HelpGlyph, InfoGlyph, SearchGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
@@ -52,29 +58,29 @@ function MailTabs({
   const counts = content === 'counts';
   return (
     <Tabs isDisabled={state === 'disabled'}>
-      <TabList aria-label={label}>
-        <Tab
+      <TabsList aria-label={label}>
+        <TabsTrigger
           id="inbox"
           {...(icons ? { icon: InfoGlyph } : {})}
           {...(counts ? { count: 15, countMax: 9, countLabel: '15 unread' } : {})}
         >
           Inbox
-        </Tab>
-        <Tab
+        </TabsTrigger>
+        <TabsTrigger
           id="search"
           isDisabled={state === 'disabled tab'}
           {...(icons ? { icon: SearchGlyph } : {})}
           {...(counts ? { count: 3, countLabel: '3 saved' } : {})}
         >
           Search
-        </Tab>
-        <Tab id="help" {...(icons ? { icon: HelpGlyph } : {})}>
+        </TabsTrigger>
+        <TabsTrigger id="help" {...(icons ? { icon: HelpGlyph } : {})}>
           Help
-        </Tab>
-      </TabList>
-      <TabPanel id="inbox">Inbox messages.</TabPanel>
-      <TabPanel id="search">Saved searches.</TabPanel>
-      <TabPanel id="help">Help topics.</TabPanel>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent id="inbox">Inbox messages.</TabsContent>
+      <TabsContent id="search">Saved searches.</TabsContent>
+      <TabsContent id="help">Help topics.</TabsContent>
     </Tabs>
   );
 }
@@ -84,40 +90,40 @@ function LinkTabs() {
   return (
     <UiProvider navigate={(href) => setRoute(href)}>
       <Tabs selectedKey={route.slice(1)}>
-        <TabList aria-label="Sections">
-          <Tab id="overview" href="#overview">
+        <TabsList aria-label="Sections">
+          <TabsTrigger id="overview" href="#overview">
             Overview
-          </Tab>
-          <Tab id="schedule" href="#schedule">
+          </TabsTrigger>
+          <TabsTrigger id="schedule" href="#schedule">
             Schedule
-          </Tab>
-          <Tab id="contacts" href="#contacts">
+          </TabsTrigger>
+          <TabsTrigger id="contacts" href="#contacts">
             Contacts
-          </Tab>
-        </TabList>
-        <TabPanel id="overview">The overview section.</TabPanel>
-        <TabPanel id="schedule">The schedule section.</TabPanel>
-        <TabPanel id="contacts">The contacts section.</TabPanel>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent id="overview">The overview section.</TabsContent>
+        <TabsContent id="schedule">The schedule section.</TabsContent>
+        <TabsContent id="contacts">The contacts section.</TabsContent>
       </Tabs>
       <p data-lab-output="">Navigated to {route}</p>
     </UiProvider>
   );
 }
 
-function CityTabs({ label, ...list }: { label: string } & Partial<TabListProps>) {
+function CityTabs({ label, ...list }: { label: string } & Partial<TabsListProps>) {
   return (
     <Tabs>
-      <TabList aria-label={label} {...list}>
+      <TabsList aria-label={label} {...list}>
         {cities.map((city) => (
-          <Tab key={city} id={city}>
+          <TabsTrigger key={city} id={city}>
             {city}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {cities.map((city) => (
-        <TabPanel key={city} id={city}>
+        <TabsContent key={city} id={city}>
           Notes on {city.toLowerCase()}.
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );
@@ -129,7 +135,7 @@ function EditableTabs() {
   return (
     <div data-lab-demo="editable" style={{ width: 420 }}>
       <Tabs selectedKey={selected} onSelectionChange={setSelected}>
-        <TabList
+        <TabsList
           aria-label="Notes"
           onRemove={(keys) => setNotes(notes.filter((note) => !keys.has(note)))}
           onAdd={() => {
@@ -139,15 +145,15 @@ function EditableTabs() {
           }}
         >
           {notes.map((note) => (
-            <Tab key={note} id={note}>
+            <TabsTrigger key={note} id={note}>
               {note}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {notes.map((note) => (
-          <TabPanel key={note} id={note}>
+          <TabsContent key={note} id={note}>
             The {note.toLowerCase()} note.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="notes">Notes: {notes.join(', ')}</p>
@@ -159,16 +165,16 @@ mountLab(
   <>
     <LabSection title="Count appearances">
       <Tabs>
-        <TabList aria-label="Count appearances">
-          <Tab id="quiet-count" count={7}>
+        <TabsList aria-label="Count appearances">
+          <TabsTrigger id="quiet-count" count={7}>
             Quiet
-          </Tab>
-          <Tab id="solid-count" count={128} countVariant="solid">
+          </TabsTrigger>
+          <TabsTrigger id="solid-count" count={128} countVariant="solid">
             Vibrant
-          </Tab>
-        </TabList>
-        <TabPanel id="quiet-count">Quiet list counts</TabPanel>
-        <TabPanel id="solid-count">Vibrant count</TabPanel>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent id="quiet-count">Quiet list counts</TabsContent>
+        <TabsContent id="solid-count">Vibrant count</TabsContent>
       </Tabs>
     </LabSection>
     <LabSection title="Orientation and sizes">
@@ -176,17 +182,17 @@ mountLab(
         axes={{ orientation: ['horizontal', 'vertical'], size: sizes }}
         render={({ orientation, size }) => (
           <Tabs orientation={orientation} size={size}>
-            <TabList aria-label={`Fruit, ${orientation}, ${size}`}>
+            <TabsList aria-label={`Fruit, ${orientation}, ${size}`}>
               {fruit.map((item) => (
-                <Tab key={item.id} id={item.id}>
+                <TabsTrigger key={item.id} id={item.id}>
                   {item.label}
-                </Tab>
+                </TabsTrigger>
               ))}
-            </TabList>
+            </TabsList>
             {fruit.map((item) => (
-              <TabPanel key={item.id} id={item.id}>
+              <TabsContent key={item.id} id={item.id}>
                 {item.text}
-              </TabPanel>
+              </TabsContent>
             ))}
           </Tabs>
         )}
@@ -242,17 +248,17 @@ mountLab(
         </UiProvider>
         <div data-lab-wheel="fits" style={{ width: 360 }}>
           <Tabs>
-            <TabList aria-label="Tabs that fit">
+            <TabsList aria-label="Tabs that fit">
               {fruit.map((item) => (
-                <Tab key={item.id} id={item.id}>
+                <TabsTrigger key={item.id} id={item.id}>
                   {item.label}
-                </Tab>
+                </TabsTrigger>
               ))}
-            </TabList>
+            </TabsList>
             {fruit.map((item) => (
-              <TabPanel key={item.id} id={item.id}>
+              <TabsContent key={item.id} id={item.id}>
                 {item.text}
-              </TabPanel>
+              </TabsContent>
             ))}
           </Tabs>
         </div>
@@ -291,16 +297,16 @@ mountLab(
       description="Fractional caps round down; invalid caps show the full count."
     >
       <Tabs>
-        <TabList aria-label="Count caps">
-          <Tab id="fractional" count={5.9} countMax={2.9}>
+        <TabsList aria-label="Count caps">
+          <TabsTrigger id="fractional" count={5.9} countMax={2.9}>
             Fractional cap
-          </Tab>
-          <Tab id="invalid" count={5.9} countMax={Number.NaN}>
+          </TabsTrigger>
+          <TabsTrigger id="invalid" count={5.9} countMax={Number.NaN}>
             Invalid cap
-          </Tab>
-        </TabList>
-        <TabPanel id="fractional">The cap rounds down to 2.</TabPanel>
-        <TabPanel id="invalid">An invalid cap shows the full count.</TabPanel>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent id="fractional">The cap rounds down to 2.</TabsContent>
+        <TabsContent id="invalid">An invalid cap shows the full count.</TabsContent>
       </Tabs>
     </LabSection>
     <LabSection
@@ -369,17 +375,17 @@ mountLab(
       description="Arrow keys move focus only; Space or Enter selects the focused tab."
     >
       <Tabs keyboardActivation="manual">
-        <TabList aria-label="Fruit, manual">
+        <TabsList aria-label="Fruit, manual">
           {fruit.map((item) => (
-            <Tab key={item.id} id={item.id}>
+            <TabsTrigger key={item.id} id={item.id}>
               {item.label}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {fruit.map((item) => (
-          <TabPanel key={item.id} id={item.id}>
+          <TabsContent key={item.id} id={item.id}>
             {item.text}
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
     </LabSection>

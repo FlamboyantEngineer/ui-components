@@ -117,7 +117,7 @@ function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps)
 /**
  * A multi-step task: the list of steps, the current step's panel, and Back, Skip, Next and Finish.
  * Next checks the step's fields as a form submit does, then the step's own `validate`, before
- * moving on; focus moves to the new step's heading. It renders inline or inside a `Modal`. Give it
+ * moving on; focus moves to the new step's heading. It renders inline or inside a `Dialog`. Give it
  * a `key` with the record's identity when it moves to another record through the same step IDs, so
  * a check still running for the old record is aborted.
  */

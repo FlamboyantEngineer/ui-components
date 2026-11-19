@@ -11,6 +11,8 @@ export type DisclosureIndicatorPosition = 'start' | 'end';
 interface DisclosureParts {
   /** The title's heading level; the panel's content takes the levels below it. */
   level: HeadingLevel;
+  /** Whether the root establishes an outline level. */
+  hasHeading: boolean;
   indicatorPosition: DisclosureIndicatorPosition;
 }
 
@@ -29,5 +31,6 @@ export const disclosureGroupHooks = createHooks('disclosure-group');
 /** The enclosing disclosure's heading level and indicator position. */
 export const DisclosurePartsContext = createContext<DisclosureParts>({
   level: 3,
+  hasHeading: true,
   indicatorPosition: 'start',
 });

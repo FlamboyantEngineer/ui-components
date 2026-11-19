@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { SelectField } from './select-field.js';
 
 const options = [
@@ -14,7 +14,7 @@ describe('SelectField filtered cancellation', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <Modal isOpen title="Fruit settings">
+      <Dialog isDismissable={false} isOpen title="Fruit settings">
         <SelectField
           label="Fruit"
           options={options}
@@ -22,7 +22,7 @@ describe('SelectField filtered cancellation', () => {
           filterable
           onChange={onChange}
         />
-      </Modal>,
+      </Dialog>,
     );
     const trigger = screen.getByRole('button', { name: 'Pear Fruit' });
     await user.click(trigger);

@@ -3,7 +3,7 @@ import {
   ChatTranscript,
   type ChatTranscriptPresentation,
 } from '../../src/components/chat-transcript/index.js';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/tabs/tabs.js';
 import { at, getNow, helper, maria } from './chat-transcript-message-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
@@ -39,11 +39,11 @@ function PanelConversation({
       }}
     >
       <Tabs defaultSelectedKey="conversation">
-        <TabList aria-label={`Panel ${name}`}>
-          <Tab id="conversation">Conversation</Tab>
-          <Tab id="notes">Notes</Tab>
-        </TabList>
-        <TabPanel id="conversation">
+        <TabsList aria-label={`Panel ${name}`}>
+          <TabsTrigger id="conversation">Conversation</TabsTrigger>
+          <TabsTrigger id="notes">Notes</TabsTrigger>
+        </TabsList>
+        <TabsContent id="conversation">
           <div style={{ height: 280 }}>
             <ChatTranscript
               aria-label={`Conversation in a ${width} panel, ${presentation}`}
@@ -72,8 +72,8 @@ function PanelConversation({
               ))}
             </ChatTranscript>
           </div>
-        </TabPanel>
-        <TabPanel id="notes">Notes for the trip.</TabPanel>
+        </TabsContent>
+        <TabsContent id="notes">Notes for the trip.</TabsContent>
       </Tabs>
     </div>
   );

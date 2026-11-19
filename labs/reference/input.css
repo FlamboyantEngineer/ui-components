@@ -1,0 +1,30 @@
+.ui-input {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: var(--ref-control-height-md);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-input[data-focus-visible] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
+.ui-input[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-input[data-disabled] {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}

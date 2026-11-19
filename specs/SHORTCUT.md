@@ -131,7 +131,7 @@ Verification: `src/components/shortcut/shortcut-scope.test.tsx`, `e2e/shortcut.s
 
 ### UIC-SHORTCUT-4.2 - Modals and handled presses
 
-A press from inside a modal overlay (a blocking or anchored `Modal`, a `Drawer`, the `CommandPalette` or a modal `Tour` that is not leaving, or any `aria-modal` element; a non-modal `Modal` or `Tour` does not hold the page) shall answer only the shortcuts of scopes within that overlay; document-wide shortcuts and scopes outside it stay silent. A press whose default something already prevented answers no shortcut.
+A press from inside a modal overlay (a blocking or anchored `Dialog`, a `Drawer`, the `CommandPalette` or a modal `Tour` that is not leaving, or any `aria-modal` element; a non-modal `Dialog` or `Tour` does not hold the page) shall answer only the shortcuts of scopes within that overlay; document-wide shortcuts and scopes outside it stay silent. A press whose default something already prevented answers no shortcut.
 
 Implementation: `src/components/shortcut/shortcut-registry.ts`
 Verification: `src/components/shortcut/shortcut-scope.test.tsx`

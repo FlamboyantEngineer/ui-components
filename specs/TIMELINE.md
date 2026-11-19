@@ -136,7 +136,7 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 
 ### UIC-TIMELINE-2.6 - Host-owned item editor
 
-Withdrawn as a built-in library form. Hosts compose Modal, TextField, DateTimeField and NumberField, own the draft and validation, and apply saved edits to their items. `TimelineEditorComposition` demonstrates this composition with shared reference styling.
+Withdrawn as a built-in library form. Hosts compose Dialog, TextField, DateTimeField and NumberField, own the draft and validation, and apply saved edits to their items. `TimelineEditorComposition` demonstrates this composition with shared reference styling.
 
 Implementation: `src/components/timeline/timeline.tsx`, `labs/src/composition-editors.tsx`
 Verification: `labs/src/composition-editors.test.tsx`
@@ -228,4 +228,4 @@ Verification: `src/components/timeline/timeline.test.tsx`
 | `data-conflict`             | state     | `true`                                            | On a connector, and an item, that starts before it may.                    |
 | `--ui-timeline-level`       | property  |                                                   | On a row label: the row's depth, from 1, for indentation.                  |
 
-Hosts own item editing forms. See `TimelineEditorComposition` in `labs/src/composition-editors.tsx`, using Modal, TextField, DateTimeField and NumberField with the reference stylesheet.
+Hosts own item editing forms. See `TimelineEditorComposition` in `labs/src/composition-editors.tsx`, using Dialog, TextField, DateTimeField and NumberField with the reference stylesheet.

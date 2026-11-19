@@ -272,6 +272,15 @@ A controlled `value` the caller changes shall call no `onChange`; the label the 
 Implementation: `src/components/combobox/combobox-reasons.ts`
 Verification: `src/components/combobox/combobox-reasons.test.tsx`
 
+## UIC-COMBOBOX-7 - Composed input and suggestions
+
+### UIC-COMBOBOX-7.1 - Parts
+
+A `Combobox` with children shall let the caller place one `ComboboxInput` and one `ComboboxContent`. The input part uses the combobox's usual framed entry with chips, clear and toggle controls. The content part uses its suggestion list and accepts an explicit placement. Both accept a caller class. The root supplies the same value, query, async options, label, and native form behavior in either layout.
+
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-parts.tsx`
+Verification: `src/components/combobox/combobox-parts.test.tsx`, `e2e/composed-pickers.spec.ts`
+
 ## Hooks
 
 | Hook                              | Kind      | Values                                     | Description                                                                                                                                               |

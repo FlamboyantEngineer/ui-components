@@ -8,9 +8,10 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useScopedDisabled } from '../field/field.js';
 import { useChipsLabel } from './combobox-chips.js';
-import { ComboboxField, ComboboxInputs } from './combobox-field.js';
+import { ComboboxInputs } from './combobox-field.js';
 import { comboboxHooks as hooks } from './combobox-hooks.js';
 import type { ComboboxItem, ComboboxOption } from './combobox-options.js';
+import { ComboboxLayout } from './combobox-parts.js';
 import {
   type ComboboxChangeDetails,
   type ComboboxInputChangeDetails,
@@ -26,7 +27,7 @@ import {
   useComboboxModel,
   useInlineCompletionState,
 } from './combobox-state.js';
-import { type ComboboxOptionRenderer, ComboboxSuggestions } from './combobox-suggestions.js';
+import type { ComboboxOptionRenderer } from './combobox-suggestions.js';
 import { decodeComboboxValue, useComboboxValues } from './combobox-values.js';
 
 /** `search` leads the field with a search glyph, for a query completed from suggestions. */
@@ -131,6 +132,8 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** Focuses the input when the combobox mounts. */
   autoFocus?: boolean | undefined;
+  /** Compose the input frame and suggestions using ComboboxInput and ComboboxContent. */
+  children?: ReactNode;
 }
 
 type ComboboxListProps = Pick<
@@ -241,6 +244,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   inputRef,
   onChange,
   name,
+  children,
   ...rest
 }: ComboboxProps<M>) {
   const isDisabled = useScopedDisabled(rest.isDisabled);
@@ -253,8 +257,32 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   const inline = useInlineCompletionState({ completesInline, suggestions });
   const createdRef = useRef<string | null>(null);
   const naming = useChipsLabel({ label, aria, isEnabled: isMultiple, inputRef: input });
-  const list = pickListProps(rest);
   const data = { variant, size, pending: model.isPending };
+  const parts = {
+    field: {
+      variant,
+      size,
+      placeholder,
+      isPending: model.isPending,
+      isEditable: !isDisabled && !isReadOnly,
+      chips: isMultiple ? { label: naming.text, options: model.flatOptions, known } : null,
+      completion: inline.field,
+      input: { ref: input, setRef: setInput },
+    },
+    suggestions: {
+      ...pickListProps(rest),
+      size,
+      items: collection,
+      loading: model.loading,
+      inputText: model.input.text,
+      completion: inline.completion,
+      createdRef,
+      renderEmpty: model.renderEmpty,
+      listHeader: rest.listHeader,
+      inputRef: input,
+      isOpen: model.isOpen,
+    },
+  };
   return (
     <ComboboxMarksContext value={reasons.marksRef}>
       <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
@@ -274,31 +302,9 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       >
         <ComboboxReset {...reset} input={input} isControlled={aria.value !== undefined} />
         <ComboboxLabel label={label} labelRef={naming.labelRef} />
-        <ComboboxField
-          variant={variant}
-          size={size}
-          placeholder={placeholder}
-          isPending={model.isPending}
-          isEditable={!isDisabled && !isReadOnly}
-          chips={isMultiple ? { label: naming.text, options: model.flatOptions, known } : null}
-          completion={inline.field}
-          input={{ ref: input, setRef: setInput }}
-        />
+        <ComboboxLayout parts={parts}>{children}</ComboboxLayout>
         <ComboboxMessages description={description} errorMessage={errorMessage} />
         <ComboboxInputs name={name} isDisabled={isDisabled} owner={aria} />
-        <ComboboxSuggestions
-          {...list}
-          size={size}
-          items={collection}
-          loading={model.loading}
-          inputText={model.input.text}
-          completion={inline.completion}
-          createdRef={createdRef}
-          renderEmpty={model.renderEmpty}
-          listHeader={rest.listHeader}
-          inputRef={input}
-          isOpen={model.isOpen}
-        />
       </AriaComboBox>
     </ComboboxMarksContext>
   );

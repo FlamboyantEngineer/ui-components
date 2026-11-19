@@ -33,7 +33,7 @@ const LAYOUT = `export default function RootLayout({ children }) {
 }
 `;
 // Server pages: they render client components with serializable props and call utilities.
-const ROOT_PAGE = `import { Badge, Button, Disclosure, MetaLine, UiProvider, formatMetaLine, sanitizeHtml } from '${manifest.name}';
+const ROOT_PAGE = `import { Avatar, Badge, Button, Card, Disclosure, MetaLine, UiProvider, formatMetaLine, sanitizeHtml } from '${manifest.name}';
 
 export default function Page() {
   const nodes = sanitizeHtml('<b>Bold</b><script>alert(1)</script>');
@@ -45,6 +45,8 @@ export default function Page() {
         <MetaLine items={['Draft', 'shared']} />
         <Badge>New</Badge>
         <Button>Save</Button>
+        <Avatar name="Ada Rivera" />
+        <Card title="Summary">A short description.</Card>
         <Disclosure title="Opening hours">
           <p>Nine to five.</p>
         </Disclosure>
@@ -57,6 +59,12 @@ export default function Page() {
 const SUBPATH_PAGE = `import { Button } from '${manifest.name}/button';
 import { PlusGlyph, UiProvider } from '${manifest.name}/core';
 import { Disclosure } from '${manifest.name}/disclosure';
+import { InputGroup, InputGroupTextarea } from '${manifest.name}/input-group';
+import { Message, MessageContent } from '${manifest.name}/message';
+import {
+  MessageScroller, MessageScrollerContent, MessageScrollerItem,
+  MessageScrollerProvider, MessageScrollerViewport,
+} from '${manifest.name}/message-scroller';
 import { splitTextDiff } from '${manifest.name}/text-diff/inline';
 
 export default function Page() {
@@ -70,6 +78,18 @@ export default function Page() {
         <Disclosure title="Opening hours">
           <p>Nine to five.</p>
         </Disclosure>
+        <MessageScrollerProvider>
+          <MessageScroller>
+            <MessageScrollerViewport aria-label="Assistant thread">
+              <MessageScrollerContent>
+                <MessageScrollerItem messageId="first">
+                  <Message><MessageContent>First assistant reply.</MessageContent></Message>
+                </MessageScrollerItem>
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+          </MessageScroller>
+        </MessageScrollerProvider>
+        <InputGroup><InputGroupTextarea aria-label="Prompt" /></InputGroup>
       </main>
     </UiProvider>
   );
@@ -346,8 +366,16 @@ try {
     'Draft · 3 · shared',
     '1 sanitized node',
     'class="ui-badge',
+    'Ada Rivera',
+    'A short description.',
   ]);
-  await checkPage(browser, origin, '/subpaths', ['Added new', 'Add row', 'class="ui-glyph']);
+  await checkPage(browser, origin, '/subpaths', [
+    'Added new',
+    'Add row',
+    'class="ui-glyph',
+    'First assistant reply.',
+    'aria-label="Prompt"',
+  ]);
   await checkPage(browser, origin, '/dates', [
     'class="ui-date-time-field',
     'class="ui-relative-time',

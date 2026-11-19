@@ -31,7 +31,15 @@ import {
 } from './button-state.js';
 
 export type ButtonVariant =
-  'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost' | 'accent' | 'chip' | 'link' | 'bare';
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'destructive'
+  | 'ghost'
+  | 'accent'
+  | 'chip'
+  | 'link'
+  | 'bare';
 
 /** `label` wraps children in one label slot; `parts` lays them out directly; `sentence` lets a prose label wrap. */
 export type ButtonContent = 'label' | 'parts' | 'sentence' | 'icon';

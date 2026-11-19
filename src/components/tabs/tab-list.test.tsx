@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
-import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
+import { Tabs, TabsContent, TabsList, type TabsListProps, TabsTrigger } from './tabs.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Fig', 'Grape'];
 
@@ -12,20 +12,20 @@ function Fruit({
   defaultSelectedKey,
   isDisabled,
   ...list
-}: Partial<TabListProps> & { defaultSelectedKey?: Key; isDisabled?: boolean }) {
+}: Partial<TabsListProps> & { defaultSelectedKey?: Key; isDisabled?: boolean }) {
   return (
     <Tabs defaultSelectedKey={defaultSelectedKey} isDisabled={isDisabled}>
-      <TabList aria-label="Fruit" {...list}>
+      <TabsList aria-label="Fruit" {...list}>
         {fruit.map((name) => (
-          <Tab key={name} id={name.toLowerCase()}>
+          <TabsTrigger key={name} id={name.toLowerCase()}>
             {name}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {fruit.map((name) => (
-        <TabPanel key={name} id={name.toLowerCase()}>
+        <TabsContent key={name} id={name.toLowerCase()}>
           About {name}
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );
@@ -60,7 +60,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('TabList', () => {
+describe('TabsList', () => {
   it('UIC-TABS-2.6 UIC-OVERFLOW-LIST-1.7 collapses the tabs that do not fit into a menu after the list', async () => {
     stubBar(160);
     const { container } = render(<Fruit overflow="menu" />);
@@ -254,7 +254,7 @@ describe('TabList', () => {
     const renders = vi.fn();
     const { container } = render(
       <Tabs>
-        <TabList
+        <TabsList
           aria-label="Fruit"
           scrollButtons
           onRemove={() => {}}
@@ -263,7 +263,7 @@ describe('TabList', () => {
           getMenuItems={(_key, standard) => standard}
         >
           {fruit.map((name) => (
-            <Tab
+            <TabsTrigger
               key={name}
               id={name.toLowerCase()}
               render={(props) => {
@@ -272,9 +272,9 @@ describe('TabList', () => {
               }}
             >
               {name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
       </Tabs>,
     );
     const list = screen.getByRole('tablist');
@@ -334,12 +334,12 @@ describe('TabList', () => {
           isDisabled={source === 'tabs' && isDisabled}
           disabledKeys={source === 'keys' && isDisabled ? ['banana'] : []}
         >
-          <TabList aria-label="Fruit" onRemove={onRemove}>
-            <Tab id="apple">Apple</Tab>
-            <Tab id="banana" isDisabled={source === 'tab' && isDisabled}>
+          <TabsList aria-label="Fruit" onRemove={onRemove}>
+            <TabsTrigger id="apple">Apple</TabsTrigger>
+            <TabsTrigger id="banana" isDisabled={source === 'tab' && isDisabled}>
               Banana
-            </Tab>
-          </TabList>
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
       );
       const { rerender } = render(tabs(false));
@@ -362,17 +362,17 @@ describe('TabList', () => {
       const [names, setNames] = useState(['Apple', 'Banana', 'Cherry']);
       return (
         <Tabs>
-          <TabList
+          <TabsList
             aria-label="Fruit"
             onRemove={(keys) => setNames((current) => current.filter((name) => !keys.has(name)))}
             onAdd={() => setNames((current) => [...current, `Fruit ${current.length + 1}`])}
           >
             {names.map((name) => (
-              <Tab key={name} id={name}>
+              <TabsTrigger key={name} id={name}>
                 {name}
-              </Tab>
+              </TabsTrigger>
             ))}
-          </TabList>
+          </TabsList>
         </Tabs>
       );
     }
@@ -404,20 +404,20 @@ describe('TabList', () => {
             : { defaultSelectedKey: 'Charlie', onSelectionChange };
         return (
           <Tabs {...selection}>
-            <TabList
+            <TabsList
               aria-label="Letters"
               onRemove={(keys) => setNames((current) => current.filter((name) => !keys.has(name)))}
             >
               {names.map((name) => (
-                <Tab key={name} id={name}>
+                <TabsTrigger key={name} id={name}>
                   {name}
-                </Tab>
+                </TabsTrigger>
               ))}
-            </TabList>
+            </TabsList>
             {names.map((name) => (
-              <TabPanel key={name} id={name}>
+              <TabsContent key={name} id={name}>
                 About {name}
-              </TabPanel>
+              </TabsContent>
             ))}
           </Tabs>
         );
@@ -444,27 +444,27 @@ describe('TabList', () => {
   it('UIC-TABS-1.6 renders the family through caller elements with their states', () => {
     render(
       <Tabs render={(props, state) => <div {...props} data-swapped={state.orientation} />}>
-        <TabList
+        <TabsList
           aria-label="Fruit"
           render={(props, state) => <div {...props} data-swapped={`list ${state.orientation}`} />}
         >
-          <Tab
+          <TabsTrigger
             id="apple"
             render={(props, state) => (
               <div {...props} data-swapped={state.isSelected ? 'selected tab' : 'tab'} />
             )}
           >
             Apple
-          </Tab>
-        </TabList>
-        <TabPanel
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent
           id="apple"
           render={(props, state) => (
             <div {...props} data-swapped={state.isInert ? 'inert panel' : 'panel'} />
           )}
         >
           Apples
-        </TabPanel>
+        </TabsContent>
       </Tabs>,
     );
     expect(screen.getByRole('tablist')).toHaveAttribute('data-swapped', 'list horizontal');

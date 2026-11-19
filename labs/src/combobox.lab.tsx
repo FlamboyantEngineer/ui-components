@@ -18,6 +18,7 @@ import {
 } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ComposedCombobox } from './combobox-composed.js';
 import { NarrowRows } from './combobox-narrow-cases.js';
 import { ChangeReasons } from './combobox-reason-cases.js';
 import { LabForm, MountOnDemand } from './lab-form.js';
@@ -511,6 +512,9 @@ const chipValues: Record<string, string[]> = {
 
 mountLab(
   <>
+    <LabSection title="Multiple combobox parts">
+      <ComposedCombobox />
+    </LabSection>
     <LabSection
       title="Primitive keys"
       description="Numeric and text ids that read alike remain distinct choices."

@@ -9,16 +9,20 @@ import ts from 'typescript';
  * Keep each reason short; a component that gains a root element leaves the list.
  */
 export const ROOTLESS = new Map([
-  ['CardAction', "makes its children the card's action"],
+  ['CardTitleAction', "makes its children the card's action"],
   ['ChatMessageActionsMenu', 'attaches a context menu to its target element'],
+  ['ContextMenuSub', 'pairs a context menu item with its submenu'],
+  ['DialogHost', "renders the controller's dialogs"],
+  ['DialogTrigger', 'pairs its trigger child with a dialog'],
+  ['DropdownMenuRoot', 'pairs its trigger child with the dropdown menu'],
+  ['DropdownMenuSub', 'pairs a dropdown menu item with its submenu'],
   ['DrawerTrigger', 'pairs its trigger child with a drawer'],
   ['Glyph', "draws an icon component, whose element is that component's own"],
   ['HeadingLevelContext', 'a context provider'],
   ['HoverCardTrigger', 'pairs its trigger child with a hover card'],
   ['MenuTrigger', 'pairs its trigger child with a menu'],
   ['MenubarMenu', 'pairs a menubar trigger with its menu'],
-  ['ModalHost', "renders the controller's modals"],
-  ['ModalTrigger', 'pairs its trigger child with a modal'],
+  ['MessageScrollerProvider', 'provides scroll and announcement state for a thread'],
   ['PopoverTrigger', 'pairs its trigger child with a popover'],
   ['Portal', 'moves its children into a portal container'],
   ['PortalContainerProvider', 'a context provider'],
@@ -31,6 +35,7 @@ export const ROOTLESS = new Map([
   ['TextMatch', 'renders text runs'],
   ['TextMatchProvider', 'a context provider'],
   ['Tooltip', 'pairs its trigger child with a tooltip'],
+  ['TooltipTrigger', 'pairs its trigger child with a tooltip panel'],
   ['UiProvider', 'a context provider'],
   ['UnsavedChangesGuard', 'renders a confirmation only while it blocks'],
 ]);

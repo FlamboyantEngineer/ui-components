@@ -1,6 +1,6 @@
-/* Unsaved Changes Guard, on top of Confirm Dialog and Modal */
+/* Unsaved Changes Guard, on top of Confirm Dialog and Dialog */
 
-.ui-unsaved-changes-guard .ui-modal__body {
+.ui-unsaved-changes-guard .ui-dialog__body {
   overflow-wrap: anywhere;
 }
 

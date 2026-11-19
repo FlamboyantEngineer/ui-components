@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { CodeEditor } from '../../src/components/code-editor/code-editor.js';
+import { Dialog } from '../../src/components/dialog/dialog.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
-import { Modal } from '../../src/components/modal/modal.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
@@ -98,7 +98,8 @@ export function FolderCollectionRecipe() {
           );
         }}
       />
-      <Modal
+      <Dialog
+        isDismissable={false}
         title="Create collection"
         isOpen={creating}
         onOpenChange={setCreating}
@@ -117,7 +118,7 @@ export function FolderCollectionRecipe() {
         }}
       >
         <TextField label="Collection name" value={name} onChange={setName} autoFocus />
-      </Modal>
+      </Dialog>
     </Stack>
   );
 }

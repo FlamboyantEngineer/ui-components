@@ -1,11 +1,16 @@
 'use client';
 
-import { cloneElement, isValidElement, type ReactNode, type RefObject } from 'react';
+import { cloneElement, type ComponentProps, isValidElement, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Placement } from '../../core/props.js';
-import { OverlayArrow, Tooltip as AriaTooltip, TooltipTrigger } from '../../primitives/index.js';
+import type { BaseProps, Placement, RefProps } from '../../core/props.js';
+import {
+  Focusable,
+  OverlayArrow,
+  Tooltip as AriaTooltip,
+  TooltipTrigger as AriaTooltipTrigger,
+} from '../../primitives/index.js';
 import { TOOLTIP_DELAY, TOOLTIP_OFFSET } from '../../utils/overlay-defaults.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { PointerEntry } from '../../utils/use-pointer-entry.js';
@@ -27,11 +32,9 @@ type TooltipPanelBaseProps = Omit<BaseProps, 'id'>;
 /** What opens the tooltip: hover and keyboard focus, or keyboard focus only. */
 export type TooltipTriggerType = 'hover' | 'focus';
 
-export interface TooltipProps extends OpenStateProps, TooltipPanelBaseProps {
-  /** The hint. Plain text or inline content; never interactive. */
-  content: ReactNode;
-  /** The trigger: a React Aria focusable such as `Button` or `Link`. */
-  children: ReactNode;
+export interface TooltipTriggerProps extends OpenStateProps {
+  /** One focusable element followed by its `TooltipContent`. */
+  children: [trigger: ReactNode, content: ReactNode];
   /** Milliseconds the pointer rests on the trigger before the hint opens. Defaults to 500. */
   delay?: number | undefined;
   /** Milliseconds after the pointer leaves before the hint closes. Defaults to 500. */
@@ -42,10 +45,23 @@ export interface TooltipProps extends OpenStateProps, TooltipPanelBaseProps {
   isDisabled?: boolean | undefined;
   /** Whether pressing the trigger closes the hint. Defaults to true. */
   shouldCloseOnPress?: boolean | undefined;
+}
+
+export interface TooltipContentProps extends TooltipPanelBaseProps, RefProps<HTMLDivElement> {
+  /** The hint. Plain text or inline content; never interactive. */
+  children: ReactNode;
   /** `default` for a hint on a control, `info` for a softer explanatory note. Defaults to `default`. */
   variant?: TooltipVariant | undefined;
   /** Preferred side of the trigger. Defaults to `top`; the tooltip flips when it does not fit. */
   placement?: TooltipPlacement | undefined;
+}
+
+export interface TooltipProps
+  extends Omit<TooltipTriggerProps, 'children'>, Omit<TooltipContentProps, 'children' | 'ref'> {
+  /** The hint. Plain text or inline content; never interactive. */
+  content: ReactNode;
+  /** The focusable trigger, such as a `Button` or `Link`. */
+  children: ReactNode;
   /**
    * `description` (the default) describes the trigger by the open hint. `label` makes string
    * content the trigger's accessible name, open or not, as for an icon-only control.
@@ -59,24 +75,14 @@ interface TriggerLabelProps {
   'aria-describedby'?: string | undefined;
 }
 
-/** The tooltip panel, inside a `TooltipTrigger` or driven through `TooltipTriggerStateContext`. */
-interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPanelBaseProps {
-  /** The panel's look. */
-  variant: TooltipVariant;
-  /** The hint. */
-  children: ReactNode;
-  /** For a panel driven through `TooltipTriggerStateContext`: the element it is positioned against. */
-  triggerRef?: RefObject<Element | null> | undefined;
-}
-
-/** The tooltip panel with its hooks; inside a `TooltipTrigger` or standalone with `triggerRef`. */
-export function TooltipPanel({
-  variant,
+/** Renders a hint portalled from its `TooltipTrigger`. */
+export function TooltipContent({
+  variant = 'default',
   children,
   className,
   placement = 'top',
   ...rest
-}: TooltipPanelProps) {
+}: TooltipContentProps) {
   const zIndex = useLayerZIndex('tooltip');
   return (
     <AriaTooltip
@@ -105,49 +111,61 @@ function labelTrigger(children: ReactNode, label: string): ReactNode {
   });
 }
 
-/**
- * A short, non-interactive hint shown when its trigger is hovered (after `delay`) or keyboard
- * focused, and dismissed on leave, blur, press or Escape. With `relationship="label"` the hint is
- * the trigger's name instead of its description. Inside a caller's own `Tooltip` or `HoverCard`
- * trigger it renders the trigger alone, so the outer trigger keeps working.
- */
-export function Tooltip({
-  content,
-  children,
-  variant = 'default',
-  placement,
-  className,
+/** Opens the adjacent tooltip for a focusable child without adding a wrapper element. */
+export function TooltipTrigger({
+  children: [trigger, content],
   delay = TOOLTIP_DELAY,
-  relationship = 'description',
   isDisabled = false,
   isOpen: isOpenProp,
   defaultOpen = false,
   onOpenChange,
   ...rest
-}: TooltipProps) {
+}: TooltipTriggerProps) {
   const [isOpen, setOpen] = useControllableState(isOpenProp, defaultOpen, onOpenChange);
-  // A disabled tooltip draws its hint closed whatever its owner says, and closes an open hint once,
-  // through the ordinary close, so it stays closed when it is enabled again.
+  // Close an open disabled hint once so it stays closed when it is enabled again.
   useCloseWhenLocked(isOpen, isDisabled, () => setOpen(false));
-  // Inside a caller's own tooltip or hover card, that trigger keeps the element.
   const inCallerTrigger = useInCallerTrigger();
-  const isLabel = relationship === 'label' && typeof content === 'string';
-  const trigger = isLabel ? labelTrigger(children, content) : children;
-  if (inCallerTrigger) return trigger;
-  const [data, triggerProps] = splitDataAttributes(rest);
+  const focusable =
+    isValidElement(trigger) && typeof trigger.type === 'string' ? (
+      <Focusable>{trigger as ComponentProps<typeof Focusable>['children']}</Focusable>
+    ) : (
+      trigger
+    );
+  if (inCallerTrigger) return focusable;
   return (
-    <TooltipTrigger
-      {...triggerProps}
+    <AriaTooltipTrigger
+      {...rest}
       delay={delay}
       isDisabled={isDisabled}
       isOpen={isOpen && !isDisabled}
       onOpenChange={setOpen}
     >
       <TooltipEscape />
-      <PointerEntry isDisabled={isDisabled}>{trigger}</PointerEntry>
-      <TooltipPanel {...data} variant={variant} className={className} placement={placement}>
+      <PointerEntry isDisabled={isDisabled}>{focusable}</PointerEntry>
+      {content}
+    </AriaTooltipTrigger>
+  );
+}
+
+/** A hint shown on hover or keyboard focus, with an optional accessible label for the trigger. */
+export function Tooltip({
+  content,
+  children,
+  variant,
+  placement,
+  className,
+  relationship = 'description',
+  ...rest
+}: TooltipProps) {
+  const isLabel = relationship === 'label' && typeof content === 'string';
+  const trigger = isLabel ? labelTrigger(children, content) : children;
+  const [data, triggerProps] = splitDataAttributes(rest);
+  return (
+    <TooltipTrigger {...triggerProps}>
+      {trigger}
+      <TooltipContent {...data} variant={variant} className={className} placement={placement}>
         {content}
-      </TooltipPanel>
+      </TooltipContent>
     </TooltipTrigger>
   );
 }

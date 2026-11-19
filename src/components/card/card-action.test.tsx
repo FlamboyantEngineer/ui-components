@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { NumberField } from '../number-field/number-field.js';
 import { SignaturePad } from '../signature-pad/signature-pad.js';
 import { Card } from './card.js';
-import { CardAction } from './card-parts.js';
+import { CardTitleAction } from './card-parts.js';
 
 // Which card a click belongs to, and which content keeps its clicks (UIC-CARD-3.2).
 
@@ -80,8 +80,8 @@ describe('Card background clicks', () => {
         onAction={onAction}
         header={
           <>
-            <CardAction>Seeds</CardAction>
-            {withCopy ? <CardAction>Seeds copy</CardAction> : null}
+            <CardTitleAction>Seeds</CardTitleAction>
+            {withCopy ? <CardTitleAction>Seeds copy</CardTitleAction> : null}
           </>
         }
       >

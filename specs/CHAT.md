@@ -107,7 +107,7 @@ Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/
 
 ### UIC-CHAT-2.4 - Reply
 
-Reply shall move focus to the composer and show above its input a banner (`ui-chat__banner`) that reads the provider string `chatReplyingTo` (`ui-chat__banner-label`) and quotes the message (`ChatQuote`, its author and an excerpt of its text), with a Cancel reply button (`ui-chat__banner-cancel`, the `close` glyph, the `chatCancelReply` string); the banner describes the input. Cancel reply, or Escape in the composer, ends the reply; an Escape that belongs to an input method composition (`isComposing`, or key code 229) is the input method's and keeps the reply. The Escape that ends a reply is marked handled, so a Modal or Drawer around the chat stays open until the next Escape. Sending while replying calls `onReply` with the replied message's id, the text and its tokens instead of `onSend`, and the reply ends once the host accepts it ([UIC-CHAT-3.7](#uic-chat-37---accepting-a-message)). A reply whose message leaves `messages` or is deleted (`isDeleted`) ends at once: the banner goes, the composer keeps its text and sends it through `onSend`, and the message coming back does not bring the reply back. Reply works the same in an assistant chat. A message whose `replyTo` names a loaded message shows its quote; pressing the quote highlights that message ([UIC-CHAT-TRANSCRIPT-4.3](CHAT-TRANSCRIPT.md)) and moves focus to it. The highlight is a mark of the jump and ends after two seconds, so pressing the quote again jumps there again, and a search that ends or loses its match ([UIC-CHAT-5.3](#uic-chat-53---search)) never falls back to a message a quote jumped to earlier.
+Reply shall move focus to the composer and show above its input a banner (`ui-chat__banner`) that reads the provider string `chatReplyingTo` (`ui-chat__banner-label`) and quotes the message (`ChatQuote`, its author and an excerpt of its text), with a Cancel reply button (`ui-chat__banner-cancel`, the `close` glyph, the `chatCancelReply` string); the banner describes the input. Cancel reply, or Escape in the composer, ends the reply; an Escape that belongs to an input method composition (`isComposing`, or key code 229) is the input method's and keeps the reply. The Escape that ends a reply is marked handled, so a Dialog or Drawer around the chat stays open until the next Escape. Sending while replying calls `onReply` with the replied message's id, the text and its tokens instead of `onSend`, and the reply ends once the host accepts it ([UIC-CHAT-3.7](#uic-chat-37---accepting-a-message)). A reply whose message leaves `messages` or is deleted (`isDeleted`) ends at once: the banner goes, the composer keeps its text and sends it through `onSend`, and the message coming back does not bring the reply back. Reply works the same in an assistant chat. A message whose `replyTo` names a loaded message shows its quote; pressing the quote highlights that message ([UIC-CHAT-TRANSCRIPT-4.3](CHAT-TRANSCRIPT.md)) and moves focus to it. The highlight is a mark of the jump and ends after two seconds, so pressing the quote again jumps there again, and a search that ends or loses its match ([UIC-CHAT-5.3](#uic-chat-53---search)) never falls back to a message a quote jumped to earlier.
 
 Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-banner.tsx`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`, `src/components/chat/chat-reply-target.test.tsx`, `src/components/chat/chat-quote-jump.test.tsx`, `src/components/chat/chat-instance-identity.test.tsx`
@@ -799,7 +799,7 @@ Verification: `src/components/chat/chat-list-menu.test.tsx`
 
 ## Chat Message Actions
 
-`ChatMessageActions` is the action bar for a [Chat Transcript](CHAT-TRANSCRIPT.md) message's `actions`: a toolbar of the commands whose callbacks the host gives (Copy, a good or bad rating, Reply, React, Edit and Delete), with the feedback details, the [Emoji Picker](EMOJI-PICKER.md) and the delete confirmation ([Modal](MODAL.md)) those commands open. `ChatMessageActionsMenu` offers the same commands in a [Context Menu](CONTEXT-MENU.md) on a secondary click or long press on the message, and hands the message the bar, so both share one state. Which commands suit a message (ratings for an assistant's reply, Edit and Delete for the reader's own message) is the host's choice; the library shows what it is given.
+`ChatMessageActions` is the action bar for a [Chat Transcript](CHAT-TRANSCRIPT.md) message's `actions`: a toolbar of the commands whose callbacks the host gives (Copy, a good or bad rating, Reply, React, Edit and Delete), with the feedback details, the [Emoji Picker](EMOJI-PICKER.md) and the delete confirmation ([Dialog](DIALOG.md)) those commands open. `ChatMessageActionsMenu` offers the same commands in a [Context Menu](CONTEXT-MENU.md) on a secondary click or long press on the message, and hands the message the bar, so both share one state. Which commands suit a message (ratings for an assistant's reply, Edit and Delete for the reader's own message) is the host's choice; the library shows what it is given.
 
 ## UIC-CHAT-18 - Action bar
 
@@ -879,7 +879,7 @@ Verification: `src/components/chat/chat-message-actions.test.tsx`, `e2e/chat-cha
 
 ### UIC-CHAT-20.3 - Delete
 
-Delete shall open a [Modal](MODAL.md) alert dialog with the `danger` tone, titled `deleteMessage`, described by `deleteMessageDescription`, whose confirm action is named `delete`. Confirming runs `onDelete`, pending while a returned promise settles; Cancel or Escape closes it without deleting. Focus returns to the button.
+Delete shall open a [Dialog](DIALOG.md) alert dialog with the `danger` tone, titled `deleteMessage`, described by `deleteMessageDescription`, whose confirm action is named `delete`. Confirming runs `onDelete`, pending while a returned promise settles; Cancel or Escape closes it without deleting. Focus returns to the button.
 
 Implementation: `src/components/chat/message-command-overlays.tsx`
 Verification: `src/components/chat/chat-message-actions.test.tsx`, `e2e/chat-chat-message-actions.spec.ts`
@@ -1634,6 +1634,29 @@ When the approval resolves while focus is inside it, its buttons shall stay, the
 
 Implementation: `src/components/chat/tool-call-approval.tsx`
 Verification: `src/components/chat/tool-call-approval.test.tsx`, `e2e/chat-chat-tool-call.spec.ts`
+
+## UIC-CHAT-43 - Composable assistant chat
+
+### UIC-CHAT-43.1 - Thread and prompt
+
+The [assistant thread lab](../labs/assistant-chat.html) shall compose a named `MessageScroller` with an end-aligned `Bubble` for the reader's question and a plain `Message` with `ChatParts` and a reply action for the assistant. An empty conversation shows its welcome until the first message. A native form with `InputGroupTextarea` submits one prompt per send, uses Send and Stop controls, and stays outside the viewport. With `autoScroll`, the sent prompt anchors before the streamed reply fills the available space, then the scroller follows the reply to its end. Starting a new conversation resets the thread and draft.
+
+Implementation: `labs/src/assistant-chat.lab.tsx`, `labs/src/assistant-chat-cases.tsx`, `labs/src/assistant-chat-data.ts`
+Verification: `e2e/assistant-chat.spec.ts`
+
+### UIC-CHAT-43.2 - Reading during a reply
+
+The history example shall keep visible messages in place when the host prepends older ones. Reader scrolling releases the anchor and following, so later chunks do not take the reader away from older messages. Jump to latest returns to the end and resumes following.
+
+Implementation: `labs/src/assistant-chat-cases.tsx`, `labs/src/assistant-chat-data.ts`, `src/components/message-scroller/scroller-runtime.ts`
+Verification: `e2e/assistant-chat.spec.ts`
+
+### UIC-CHAT-43.3 - Inline responses
+
+An assistant reply that waits for tool approval shall leave its approval operable while the run is still active. Answering the request lets the same reply continue in place. This is separate from whether the scroller has a completed arrival to announce.
+
+Implementation: `labs/src/assistant-chat-cases.tsx`, `labs/src/assistant-chat-data.ts`
+Verification: `e2e/assistant-chat.spec.ts`
 
 ## Hooks
 

@@ -1,12 +1,12 @@
 # Media Viewer
 
-`MediaViewer` is a lightbox on the library's [Modal](MODAL.md) that shows one file of a set at a time (`MediaViewerItem`: an id, a URL, a name and optionally a MIME type, a text alternative, a caption, a thumbnail and a download URL). It draws images itself, fitted to the stage, with zoom through [Zoom Control](ZOOM-CONTROL.md), quarter turns and scrolling to pan, and hands other files, such as PDFs for the library's [PDF Viewer](PDF-VIEWER.md), to the caller's `renderItem`. The reader moves through the set with previous and next buttons, a thumbnail strip and the arrow keys.
+`MediaViewer` is a lightbox on the library's [Dialog](DIALOG.md) that shows one file of a set at a time (`MediaViewerItem`: an id, a URL, a name and optionally a MIME type, a text alternative, a caption, a thumbnail and a download URL). It draws images itself, fitted to the stage, with zoom through [Zoom Control](ZOOM-CONTROL.md), quarter turns and scrolling to pan, and hands other files, such as PDFs for the library's [PDF Viewer](PDF-VIEWER.md), to the caller's `renderItem`. The reader moves through the set with previous and next buttons, a thumbnail strip and the arrow keys.
 
 ## UIC-MEDIA-VIEWER-1 - Viewer
 
 ### UIC-MEDIA-VIEWER-1.1 - Lightbox
 
-`MediaViewer` shall render a `Modal` (root also `ui-media-viewer`) of size `full` with a `column` body, a close button and no action bar, whose title is the shown item's `name` and whose description is its `caption`. `isOpen`, `defaultOpen` and `onOpenChange` control it as they control the modal, and Escape closes it. A viewer with no items renders nothing, but the viewer itself holds its open state, not the modal: `defaultOpen` applies once, when the viewer mounts, so a closed viewer whose items empty and fill again stays closed, and an open one whose items empty shows again, still open and with no change reported, when items return.
+`MediaViewer` shall render a `Dialog` (root also `ui-media-viewer`) of size `full` with a `column` body, a close button and no action bar, whose title is the shown item's `name` and whose description is its `caption`. `isOpen`, `defaultOpen` and `onOpenChange` control it as they control the modal, and Escape closes it. A viewer with no items renders nothing, but the viewer itself holds its open state, not the modal: `defaultOpen` applies once, when the viewer mounts, so a closed viewer whose items empty and fill again stays closed, and an open one whose items empty shows again, still open and with no change reported, when items return.
 
 Implementation: `src/components/media-viewer/media-viewer.tsx`
 Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
@@ -29,7 +29,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-vi
 
 Inside the viewer, Page Up and Page Down shall show the previous and next item, and so shall Arrow Left and Arrow Right (mirrored in a right-to-left locale), except while focus is in the viewport and the image is wider than it, when the arrows scroll the image; `+` (or `=`) and `-` zoom an image in and out by the zoom control's levels. Presses with Control, Command or Alt, and presses inside an element that uses keys itself (an input, a text area, a select, a slider, or editable content with any `contenteditable` value but `false`), are left alone.
 
-Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/is-editable-target.ts`
+Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/dialog/dialog-surface.tsx`, `src/utils/is-editable-target.ts`
 Verification: `src/components/media-viewer/media-layout.test.ts`, `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
 
 ## UIC-MEDIA-VIEWER-2 - Images
@@ -119,7 +119,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`
 
 | Hook                               | Kind  | Values                        | Description                                                     |
 | ---------------------------------- | ----- | ----------------------------- | --------------------------------------------------------------- |
-| `ui-media-viewer`                  | root  |                               | The modal's overlay (also `ui-modal`).                          |
+| `ui-media-viewer`                  | root  |                               | The modal's overlay (also `ui-dialog`).                         |
 | `ui-media-viewer__stage`           | slot  |                               | The previous button, the viewport and the next button.          |
 | `ui-media-viewer__previous`        | slot  |                               | The previous button (also `ui-button`).                         |
 | `ui-media-viewer__next`            | slot  |                               | The next button (also `ui-button`).                             |

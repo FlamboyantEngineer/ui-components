@@ -1,7 +1,7 @@
 'use client';
 
 // What a list lets its tabs do, and the state its two renders share. React Aria builds the tabs'
-// collection from a hidden render of the list, where the `Tab` components run, while the drawn list
+// collection from a hidden render of the list, where the `TabsTrigger` components run, while the drawn list
 // holds the collection state; state both renders need lives in `Tabs`, above them.
 
 import { createContext, type Dispatch, type RefObject, useMemo, useRef, useState } from 'react';
@@ -86,7 +86,7 @@ export const TabsSharedContext = createContext<TabsShared>({
   stateRef: { current: null },
 });
 
-/** The actions of the enclosing `TabList`. */
+/** The actions of the enclosing `TabsList`. */
 export const TabActionsContext = createContext<TabActions>({
   onRemove: undefined,
   keyShortcuts: undefined,

@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
 import { TextField } from '../text-field/text-field.js';
@@ -195,9 +195,9 @@ describe('Drawer', () => {
   it('UIC-DRAWER-1.4 stacks on the modal layer when opened from a modal', async () => {
     const user = userEvent.setup();
     render(
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Settings</Button>
-        <Modal title="Settings">
+        <Dialog title="Settings">
           <DrawerTrigger>
             <Button>Filters</Button>
             <Drawer title="Filters">
@@ -207,13 +207,13 @@ describe('Drawer', () => {
               </DrawerTrigger>
             </Drawer>
           </DrawerTrigger>
-        </Modal>
-      </ModalTrigger>,
+        </Dialog>
+      </DialogTrigger>,
     );
     await user.click(screen.getByRole('button', { name: 'Settings' }));
     await user.click(await screen.findByRole('button', { name: 'Filters' }));
     await settle();
-    const modal = document.querySelector<HTMLElement>('.ui-modal');
+    const modal = document.querySelector<HTMLElement>('.ui-dialog');
     expect(modal?.style.zIndex).toBe('120');
     expect(overlay()?.style.zIndex).toBe('120');
     // Painted after the modal at the same z-index, so above it; a drawer inside it stays as high.

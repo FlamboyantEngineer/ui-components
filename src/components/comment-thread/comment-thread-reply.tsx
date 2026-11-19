@@ -12,10 +12,10 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { type AvatarIdentity, getDisplayName } from '../avatar/avatar.js';
 import type { CommentMentions } from '../comment-composer/comment-mentions.js';
+import { AlertDialog } from '../dialog/dialog.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Modal } from '../modal/modal.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import { ReplyEditor, ReplyText } from './comment-reply-body.js';
 import { CommentThreadContext } from './comment-thread-context.js';
@@ -192,8 +192,7 @@ function CommentMenu({
         />
       )}
       {onDelete && confirmsDelete ? (
-        <Modal
-          role="alertdialog"
+        <AlertDialog
           isOpen={isConfirming}
           onOpenChange={setIsConfirming}
           tone="danger"

@@ -1,3 +1,4 @@
+export * from './composed.js';
 export type {
   SelectFieldGroup,
   SelectFieldItem,

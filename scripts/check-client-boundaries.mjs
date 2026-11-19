@@ -63,7 +63,6 @@ const CLIENT_HELPERS = new Set([
   'createCodeBlockOverride',
   'createCommentMentions',
   'createMenuController',
-  'createModalController',
   'createToastQueue',
   'getFieldUndo',
   'keepHandleCellDraggable',

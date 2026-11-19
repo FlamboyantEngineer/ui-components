@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { type CustomEmoji, type NativeEmoji, parseEmojiData } from './emoji-catalog.js';
 import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker.js';
 import { EmojiPickerBody } from './emoji-picker-body.js';
@@ -288,9 +288,9 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     const onSelect = vi.fn();
     const onOpenChange = vi.fn();
     render(
-      <Modal isOpen onOpenChange={onOpenChange} title="Reactions">
+      <Dialog isOpen onOpenChange={onOpenChange} title="Reactions">
         <EmojiPicker loadEmoji={loadFixture} onSelect={onSelect} />
-      </Modal>,
+      </Dialog>,
     );
     await screen.findByRole('grid');
     await userEvent.click(screen.getByRole('row', { name: 'grinning face' }));

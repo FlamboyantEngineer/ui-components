@@ -83,7 +83,7 @@ async function settled<T>(promise: Promise<T>): Promise<T | 'pending'> {
 const dirtyState = () => screen.getByRole('status', { name: 'Dirty' });
 
 const actionNames = () =>
-  [...document.querySelectorAll('.ui-modal__actions button')].map((button) => button.textContent);
+  [...document.querySelectorAll('.ui-dialog__actions button')].map((button) => button.textContent);
 
 describe('UnsavedChangesGuard', () => {
   it('UIC-UNSAVED-CHANGES-GUARD-1.1 UIC-UNSAVED-CHANGES-GUARD-1.2 tracks registered sources while mounted', () => {
@@ -182,7 +182,10 @@ describe('UnsavedChangesGuard', () => {
       'Profile',
       'Notes',
     ]);
-    expect(document.querySelector('.ui-modal')).toHaveClass('ui-unsaved-changes-guard', 'ui-modal');
+    expect(document.querySelector('.ui-dialog')).toHaveClass(
+      'ui-unsaved-changes-guard',
+      'ui-dialog',
+    );
     expectHooksMatchSpec(document.body, 'UNSAVED-CHANGES-GUARD', { slots: ['list'] });
   });
 
@@ -229,7 +232,7 @@ describe('UnsavedChangesGuard', () => {
     expect(actionNames()).toEqual(['Stay', 'Discard', 'Save']);
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(calls).toEqual(['profile']);
-    expect(document.querySelector('.ui-modal__primary')).toHaveAttribute('data-pending', 'true');
+    expect(document.querySelector('.ui-dialog__primary')).toHaveAttribute('data-pending', 'true');
     expect(await settled(result)).toBe('pending');
     await act(async () => first.resolve());
     await expect(result).resolves.toBe(true);
@@ -292,7 +295,7 @@ describe('UnsavedChangesGuard', () => {
       'Your changes are not saved. Leave and discard them?',
     );
     expect(actionNames()).toEqual(['Stay', 'Discard']);
-    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-tone', 'danger');
+    expect(document.querySelector('.ui-dialog')).toHaveAttribute('data-tone', 'danger');
     await user.click(screen.getByRole('button', { name: 'Discard' }));
     await expect(result).resolves.toBe(true);
     expect(onDiscard).toHaveBeenCalledTimes(1);
@@ -341,7 +344,7 @@ describe('UnsavedChangesGuard', () => {
     const second = leave({ title: 'Second leave' });
     await expect(first).resolves.toBe(false);
     expect(await screen.findByRole('alertdialog', { name: 'Second leave' })).toBeVisible();
-    expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
+    expect(document.querySelector('.ui-dialog__primary')).not.toHaveAttribute('data-pending');
     expect(await settled(second)).toBe('pending');
     // Its save leaves nothing dirty, so the new question lets the reader leave
     // (UIC-UNSAVED-CHANGES-GUARD-2.7); it never shows that save as its own.
@@ -459,7 +462,7 @@ describe('UnsavedChangesGuard', () => {
     const dialog = await screen.findByRole('alertdialog');
     expect(dialog).toHaveAttribute('id', 'leave-dialog');
     const overlay = document.querySelector('.ui-unsaved-changes-guard');
-    expect(overlay).toHaveClass('ui-modal', 'leave-prompt');
+    expect(overlay).toHaveClass('ui-dialog', 'leave-prompt');
     expect(overlay).toHaveAttribute('data-surface', 'editor');
     expectHooksMatchSpec(document.body, 'UNSAVED-CHANGES-GUARD', {
       callerAttributes: ['data-surface'],

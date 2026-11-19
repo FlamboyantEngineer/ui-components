@@ -2,34 +2,34 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Orientation } from '../../core/props.js';
-import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
+import { Tabs, TabsContent, TabsList, type TabsListProps, TabsTrigger } from './tabs.js';
 
-type Presentation = Pick<TabListProps, 'scrollButtons' | 'overflow' | 'onAdd'> & {
+type Presentation = Pick<TabsListProps, 'scrollButtons' | 'overflow' | 'onAdd'> & {
   orientation?: Orientation;
 };
 
 const fruit = ['Apple', 'Banana', 'Cherry'];
 const onAdd = () => {};
 
-function list(onRename: TabListProps['onRename'], { orientation, ...props }: Presentation) {
+function list(onRename: TabsListProps['onRename'], { orientation, ...props }: Presentation) {
   return (
     <Tabs orientation={orientation}>
-      <TabList
+      <TabsList
         aria-label="Fruit"
         onRename={onRename}
         validateName={(_key, name) => (name === 'Taken' ? 'That name is taken.' : null)}
         {...props}
       >
         {fruit.map((name) => (
-          <Tab key={name} id={name.toLowerCase()}>
+          <TabsTrigger key={name} id={name.toLowerCase()}>
             {name}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {fruit.map((name) => (
-        <TabPanel key={name} id={name.toLowerCase()}>
+        <TabsContent key={name} id={name.toLowerCase()}>
           About {name}
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );

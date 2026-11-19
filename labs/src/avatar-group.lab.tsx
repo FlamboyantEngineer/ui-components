@@ -1,5 +1,7 @@
+import { Avatar } from '../../src/components/avatar/avatar.js';
 import {
   AvatarGroup,
+  AvatarGroupCount,
   type AvatarGroupPerson,
 } from '../../src/components/avatar-group/avatar-group.js';
 import { AvatarGroupIdentityCases } from './avatar-group-identity-cases.js';
@@ -34,6 +36,13 @@ function windowProps(setup: (typeof windows)[number]) {
 
 mountLab(
   <>
+    <LabSection title="Composed group">
+      <AvatarGroup aria-label="Hiking club" size="sm">
+        <Avatar name="Avery Chen" />
+        <Avatar name="Sam Lee" />
+        <AvatarGroupCount count={3} />
+      </AvatarGroup>
+    </LabSection>
     <div data-lab-family="avatar-group-main">
       <LabSection
         title="Sizes and variants"

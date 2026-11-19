@@ -12,8 +12,8 @@ import {
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
+import { Dialog } from '../dialog/dialog.js';
 import { MessageComposerMenuButton } from '../message-composer/index.js';
-import { Modal } from '../modal/modal.js';
 import type { ChatQueuedMessage } from './chat-controller.js';
 import { ChatModelPicker } from './chat-model-picker.js';
 
@@ -114,13 +114,13 @@ describe('Chat composer', () => {
     expect(onSend).toHaveBeenCalledWith('New', []);
   });
 
-  it('UIC-CHAT-2.4 keeps a Modal around the chat open on the Escape that ends a reply', async () => {
+  it('UIC-CHAT-2.4 keeps a Dialog around the chat open on the Escape that ends a reply', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     const { container } = render(
-      <Modal isOpen onOpenChange={onOpenChange} title="Thread">
+      <Dialog isOpen onOpenChange={onOpenChange} title="Thread">
         <TestChat onSend={() => {}} onReply={() => {}} />
-      </Modal>,
+      </Dialog>,
     );
     await user.hover(article('m1'));
     await user.click(within(article('m1')).getByRole('button', { name: 'Reply' }));

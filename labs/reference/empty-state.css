@@ -51,3 +51,18 @@
 .ui-empty-state__spinner {
   --ref-spinner-size: var(--ref-icon-size-md);
 }
+
+.ui-empty-state__header,
+.ui-empty-state__content {
+  display: grid;
+  justify-items: inherit;
+  gap: 4px;
+}
+
+.ui-empty-state__media[data-variant='icon'] {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}

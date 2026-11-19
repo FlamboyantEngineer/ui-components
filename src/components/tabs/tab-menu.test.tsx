@@ -6,7 +6,7 @@ import { DeleteGlyph, StarGlyph } from '../../core/glyphs.js';
 import type { Key, Orientation } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Tab, TabList, type TabListProps, Tabs } from './tabs.js';
+import { Tabs, TabsList, type TabsListProps, TabsTrigger } from './tabs.js';
 
 const fruit = ['Apple', 'Banana', 'Cherry'];
 
@@ -14,16 +14,16 @@ function Fruit({
   orientation,
   disabledKeys,
   ...list
-}: Partial<TabListProps> & { orientation?: Orientation; disabledKeys?: Key[] }) {
+}: Partial<TabsListProps> & { orientation?: Orientation; disabledKeys?: Key[] }) {
   return (
     <Tabs orientation={orientation} disabledKeys={disabledKeys}>
-      <TabList aria-label="Fruit" {...list}>
+      <TabsList aria-label="Fruit" {...list}>
         {fruit.map((name) => (
-          <Tab key={name} id={name.toLowerCase()}>
+          <TabsTrigger key={name} id={name.toLowerCase()}>
             {name}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
     </Tabs>
   );
 }
@@ -176,11 +176,11 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     const onContextMenu = vi.fn();
     const { unmount } = render(
       <Tabs>
-        <TabList aria-label="Fruit" onRemove={vi.fn()}>
-          <Tab id="apple" onContextMenu={onContextMenu}>
+        <TabsList aria-label="Fruit" onRemove={vi.fn()}>
+          <TabsTrigger id="apple" onContextMenu={onContextMenu}>
             Apple
-          </Tab>
-        </TabList>
+          </TabsTrigger>
+        </TabsList>
       </Tabs>,
     );
     expect(fireEvent.contextMenu(tab('Apple'))).toBe(true);
