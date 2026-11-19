@@ -1,0 +1,81 @@
+.ui-canvas-viewport {
+  min-inline-size: 0;
+  block-size: 360px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background-color: var(--ref-canvas);
+  background-image: radial-gradient(var(--ref-border) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--ref-text);
+}
+
+.ui-canvas-viewport__surface {
+  overflow: clip;
+  border-radius: inherit;
+  cursor: grab;
+}
+
+.ui-canvas-viewport__surface:active {
+  cursor: grabbing;
+}
+
+.ui-canvas-viewport__controls {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-canvas-viewport__anchor {
+  display: block;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ref-accent);
+  cursor: crosshair;
+}
+
+.ui-canvas-viewport__anchor::after {
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: var(--ref-raised);
+  content: '';
+}
+
+.ui-canvas-viewport__anchor:hover::after,
+.ui-canvas-viewport__anchor[aria-pressed='true']::after {
+  background: currentColor;
+}
+
+.ui-canvas-viewport:focus-visible,
+.ui-canvas-viewport__anchor:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-canvas-viewport__world {
+  isolation: isolate;
+}
+
+/* The surface clips the scene after the camera transform. */
+.ui-canvas-viewport__world > svg {
+  overflow: visible;
+}
+
+.ui-canvas-element {
+  fill: currentColor;
+}

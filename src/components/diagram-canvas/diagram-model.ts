@@ -1,5 +1,4 @@
 import type { Key } from '../../core/props.js';
-import { clamp } from '../../utils/clamp.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { DiagramPoint, DiagramPortSide, DiagramRect } from './edge-route.js';
 
@@ -101,43 +100,11 @@ export function isRectOverlap(a: DiagramRect, b: DiagramRect): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 }
 
-/**
- * The viewport that shows all of `bounds` centred in a view of `size`, zoomed as far as fits
- * between `minZoom` and `maxZoom`.
- */
-export function fitDiagramViewport(options: {
-  bounds: DiagramRect;
-  size: { width: number; height: number };
-  zoomRange: readonly [number, number];
-}): DiagramViewport {
-  const { bounds, size, zoomRange } = options;
-  const scale = Math.min(
-    size.width / Math.max(1, bounds.width),
-    size.height / Math.max(1, bounds.height),
-  );
-  const zoom = clamp(scale * 100, zoomRange[0], zoomRange[1]);
-  const factor = zoom / 100;
-  return {
-    x: (size.width - bounds.width * factor) / 2 - bounds.x * factor,
-    y: (size.height - bounds.height * factor) / 2 - bounds.y * factor,
-    zoom,
-  };
-}
-
-/** The viewport at `zoom` that keeps the diagram point under the screen point `at` in place. */
-export function zoomDiagramViewport(
-  viewport: DiagramViewport,
-  { zoom, at }: { zoom: number; at: DiagramPoint },
-): DiagramViewport {
-  const ratio = zoom / viewport.zoom;
-  return { x: at.x - (at.x - viewport.x) * ratio, y: at.y - (at.y - viewport.y) * ratio, zoom };
-}
-
-/** The diagram point under a screen point of the viewport element. */
-export function toDiagramPoint(viewport: DiagramViewport, point: DiagramPoint): DiagramPoint {
-  const factor = viewport.zoom / 100;
-  return { x: (point.x - viewport.x) / factor, y: (point.y - viewport.y) / factor };
-}
+export {
+  fitCanvasViewport as fitDiagramViewport,
+  toCanvasWorldPoint as toDiagramPoint,
+  zoomCanvasViewport as zoomDiagramViewport,
+} from '../../utils/canvas-transform.js';
 
 /** `value` rounded to the nearest multiple of `grid`, or unchanged without a grid. */
 export function snapToGrid(value: number, grid: number): number {

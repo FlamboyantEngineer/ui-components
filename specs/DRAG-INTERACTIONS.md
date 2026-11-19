@@ -43,6 +43,13 @@ An active gesture shall keep its starting data while invoking the callbacks from
 Implementation: `src/utils/use-pointer-drag.ts`
 Verification: `src/utils/use-pointer-drag.test.tsx`
 
+### UIC-DRAG-INTERACTIONS-1.6 - Escape
+
+A gesture that opts in to `cancelsOnEscape` shall abandon its preview and release capture when its document receives an unhandled Escape, even when focus is off its owner. A lost capture on a descendant leaves the owner's gesture active.
+
+Implementation: `src/utils/use-pointer-drag.ts`
+Verification: `src/components/canvas-viewport/canvas-viewport.test.tsx`
+
 ## UIC-DRAG-INTERACTIONS-2 - Native drag and drop
 
 ### UIC-DRAG-INTERACTIONS-2.1 - Arming

@@ -14,6 +14,10 @@ interface PointerDragOptions<E extends Element, T> {
    * `cancelsOnUnmount`, for a preview that lives above the element owning the gesture.
    */
   onCancel?: ((state: T) => void) | undefined;
+  /** Keeps the browser from starting a native drag during the captured gesture. */
+  preventsNativeDrag?: boolean | undefined;
+  /** Escape in the owner document abandons the active gesture. */
+  cancelsOnEscape?: boolean | undefined;
   /** Also call `onCancel` when the element unmounts mid-gesture. Defaults to false. */
   cancelsOnUnmount?: boolean | undefined;
   /** Return the gesture's starting data, or null to refuse the press. */
@@ -39,14 +43,31 @@ interface PointerDrag<E extends Element, T> {
  * release outside the element reaches only the document; one over the element bubbles there after
  * the element's own handler has ended the drag, so it finds nothing to end.
  */
-function watchRelease(element: Element, pointerId: number, onRelease: () => void): () => void {
+function watchGesture(
+  element: Element,
+  pointerId: number,
+  options: Pick<PointerDragOptions<Element, unknown>, 'cancelsOnEscape' | 'preventsNativeDrag'> & {
+    onAbandon: () => void;
+  },
+): () => void {
+  const { onAbandon, cancelsOnEscape, preventsNativeDrag } = options;
   const owner = element.ownerDocument;
   const listener = (event: Event) => {
-    if ('pointerId' in event && event.pointerId === pointerId) onRelease();
+    if ('pointerId' in event && event.pointerId === pointerId) onAbandon();
   };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    event.preventDefault();
+    onAbandon();
+  };
+  const preventDrag = (event: Event) => event.preventDefault();
+  if (preventsNativeDrag) element.addEventListener('dragstart', preventDrag);
+  if (cancelsOnEscape) owner.addEventListener('keydown', onKeyDown);
   owner.addEventListener('pointerup', listener);
   owner.addEventListener('pointercancel', listener);
   return () => {
+    element.removeEventListener('dragstart', preventDrag);
+    owner.removeEventListener('keydown', onKeyDown);
     owner.removeEventListener('pointerup', listener);
     owner.removeEventListener('pointercancel', listener);
   };
@@ -105,9 +126,13 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
       const state = options.onStart(event);
       if (state === null) return;
       const { pointerId } = event;
-      const unwatch = watchRelease(event.currentTarget, pointerId, () => {
-        const drag = cancel();
-        if (drag) onCancel.current?.(drag.state);
+      const unwatch = watchGesture(event.currentTarget, pointerId, {
+        cancelsOnEscape: options.cancelsOnEscape,
+        preventsNativeDrag: options.preventsNativeDrag,
+        onAbandon: () => {
+          const drag = cancel();
+          if (drag) onCancel.current?.(drag.state);
+        },
       });
       active.current = {
         pointerId,
@@ -120,24 +145,16 @@ export function usePointerDrag<E extends Element, T>(options: PointerDragOptions
     },
     onPointerMove: (event: PointerEvent<E>) => {
       const drag = active.current;
-      // A mouse keeps its pointer id: a move with no button pressed follows a release unseen.
-      if (
-        drag?.pointerId === event.pointerId &&
-        event.pointerType === 'mouse' &&
-        event.buttons === 0
-      ) {
-        finish(event, true);
-        return;
-      }
-      if (
-        !isDisabled &&
-        drag?.pointerId === event.pointerId &&
-        Object.is(drag.resetKey, options.resetKey)
-      )
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      // A move with no mouse button follows a release unseen.
+      if (event.pointerType === 'mouse' && event.buttons === 0) return finish(event, true);
+      if (!isDisabled && Object.is(drag.resetKey, options.resetKey))
         options.onMove(event, drag.state);
     },
     onPointerUp: (event: PointerEvent<E>) => finish(event, false),
     onPointerCancel: (event: PointerEvent<E>) => finish(event, true),
-    onLostPointerCapture: (event: PointerEvent<E>) => finish(event, true),
+    onLostPointerCapture: (event: PointerEvent<E>) => {
+      if (event.target === event.currentTarget) finish(event, true);
+    },
   };
 }

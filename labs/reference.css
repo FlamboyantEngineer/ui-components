@@ -28,6 +28,7 @@
 @import url('reference/breadcrumb.css') layer(ui-reference);
 @import url('reference/button.css') layer(ui-reference);
 @import url('reference/calendar-view.css') layer(ui-reference);
+@import url('reference/canvas-viewport.css') layer(ui-reference);
 @import url('reference/card.css') layer(ui-reference);
 @import url('reference/carousel.css') layer(ui-reference);
 @import url('reference/cascader-field.css') layer(ui-reference);

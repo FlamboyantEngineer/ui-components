@@ -20,6 +20,7 @@ export * from './components/breadcrumb/index.js';
 export * from './components/button/group.js';
 export * from './components/button/index.js';
 export * from './components/calendar-view/index.js';
+export * from './components/canvas-viewport/index.js';
 export * from './components/card/index.js';
 export * from './components/carousel/index.js';
 export * from './components/cascader-field/index.js';

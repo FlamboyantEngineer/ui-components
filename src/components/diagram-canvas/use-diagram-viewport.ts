@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { defaultCanvasViewport, revealCanvasAxis } from '../../utils/canvas-transform.js';
 import { clamp } from '../../utils/clamp.js';
-import { toLocalPoint } from '../../utils/element-scale.js';
 import { requireDefined } from '../../utils/require-defined.js';
+import { useCanvasWheel } from '../../utils/use-canvas-wheel.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { findWheelScroller, toWheelPixels } from '../../utils/wheel-scroll.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { type DiagramViewport, fitDiagramViewport, zoomDiagramViewport } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
@@ -43,48 +43,6 @@ const diagramZoomRange = [
 ] as const;
 
 const fitPadding = 24;
-const revealMargin = 16;
-const wheelZoomRate = 1 / 300;
-const startViewport: DiagramViewport = { x: 0, y: 0, zoom: 100 };
-
-/** The pan offset along one axis that brings `[start, end]` inside `[0, size]`. */
-function revealAxis(offset: number, [start, end]: [number, number], size: number): number {
-  if (start < revealMargin) return offset + revealMargin - start;
-  if (end > size - revealMargin)
-    return offset - Math.min(end - size + revealMargin, start - revealMargin);
-  return offset;
-}
-
-/**
- * The wheel pans the view, or zooms it around the pointer with Ctrl or Command, in pixels whatever
- * unit it comes in. A wheel a control inside already handled (its default prevented) is left alone,
- * and so is a pan that a scrollable element under the pointer, such as a text area in a node, can
- * still take; once that element reaches its end, the view pans.
- */
-function useWheel(element: HTMLElement | null, state: DiagramViewportState): void {
-  const latest = useLatest(state);
-  useEffect(() => {
-    if (!element) return undefined;
-    // React registers wheel listeners as passive, so only a native listener can keep the page from
-    // scrolling or zooming.
-    const onWheel = (event: WheelEvent) => {
-      if (event.defaultPrevented) return;
-      const { viewport, setViewport, zoomTo, size } = latest.current;
-      const step = toWheelPixels(event, size ?? { width: 0, height: 0 });
-      const isZoom = event.ctrlKey || event.metaKey;
-      if (!isZoom && findWheelScroller(event.target, element, step)) return;
-      event.preventDefault();
-      if (isZoom) {
-        const at = toLocalPoint(element, { x: event.clientX, y: event.clientY });
-        zoomTo(viewport.zoom * 2 ** (-step.y * wheelZoomRate), at);
-        return;
-      }
-      setViewport({ ...viewport, x: viewport.x - step.x, y: viewport.y - step.y });
-    };
-    element.addEventListener('wheel', onWheel, { passive: false });
-    return () => element.removeEventListener('wheel', onWheel);
-  }, [element, latest]);
-}
 
 /**
  * The canvas's pan and zoom, controlled or not. Without a viewport from the caller, the view fits
@@ -95,7 +53,7 @@ export function useDiagramViewport(options: DiagramViewportOptions): DiagramView
   const isGiven = options.viewport !== undefined || options.defaultViewport !== undefined;
   const [viewport, setViewport] = useControllableState(
     options.viewport,
-    options.defaultViewport ?? startViewport,
+    options.defaultViewport ?? defaultCanvasViewport,
     options.onViewportChange,
   );
   const size = useElementSize(element, { box: 'client' });
@@ -119,12 +77,12 @@ export function useDiagramViewport(options: DiagramViewportOptions): DiagramView
   const reveal = (rect: DiagramRect) => {
     if (!size) return;
     const factor = viewport.zoom / 100;
-    const x = revealAxis(
+    const x = revealCanvasAxis(
       viewport.x,
       [viewport.x + rect.x * factor, viewport.x + (rect.x + rect.width) * factor],
       size.width,
     );
-    const y = revealAxis(
+    const y = revealCanvasAxis(
       viewport.y,
       [viewport.y + rect.y * factor, viewport.y + (rect.y + rect.height) * factor],
       size.height,
@@ -136,7 +94,12 @@ export function useDiagramViewport(options: DiagramViewportOptions): DiagramView
     if (level !== undefined) zoomTo(level);
   };
   const state = { viewport, setViewport, zoomTo, stepZoom, fit, reveal, size };
-  useWheel(element, state);
+  useCanvasWheel(element, {
+    viewport,
+    setViewport,
+    zoomTo,
+    getSize: () => size ?? { width: 0, height: 0 },
+  });
   const fitted = useRef(isGiven);
   const latestFit = useLatest(fit);
   useLayoutEffect(() => {

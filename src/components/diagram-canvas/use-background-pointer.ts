@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { SelectionMode } from '../../core/props.js';
+import { panCanvasViewport } from '../../utils/canvas-transform.js';
 import { type ElementScale, measureScale } from '../../utils/element-scale.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
@@ -77,11 +78,7 @@ export function useBackgroundPointer(controller: DiagramController, selectionMod
       if (!active.isMoved && Math.hypot(delta.x, delta.y) < dragThreshold) return;
       active.isMoved = true;
       if (active.mode === 'pan') {
-        view.setViewport({
-          ...active.origin,
-          x: active.origin.x + delta.x,
-          y: active.origin.y + delta.y,
-        });
+        view.setViewport(panCanvasViewport(active.origin, delta));
         return;
       }
       const local = (x: number, y: number) => ({
