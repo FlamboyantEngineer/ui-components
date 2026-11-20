@@ -150,7 +150,6 @@
   display: block;
   margin-inline: -12px;
   padding-inline: 12px;
-  text-decoration: none;
 }
 
 .ui-code-block__code[data-line-numbers] .ui-code-block__line[data-variant] {
@@ -174,4 +173,8 @@
 .ui-code-block__line:is([data-variant='added'], [data-variant='removed'])
   .ui-code-block__line-number {
   background: transparent;
+}
+
+.ui-code-block__line > :is(ins, del) {
+  text-decoration: none;
 }

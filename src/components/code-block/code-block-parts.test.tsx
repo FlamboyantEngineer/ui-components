@@ -76,7 +76,8 @@ it('UIC-CODE-BLOCK-6.2 marks added, removed and highlighted lines and numbers th
   expect(pre).toHaveAttribute('data-wrap', 'soft');
   expect(pre?.getAttribute('style')).toBe('--ui-code-block-line-number-digits: 2;');
   const lines = [...container.querySelectorAll('.ui-code-block__line')];
-  expect(lines.map((line) => line.tagName)).toEqual(['SPAN', 'DEL', 'INS', 'SPAN']);
+  expect(screen.getByRole('deletion')).toHaveTextContent('const rate = 80;');
+  expect(screen.getByRole('insertion')).toHaveTextContent('const rate = 90;');
   expect(lines.map((line) => line.getAttribute('data-variant'))).toEqual([
     'default',
     'removed',

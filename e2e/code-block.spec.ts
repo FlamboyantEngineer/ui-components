@@ -333,8 +333,8 @@ test('UIC-CODE-BLOCK-6.1 UIC-CODE-BLOCK-6.2 draws a composed block with marked l
   await lab.open('code-block');
   const block = page.getByRole('group', { name: 'numbered composed block' });
   await expect(block.locator('.ui-code-block__footer')).toHaveText('One line changed');
-  const removed = block.locator('del.ui-code-block__line');
-  const added = block.locator('ins.ui-code-block__line');
+  const removed = block.locator('.ui-code-block__line:has(> del)');
+  const added = block.locator('.ui-code-block__line:has(> ins)');
   const style = (line: typeof removed) =>
     line.evaluate((element) => {
       const computed = getComputedStyle(element);

@@ -62,7 +62,7 @@ export interface CodeBlockContentProps extends RefProps<HTMLPreElement>, BasePro
   children?: ReactNode;
 }
 
-export interface CodeBlockLineProps extends BaseProps {
+export interface CodeBlockLineProps extends RefProps<HTMLSpanElement>, BaseProps {
   /** Defaults to `default`. */
   variant?: CodeBlockLineVariant | undefined;
   /** The line's text, without its line break. */
@@ -78,13 +78,8 @@ interface LinePlace {
 const FrameContext = createContext<string | undefined>(undefined);
 const LinePlaceContext = createContext<LinePlace>({ number: null, isLast: true });
 
-/** A composed line's element: inserted and deleted text keep their meaning for assistive technology. */
-const lineElements = {
-  default: 'span',
-  highlighted: 'span',
-  added: 'ins',
-  removed: 'del',
-} as const;
+/** The element that keeps an added or removed line's meaning for assistive technology. */
+const changeElements = { added: 'ins', removed: 'del' } as const;
 
 /** The root of a composed code block: a group named by its `CodeBlockTitle` unless labelled. */
 export function CodeBlockFrame({
@@ -207,14 +202,14 @@ export function CodeBlockLine({
   ...rest
 }: CodeBlockLineProps) {
   const { number, isLast } = useContext(LinePlaceContext);
-  const Element = lineElements[variant];
+  const Change = variant === 'added' || variant === 'removed' ? changeElements[variant] : null;
   return (
-    <Element {...rest} {...hooks.slot('line', { variant }, className)}>
+    <span {...rest} {...hooks.slot('line', { variant }, className)}>
       {number === null ? null : (
         <span {...hooks.slot('line-number')} data-line-number={number} aria-hidden="true" />
       )}
-      {children}
+      {Change === null ? children : <Change>{children}</Change>}
       {isLast ? null : '\n'}
-    </Element>
+    </span>
   );
 }
