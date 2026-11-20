@@ -14,9 +14,9 @@
   max-inline-size: min(100%, 64ch);
   min-inline-size: 0;
   margin-inline-end: auto;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border: 1px solid transparent;
-  border-radius: var(--ref-radius);
+  border-radius: var(--ref-radius-xl);
   background: var(--ref-canvas);
 }
 
@@ -42,8 +42,13 @@
   background: transparent;
 }
 
+/* A ghost bubble is text on the page: it takes the whole width, for a reply with wide content. */
 .ui-bubble[data-variant='ghost'] {
-  padding-inline: 0;
+  inline-size: auto;
+  max-inline-size: 100%;
+  margin-inline: 0;
+  padding: 0;
+  border-radius: 0;
   background: transparent;
 }
 

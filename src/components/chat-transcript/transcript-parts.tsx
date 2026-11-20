@@ -55,6 +55,17 @@ export function TranscriptJumpButton({
   onJump: () => void;
 }) {
   const strings = useUiStrings();
+  if (unseenCount === 0) {
+    return (
+      <Button
+        className={hooks.slotClass('jump')}
+        size="sm"
+        icon={ArrowDownGlyph}
+        label={strings.jumpToLatest}
+        onPress={onJump}
+      />
+    );
+  }
   return (
     <Button
       className={hooks.slotClass('jump')}
@@ -62,7 +73,7 @@ export function TranscriptJumpButton({
       startIcon={ArrowDownGlyph}
       onPress={onJump}
     >
-      {unseenCount > 0 ? strings.newMessageCount(unseenCount) : strings.jumpToLatest}
+      {strings.newMessageCount(unseenCount)}
     </Button>
   );
 }

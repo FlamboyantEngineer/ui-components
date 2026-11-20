@@ -22,7 +22,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `src/co
 
 ### UIC-CHAT-TRANSCRIPT-1.3 - Jump to latest
 
-While the reader is scrolled away from the bottom, a button (`ui-chat-transcript__jump`, a `Button` with the `arrow-down` glyph) shall show after the log, reading the provider string `jumpToLatest`, or the count of new messages (UIC-CHAT-TRANSCRIPT-4.4). Pressing it scrolls to the latest message, which follows again, moves focus to the latest message and hides the button. Scrolling back to the bottom hides it too.
+While the reader is scrolled away from the bottom, a button (`ui-chat-transcript__jump`, a `Button` with the `arrow-down` glyph) shall show after the log: an icon-only button named by the provider string `jumpToLatest`, or, while new messages arrived out of view, the glyph followed by their count (UIC-CHAT-TRANSCRIPT-4.4). Pressing it scrolls to the latest message, which follows again, moves focus to the latest message and hides the button. Scrolling back to the bottom hides it too.
 
 Implementation: `src/components/chat-transcript/chat-transcript.tsx`, `src/components/chat-transcript/use-transcript.ts`, `src/core/strings/content.ts`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -61,7 +61,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/ch
 
 ### UIC-CHAT-TRANSCRIPT-2.1 - Parts
 
-`ChatMessage` shall render an `<article>` (`ui-chat-message`) with, given an `author`, a decorative small `Avatar` (`ui-chat-message__avatar`) and their name (`ui-chat-message__author`, or the provider's `unnamed` string for a blank name), given a `time`, a `RelativeTime` (`ui-chat-message__time`, read against `getNow`), both in `ui-chat-message__header`; then the children in `ui-chat-message__content` and `actions` in `ui-chat-message__actions`, all inside `ui-chat-message__body`. Without an author or a time there is no header.
+`ChatMessage` shall render through the [Message](MESSAGE.md) and [Bubble](BUBBLE.md) parts: a `Message` `<article>` (`ui-chat-message`, aligned to the `end` for a `sent` message and the `start` otherwise) with, given an `author`, a decorative small `Avatar` (`ui-chat-message__avatar`) in a `MessageAvatar`, and a `MessageContent` (`ui-chat-message__body`) holding the author's name (`ui-chat-message__author`, or the provider's `unnamed` string for a blank name) and, given a `time`, a `RelativeTime` (`ui-chat-message__time`, read against `getNow`), both in a `MessageHeader` (`ui-chat-message__header`); then the children in a `Bubble` (`ui-chat-message__content`) holding a `BubbleContent`, the footer in a `MessageFooter` (`ui-chat-message__footer`) and `actions` in `ui-chat-message__actions`. The bubble takes the message's side and its surface from the message: `secondary` for a `sent` message, `outline` for a `received` one and `ghost` for a `plain` message or a `system` notice. Without an author or a time there is no header.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -265,14 +265,14 @@ Verification: `src/components/chat-transcript/chat-quote.test.tsx`, `e2e/chat-tr
 
 ### UIC-CHAT-TRANSCRIPT-5.2 - Date separator
 
-`ChatDateSeparator` shall render a `ui-chat-date-separator` holding a [Relative Time](RELATIVE-TIME.md) (`ui-chat-date-separator__label`, without a tooltip) for the local day of `date` (a `YYYY-MM-DD` date, or a date and time read as the reader's local day) against `getNow`: `Today`, `Yesterday`, or the full date in the provider's locale (`Saturday, April 18, 2026`). Its words move on at midnight. It has no role, so it may sit between the articles of a feed. An unreadable `date` renders nothing.
+`ChatDateSeparator` shall render a `ui-chat-date-separator` that is a [Marker](MARKER.md) of variant `separator`, whose `MarkerContent` holds a [Relative Time](RELATIVE-TIME.md) (`ui-chat-date-separator__label`, without a tooltip) for the local day of `date` (a `YYYY-MM-DD` date, or a date and time read as the reader's local day) against `getNow`: `Today`, `Yesterday`, or the full date in the provider's locale (`Saturday, April 18, 2026`). Its words move on at midnight. It has no role, so it may sit between the articles of a feed. An unreadable `date` renders nothing.
 
 Implementation: `src/components/chat-transcript/chat-date-separator.tsx`
 Verification: `src/components/chat-transcript/chat-date-separator.test.tsx`, `e2e/chat-transcript.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-5.3 - Unread divider
 
-`ChatUnreadDivider` shall render a `ui-chat-unread-divider` holding the provider string `chatNewMessages` (`New messages`) in `ui-chat-unread-divider__label`. It has no role, so it may sit between the articles of a feed.
+`ChatUnreadDivider` shall render a `ui-chat-unread-divider` that is a [Marker](MARKER.md) of variant `separator`, holding the provider string `chatNewMessages` (`New messages`) in its `MarkerContent` (`ui-chat-unread-divider__label`). It has no role, so it may sit between the articles of a feed.
 
 Implementation: `src/components/chat-transcript/chat-unread-divider.tsx`, `src/core/strings/chat-message.ts`
 Verification: `src/components/chat-transcript/chat-unread-divider.test.tsx`, `e2e/chat-transcript.spec.ts`

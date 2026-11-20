@@ -21,14 +21,7 @@ export interface ChatReasoningProps
   format?: ChatReasoningFormat | undefined;
 }
 
-const hooks = createHooks('chat-reasoning', [
-  'trigger',
-  'indicator',
-  'label',
-  'spinner',
-  'panel',
-  'text',
-]);
+const hooks = createHooks('chat-reasoning', ['trigger', 'label', 'spinner', 'panel', 'text']);
 
 /**
  * An assistant's reasoning as a disclosure. While it streams it is open (unless it does not expand

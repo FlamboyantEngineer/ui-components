@@ -15,7 +15,11 @@ describe('ChatDateSeparator', () => {
     expect(label(container)).toHaveTextContent('Today');
     expect(label(container)).toHaveAttribute('datetime', '2026-04-20');
     expect(label(container)).not.toHaveAttribute('tabindex');
-    expect(container.querySelector('.ui-chat-date-separator')).not.toHaveAttribute('role');
+    const separator = container.querySelector('.ui-chat-date-separator');
+    expect(separator).not.toHaveAttribute('role');
+    expect(separator).toHaveClass('ui-marker');
+    expect(separator).toHaveAttribute('data-variant', 'separator');
+    expect(label(container)?.parentElement).toHaveClass('ui-marker__content');
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', {
       slots: ['ui-chat-date-separator__label'],
     });

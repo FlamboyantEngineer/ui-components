@@ -13,6 +13,7 @@ import { ChatGroupCases } from './chat-group-cases.js';
 import { ChatHostCases } from './chat-host-cases.js';
 import { ChatInlineOptionsCases } from './chat-inline-options-cases.js';
 import { ChatLongCases } from './chat-long-cases.js';
+import { ChatLookCases } from './chat-look-cases.js';
 import { ChatNativeCases } from './chat-native-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ChatProgressCases } from './chat-progress-cases.js';
@@ -75,6 +76,7 @@ mountLab(
         <Link href="chat-tool-call.html">Tool calls</Link>
       </Cluster>
     </LabSection>
+    <ChatLookCases />
     <ChatEverythingCases />
     <ChatAssistantCases />
     <ChatTypingWhileStreamingCases />

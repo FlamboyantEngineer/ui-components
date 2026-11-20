@@ -6,17 +6,17 @@
 import { type ReactNode, useState } from 'react';
 import type { ComponentHooks, DataValues } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { Glyph } from '../../core/provider.js';
-import {
-  Button as AriaButton,
-  Disclosure,
-  DisclosurePanel,
-  useFocusWithin,
-} from '../../primitives/index.js';
+import { useFocusWithin } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { DisclosureContentScope } from '../disclosure/disclosure.js';
-import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
+import {
+  TraceCollapsible,
+  TraceCollapsibleContent,
+  TraceCollapsibleTrigger,
+  TraceIcon,
+  TraceLine,
+  TraceTitle,
+} from '../trace/trace.js';
 
 /** Whether an activity part is open, which follows its progress until the reader chooses. */
 export interface ActivityExpansionProps {
@@ -31,7 +31,7 @@ export interface ActivityExpansionProps {
 }
 
 /** The slots the shared frame draws. */
-type ActivityDisclosureSlot = 'trigger' | 'indicator' | 'label' | 'spinner' | 'panel';
+type ActivityDisclosureSlot = 'trigger' | 'label' | 'spinner' | 'panel';
 
 interface ActivityDisclosureProps extends Omit<BaseProps, 'id'>, ActivityExpansionProps {
   /** The hooks of the part that renders the frame. */
@@ -75,9 +75,9 @@ function useActivityExpansion({
 }
 
 /**
- * A React Aria disclosure without a heading: a trigger holding the indicator glyph, an optional
- * glyph, the label and,
- * while the work goes on, a decorative spinner; then the panel, a group named by the trigger.
+ * A trace step whose details show and hide: a `TraceCollapsible` whose trigger holds one
+ * `TraceLine` (the glyph, the label and, while the work goes on, a decorative spinner) and whose
+ * content holds the panel, a group named by the trigger.
  */
 export function ActivityDisclosure({
   hooks,
@@ -101,21 +101,21 @@ export function ActivityDisclosure({
     onExpandedChange,
     expandsAutomatically,
   });
-  const indicator = useExpandGlyph(expansion.isExpanded);
   return (
-    <Disclosure
+    <TraceCollapsible
       {...rest}
       {...hooks.root({ className, props: rest, data })}
       isExpanded={expansion.isExpanded}
       onExpandedChange={expansion.onExpandedChange}
     >
-      <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-        <Glyph icon={indicator} className={hooks.slotClass('indicator')} />
-        {glyph}
-        <span {...hooks.slot('label')}>{label}</span>
-        {isActive ? <Spinner size="sm" className={hooks.slotClass('spinner')} /> : null}
-      </AriaButton>
-      <DisclosurePanel
+      <TraceCollapsibleTrigger className={hooks.slotClass('trigger')}>
+        <TraceLine status={isActive ? 'running' : undefined}>
+          {glyph ? <TraceIcon>{glyph}</TraceIcon> : null}
+          <TraceTitle className={hooks.slotClass('label')}>{label}</TraceTitle>
+          {isActive ? <Spinner size="sm" className={hooks.slotClass('spinner')} /> : null}
+        </TraceLine>
+      </TraceCollapsibleTrigger>
+      <TraceCollapsibleContent
         className={hooks.slotClass('panel')}
         render={(props) => (
           <div
@@ -124,8 +124,8 @@ export function ActivityDisclosure({
           />
         )}
       >
-        <DisclosureContentScope>{children}</DisclosureContentScope>
-      </DisclosurePanel>
-    </Disclosure>
+        {children}
+      </TraceCollapsibleContent>
+    </TraceCollapsible>
   );
 }

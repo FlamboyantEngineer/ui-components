@@ -16,10 +16,18 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { formatAbsoluteTime } from '../../utils/relative-time.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
+import { Bubble, BubbleContent, type BubbleVariant } from '../bubble/bubble.js';
 import { Button } from '../button/button.js';
+import { MessageFooter, MessageHeader } from '../message/message.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import type { ChatMessageAuthor, ChatMessageDelivery, ChatMessageProps } from './chat-message.js';
+import type {
+  ChatMessageAuthor,
+  ChatMessageDelivery,
+  ChatMessageOrigin,
+  ChatMessageProps,
+  ChatMessageVariant,
+} from './chat-message.js';
 import { ChatQuote } from './chat-quote.js';
 import { useIsInTranscript, useTranscriptContentRef } from './transcript-context.js';
 
@@ -37,6 +45,8 @@ type ChatMessageBodyProps = Pick<
   | 'deliveryPresentation'
   | 'isDeleted'
 > & {
+  origin: ChatMessageOrigin;
+  variant: ChatMessageVariant;
   isCancelled: boolean;
   delivery: ChatMessageDelivery | undefined;
   onRetry: (() => void) | undefined;
@@ -113,10 +123,10 @@ export function ChatMessageHeader({
 }: Pick<ChatMessageProps, 'time' | 'getNow'> & { authorName: string | undefined }) {
   if (authorName === undefined && !time) return null;
   return (
-    <div {...hooks.slot('header')}>
+    <MessageHeader className={hooks.slotClass('header')}>
       {authorName === undefined ? null : <span {...hooks.slot('author')}>{authorName}</span>}
       <MessageTime time={time} getNow={getNow} />
-    </div>
+    </MessageHeader>
   );
 }
 
@@ -157,7 +167,7 @@ function ChatMessageFooter({
   if (!time && !isEdited && !isCancelled && !delivery) return null;
   const timeOnly = !isEdited && !isCancelled && !delivery;
   return (
-    <div {...hooks.slot('footer', { timeOnly })}>
+    <MessageFooter {...hooks.slot('footer', { timeOnly })}>
       <MessageTime time={time} getNow={getNow} />
       {isEdited ? <span {...hooks.slot('edited')}>{strings.edited}</span> : null}
       {isCancelled ? <span {...hooks.slot('stopped')}>{strings.chatStopped}</span> : null}
@@ -172,7 +182,36 @@ function ChatMessageFooter({
         </span>
       ) : null}
       {delivery === 'failed' && onRetry ? <RetryButton onRetry={onRetry} /> : null}
-    </div>
+    </MessageFooter>
+  );
+}
+
+/**
+ * The bubble a message's content sits in: the reader's own messages on a `secondary` surface at the
+ * end, other people's on an `outline` one, and plain messages and notices on a `ghost` one, text on
+ * the page.
+ */
+function toBubbleVariant(origin: ChatMessageOrigin, variant: ChatMessageVariant): BubbleVariant {
+  if (variant === 'plain' || origin === 'system') return 'ghost';
+  return origin === 'sent' ? 'secondary' : 'outline';
+}
+
+/** The message's content in its bubble; the transcript announces the content's text. */
+function MessageBubble({
+  origin,
+  variant,
+  children,
+}: Pick<ChatMessageBodyProps, 'origin' | 'variant' | 'children'>) {
+  const contentRef = useTranscriptContentRef();
+  return (
+    <Bubble
+      ref={contentRef}
+      align={origin === 'sent' ? 'end' : 'start'}
+      variant={toBubbleVariant(origin, variant)}
+      className={hooks.slotClass('content')}
+    >
+      <BubbleContent>{children}</BubbleContent>
+    </Bubble>
   );
 }
 
@@ -206,19 +245,19 @@ export function ChatMessageBody({
   isDeleted,
   time,
   getNow,
+  origin,
+  variant,
 }: ChatMessageBodyProps) {
   const strings = useUiStrings();
-  // The transcript announces the text of this element, whatever else the message draws.
-  const contentRef = useTranscriptContentRef();
   // A transcript announces the failure through its own live region, once: an alert here would be
   // read again each time a virtualized transcript mounts the message.
   const isInTranscript = useIsInTranscript();
   if (isDeleted)
     return (
       <>
-        <div ref={contentRef} {...hooks.slot('content')}>
+        <MessageBubble origin={origin} variant={variant}>
           {strings.chatMessageDeleted}
-        </div>
+        </MessageBubble>
         <ChatMessageFooter time={time} getNow={getNow} />
       </>
     );
@@ -233,9 +272,9 @@ export function ChatMessageBody({
           onPress={quotedId && onQuotePress ? () => onQuotePress(quotedId) : undefined}
         />
       ) : null}
-      <div ref={contentRef} {...hooks.slot('content')}>
+      <MessageBubble origin={origin} variant={variant}>
         {children}
-      </div>
+      </MessageBubble>
       <ChatMessageFooter
         time={time}
         getNow={getNow}

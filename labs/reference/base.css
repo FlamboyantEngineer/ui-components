@@ -125,6 +125,8 @@
   --ref-radius-sm: 4px;
   --ref-radius: 6px;
   --ref-radius-lg: 8px;
+  /* Rounded surfaces that hold content: chat bubbles, code and output cards, the composer. */
+  --ref-radius-xl: 14px;
   --ref-radius-full: 999px;
   /* One level of a hierarchy: trees, tree tables, timeline rows. */
   --ref-indent: 20px;

@@ -42,7 +42,6 @@ describe('ChatSteps', () => {
     expectHooksMatchSpec(container, 'CHAT', {
       slots: [
         'ui-chat-steps__trigger',
-        'ui-chat-steps__indicator',
         'ui-chat-steps__label',
         'ui-chat-steps__spinner',
         'ui-chat-steps__panel',
@@ -81,7 +80,6 @@ describe('ChatSteps', () => {
     expectHooksMatchSpec(container, 'CHAT', {
       slots: [
         'ui-chat-steps__trigger',
-        'ui-chat-steps__indicator',
         'ui-chat-steps__glyph',
         'ui-chat-steps__label',
         'ui-chat-steps__panel',

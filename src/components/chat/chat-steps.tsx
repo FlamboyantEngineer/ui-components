@@ -28,14 +28,7 @@ export interface ChatStepsAction {
   count: number;
 }
 
-const hooks = createHooks('chat-steps', [
-  'trigger',
-  'indicator',
-  'glyph',
-  'label',
-  'spinner',
-  'panel',
-]);
+const hooks = createHooks('chat-steps', ['trigger', 'glyph', 'label', 'spinner', 'panel']);
 
 /**
  * The consecutive reasoning and tool calls of one reply folded into one disclosure. While the run

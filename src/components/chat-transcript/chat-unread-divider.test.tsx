@@ -9,7 +9,13 @@ describe('ChatUnreadDivider', () => {
     expect(container.querySelector('.ui-chat-unread-divider__label')).toHaveTextContent(
       'New messages',
     );
-    expect(container.querySelector('.ui-chat-unread-divider')).not.toHaveAttribute('role');
+    const divider = container.querySelector('.ui-chat-unread-divider');
+    expect(divider).not.toHaveAttribute('role');
+    expect(divider).toHaveClass('ui-marker');
+    expect(divider).toHaveAttribute('data-variant', 'separator');
+    expect(container.querySelector('.ui-chat-unread-divider__label')).toHaveClass(
+      'ui-marker__content',
+    );
     expect(screen.getByText('New messages')).toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', {
       slots: ['ui-chat-unread-divider__label'],

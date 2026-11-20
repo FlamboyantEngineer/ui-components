@@ -56,12 +56,13 @@
   display: grid;
   flex: none;
   gap: 4px;
+  margin-inline: 12px;
   padding: 6px 8px;
   padding-inline-start: 4px;
   border: 1px solid var(--ref-field-border);
   border-bottom: 0;
-  border-radius: var(--ref-radius) var(--ref-radius) 0 0;
-  background: var(--ref-field-fill);
+  border-radius: var(--ref-radius-xl) var(--ref-radius-xl) 0 0;
+  background: var(--ref-surface);
 }
 
 .ui-chat__compose {
@@ -69,9 +70,28 @@
   min-width: 0;
 }
 
-.ui-chat__queue + .ui-chat__composer {
-  border-start-start-radius: 0;
-  border-start-end-radius: 0;
+/*
+ * The composer is one rounded box: the text on top, then its controls, the start ones (such as
+ * "+" or attach) and the send button round at either end. Queued messages sit on its top edge.
+ */
+.ui-chat__composer.ui-message-composer {
+  padding: 8px;
+  border-radius: var(--ref-radius-xl);
+}
+
+.ui-chat__composer :is(.ui-message-composer__start, .ui-message-composer__end) > .ui-button,
+.ui-chat__composer
+  :is(
+    .ui-message-composer__menu-button,
+    .ui-message-composer__attach,
+    .ui-message-composer__action
+  ) {
+  border-radius: var(--ref-radius-full);
+}
+
+.ui-chat__composer .ui-message-composer__menu-button,
+.ui-chat__composer .ui-message-composer__attach {
+  border-color: var(--ref-border);
 }
 
 .ui-chat__queue-menu {
@@ -250,42 +270,14 @@
 
 /* Chat Activity */
 
-/* Reasoning and groups of steps: a quiet trigger line, and a panel ruled at its inline start. */
+/*
+ * Reasoning and groups of steps are trace steps: trace.css draws the muted line, the chevron after
+ * it and the panel ruled at its inline start. The chat sizes the text and spaces the steps.
+ */
 .ui-chat-reasoning,
 .ui-chat-steps {
   min-width: 0;
-  color: var(--ref-text);
-}
-
-.ui-chat-reasoning__trigger,
-.ui-chat-steps__trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  max-width: 100%;
-  min-height: var(--ref-control-height-xs);
-  margin-inline-start: -6px;
-  padding: 2px 6px;
-  border: 0;
-  border-radius: var(--ref-radius-sm);
-  background: none;
-  color: var(--ref-muted);
-  font: inherit;
   font-size: var(--ref-font-size-sm);
-  text-align: start;
-  cursor: pointer;
-}
-
-.ui-chat-reasoning__trigger[data-hovered],
-.ui-chat-steps__trigger[data-hovered] {
-  background: var(--ref-hover);
-  color: var(--ref-text);
-}
-
-.ui-chat-reasoning__trigger[data-pressed],
-.ui-chat-steps__trigger[data-pressed] {
-  background: var(--ref-pressed);
 }
 
 .ui-chat-reasoning__trigger[data-focus-visible],
@@ -294,37 +286,17 @@
   outline-offset: -2px;
 }
 
-.ui-chat-reasoning__indicator,
-.ui-chat-steps__indicator {
-  flex: none;
-  width: 14px;
-  height: 14px;
+/* The trigger reads at the activity's size, like the tool-call lines beside it. */
+.ui-chat-reasoning .ui-chat-reasoning__trigger,
+.ui-chat-steps .ui-chat-steps__trigger {
+  font-size: inherit;
 }
 
+/* A label that runs long wraps rather than clipping what the step is doing. */
 .ui-chat-reasoning__label,
 .ui-chat-steps__label {
-  min-width: 0;
+  white-space: normal;
   overflow-wrap: anywhere;
-}
-
-/* React Aria sets the panel's measured height while it opens and closes, then auto or 0px. */
-.ui-chat-reasoning__panel,
-.ui-chat-steps__panel {
-  height: var(--disclosure-panel-height);
-  margin-inline-start: 6px;
-  padding-inline-start: 12px;
-  border-inline-start: 2px solid var(--ref-border);
-  overflow: hidden;
-  transition: height var(--ref-duration) ease;
-}
-
-.ui-chat-reasoning__panel::before,
-.ui-chat-reasoning__panel::after,
-.ui-chat-steps__panel::before,
-.ui-chat-steps__panel::after {
-  content: '';
-  display: block;
-  height: 4px;
 }
 
 .ui-chat-reasoning__text {
@@ -345,32 +317,17 @@
   margin-bottom: 0;
 }
 
+/* A group's steps stack in the ruled panel, each one a trace line of its own. */
 .ui-chat-steps__panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
-  margin-inline-start: 0;
-  padding-inline-start: 0;
-  border-inline-start: 0;
 }
 
-/* A group reads as one quiet line: its first kind's glyph, the summary, then a chevron that shows
-   on hover and while open. */
 .ui-chat-steps__glyph {
   flex: none;
   width: 16px;
   height: 16px;
-}
-
-.ui-chat-steps__indicator {
-  order: 1;
-  opacity: 0;
-  transition: opacity var(--ref-duration) ease;
-}
-
-.ui-chat-steps__trigger[data-hovered] > .ui-chat-steps__indicator,
-.ui-chat-steps__trigger[data-focus-visible] > .ui-chat-steps__indicator,
-.ui-chat-steps[data-expanded] > .ui-chat-steps__trigger > .ui-chat-steps__indicator {
-  opacity: 1;
 }
 
 /* Plan: a checklist whose glyphs carry the status color. */
@@ -994,6 +951,27 @@
   line-height: 1.5;
 }
 
+/* Code in a reply is a rounded card: its language and copy button over the code, on one surface. */
+.ui-chat-parts .ui-code-block {
+  border-color: transparent;
+  border-radius: var(--ref-radius-xl);
+}
+
+.ui-chat-parts .ui-code-block__header {
+  padding-block-start: 4px;
+  border-bottom: 0;
+}
+
+.ui-chat-parts .ui-code-block__title {
+  color: var(--ref-text);
+  font-family: var(--ref-font);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-chat-parts .ui-code-block__code {
+  padding-block-start: 2px;
+}
+
 /* A mention or command: a pill tinted from the text it sits in, so it reads on any bubble. */
 .ui-chat-parts__token {
   padding: 0 4px;
@@ -1042,9 +1020,9 @@
   gap: 10px;
   box-sizing: border-box;
   max-width: 640px;
-  padding: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius-lg);
+  border-radius: var(--ref-radius-xl);
   background: var(--ref-surface);
   color: var(--ref-text);
   font: var(--ref-font-size-md) / 1.45 var(--ref-font);
@@ -1618,10 +1596,13 @@
   }
 }
 
-/* A row is a quiet call among the steps of a reply, alone or in a group: its kind's glyph and
-   label, the status and duration kept for assistive technology, and a chevron after the label on
-   hover and while open. A failed call is a row like the others, told apart by its danger glyph. A
-   call that waits for approval keeps its card. */
+/*
+ * A row is a quiet trace line among the steps of a reply, alone or in a group: its kind's glyph,
+ * its label and target, and a chevron after them, as reasoning shows. A succeeded call's status and
+ * duration stay for assistive technology only; a call still at work or one that failed shows its
+ * status. Its arguments and result open in a rounded card under a rule. A call that waits for
+ * approval keeps its card.
+ */
 .ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested']) {
   max-width: none;
   border: 0;
@@ -1640,8 +1621,9 @@
   .ui-disclosure__trigger {
   width: auto;
   max-width: 100%;
-  margin-inline-start: -6px;
-  padding: 2px 6px;
+  margin-inline-start: -4px;
+  padding: 2px 4px;
+  background: none;
   color: inherit;
 }
 
@@ -1650,42 +1632,74 @@
 }
 
 .ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
-  .ui-disclosure__indicator {
-  order: 1;
-  width: 14px;
-  height: 14px;
-  opacity: 0;
+  .ui-disclosure__title {
+  flex: 0 1 auto;
+  align-items: center;
 }
 
-.ui-chat-tool-call[data-variant='row']
-  .ui-disclosure__trigger[data-hovered]
-  .ui-disclosure__indicator,
-.ui-chat-tool-call[data-variant='row']
-  .ui-disclosure__trigger[data-focus-visible]
-  .ui-disclosure__indicator,
-.ui-chat-tool-call[data-variant='row'] .ui-disclosure[data-expanded] .ui-disclosure__indicator {
-  opacity: 1;
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-disclosure__indicator {
+  order: 1;
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
+  margin-block: 0;
+}
+
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-chat-tool-call__status-glyph {
+  margin-block: 0;
+}
+
+.ui-chat-tool-call[data-variant='row'] .ui-trace__line {
+  align-items: flex-start;
+  inline-size: auto;
+  color: inherit;
 }
 
 .ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status-glyph {
   color: inherit;
 }
 
-.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
-  .ui-chat-tool-call__body {
-  margin-block: 4px;
-  padding-inline: 0;
-  font-size: var(--ref-font-size-sm);
-  padding-inline-start: 22px;
+.ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status,
+.ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__duration {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-/* What the call acted on reads like a reference after its label. */
+.ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
+  .ui-chat-tool-call__body {
+  margin-block: 4px 2px;
+  margin-inline-start: 7px;
+  padding-inline: 14px 0;
+  border-inline-start: 1px solid var(--ref-border);
+  font-size: var(--ref-font-size-sm);
+}
+
+/* The line keeps its label, target and status together, the chevron right after them. */
+.ui-chat-tool-call[data-variant='row'] .ui-chat-tool-call__summary {
+  flex: 0 1 auto;
+}
+
+/* In a row, the arguments and the result are each a rounded card, as code in a reply is. */
+.ui-chat-tool-call[data-variant='row'] .ui-chat-tool-call__part {
+  padding: 6px 4px 8px 12px;
+  border-radius: var(--ref-radius-xl);
+  background: var(--ref-surface);
+}
+
+.ui-chat-tool-call[data-variant='row'] .ui-chat-tool-call__json {
+  border: 0;
+  background: none;
+}
+
+/* What the call acted on: a command, a path or a query, read after its label. */
 .ui-chat-tool-call__target {
-  color: var(--ref-text);
+  color: inherit;
   overflow-wrap: anywhere;
-  text-decoration: underline;
-  text-decoration-color: var(--ref-border-strong);
-  text-underline-offset: 3px;
 }
 
 /* Busy activity: the library spinner at the small icon size, in the trigger's or line's color. */
