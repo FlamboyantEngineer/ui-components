@@ -29,6 +29,8 @@ test('UIC-MESSAGE-SCROLLER-2.1 UIC-MESSAGE-SCROLLER-2.2 anchors, follows and all
   await expect.poll(() => distanceToEnd(viewport)).toBe(0);
   await viewport.focus();
   await page.keyboard.press('Home');
+  // Keyboard scrolling animates; jump only once it has reached the start, so it cannot carry on.
+  await expect.poll(() => viewport.evaluate((element) => element.scrollTop)).toBe(0);
   await expect(latest).toBeVisible();
   await latest.focus();
   await page.keyboard.press('Enter');
