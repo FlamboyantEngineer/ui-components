@@ -85,7 +85,7 @@ function useSnapshot() {
   };
   // The answers live in the form's controls, which only the committed DOM shows; an equal read
   // keeps the shown state, so this settles after one pass.
-   
+
   useLayoutEffect(() => void refresh());
   return { formRef, snapshot, refresh, noteChange };
 }
