@@ -1,9 +1,30 @@
 export type {
+  AttachmentActionProps,
+  AttachmentActionsProps,
+  AttachmentContentProps,
   AttachmentData,
+  AttachmentDescriptionProps,
+  AttachmentFileProps,
   AttachmentFocusTarget,
+  AttachmentFrameProps,
+  AttachmentGroupProps,
   AttachmentKind,
   AttachmentListProps,
+  AttachmentMediaProps,
+  AttachmentMediaVariant,
   AttachmentProps,
+  AttachmentSize,
   AttachmentStatus,
+  AttachmentTitleProps,
 } from './attachment.js';
-export { Attachment, AttachmentList } from './attachment.js';
+export {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentList,
+  AttachmentMedia,
+  AttachmentTitle,
+} from './attachment.js';

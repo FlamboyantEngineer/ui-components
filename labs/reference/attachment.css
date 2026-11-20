@@ -177,3 +177,116 @@
 .ui-attachment-list__item {
   display: flex;
 }
+
+/* Composed attachments: media beside the content, or above it when vertical, actions at the end. */
+.ui-attachment[data-display='parts'] {
+  --ref-attachment-media: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  padding: 6px;
+}
+
+.ui-attachment[data-display='parts'][data-size='sm'] {
+  --ref-attachment-media: 24px;
+
+  gap: 6px;
+  padding: 4px;
+}
+
+.ui-attachment[data-display='parts'][data-size='xs'] {
+  --ref-attachment-media: 18px;
+
+  gap: 4px;
+  padding: 2px 4px;
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-attachment[data-display='parts'][data-orientation='vertical'] {
+  flex-direction: column;
+  align-items: stretch;
+  width: 140px;
+}
+
+.ui-attachment__media {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--ref-attachment-media, 32px);
+  height: var(--ref-attachment-media, 32px);
+  overflow: hidden;
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-hover);
+  color: var(--ref-muted);
+}
+
+.ui-attachment[data-orientation='vertical'] .ui-attachment__media {
+  width: auto;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.ui-attachment__media[data-variant='image'] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-attachment[data-status='error'] .ui-attachment__media {
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
+  color: var(--ref-danger);
+}
+
+.ui-attachment__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ui-attachment__title {
+  overflow: hidden;
+  font-weight: var(--ref-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-attachment__description {
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-attachment[data-status='error'] .ui-attachment__description {
+  color: var(--ref-danger);
+}
+
+.ui-attachment__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.ui-attachment__action {
+  flex: none;
+}
+
+.ui-attachment-group {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.ui-attachment-group > .ui-attachment {
+  flex: none;
+}

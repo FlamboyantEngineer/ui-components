@@ -111,22 +111,48 @@ Verification: `src/components/attachment/attachment-list.test.tsx`, `e2e/attachm
 Implementation: `src/components/attachment/attachment-list.tsx`
 Verification: `src/components/attachment/attachment-list.test.tsx`
 
+## UIC-ATTACHMENT-3 - Composed attachments
+
+### UIC-ATTACHMENT-3.1 - Frame and parts
+
+`Attachment` without a `name` shall compose an attachment from parts, after shadcn/ui's attachment: the same `ui-attachment` `<div>` around its children, publishing `data-display="parts"`, `status` as `data-status` (`complete` by default), `size` as `data-size` (`md` by default, or `sm`, `xs`) and `orientation` as `data-orientation` (`horizontal` by default, or `vertical`), and forwarding its native attributes, `id` included. Its parts are `AttachmentMedia` (`ui-attachment__media`, a `<div>` for the file's glyph or an image, publishing `variant` as `data-variant`: `icon` by default, or `image`), `AttachmentContent` (`ui-attachment__content`, a `<div>` holding `AttachmentTitle`, the `ui-attachment__title` `<span>` for the file's name, and `AttachmentDescription`, the `ui-attachment__description` `<span>` for a detail such as its size) and `AttachmentActions` (`ui-attachment__actions`, a `<div>` of commands, each an `AttachmentAction`: a small ghost icon-only [Button](BUTTON.md) `ui-attachment__action` named by `label`, showing `icon`, calling `onPress`). Every part forwards its native attributes and keeps the caller's markup. The reference stylesheet sets the media beside the content, or above it when vertical, the actions at the end, the size scaling the media box, and an error's border in the danger tone, as it draws a data attachment.
+
+Implementation: `src/components/attachment/attachment.tsx`, `src/components/attachment/attachment-frame.tsx`, `labs/reference/attachment.css`
+Verification: `src/components/attachment/attachment-frame.test.tsx`, `e2e/attachment.spec.ts`
+
+### UIC-ATTACHMENT-3.2 - Group
+
+`AttachmentGroup` shall render a `ui-attachment-group` `<div>` holding attachments in a row, which the reference stylesheet scrolls sideways when they do not fit. It forwards its native attributes, so a caller gives it a role and a name, such as a `list` of `listitem` attachments.
+
+Implementation: `src/components/attachment/attachment-frame.tsx`, `labs/reference/attachment.css`
+Verification: `src/components/attachment/attachment-frame.test.tsx`, `e2e/attachment.spec.ts`
+
 ## Hooks
 
-| Hook                       | Kind  | Values                                    | Description                                                            |
-| -------------------------- | ----- | ----------------------------------------- | ---------------------------------------------------------------------- |
-| `ui-attachment`            | root  |                                           | An attachment's `<div>`.                                               |
-| `ui-attachment__preview`   | slot  |                                           | The button holding an image's thumbnail (also `ui-button`).            |
-| `ui-attachment__thumbnail` | slot  |                                           | An image's thumbnail `<img>`.                                          |
-| `ui-attachment__icon`      | slot  |                                           | A chip's type glyph (also `ui-icon`).                                  |
-| `ui-attachment__name`      | slot  |                                           | A chip's file name.                                                    |
-| `ui-attachment__size`      | slot  |                                           | A chip's file size.                                                    |
-| `ui-attachment__progress`  | slot  |                                           | The upload's progress (also `ui-progress-bar`).                        |
-| `ui-attachment__error`     | slot  |                                           | The upload's error with Retry (also `ui-inline-error`).                |
-| `ui-attachment__download`  | slot  |                                           | The download link (also `ui-link`).                                    |
-| `ui-attachment__remove`    | slot  |                                           | The remove button (also `ui-button`).                                  |
-| `data-kind`                | state | `image`, `pdf`, `archive`, `text`, `file` | On an attachment: the kind of file.                                    |
-| `data-status`              | state | `uploading`, `complete`, `error`          | On an attachment: where its upload stands.                             |
-| `data-display`             | state | `thumbnail`, `chip`                       | On an attachment: an image's thumbnail, or a chip with glyph and name. |
-| `ui-attachment-list`       | root  |                                           | The list's `<ul>`.                                                     |
-| `ui-attachment-list__item` | slot  |                                           | One attachment's `<li>`.                                               |
+| Hook                         | Kind      | Values                                    | Description                                                                            |
+| ---------------------------- | --------- | ----------------------------------------- | -------------------------------------------------------------------------------------- |
+| `ui-attachment`              | root      |                                           | An attachment's `<div>`.                                                               |
+| `ui-attachment__preview`     | slot      |                                           | The button holding an image's thumbnail (also `ui-button`).                            |
+| `ui-attachment__thumbnail`   | slot      |                                           | An image's thumbnail `<img>`.                                                          |
+| `ui-attachment__icon`        | slot      |                                           | A chip's type glyph (also `ui-icon`).                                                  |
+| `ui-attachment__name`        | slot      |                                           | A chip's file name.                                                                    |
+| `ui-attachment__size`        | slot      |                                           | A chip's file size.                                                                    |
+| `ui-attachment__progress`    | slot      |                                           | The upload's progress (also `ui-progress-bar`).                                        |
+| `ui-attachment__error`       | slot      |                                           | The upload's error with Retry (also `ui-inline-error`).                                |
+| `ui-attachment__download`    | slot      |                                           | The download link (also `ui-link`).                                                    |
+| `ui-attachment__remove`      | slot      |                                           | The remove button (also `ui-button`).                                                  |
+| `ui-attachment__media`       | slot      |                                           | A composed attachment's glyph or image.                                                |
+| `ui-attachment__content`     | slot      |                                           | A composed attachment's title and description.                                         |
+| `ui-attachment__title`       | slot      |                                           | A composed attachment's file name.                                                     |
+| `ui-attachment__description` | slot      |                                           | A composed attachment's detail.                                                        |
+| `ui-attachment__actions`     | slot      |                                           | A composed attachment's commands.                                                      |
+| `ui-attachment__action`      | slot      |                                           | One command (also `ui-button`).                                                        |
+| `data-kind`                  | state     | `image`, `pdf`, `archive`, `text`, `file` | On an attachment: the kind of file.                                                    |
+| `data-status`                | state     | `uploading`, `complete`, `error`          | On an attachment: where its upload stands.                                             |
+| `data-display`               | state     | `thumbnail`, `chip`, `parts`              | On an attachment: an image's thumbnail, a chip with glyph and name, or composed parts. |
+| `data-size`                  | attribute | `xs`, `sm`, `md`                          | On a composed attachment: its size.                                                    |
+| `data-orientation`           | attribute | `horizontal`, `vertical`                  | On a composed attachment: media beside or above the content.                           |
+| `data-variant`               | attribute | `icon`, `image`                           | On media: a glyph or an image.                                                         |
+| `ui-attachment-list`         | root      |                                           | The list's `<ul>`.                                                                     |
+| `ui-attachment-list__item`   | slot      |                                           | One attachment's `<li>`.                                                               |
+| `ui-attachment-group`        | root      |                                           | A row of composed attachments.                                                         |
