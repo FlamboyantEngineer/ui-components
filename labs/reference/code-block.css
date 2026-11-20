@@ -133,3 +133,48 @@
 .ui-code-block__line-number::before {
   content: attr(data-line-number);
 }
+
+/* Composed blocks: a footer under a rule, and lines that mark a change or draw the eye. */
+
+.ui-code-block__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-code-block__line[data-variant] {
+  display: block;
+  margin-inline: -12px;
+  padding-inline: 12px;
+}
+
+.ui-code-block__code[data-line-numbers] .ui-code-block__line[data-variant] {
+  margin-inline: 0;
+  padding-inline-end: 12px;
+}
+
+.ui-code-block__line[data-variant='added'] {
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint), transparent);
+}
+
+.ui-code-block__line[data-variant='removed'] {
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint), transparent);
+}
+
+.ui-code-block__line[data-variant='highlighted'] {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), transparent);
+  box-shadow: inset 2px 0 0 var(--ref-accent);
+}
+
+.ui-code-block__line:is([data-variant='added'], [data-variant='removed'])
+  .ui-code-block__line-number {
+  background: transparent;
+}
+
+.ui-code-block__line > :is(ins, del) {
+  text-decoration: none;
+}

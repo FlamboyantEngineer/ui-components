@@ -22,6 +22,12 @@ export const attachmentHooks = createHooks('attachment', [
   'error',
   'download',
   'remove',
+  'media',
+  'content',
+  'title',
+  'description',
+  'actions',
+  'action',
 ]);
 
 const hooks = attachmentHooks;

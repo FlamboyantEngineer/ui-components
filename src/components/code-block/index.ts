@@ -1,4 +1,27 @@
-export type { CodeBlockData, CodeBlockProps, CodeBlockVariant } from './code-block.js';
-export { CodeBlock } from './code-block.js';
-export type { CodeBlockOverrideOptions } from './markdown-code-block.js';
-export { createCodeBlockOverride } from './markdown-code-block.js';
+export type {
+  CodeBlockActionsProps,
+  CodeBlockContentProps,
+  CodeBlockCopyButtonProps,
+  CodeBlockData,
+  CodeBlockDataProps,
+  CodeBlockFooterProps,
+  CodeBlockFrameProps,
+  CodeBlockHeaderProps,
+  CodeBlockLineProps,
+  CodeBlockLineVariant,
+  CodeBlockOverrideOptions,
+  CodeBlockProps,
+  CodeBlockTitleProps,
+  CodeBlockVariant,
+} from './code-block.js';
+export {
+  CodeBlock,
+  CodeBlockActions,
+  CodeBlockContent,
+  CodeBlockCopyButton,
+  CodeBlockFooter,
+  CodeBlockHeader,
+  CodeBlockLine,
+  CodeBlockTitle,
+  createCodeBlockOverride,
+} from './code-block.js';
