@@ -1,0 +1,97 @@
+/* Trace: muted lines of what an agent did, with collapsible details under a start rule. */
+
+.ui-trace {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-inline-size: 0;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-trace__line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  color: var(--ref-muted);
+}
+
+:is(a, button):hover > .ui-trace__line,
+.ui-trace__collapsible-trigger[data-hovered] .ui-trace__line {
+  color: var(--ref-text);
+}
+
+.ui-trace__line[data-status='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-trace__line[data-status='pending'] > .ui-trace__icon {
+  opacity: 0.5;
+}
+
+/* The step under way reads in the text color, so the reader finds where the work is. */
+.ui-trace__line[data-status='running'] > .ui-trace__title {
+  color: var(--ref-text);
+}
+
+.ui-trace__icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ref-icon-size-md);
+  block-size: var(--ref-icon-size-md);
+}
+
+.ui-trace__title {
+  overflow: hidden;
+  min-inline-size: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-trace__description {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-trace__collapsible {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.ui-disclosure__trigger.ui-trace__collapsible-trigger {
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: 2px 4px;
+  margin-inline-start: -4px;
+  background: none;
+  color: var(--ref-muted);
+}
+
+.ui-trace__collapsible-trigger > .ui-disclosure__title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.ui-trace__collapsible-indicator {
+  flex: none;
+  inline-size: var(--ref-icon-size-sm);
+  block-size: var(--ref-icon-size-sm);
+}
+
+.ui-trace__collapsible-content {
+  min-inline-size: 0;
+  margin-block: 6px 2px;
+  margin-inline-start: 7px;
+  padding-inline: 14px 4px;
+  border-inline-start: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
