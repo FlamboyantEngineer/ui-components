@@ -1,11 +1,12 @@
 'use client';
 
-import type { ReactNode, Ref } from 'react';
+import { type ReactNode, type Ref, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { ResizableTableContainer } from '../../primitives/index.js';
 import type { RevealLayout } from '../../utils/use-collection-handle.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import { TableVirtualizer } from './table-virtualizer.js';
+import { useFocusKeptInView } from './use-focus-kept-in-view.js';
 
 interface TableScrollProps {
   /**
@@ -29,14 +30,18 @@ interface TableScrollProps {
 
 /**
  * The table's scroll area: a plain one around a static table, else React Aria's resizable container,
- * which measures its width for the column widths, around the virtualizer.
+ * which measures its width for the column widths, around the virtualizer. A measured table keeps
+ * the focused cell in view while its rows are measured.
  */
 export function TableScroll(props: TableScrollProps) {
   const { isVirtualized, layoutRef, rowHeight, measuresRows, hasGroupRow, widths, children } =
     props;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useFocusKeptInView(scrollRef, isVirtualized && measuresRows);
   if (!isVirtualized) return <div className={hooks.slotClass('scroll')}>{children}</div>;
   return (
     <ResizableTableContainer
+      ref={scrollRef}
       className={hooks.slotClass('scroll')}
       onResize={widths.onResize}
       onResizeEnd={widths.onResizeEnd}
