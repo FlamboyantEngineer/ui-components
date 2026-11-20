@@ -36,7 +36,7 @@ Verification: `src/utils/use-element-size.test.tsx`
 
 ### UIC-MEASUREMENT-2.2 - Boxes and parent
 
-`box` shall choose `content-box` (the default), `border-box`, or `client` (`clientWidth` × `clientHeight`, observed in both boxes so a scrollbar that appears or leaves updates it); `parent` measures the element's parent. Switching box rereads the last report instead of waiting for another resize.
+`box` shall choose `content-box` (the default), `border-box`, `client` (`clientWidth` × `clientHeight`, observed in both boxes so a scrollbar that appears or leaves updates it), or `scrollbar-free` (the border box less borders and padding, observed in both boxes so a padding change updates it, and unchanged by a scrollbar, so content sized from it cannot resize itself by bringing on a scrollbar); `parent` measures the element's parent. Switching box rereads the last report instead of waiting for another resize.
 
 Implementation: `src/utils/use-element-size.ts`
 Verification: `src/utils/use-element-size.test.tsx`

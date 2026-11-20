@@ -29,14 +29,18 @@ function title() {
   return document.querySelector('.ui-modal__title')?.textContent;
 }
 
-/** Reports the viewport's client size to the stage, as a browser would. */
+/** Reports the viewport's size, with no borders, padding or scrollbars, as a browser would. */
 function stubViewportSize(width: number, height: number) {
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(width);
   vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(height);
   class ReportingObserver {
     constructor(readonly callback: ResizeObserverCallback) {}
     observe(element: Element) {
-      const entry = { target: element, contentRect: { width, height } };
+      const entry = {
+        target: element,
+        contentRect: { width, height },
+        borderBoxSize: [{ inlineSize: width, blockSize: height }],
+      };
       this.callback([entry as unknown as ResizeObserverEntry], this as unknown as ResizeObserver);
     }
     unobserve() {}

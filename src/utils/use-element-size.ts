@@ -10,9 +10,12 @@ import { useTargetElement } from './use-target-element.js';
  * - `content-box`: the content rectangle (the default);
  * - `border-box`: the border box, inline size as width;
  * - `client`: `clientWidth` × `clientHeight`, the padding box without scrollbars, which also changes
- *   when a scrollbar appears or disappears.
+ *   when a scrollbar appears or disappears;
+ * - `scrollbar-free`: the content box as it would be with no scrollbar showing (the border box less
+ *   borders and padding), which a scrollbar appearing or disappearing leaves unchanged, so content
+ *   sized from it cannot bring on the scrollbar that would resize it.
  */
-export type ElementSizeBox = 'content-box' | 'border-box' | 'client';
+export type ElementSizeBox = 'content-box' | 'border-box' | 'client' | 'scrollbar-free';
 
 export interface ElementSize {
   readonly width: number;
@@ -31,14 +34,39 @@ export interface ElementSizeOptions {
 /** An element, or a ref to one, followed to the element it holds after every commit. */
 export type ElementSizeTarget = Element | RefObject<Element | null> | null | undefined;
 
+function readBorderBox(entry: ResizeObserverEntry, element: Element): ElementSize {
+  const border = entry.borderBoxSize?.[0];
+  if (border) return { width: border.inlineSize, height: border.blockSize };
+  const rect = element.getBoundingClientRect();
+  return { width: rect.width, height: rect.height };
+}
+
+/** The border box less the borders and padding: the content box with no scrollbar taking room. */
+function readScrollbarFree(entry: ResizeObserverEntry, element: Element): ElementSize {
+  const outer = readBorderBox(entry, element);
+  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+  const sum = (...names: string[]) =>
+    names.reduce(
+      (total, name) => total + (Number.parseFloat(style?.getPropertyValue(name) ?? '') || 0),
+      0,
+    );
+  return {
+    width: Math.max(
+      0,
+      outer.width - sum('border-left-width', 'border-right-width', 'padding-left', 'padding-right'),
+    ),
+    height: Math.max(
+      0,
+      outer.height -
+        sum('border-top-width', 'border-bottom-width', 'padding-top', 'padding-bottom'),
+    ),
+  };
+}
+
 function readSize(entry: ResizeObserverEntry, element: Element, box: ElementSizeBox): ElementSize {
   if (box === 'client') return { width: element.clientWidth, height: element.clientHeight };
-  if (box === 'border-box') {
-    const border = entry.borderBoxSize?.[0];
-    if (border) return { width: border.inlineSize, height: border.blockSize };
-    const rect = element.getBoundingClientRect();
-    return { width: rect.width, height: rect.height };
-  }
+  if (box === 'border-box') return readBorderBox(entry, element);
+  if (box === 'scrollbar-free') return readScrollbarFree(entry, element);
   return { width: entry.contentRect.width, height: entry.contentRect.height };
 }
 
@@ -96,13 +124,15 @@ export function useElementSize(
     };
   }, [box, element, enabled]);
 
-  // A client size changes with padding (border box) and with scrollbars (content box only).
+  // A client size changes with padding (border box) and with scrollbars (content box only); a
+  // scrollbar-free size changes with padding alone, which only the content box reports.
   useResizeObserver(
     () => {
       const observed = enabled ? element : null;
+      const both = box === 'client' || box === 'scrollbar-free';
       return [
         { element: observed, box: box === 'content-box' ? 'content-box' : 'border-box' },
-        box === 'client' ? { element: observed, box: 'content-box' } : null,
+        both ? { element: observed, box: 'content-box' } : null,
       ];
     },
     (entries) => onEntries.current(entries),

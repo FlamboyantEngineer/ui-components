@@ -141,7 +141,9 @@ export function MediaStage(props: MediaStageProps) {
   const { item, viewportRef, hasSiblings, request } = props;
   const strings = useUiStrings();
   const isRtl = useLocale().direction === 'rtl';
-  const stage = useElementSize(viewportRef, { box: 'client' });
+  // Fitted to the room with no scrollbars: a zoomed image's scrollbars must not shrink the fit, or the
+  // smaller image drops them, regrows and brings them back, frame after frame.
+  const stage = useElementSize(viewportRef, { box: 'scrollbar-free' });
   const isImage = isImageItem(item);
   const canvasRef = useRef<HTMLDivElement>(null);
   useZoomViewport({
