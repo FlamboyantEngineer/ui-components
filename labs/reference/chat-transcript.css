@@ -151,9 +151,20 @@
  */
 .ui-chat-message .ui-chat-message__body {
   display: grid;
+  flex: 0 1 auto;
   grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   min-width: 0;
+}
+
+/* A plain message or a notice is text on the page: its ghost bubble takes the whole width, for a
+   reply with wide content. */
+.ui-chat-message .ui-chat-message__content[data-variant='ghost'] {
+  inline-size: auto;
+  max-inline-size: 100%;
+  margin-inline: 0;
+  padding: 0;
+  border-radius: 0;
 }
 
 .ui-chat-message .ui-chat-message__header {

@@ -299,6 +299,10 @@
   overflow-wrap: anywhere;
 }
 
+.ui-chat-reasoning__panel {
+  min-inline-size: 0;
+}
+
 .ui-chat-reasoning__text {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
@@ -1020,7 +1024,7 @@
   gap: 10px;
   box-sizing: border-box;
   max-width: 640px;
-  padding: 12px 14px;
+  padding: 12px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius-xl);
   background: var(--ref-surface);
@@ -1384,6 +1388,14 @@
   padding: 6px 10px;
 }
 
+.ui-chat-tool-call__heading .ui-trace__line {
+  align-items: flex-start;
+}
+
+.ui-chat-tool-call__heading .ui-trace__icon {
+  block-size: 1lh;
+}
+
 .ui-chat-tool-call__heading .ui-disclosure__indicator {
   margin-block: calc((1lh - 16px) / 2);
 }
@@ -1429,6 +1441,12 @@
 .ui-chat-tool-call[data-status='failed'] .ui-chat-tool-call__status-glyph,
 .ui-chat-tool-call[data-status='denied'] .ui-chat-tool-call__status-glyph {
   color: var(--ref-danger);
+}
+
+/* The status glyph carries a failure; the line keeps the card's text color, which reads on its
+   surface and hover fill. */
+.ui-chat-tool-call .ui-trace__line[data-status='error'] {
+  color: inherit;
 }
 
 .ui-chat-tool-call__label {

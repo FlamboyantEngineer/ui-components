@@ -239,7 +239,7 @@ describe('ChatMessage', () => {
     expect(container.querySelector('.ui-chat-message__header')).toHaveClass('ui-message__header');
     const bubble = container.querySelector('.ui-chat-message__content');
     expect(bubble).toHaveClass('ui-bubble');
-    expect(bubble).toHaveAttribute('data-variant', 'outline');
+    expect(bubble).toHaveAttribute('data-variant', 'muted');
     expect(bubble).toHaveAttribute('data-align', 'start');
     expect(bubble?.firstElementChild).toHaveClass('ui-bubble__content');
     expectHooksMatchSpec(container, 'MESSAGE', { slots: ['avatar', 'content', 'header'] });

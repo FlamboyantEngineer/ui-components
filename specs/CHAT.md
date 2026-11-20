@@ -75,7 +75,7 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-1.10 - Embedded reference layout
 
-The reference styles shall let Chat fill a bounded flex-column LoadingRegion, constrain long titles while preserving actions, align plain received content to the logical start, center Jump to latest and keep end controls at the trailing edge, including RTL and wrapping. The host supplies a bounded height and flex sizing/minimums for its own ancestor panels; page placement, sidebars and breakpoints belong to the host. The queue shall adjoin the composer as one surface without file-change summaries or unrelated host actions.
+The reference styles shall let Chat fill a bounded flex-column LoadingRegion, constrain long titles while preserving actions, align plain received content to the logical start, center Jump to latest and keep end controls at the trailing edge, including RTL and wrapping. The host supplies a bounded height and flex sizing/minimums for its own ancestor panels; page placement, sidebars and breakpoints belong to the host. The queue shall sit on the composer's top edge as a box a little narrower than the composer, with only its top corners rounded, without file-change summaries or unrelated host actions.
 
 Implementation: `labs/reference/chat.css`, `labs/reference/chat-transcript.css`, `labs/reference/message-composer.css`, `labs/reference/loading-overlay.css`
 Verification: `e2e/chat-native.spec.ts`

@@ -42,13 +42,8 @@
   background: transparent;
 }
 
-/* A ghost bubble is text on the page: it takes the whole width, for a reply with wide content. */
 .ui-bubble[data-variant='ghost'] {
-  inline-size: auto;
-  max-inline-size: 100%;
-  margin-inline: 0;
-  padding: 0;
-  border-radius: 0;
+  padding-inline: 0;
   background: transparent;
 }
 

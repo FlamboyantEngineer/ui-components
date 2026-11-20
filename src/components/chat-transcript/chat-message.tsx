@@ -271,12 +271,8 @@ export function ChatMessage({
   });
   const [body, own] = splitBodyProps(rest);
   const data = {
-    variant: display.variant,
-    origin,
-    status,
-    groupPosition,
-    delivery,
-    deliveryPresentation,
+    ...{ variant: display.variant, origin, status, groupPosition },
+    ...{ delivery, deliveryPresentation },
     ...{ deleted: isDeleted, hovered: isHovered, focusWithin: isFocusWithin },
     ...{ avatarHidden: display.avatarHidden, collapseFooterTime },
     streamingCaret: showsCaret({ streamingCaret: rest.streamingCaret, status, origin, isDeleted }),

@@ -188,12 +188,12 @@ function ChatMessageFooter({
 
 /**
  * The bubble a message's content sits in: the reader's own messages on a `secondary` surface at the
- * end, other people's on an `outline` one, and plain messages and notices on a `ghost` one, text on
+ * end, other people's on a `muted` one, and plain messages and notices on a `ghost` one, text on
  * the page.
  */
 function toBubbleVariant(origin: ChatMessageOrigin, variant: ChatMessageVariant): BubbleVariant {
   if (variant === 'plain' || origin === 'system') return 'ghost';
-  return origin === 'sent' ? 'secondary' : 'outline';
+  return origin === 'sent' ? 'secondary' : 'muted';
 }
 
 /** The message's content in its bubble; the transcript announces the content's text. */
