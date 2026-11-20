@@ -1598,10 +1598,10 @@
 
 /*
  * A row is a quiet trace line among the steps of a reply, alone or in a group: its kind's glyph,
- * its label and target, and a chevron after them, as reasoning shows. A succeeded call's status and
- * duration stay for assistive technology only; a call still at work or one that failed shows its
- * status. Its arguments and result open in a rounded card under a rule. A call that waits for
- * approval keeps its card.
+ * its label and target, and a chevron after them, as reasoning shows. A finished call's status and
+ * duration stay for assistive technology only (base.css), a call still at work shows its status.
+ * Its arguments and result open in rounded cards under a rule. A call that waits for approval
+ * keeps its card.
  */
 .ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested']) {
   max-width: none;
@@ -1658,16 +1658,6 @@
 
 .ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status-glyph {
   color: inherit;
-}
-
-.ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__status,
-.ui-chat-tool-call[data-variant='row'][data-status='succeeded'] .ui-chat-tool-call__duration {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .ui-chat-tool-call[data-variant='row']:not([data-status='approval-requested'])
