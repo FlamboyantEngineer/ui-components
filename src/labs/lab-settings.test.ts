@@ -91,6 +91,16 @@ describe('settings round trip', () => {
     });
   });
 
+  it('UIC-LABS-2.3 reads, remembers and writes the shadcn/ui choice', () => {
+    expect(readSettings('?stylesheet=shadcn', null).stylesheet).toEqual({ kind: 'shadcn' });
+    const storage = memoryStorage();
+    rememberSettings({ ...defaultSettings, stylesheet: { kind: 'shadcn' } }, storage);
+    expect(readSettings('', storage).stylesheet).toEqual({ kind: 'shadcn' });
+    expect(settingsSearch({ ...defaultSettings, stylesheet: { kind: 'shadcn' } })).toBe(
+      '?stylesheet=shadcn',
+    );
+  });
+
   it('writes the query string and keeps unrelated parameters', () => {
     expect(settingsSearch(defaultSettings, '?case=3')).toBe('?case=3');
     expect(settingsSearch(defaultSettings, '?stylesheet=none')).toBe('');
@@ -147,6 +157,22 @@ describe('applySettings', () => {
     applySettings({ ...defaultSettings, stylesheet: { kind: 'none' } });
     current.dispatchEvent(new Event('load'));
     expect(document.documentElement.dataset.labStylesheetState).toBe('none');
+  });
+
+  it('UIC-LABS-2.1 UIC-LABS-3.11 loads the shadcn/ui stylesheet from its default or given URL', () => {
+    applySettings({ ...defaultSettings, stylesheet: { kind: 'shadcn' } });
+    expect(document.getElementById('ui-lab-stylesheet')).toHaveAttribute(
+      'href',
+      'build/shadcn.css',
+    );
+    expect(document.documentElement.dataset.labStylesheet).toBe('shadcn');
+    applySettings({ ...defaultSettings, stylesheet: { kind: 'shadcn' } }, { shadcn: '/s.css' });
+    expect(document.getElementById('ui-lab-stylesheet')).toHaveAttribute('href', '/s.css');
+    applySettings(defaultSettings, { shadcn: '/s.css' });
+    expect(document.getElementById('ui-lab-stylesheet')).toHaveAttribute(
+      'href',
+      'build/reference.css',
+    );
   });
 
   it('adds, swaps and removes the stylesheet link', () => {

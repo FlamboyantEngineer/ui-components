@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Bundles every labs/src/<name>.lab.tsx into labs/build/<name>.js (ESM with shared chunks).
-// --reference builds the package's reference stylesheet and optional fonts, leaving the lab
-// JavaScript bundles in place; `build:package` runs it.
+// --reference builds the package's reference and shadcn/ui stylesheets and optional fonts, leaving
+// the lab JavaScript bundles in place; `build:package` runs it.
 //   node scripts/build-labs.mjs [--dev] [--watch] [--reference]
 
 import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -23,6 +23,7 @@ const referenceOnly = flag('reference');
 const labNames = referenceOnly ? [] : listLabSources();
 const entryPoints = {
   reference: join(labsDir, 'reference.css'),
+  shadcn: join(labsDir, 'shadcn.css'),
   ...(!referenceOnly && { index: join(labSourceDir, 'index.entry.ts') }),
   ...Object.fromEntries(labNames.map((name) => [name, join(labSourceDir, `${name}.lab.tsx`)])),
 };
@@ -102,7 +103,7 @@ if (watch) {
   await Promise.all(builds.map((build) => esbuild.build(build)));
   console.log(
     referenceOnly
-      ? 'Built labs/build/reference.css and fonts.css.'
+      ? 'Built labs/build/reference.css, shadcn.css and fonts.css.'
       : `Built ${labNames.length} labs into labs/build/.`,
   );
 }

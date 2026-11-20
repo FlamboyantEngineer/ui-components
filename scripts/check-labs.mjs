@@ -17,6 +17,7 @@ import {
   renderIndex,
   renderLabPage,
   renderReferenceIndex,
+  renderShadcnIndex,
   root,
 } from './lib/labs.mjs';
 
@@ -64,6 +65,12 @@ const reference = existsSync(join(labsDir, 'reference.css'))
   : '';
 if (reference !== renderReferenceIndex()) {
   problems.push('labs/reference.css is out of date (run npm run new:lab -- --sync)');
+}
+const shadcn = existsSync(join(labsDir, 'shadcn.css'))
+  ? readFileSync(join(labsDir, 'shadcn.css'), 'utf8')
+  : '';
+if (shadcn !== renderShadcnIndex()) {
+  problems.push('labs/shadcn.css is out of date (run npm run new:lab -- --sync)');
 }
 for (const partial of listReferencePartials()) {
   if (partial !== 'base' && !existsSync(join(root, 'specs', `${partial.toUpperCase()}.md`))) {

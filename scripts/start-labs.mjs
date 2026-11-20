@@ -18,6 +18,8 @@ const BUILD_SOURCES = [
   'labs/src',
   'labs/reference',
   'labs/reference.css',
+  'labs/shadcn',
+  'labs/shadcn.css',
   'labs/samples',
   'node_modules/.package-lock.json',
   'package.json',

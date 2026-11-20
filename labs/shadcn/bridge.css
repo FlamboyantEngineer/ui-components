@@ -1,0 +1,190 @@
+/*
+ * shadcn/ui stylesheet: token bridge.
+ * Points the reference tokens (labs/reference/base.css) at shadcn/ui's, so every reference partial
+ * draws with the page's shadcn theme: its colors, radius, focus ring and fonts. It sits in the
+ * ui-shadcn layer, above the reference layer, so it replaces the reference values in both themes.
+ * The bridge is declared on the root and again wherever a theme switches (shadcn's `.dark` class,
+ * data-theme), since a custom property that names another is resolved where it is declared.
+ */
+
+:root,
+.dark,
+[data-theme] {
+  /* Type */
+  --ref-font: var(--font-sans, Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  --ref-mono: var(
+    --font-mono,
+    'Geist Mono',
+    ui-monospace,
+    'SFMono-Regular',
+    Menlo,
+    Consolas,
+    monospace
+  );
+  --ref-font-size-xs: 0.75rem;
+  --ref-font-size-sm: 0.8rem;
+  --ref-font-size-md: 0.875rem;
+
+  /* Surfaces and text */
+  --ref-text: var(--foreground);
+  /* shadcn/ui's muted text, a step toward the text color, so it keeps 4.5:1 on muted fills, hovers
+     and tinted events as well as on the page. */
+  --ref-muted: color-mix(in oklab, var(--muted-foreground) 70%, var(--foreground));
+  --ref-canvas: var(--background);
+  --ref-surface: var(--muted);
+  --ref-raised: var(--popover);
+  --ref-border: var(--border);
+  --ref-border-strong: color-mix(in oklab, var(--foreground) 45%, var(--background));
+  --ref-hover: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --ref-pressed: color-mix(in oklab, var(--foreground) 12%, transparent);
+  --ref-selected: color-mix(in oklab, var(--foreground) 10%, transparent);
+  /* shadcn/ui's shadow-md under popovers and menus; -sm lifts a selected tab, -lg a sheet. */
+  --ref-shadow: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --ref-shadcn-shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --ref-shadcn-shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  /* shadcn/ui dims behind a dialog only lightly, and blurs what it covers (retouch.css). */
+  --ref-scrim: oklch(0 0 0 / 0.1);
+  --ref-scrim-weak: oklch(0 0 0 / 0.05);
+
+  /* Accent and tones */
+  --ref-accent: var(--primary);
+  --ref-accent-ink: var(--primary);
+  --ref-on-fill: var(--primary-foreground);
+  --ref-danger-fill: var(--destructive);
+  /* Danger text a step toward the text color, so it keeps 4.5:1 on its own tint. */
+  --ref-danger: color-mix(in oklab, var(--destructive) 75%, var(--foreground));
+  --ref-success-fill: var(--success);
+  --ref-success: var(--success);
+  --ref-warning: var(--warning);
+  --ref-warning-fill: var(--warning-fill);
+  --ref-on-warning-fill: var(--warning-foreground);
+  --ref-info: var(--info);
+
+  /* Categories: the chart palette first, then the reference hues. */
+  --ref-category-0: var(--chart-1);
+  --ref-category-1: var(--chart-2);
+  --ref-category-2: var(--chart-3);
+  --ref-category-3: var(--chart-4);
+  --ref-category-4: var(--chart-5);
+
+  /* Shape: shadcn/ui derives its radius scale from one base value. Controls, fields and menus take
+     its rounded-lg (the base), cards and dialogs its rounded-xl. */
+  --ref-radius-xs: calc(var(--radius) - 6px);
+  --ref-radius-sm: calc(var(--radius) - 4px);
+  --ref-radius: var(--radius);
+  --ref-radius-lg: calc(var(--radius) + 4px);
+
+  /* Control heights: 24, 28, 32 and 36 pixels at the default font size. */
+  --ref-control-height-xs: 1.5rem;
+  --ref-control-height-sm: 1.75rem;
+  --ref-control-height-md: 2rem;
+  --ref-control-height-lg: 2.25rem;
+
+  /* Field frames */
+  --ref-field-border: var(--input);
+  --ref-field-fill: var(--background);
+  --ref-field-fill-inactive: var(--muted);
+
+  /* Focus: the ring color as a border, with a wide translucent ring around it. */
+  --ref-focus: var(--ring);
+  --ref-focus-ring: 3px solid color-mix(in oklab, var(--ring) 50%, transparent);
+  --ref-focus-ring-thin: 3px solid color-mix(in oklab, var(--ring) 50%, transparent);
+  --ref-focus-halo: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+  --ref-focus-inset: inset 0 0 0 2px var(--ring);
+
+  --ref-disabled-opacity: 0.5;
+}
+
+/*
+ * Fills that carry --ref-on-fill text. The page's primary-foreground is light in some themes and
+ * dark in others, so a fill takes the lightness that contrasts with it and keeps its own hue.
+ * Browsers without relative colors keep the reference fills.
+ */
+@supports (color: oklch(from red l c h)) {
+  :root,
+  .dark,
+  [data-theme] {
+    --ref-shadcn-fill-lightness: clamp(0.45, calc((0.6 - l) * 1000), 0.8);
+    --ref-category-0-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.14 262
+    );
+    --ref-category-1-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.12 60
+    );
+    --ref-category-2-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.14 295
+    );
+    --ref-category-3-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.11 165
+    );
+    --ref-category-4-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.15 25
+    );
+    --ref-category-5-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.09 215
+    );
+    --ref-category-6-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.15 355
+    );
+    --ref-category-7-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.02 255
+    );
+    --ref-category-8-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.12 128
+    );
+    --ref-category-9-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.14 45
+    );
+    --ref-category-10-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.14 277
+    );
+    --ref-category-11-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.16 325
+    );
+    --ref-success-fill: oklch(
+      from var(--primary-foreground) var(--ref-shadcn-fill-lightness) 0.14 150
+    );
+  }
+}
+
+/* Dark fields are a faint wash of the input color, as shadcn/ui draws them. */
+.dark,
+[data-theme='dark'] {
+  --ref-field-fill: color-mix(in oklab, var(--input) 30%, transparent);
+  --ref-field-fill-inactive: color-mix(in oklab, var(--input) 80%, transparent);
+}
+
+/* Categories five to seven on the canvas, which the reference sheet lightens only under data-theme. */
+.dark,
+[data-theme='dark'] {
+  --ref-category-5: #39c5cf;
+  --ref-category-6: #f778ba;
+}
+
+@media (prefers-contrast: more) {
+  :root,
+  .dark,
+  [data-theme] {
+    --ref-border: var(--ref-border-strong);
+  }
+}
+
+/*
+ * Compact scale: a container that carries data-ui-scale="compact" (an editor's chrome, a data
+ * grid) gives the controls inside it the reference sheet's dense heights and type.
+ */
+[data-ui-scale='compact'] {
+  --ref-font-size-xs: 0.6875rem;
+  --ref-font-size-sm: 0.75rem;
+  --ref-font-size-md: 0.8125rem;
+  --ref-control-height-xs: 1.25rem;
+  --ref-control-height-sm: 1.5rem;
+  --ref-control-height-md: 1.75rem;
+  --ref-control-height-lg: 2rem;
+}
+
+/* The opt-in document base follows the page's theme class as well as data-theme. */
+.dark:root[data-reference-document],
+.dark :root[data-reference-document] {
+  color-scheme: dark;
+}

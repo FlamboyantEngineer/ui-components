@@ -1,0 +1,437 @@
+/*
+ * shadcn/ui stylesheet: retouch.
+ * The controls that carry the shadcn/ui impression, redrawn after its "nova" style
+ * (apps/v4/registry/styles/style-nova.css in shadcn-ui/ui): buttons, field frames, checkboxes,
+ * radios, switches, tabs, badges, cards, dialogs, sheets, popovers and tooltips. Everything else
+ * keeps the reference drawing on the bridged tokens. Rules read shadcn/ui's tokens where it names
+ * them and the bridged reference tokens for the rest; dark-only rules follow shadcn/ui's `.dark`
+ * class and data-theme="dark".
+ */
+
+/*
+ * Buttons: shadcn/ui's variants on ours. Secondary, the default, is its grey fill; tertiary its
+ * outline; primary its dark fill; destructive a tinted fill. A press nudges the button down.
+ * This layer wins over every reference rule, so each rule names the variant or state it redraws.
+ */
+.ui-button {
+  background-clip: padding-box;
+  transition:
+    background-color var(--ref-duration-fast),
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-button[data-size='xs'] {
+  padding: 0 8px;
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-button[data-size='sm'] {
+  padding: 0 10px;
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-button[data-size='lg'] {
+  padding: 0 10px;
+}
+
+.ui-button[data-pressed]:not([aria-haspopup]) {
+  transform: translateY(1px);
+}
+
+.ui-button[data-variant='secondary'] {
+  border-color: transparent;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.ui-button[data-variant='secondary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
+}
+
+.ui-button:is(
+    [data-variant='secondary'],
+    [data-variant='tertiary'],
+    [data-variant='ghost']
+  )[data-selected] {
+  border-color: transparent;
+  background: color-mix(in oklch, var(--secondary), var(--foreground) 10%);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='primary'] {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.ui-button[data-variant='primary']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--primary) 80%, transparent);
+  filter: none;
+}
+
+.ui-button[data-variant='accent'] {
+  border-color: transparent;
+}
+
+.ui-button[data-variant='tertiary'] {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: var(--muted);
+}
+
+.ui-button[data-variant='destructive'] {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+  color: var(--ref-danger);
+}
+
+.ui-button[data-variant='destructive']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
+  color: var(--ref-danger);
+}
+
+.ui-button[data-variant='destructive'][data-focus-visible] {
+  border-color: color-mix(in oklab, var(--destructive) 40%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='link'] {
+  color: var(--primary);
+  text-underline-offset: 4px;
+}
+
+.ui-button[data-variant='chip'] {
+  border-color: var(--border);
+  background: var(--background);
+}
+
+.ui-button[data-variant='chip']:is([data-hovered], [data-pressed]) {
+  background: var(--muted);
+}
+
+/* Focus turns any variant's border to the ring color, inside the ring the bridge draws. */
+.ui-button[data-focus-visible]:not([data-variant='destructive']) {
+  border-color: var(--ref-focus);
+}
+
+/* An attached group shares outline borders; the grey fills meet with a hairline between them. */
+.ui-button-group[data-attached] > .ui-button[data-variant='secondary']:not(:first-child) {
+  border-inline-start-color: var(--border);
+}
+
+:where(.dark, [data-theme='dark']) .ui-button[data-variant='tertiary'] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-button[data-variant='destructive'] {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='destructive']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--destructive) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* Checkboxes and radios: a light input border that fills with the primary color when checked. */
+.ui-checkbox__box,
+.ui-choice__indicator {
+  border-color: var(--input);
+  background: var(--ref-field-fill);
+}
+
+.ui-checkbox__box {
+  border-radius: var(--ref-radius-xs);
+  color: var(--primary-foreground);
+}
+
+.ui-checkbox:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.ui-checkbox[data-hovered]:not([data-selected], [data-indeterminate]) .ui-checkbox__box,
+.ui-choice__button[data-hovered]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--input);
+}
+
+.ui-choice__button[data-selected] .ui-choice__indicator {
+  border-color: var(--primary);
+  background: var(--primary-foreground);
+}
+
+.ui-checkbox[data-focus-visible] .ui-checkbox__box,
+.ui-choice__button[data-focus-visible] .ui-choice__indicator {
+  border-color: var(--ref-focus);
+  outline-offset: 0;
+}
+
+.ui-checkbox[data-invalid] .ui-checkbox__box,
+.ui-choice__button[data-invalid]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--ref-danger);
+}
+
+/* Switches: a 32 by 18 pixel track with a 16 pixel thumb at the default size, no border. */
+.ui-switch {
+  --ref-switch-track-width: 32px;
+  --ref-switch-track-height: 18px;
+  --ref-switch-thumb: 16px;
+}
+
+.ui-switch[data-size='xs'] {
+  --ref-switch-track-width: 24px;
+  --ref-switch-track-height: 14px;
+  --ref-switch-thumb: 12px;
+}
+
+.ui-switch[data-size='sm'] {
+  --ref-switch-track-width: 28px;
+  --ref-switch-track-height: 16px;
+  --ref-switch-thumb: 14px;
+}
+
+.ui-switch[data-size='lg'] {
+  --ref-switch-track-width: 36px;
+  --ref-switch-track-height: 20px;
+  --ref-switch-thumb: 18px;
+}
+
+.ui-switch__track {
+  border-color: transparent;
+  background: var(--input);
+}
+
+.ui-switch__thumb {
+  background: var(--background);
+}
+
+.ui-switch[data-selected] .ui-switch__track {
+  border-color: transparent;
+  background: var(--primary);
+}
+
+.ui-switch[data-selected] .ui-switch__thumb {
+  background: var(--primary-foreground);
+}
+
+.ui-switch[data-hovered] .ui-switch__track {
+  border-color: transparent;
+}
+
+.ui-switch[data-focus-visible] .ui-switch__track {
+  border-color: var(--ref-focus);
+  outline-offset: 0;
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__track {
+  background: color-mix(in oklab, var(--input) 80%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__thumb {
+  background: var(--foreground);
+}
+
+/* Tabs: a row of tabs is a muted pill list, the selected tab a raised chip inside it. */
+.ui-tabs:not([data-orientation='vertical']) > .ui-tabs__bar,
+.ui-tabs__list:not([data-orientation='vertical']) {
+  border-bottom: 0;
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) {
+  align-self: flex-start;
+  gap: 2px;
+  max-width: 100%;
+  padding: 3px;
+  border-radius: var(--ref-radius);
+  background: var(--muted);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-md) - 6px);
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--ref-radius) - 2px);
+  color: color-mix(in oklab, var(--foreground) 60%, transparent);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-tabs[data-size='sm'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-sm) - 6px);
+}
+
+.ui-tabs[data-size='lg'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-lg) - 6px);
+  padding: 0 10px;
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-hovered] {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-selected] {
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: var(--ref-font-weight-medium); /* layout-exempt: tabs keep one weight */
+  box-shadow: var(--ref-shadcn-shadow-sm);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-focus-visible] {
+  border-color: var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__indicator {
+  display: none;
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-tabs__list:not([data-orientation='vertical'])
+  .ui-tabs__tab[data-selected] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+/* Badges: borderless pills. Solid neutral is the primary fill, subtle neutral the secondary grey,
+   and the tones a light tint of their color. Bare, dot and status badges keep the reference look. */
+.ui-badge:is([data-variant='subtle'], [data-variant='solid']):not([data-bare]) {
+  border-color: transparent;
+}
+
+.ui-badge[data-variant='subtle']:not([data-bare]) {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.ui-badge[data-variant='subtle']:not([data-tone='neutral'], [data-bare]) {
+  background: color-mix(in oklab, var(--ref-tone-fill) 10%, transparent);
+  color: var(--ref-tone);
+}
+
+.ui-badge[data-variant='solid']:not([data-bare]) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.ui-badge[data-variant='solid']:not([data-tone='neutral'], [data-bare]) {
+  background: var(--ref-tone-fill);
+  color: var(--ref-on-tone-fill);
+}
+
+/* Cards: rounded-xl, a hairline ring and no rule under the header; the footer is a muted band. */
+.ui-card:not([data-selected], [data-variant='panel']) {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+.ui-card:not([data-variant='panel']) {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.ui-card[data-interactive]:not([data-selected]):hover {
+  border-color: color-mix(in oklab, var(--foreground) 25%, transparent);
+}
+
+.ui-card__header {
+  border-bottom-color: transparent;
+}
+
+.ui-card__title {
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-card__footer {
+  border-top-color: var(--border);
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* Dialogs and sheets: a light scrim that blurs the page, a ringed panel without a heavy shadow. */
+.ui-dialog:not([data-non-modal], [data-layer='dropdown']),
+.ui-drawer__backdrop {
+  backdrop-filter: blur(4px);
+}
+
+.ui-dialog[data-tone='neutral'] .ui-dialog__panel,
+.ui-dialog:not([data-tone]) .ui-dialog__panel {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+.ui-dialog__panel {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: none;
+}
+
+.ui-dialog__title {
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-drawer__panel {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--ref-shadcn-shadow-lg);
+}
+
+/* Popovers and menus: rounded-lg with a hairline ring and a medium shadow. */
+.ui-popover,
+.ui-menu-popover {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  border-radius: var(--ref-radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.ui-popover__arrow::before {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  background: var(--popover);
+}
+
+.ui-menu-item {
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-menu-item:is([data-focused], [data-open]) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.ui-menu-item[data-focus-visible] {
+  box-shadow: none;
+}
+
+.ui-menu-item[data-tone='danger']:is([data-focused], [data-open]) {
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+  color: var(--ref-danger);
+}
+
+/* Tooltips: the inverted chip, without a shadow. */
+.ui-tooltip:not([data-variant='info']) {
+  border-radius: calc(var(--ref-radius) - 2px);
+  background: var(--foreground);
+  color: var(--background);
+  box-shadow: none;
+}

@@ -14,7 +14,12 @@ import { packTarball } from '../tooling/lib/npm.mjs';
 import { reportProblems } from '../tooling/lib/script.mjs';
 import { extractTarGz } from '../tooling/lib/tar.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
-import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
+import {
+  REFERENCE_STYLESHEET,
+  referenceStylesheetProblems,
+  SHADCN_STYLESHEET,
+  shadcnStylesheetProblems,
+} from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
 
 const STYLING_DEPENDENCY =
@@ -50,7 +55,7 @@ const dirFlag = process.argv.indexOf('--dir');
 /** The package directory to check: the checkout by default. */
 const packageRoot = dirFlag === -1 ? root : resolve(process.argv[dirFlag + 1] ?? '');
 
-for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
+for (const built of ['dist/index.js', REFERENCE_STYLESHEET, SHADCN_STYLESHEET]) {
   if (!existsSync(join(packageRoot, built))) {
     console.error(
       `${built} is missing: run \`npm run build:package\` before checking the package.`,
@@ -62,6 +67,7 @@ for (const built of ['dist/index.js', REFERENCE_STYLESHEET]) {
 const problems = [];
 const labAssets = new Set([
   REFERENCE_STYLESHEET,
+  SHADCN_STYLESHEET,
   FONT_STYLESHEET,
   ...Object.keys(createFontBundle().files),
 ]);
@@ -121,6 +127,10 @@ try {
   if (files.has(REFERENCE_STYLESHEET)) {
     const css = readFileSync(join(installed, REFERENCE_STYLESHEET), 'utf8');
     problems.push(...referenceStylesheetProblems(css));
+  }
+  if (files.has(SHADCN_STYLESHEET)) {
+    const css = readFileSync(join(installed, SHADCN_STYLESHEET), 'utf8');
+    problems.push(...shadcnStylesheetProblems(css));
   }
   let mapSources = 0;
   const unresolved = [];

@@ -46,11 +46,16 @@ function adoptBarStyles(shadow: ShadowRoot) {
  */
 function applyFollowingScheme(
   initial: LabSettings,
-  { host, referenceStylesheet }: Pick<MountLabBarOptions, 'host' | 'referenceStylesheet'>,
+  {
+    host,
+    referenceStylesheet,
+    shadcnStylesheet,
+  }: Pick<MountLabBarOptions, 'host' | 'referenceStylesheet' | 'shadcnStylesheet'>,
 ) {
   let current = initial;
+  const urls = { reference: referenceStylesheet, shadcn: shadcnStylesheet };
   const apply = () => {
-    applySettings(current, referenceStylesheet);
+    applySettings(current, urls);
     const scheme = document.documentElement.dataset.labScheme;
     if (scheme) host.dataset.labScheme = scheme;
     else delete host.dataset.labScheme;

@@ -52,5 +52,20 @@ test.describe('every lab', () => {
         });
       }
     });
+
+    // The shadcn/ui stylesheet draws the same hooks on other tokens, so its contrast is its own.
+    test(`UIC-LABS-3.11 ${name} passes axe under the shadcn/ui stylesheet in both themes`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open(name, { stylesheet: 'shadcn', theme: 'light' });
+      for (const theme of ['light', 'dark'] as const) {
+        await test.step(`${theme} theme`, async () => {
+          await themeSegment(page, theme).click();
+          await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+          await lab.expectAccessible();
+        });
+      }
+    });
   }
 });

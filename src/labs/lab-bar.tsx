@@ -110,6 +110,7 @@ function StylesheetFields({ bar }: { bar: BarState }) {
       >
         <option value="none">Unstyled</option>
         <option value="reference">Reference</option>
+        <option value="shadcn">shadcn/ui</option>
         <option value="custom">Custom URL</option>
       </select>
       {bar.kind === 'custom' ? (
