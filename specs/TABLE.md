@@ -351,12 +351,12 @@ Verification: `src/components/table/table-virtualizer.test.tsx`, `src/components
 
 Measuring has costs that a fixed height does not, and they are kept visible rather than hidden:
 
-- A row is measured only once it is drawn, so rows scrolled into view above the view can be taller or shorter than their estimate and move the rows below them by the difference. An `estimatedRowHeight` close to the typical row keeps this small. React Aria's virtualizer offers a scroll anchor for this only through a hook it marks unstable, and that anchor restores a scroll position it saw before a focus scroll (Ctrl+Home, for example) finished, so the table does not use it.
+- A row is measured only once it is drawn, so rows scrolled into view above the view can be taller or shorter than their estimate and move the rows below them by the difference. An `estimatedRowHeight` close to the typical row keeps this small. React Aria's virtualizer offers a scroll anchor for this only through a hook it marks unstable, and that anchor restores a scroll position it saw before a focus scroll (Ctrl+Home, for example) finished, so the table does not use it. A focus move scrolls to where the focused row was estimated to be, so when measuring changes the content's size, the table reveals the focused element again (nearest edge), until the reader scrolls by wheel, pointer or touch or focus leaves the table; Ctrl+End then shows the summary row even when it measures taller than its estimate.
 - React Aria draws only the columns in view, so a row's height comes from its drawn cells; a taller cell in a column scrolled into view sideways makes the row taller when it is drawn.
 - Each measurement writes the cell's size: scrolling 120 steps through the measured-rows lab wrote styles about 16 times as often as with fixed rows (7437 against 449), at the same median frame time (34 against 33 ms for two frames) and a slightly higher 95th percentile (47 to 51 against 43 to 46 ms), with the same number of rows in the document.
 
-Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `labs/reference/table.css`
-Verification: `src/components/table/table-virtualizer.test.tsx`, `e2e/table-virtualized.spec.ts`
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-virtualizer.tsx`, `src/components/table/use-focus-kept-in-view.ts`, `labs/reference/table.css`
+Verification: `src/components/table/table-virtualizer.test.tsx`, `src/components/table/use-focus-kept-in-view.test.tsx`, `e2e/table-virtualized.spec.ts`
 
 ## UIC-TABLE-8 - Column layout
 

@@ -241,7 +241,7 @@ test.describe('Progress Bar lab', () => {
       await expect(circular.locator('circle')).toHaveCount(2);
     }
     const color = page.locator('section[data-lab-section="Spinner color"]');
-    for (const context of ['body text', 'primary', 'danger']) {
+    for (const context of ['body text', 'primary', 'destructive']) {
       const spinner = matrixCell(color, `context=${context}`).locator('.ui-spinner');
       const [stroke, text] = await spinner.evaluate((node) => [
         getComputedStyle(node.querySelector('circle') as Element).stroke,

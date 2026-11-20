@@ -73,9 +73,11 @@ const options = {
   jsx: 'automatic',
   minify: !dev,
   sourcemap: dev ? 'linked' : false,
-  chunkNames: 'chunks/[name]-[hash]',
+  // An underscore keeps the hash joined to the name, so no word-bounded reference-check entry can
+  // begin inside a hash by accident.
+  chunkNames: 'chunks/[name]_[hash]',
   loader: { '.pdf': 'file', '.mjs': 'js' },
-  assetNames: 'assets/[name]-[hash]',
+  assetNames: 'assets/[name]_[hash]',
   define: { 'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production') },
   legalComments: 'none',
   logLevel: 'info',
