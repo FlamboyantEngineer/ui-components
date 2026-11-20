@@ -1,0 +1,52 @@
+/* Marker: a small muted line that marks a place in a conversation. */
+
+.ui-marker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  min-block-size: 16px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-marker a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.ui-marker a:hover {
+  color: var(--ref-text);
+}
+
+.ui-marker[data-variant='separator']::before,
+.ui-marker[data-variant='separator']::after {
+  content: '';
+  flex: 1 1 0;
+  min-inline-size: 0;
+  block-size: 1px;
+  background: var(--ref-border);
+}
+
+.ui-marker[data-variant='border'] {
+  padding-block-end: 8px;
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-marker__icon {
+  display: flex;
+  flex-shrink: 0;
+  inline-size: var(--ref-icon-size-md);
+  block-size: var(--ref-icon-size-md);
+}
+
+.ui-marker__content {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.ui-marker[data-variant='separator'] > .ui-marker__content {
+  flex: none;
+  max-inline-size: 80%;
+  text-align: center;
+}

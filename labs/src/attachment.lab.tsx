@@ -7,6 +7,7 @@ import {
 import { Button } from '../../src/components/button/button.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import { PlusGlyph } from '../../src/core/glyphs.js';
+import { ComposedAttachments } from './attachment-composed.js';
 import {
   attachmentKinds,
   composerAttachments,
@@ -297,6 +298,12 @@ mountLab(
         data-lab-demo="no-url"
       />
       <StandalonePreview />
+    </LabSection>
+    <LabSection
+      title="Composed from parts"
+      description="An attachment composed from its media, content and actions, in each size and orientation, and a row of them that scrolls sideways when it does not fit."
+    >
+      <ComposedAttachments />
     </LabSection>
   </>,
 );

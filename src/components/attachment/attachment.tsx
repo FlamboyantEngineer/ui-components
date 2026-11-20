@@ -8,6 +8,7 @@ import { isFocusLost } from '../../utils/focus-target.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { InlineError } from '../inline-error/inline-error.js';
+import { AttachmentFrame, type AttachmentFrameProps } from './attachment-frame.js';
 import {
   type AttachmentData,
   type AttachmentStatus,
@@ -31,7 +32,7 @@ import {
 export type { AttachmentData, AttachmentKind, AttachmentStatus } from './attachment-model.js';
 
 /** The attachment's data, with the commands its owner offers. `id` is the attachment's, not the element's. */
-export interface AttachmentProps
+export interface AttachmentFileProps
   extends RefProps<HTMLDivElement>, Omit<BaseProps, 'id'>, AttachmentData {
   /** Shows a remove button, as for a file attached in the composer. */
   onRemove?: (() => void) | undefined;
@@ -40,6 +41,9 @@ export interface AttachmentProps
   /** Makes an image's thumbnail a button that opens a preview, such as a media viewer. */
   onPreview?: (() => void) | undefined;
 }
+
+/** A data attachment drawn whole, or with `children` and no `name`, one composed from parts. */
+export type AttachmentProps = AttachmentFileProps | AttachmentFrameProps;
 
 /**
  * After a Retry press, once the error (and its Retry button) has left and the focus left with it,
@@ -63,12 +67,20 @@ function useRetryFocus(
   };
 }
 
+function isFileAttachment(props: AttachmentProps): props is AttachmentFileProps {
+  return props.name !== undefined;
+}
+
 /**
  * One attachment: an image's thumbnail (a preview button with `onPreview`), or a chip with the
  * file's type glyph, name and size; the upload's progress, or its error with Retry; a download
  * link once complete; and a remove button for the composer. Its kind, status and display are hooks.
  */
-export function Attachment({
+export function Attachment(props: AttachmentProps) {
+  return isFileAttachment(props) ? <AttachmentFile {...props} /> : <AttachmentFrame {...props} />;
+}
+
+function AttachmentFile({
   ref,
   id,
   name,
@@ -86,7 +98,7 @@ export function Attachment({
   onPreview,
   className,
   ...rest
-}: AttachmentProps) {
+}: AttachmentFileProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -144,5 +156,26 @@ export function Attachment({
   );
 }
 
+export type {
+  AttachmentActionProps,
+  AttachmentActionsProps,
+  AttachmentContentProps,
+  AttachmentDescriptionProps,
+  AttachmentFrameProps,
+  AttachmentGroupProps,
+  AttachmentMediaProps,
+  AttachmentMediaVariant,
+  AttachmentSize,
+  AttachmentTitleProps,
+} from './attachment-frame.js';
+export {
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+} from './attachment-frame.js';
 export type { AttachmentFocusTarget, AttachmentListProps } from './attachment-list.js';
 export { AttachmentList } from './attachment-list.js';

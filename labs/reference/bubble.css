@@ -1,6 +1,14 @@
 /* Bubble */
 
+.ui-bubble-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
 .ui-bubble {
+  position: relative;
   box-sizing: border-box;
   inline-size: fit-content;
   max-inline-size: min(100%, 64ch);
@@ -17,8 +25,16 @@
   margin-inline-end: 0;
 }
 
+.ui-bubble[data-variant='secondary'] {
+  background: color-mix(in srgb, var(--ref-text) var(--ref-tint-subtle), var(--ref-canvas));
+}
+
 .ui-bubble[data-variant='muted'] {
   background: var(--ref-surface);
+}
+
+.ui-bubble[data-variant='tinted'] {
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-bubble[data-variant='outline'] {
@@ -27,10 +43,61 @@
 }
 
 .ui-bubble[data-variant='ghost'] {
+  padding-inline: 0;
   background: transparent;
+}
+
+.ui-bubble[data-variant='destructive'] {
+  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
+  color: var(--ref-danger);
 }
 
 .ui-bubble__content {
   min-inline-size: 0;
   overflow-wrap: anywhere;
+}
+
+/* A bubble with reactions keeps room on that edge, so they cover none of its text. */
+.ui-bubble:has(> .ui-bubble__reactions[data-side='bottom']) {
+  margin-block-end: 12px;
+}
+
+.ui-bubble:has(> .ui-bubble__reactions[data-side='top']) {
+  margin-block-start: 12px;
+}
+
+.ui-bubble__reactions {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.6;
+  min-block-size: 20px;
+}
+
+.ui-bubble__reactions:has(button) {
+  padding: 0;
+}
+
+.ui-bubble__reactions[data-side='bottom'] {
+  inset-block-end: -14px;
+}
+
+.ui-bubble__reactions[data-side='top'] {
+  inset-block-start: -14px;
+}
+
+.ui-bubble__reactions[data-align='start'] {
+  inset-inline-start: 12px;
+}
+
+.ui-bubble__reactions[data-align='end'] {
+  inset-inline-end: 12px;
 }

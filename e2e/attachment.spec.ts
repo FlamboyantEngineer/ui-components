@@ -238,3 +238,35 @@ test.describe('Chat Attachment lab', () => {
     }
   });
 });
+
+test('UIC-ATTACHMENT-3.1 sets composed media beside or above the content at each size', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('attachment');
+  const sides = async (name: string) => {
+    const attachment = page.getByRole('group', { name });
+    const media = await attachment.locator('.ui-attachment__media').boundingBox();
+    const content = await attachment.locator('.ui-attachment__content').boundingBox();
+    if (!media || !content) throw new Error(`Expected a laid-out ${name}`);
+    return { media, content };
+  };
+  const beside = await sides('horizontal md complete attachment');
+  expect(beside.media.x + beside.media.width).toBeLessThanOrEqual(beside.content.x);
+  const above = await sides('vertical md complete attachment');
+  expect(above.media.y + above.media.height).toBeLessThanOrEqual(above.content.y);
+  const small = await sides('horizontal xs complete attachment');
+  expect(small.media.width).toBeLessThan(beside.media.width);
+  const failed = page.getByRole('group', { name: 'horizontal md error attachment' });
+  await expect(failed).toHaveAttribute('data-status', 'error');
+  await lab.expectAccessible('[data-lab-section="Composed from parts"]');
+});
+
+test('UIC-ATTACHMENT-3.2 scrolls a row of composed attachments sideways', async ({ page, lab }) => {
+  await lab.open('attachment');
+  const row = page.getByRole('list', { name: 'Composed files' });
+  await expect(row.getByRole('listitem')).toHaveCount(3);
+  expect(await row.evaluate((group) => group.scrollWidth > group.clientWidth)).toBe(true);
+  await row.getByRole('button', { name: 'Remove coast-route.pdf' }).click();
+  await expect(page.locator('[data-lab-output="Removed"]')).toHaveText('coast-route.pdf');
+});

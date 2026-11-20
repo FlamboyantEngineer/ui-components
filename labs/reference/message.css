@@ -1,21 +1,60 @@
 /* Message */
 
-.ui-message {
+.ui-message-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-inline-size: 0;
+}
+
+.ui-message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 8px;
+  min-inline-size: 0;
+}
+
+.ui-message[data-align='end'] {
+  flex-direction: row-reverse;
+}
+
+.ui-message__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-inline-size: 28px;
+  min-block-size: 28px;
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-message__content {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
+  gap: 4px;
   min-inline-size: 0;
   overflow-wrap: anywhere;
 }
 
 .ui-message[data-align='end'] > .ui-message__content {
   align-items: flex-end;
+}
+
+.ui-message__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-inline-size: 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-message__footer {
@@ -26,6 +65,11 @@
   min-inline-size: 0;
 }
 
-.ui-message[data-align='end'] > .ui-message__footer {
+/* A footer placed beside the content rather than inside it takes its own row. */
+.ui-message > .ui-message__footer {
+  flex-basis: 100%;
+}
+
+.ui-message[data-align='end'] .ui-message__footer {
   justify-content: flex-end;
 }
