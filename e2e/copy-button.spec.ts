@@ -12,7 +12,7 @@ test.describe('Copy Button lab', () => {
       'primary',
       'secondary',
       'tertiary',
-      'danger',
+      'destructive',
       'ghost',
       'accent',
       'chip',
