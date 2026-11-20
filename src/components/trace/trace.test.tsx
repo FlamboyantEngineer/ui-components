@@ -116,3 +116,17 @@ it('UIC-TRACE-2.1 follows a controlled expanded state and a disabled trigger', (
   );
   expect(screen.getByRole('button', { name: 'Ran tests' })).toBeEnabled();
 });
+
+it('UIC-TRACE-2.1 lets the content render its own panel element', () => {
+  render(
+    <TraceCollapsible defaultExpanded>
+      <TraceCollapsibleTrigger>Thought</TraceCollapsibleTrigger>
+      <TraceCollapsibleContent render={(props) => <div {...props} aria-busy="true" />}>
+        Weighing the routes.
+      </TraceCollapsibleContent>
+    </TraceCollapsible>,
+  );
+  const panel = screen.getByRole('group', { name: 'Thought' });
+  expect(panel).toHaveAttribute('aria-busy', 'true');
+  expect(panel).toHaveClass('ui-trace__collapsible-content');
+});

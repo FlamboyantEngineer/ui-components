@@ -35,7 +35,7 @@ export type TraceCollapsibleProps = Omit<CollapsibleProps, 'render'>;
 
 export type TraceCollapsibleTriggerProps = CollapsibleTriggerProps;
 
-export type TraceCollapsibleContentProps = Omit<CollapsibleContentProps, 'render'>;
+export type TraceCollapsibleContentProps = CollapsibleContentProps;
 
 const hooks = createHooks('trace', [
   'line',
