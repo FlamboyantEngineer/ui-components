@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { AriaLabellingProps, PressEventProps } from '../../core/events.js';
+import type { PressEventProps } from '../../core/events.js';
 import type { GlyphComponent } from '../../core/glyphs.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation, RefProps, Size } from '../../core/props.js';
@@ -16,8 +16,7 @@ export type AttachmentSize = Extract<Size, 'xs' | 'sm' | 'md'>;
 export type AttachmentMediaVariant = 'icon' | 'image';
 
 /** A composed attachment: its parts come from the caller, as in shadcn/ui's attachment. */
-export interface AttachmentFrameProps
-  extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
+export interface AttachmentFrameProps extends ContainerProps<'div'>, BaseProps {
   /** Composes the attachment from parts; set only on a data attachment. */
   name?: undefined;
   /** Where its upload stands, published as `data-status`. Defaults to `complete`. */
@@ -56,7 +55,6 @@ const groupHooks = createHooks('attachment-group');
 
 /** The root of a composed attachment. */
 export function AttachmentFrame({
-  ref,
   status = 'complete',
   size = 'md',
   orientation = 'horizontal',
@@ -67,7 +65,6 @@ export function AttachmentFrame({
     <div
       {...rest}
       {...hooks.root({ className, data: { status, size, orientation, display: 'parts' } })}
-      ref={ref}
     />
   );
 }
