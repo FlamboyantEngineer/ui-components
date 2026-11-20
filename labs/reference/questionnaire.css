@@ -1,0 +1,112 @@
+/* Questionnaire: questions as plain sections, options as bordered rows, actions at the end. */
+
+.ui-questionnaire {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.ui-questionnaire__progress {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-questionnaire__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ui-questionnaire__item[hidden] {
+  display: none;
+}
+
+.ui-questionnaire__item:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-questionnaire__title {
+  padding: 0;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-questionnaire__description {
+  margin: 0;
+  color: var(--ref-muted);
+}
+
+.ui-questionnaire__choices {
+  display: grid;
+  gap: 6px;
+  min-inline-size: 0;
+}
+
+.ui-questionnaire__choice {
+  padding: 8px 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-questionnaire__choice[data-selected] {
+  border-color: var(--ref-accent);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), var(--ref-canvas));
+}
+
+.ui-questionnaire__item[data-invalid] .ui-questionnaire__choice {
+  border-color: var(--ref-danger);
+}
+
+.ui-questionnaire__input {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--ref-control-height);
+  padding: 0 10px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-questionnaire__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-questionnaire__input[data-focus-visible] {
+  outline: var(--ref-focus-ring);
+  outline-offset: -1px;
+}
+
+.ui-questionnaire__input[aria-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-questionnaire__error {
+  margin: 0;
+  color: var(--ref-danger);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-questionnaire__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-questionnaire__previous {
+  margin-inline-end: auto;
+}
+
+:is(.ui-questionnaire__skip, .ui-questionnaire__next, .ui-questionnaire__submit) {
+  flex: none;
+}

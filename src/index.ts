@@ -126,6 +126,7 @@ export * from './components/projection/index.js';
 export * from './components/property-panel/index.js';
 export * from './components/prose-table/index.js';
 export * from './components/qr-code/index.js';
+export * from './components/questionnaire/index.js';
 export * from './components/rating-field/index.js';
 export * from './components/reaction-bar/index.js';
 export * from './components/redline-compare/index.js';
