@@ -88,6 +88,22 @@ describe('LabBar', () => {
       stylesheet: { kind: 'custom', url: '/host.css' },
     });
   });
+
+  it('UIC-LABS-2.1 UIC-LABS-3.11 offers the shadcn/ui stylesheet', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <LabBar title="Button" defaultSettings={settings} indexHref={null} onChange={onChange} />,
+    );
+    const picker = screen.getByRole('combobox', { name: 'Stylesheet' });
+    expect(
+      within(picker)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Unstyled', 'Reference', 'shadcn/ui', 'Custom URL']);
+    await user.selectOptions(picker, 'shadcn');
+    expect(onChange).toHaveBeenLastCalledWith({ ...settings, stylesheet: { kind: 'shadcn' } });
+  });
 });
 
 describe('mountLabBar', () => {

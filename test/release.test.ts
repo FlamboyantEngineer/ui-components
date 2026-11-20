@@ -47,7 +47,13 @@ function createReleaseFixture() {
   const manifest = {
     name: 'release-fixture',
     version: '0.1.0',
-    files: ['dist', 'labs/build/reference.css', 'labs/build/fonts.css', 'labs/build/vendor/fonts'],
+    files: [
+      'dist',
+      'labs/build/reference.css',
+      'labs/build/shadcn.css',
+      'labs/build/fonts.css',
+      'labs/build/vendor/fonts',
+    ],
     scripts: {
       prepare: 'node missing-prepare.mjs',
       ...Object.fromEntries(
@@ -73,6 +79,7 @@ function createReleaseFixture() {
   mkdirSync(join(fixture, 'labs/build'), { recursive: true });
   writeFileSync(join(fixture, 'dist/index.js'), 'export const answer = 42;\n');
   writeFileSync(join(fixture, 'labs/build/reference.css'), '.ui-button {}\n');
+  writeFileSync(join(fixture, 'labs/build/shadcn.css'), '.ui-button {}\n');
   writeFileSync(join(fixture, 'labs/build/fonts.css'), '@font-face {}\n');
   mkdirSync(join(fixture, 'labs/build/vendor/fonts'), { recursive: true });
   writeFileSync(join(fixture, 'labs/build/vendor/fonts/sample.woff2'), 'font fixture');

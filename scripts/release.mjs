@@ -15,10 +15,10 @@ import { join } from 'node:path';
 import { packTarball, runNpm } from '../tooling/lib/npm.mjs';
 import { extractTarGz } from '../tooling/lib/tar.mjs';
 import { FONT_DIRECTORY, FONT_STYLESHEET } from './lib/fonts.mjs';
-import { REFERENCE_STYLESHEET } from './lib/reference-stylesheet.mjs';
+import { REFERENCE_STYLESHEET, SHADCN_STYLESHEET } from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
 
-const BUILT = ['dist', REFERENCE_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY];
+const BUILT = ['dist', REFERENCE_STYLESHEET, SHADCN_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY];
 
 const git = (args, options = {}) =>
   execFileSync('git', args, { cwd: root, encoding: 'utf8', ...options }).trim();

@@ -25,9 +25,12 @@ const required = [
   'index.html',
   'reference.css',
   'reference/base.css',
+  'shadcn.css',
+  'shadcn/bridge.css',
   'build/index.js',
   'build/boot.js',
   'build/reference.css',
+  'build/shadcn.css',
   'build/vendor/pdf.min.mjs',
   'build/vendor/pdf.worker.min.mjs',
   'build/vendor/LICENSE',
@@ -45,6 +48,7 @@ for (const file of required) {
 const entries = [
   ...readdirSync(labsDir).filter((file) => /\.(html|css)$/.test(file)),
   'reference',
+  'shadcn',
   'build',
 ].map((file) => `labs/${file}`);
 const workDir = mkdtempSync(join(tmpdir(), 'ui-labs-package-'));

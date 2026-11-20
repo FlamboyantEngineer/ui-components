@@ -97,6 +97,38 @@ test.describe('lab harness', () => {
     expect(await background(page)).toBe('rgb(13, 17, 23)');
   });
 
+  test('UIC-LABS-2.1 UIC-LABS-3.11 draws the shadcn/ui sheet on its own tokens, a host theme and .dark', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button', { stylesheet: 'reference', theme: 'light' });
+    const chrome = page.locator('#lab-chrome');
+    await chrome.getByLabel('Stylesheet', { exact: true }).selectOption('shadcn');
+    await expect(page.locator('#ui-lab-stylesheet')).toHaveAttribute('href', 'build/shadcn.css');
+    await expect(page.locator('html')).toHaveAttribute('data-lab-stylesheet-state', 'loaded');
+    await expect(page).toHaveURL((url) => url.searchParams.get('stylesheet') === 'shadcn');
+    const token = (selector: string, name: string) =>
+      page
+        .locator(selector)
+        .evaluate(
+          (element, property) => getComputedStyle(element).getPropertyValue(property),
+          name,
+        );
+    // Its own neutral theme, light, then dark under shadcn/ui's class as under the theme attribute.
+    const light = await token('html', '--background');
+    expect(await token('html', '--ref-accent')).toBe(await token('html', '--primary'));
+    expect(await token('html', '--ref-canvas')).toBe(light);
+    await page.locator('#lab-root').evaluate((root) => root.classList.add('dark'));
+    const dark = await token('#lab-root', '--background');
+    expect(dark).not.toBe(light);
+    expect(await token('#lab-root', '--ref-canvas')).toBe(dark);
+    await themeSegment(page, 'dark').click();
+    expect(await token('html', '--ref-canvas')).toBe(dark);
+    // A host's own unlayered token block wins over the defaults, whatever its specificity.
+    await page.addStyleTag({ content: ':root { --primary: rgb(1, 2, 3); }' });
+    expect(await token('html', '--ref-accent')).toBe('rgb(1, 2, 3)');
+  });
+
   test('UIC-LABS-2.3 UIC-LABS-2.4 remembers a choice made in the chrome and writes it to the query string', async ({
     page,
     lab,

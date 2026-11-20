@@ -29,7 +29,12 @@ import { pathToFileURL } from 'node:url';
 import { runNpm } from '../tooling/lib/npm.mjs';
 import { reportProblems } from '../tooling/lib/script.mjs';
 import { createFontBundle, FONT_STYLESHEET, fontBundleProblems } from './lib/fonts.mjs';
-import { REFERENCE_STYLESHEET, referenceStylesheetProblems } from './lib/reference-stylesheet.mjs';
+import {
+  REFERENCE_STYLESHEET,
+  referenceStylesheetProblems,
+  SHADCN_STYLESHEET,
+  shadcnStylesheetProblems,
+} from './lib/reference-stylesheet.mjs';
 import { root } from './lib/root.mjs';
 
 const PACKAGE = '@flamboyantengineer/ui-components';
@@ -71,6 +76,9 @@ if (library.Button !== Button || !markup.includes('ui-button') || !markup.includ
 }
 if (!import.meta.resolve('${PACKAGE}/reference.css').endsWith('/${REFERENCE_STYLESHEET}')) {
   throw new Error('${PACKAGE}/reference.css does not resolve to ${REFERENCE_STYLESHEET}');
+}
+if (!import.meta.resolve('${PACKAGE}/shadcn.css').endsWith('/${SHADCN_STYLESHEET}')) {
+  throw new Error('${PACKAGE}/shadcn.css does not resolve to ${SHADCN_STYLESHEET}');
 }
 if (!import.meta.resolve('${PACKAGE}/fonts.css').endsWith('/${FONT_STYLESHEET}')) {
   throw new Error('${PACKAGE}/fonts.css does not resolve to ${FONT_STYLESHEET}');
@@ -124,11 +132,17 @@ function check(phase) {
   const installed = join(consumer, 'node_modules', ...PACKAGE.split('/'));
   const labAssets = new Set([
     REFERENCE_STYLESHEET,
+    SHADCN_STYLESHEET,
     FONT_STYLESHEET,
     ...Object.keys(createFontBundle().files),
   ]);
   for (const problem of fontBundleProblems(installed)) problems.push(`${phase}: ${problem}`);
-  for (const file of ['dist/index.js', 'dist/index.d.ts', REFERENCE_STYLESHEET]) {
+  for (const file of [
+    'dist/index.js',
+    'dist/index.d.ts',
+    REFERENCE_STYLESHEET,
+    SHADCN_STYLESHEET,
+  ]) {
     const path = join(installed, file);
     if (!existsSync(path) || statSync(path).size === 0) {
       problems.push(`${phase}: the installed package is missing ${file}`);
@@ -138,6 +152,11 @@ function check(phase) {
   if (existsSync(stylesheet)) {
     const css = readFileSync(stylesheet, 'utf8');
     for (const problem of referenceStylesheetProblems(css)) problems.push(`${phase}: ${problem}`);
+  }
+  const shadcn = join(installed, SHADCN_STYLESHEET);
+  if (existsSync(shadcn)) {
+    const css = readFileSync(shadcn, 'utf8');
+    for (const problem of shadcnStylesheetProblems(css)) problems.push(`${phase}: ${problem}`);
   }
   const labFiles = existsSync(join(installed, 'labs'))
     ? readdirSync(join(installed, 'labs'), { recursive: true })
