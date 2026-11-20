@@ -30,7 +30,7 @@ import {
   TabsSharedContext,
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
-import type { TabListProps } from './tab-list.js';
+import type { TabsListProps } from './tab-list.js';
 import { useRemovedTabSuccessor } from './tab-selection.js';
 
 type Part = { id: string; key: Key; kind: 'tab' | 'action'; content?: ReactNode };
@@ -183,7 +183,7 @@ export function withTabActionEvents(
 }
 
 /** React Aria builds its collection before mounting the visible list and its action parts. */
-export function TabListCollection({ actions, ...props }: TabListProps & { actions: TabActions }) {
+export function TabListCollection({ actions, ...props }: TabsListProps & { actions: TabActions }) {
   return (
     <TabActionsContext value={actions}>
       <AriaTabList {...props}>{keyCollectionChildren(props.children)}</AriaTabList>

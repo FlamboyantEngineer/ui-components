@@ -4,7 +4,16 @@ import {
   EmptyState,
   type EmptyStateVariant,
 } from '../../src/components/empty-state/empty-state.js';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '../../src/components/empty-state/index.js';
 import { SearchGlyph, WarningGlyph } from '../../src/core/glyphs.js';
+import { Glyph } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const variants: EmptyStateVariant[] = ['empty', 'loading', 'error'];
@@ -113,6 +122,20 @@ mountLab(
         )}
         caption="With illustration and actions"
       />
+    </LabSection>
+    <LabSection title="Composed notice">
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Glyph icon={SearchGlyph} />
+          </EmptyMedia>
+          <EmptyTitle>No matching cities</EmptyTitle>
+          <EmptyDescription>Clear your filters to see all cities.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button size="sm">Clear filters</Button>
+        </EmptyContent>
+      </Empty>
     </LabSection>
     <LabSection
       title="Loading then content"

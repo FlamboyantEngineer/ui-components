@@ -124,6 +124,15 @@ Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`, `e2e
 Implementation: `src/components/avatar-group/avatar-group.tsx`
 Verification: `src/components/avatar-group/avatar-group-presence.test.tsx`
 
+## UIC-AVATAR-GROUP-13 - Composition
+
+### UIC-AVATAR-GROUP-13.1 - Caller-composed identities
+
+Without `people`, `AvatarGroup` shall render its children as a named or unnamed group, in the stack or strip layout. Avatars without an explicit size inherit the group's size. `AvatarGroupCount` shall render the localized positive count and announce it as an image with a label based on the count and optional hidden names. A decorative count has no accessible name. A zero count renders nothing.
+
+Implementation: `src/components/avatar-group/avatar-group.tsx`, `src/components/avatar-group/avatar-group-count.tsx`
+Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-group.spec.ts`
+
 ## Hooks
 
 | Hook                        | Kind      | Values                 | Description                                                 |

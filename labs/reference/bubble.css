@@ -1,0 +1,36 @@
+/* Bubble */
+
+.ui-bubble {
+  box-sizing: border-box;
+  inline-size: fit-content;
+  max-inline-size: min(100%, 64ch);
+  min-inline-size: 0;
+  margin-inline-end: auto;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-bubble[data-align='end'] {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+.ui-bubble[data-variant='muted'] {
+  background: var(--ref-surface);
+}
+
+.ui-bubble[data-variant='outline'] {
+  border-color: var(--ref-border);
+  background: transparent;
+}
+
+.ui-bubble[data-variant='ghost'] {
+  background: transparent;
+}
+
+.ui-bubble__content {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}

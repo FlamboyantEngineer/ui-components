@@ -2,7 +2,10 @@ import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   Popover,
+  PopoverDescription,
+  PopoverHeader,
   type PopoverProps,
+  PopoverTitle,
   PopoverTrigger,
 } from '../../src/components/popover/popover.js';
 import {
@@ -298,6 +301,17 @@ function Controlled() {
 
 mountLab(
   <>
+    <LabSection title="Composed header">
+      <PopoverTrigger>
+        <Button>Open display settings</Button>
+        <Popover>
+          <PopoverHeader>
+            <PopoverTitle>Display settings</PopoverTitle>
+            <PopoverDescription>Choose how reports are displayed.</PopoverDescription>
+          </PopoverHeader>
+        </Popover>
+      </PopoverTrigger>
+    </LabSection>
     <LabSection
       title="Placements and arrow"
       description="Each cell opens a popover on that side of its button, with consistent spacing even when the browser reserves scrollbar space, with or without an arrow. Escape, the close button or a press outside closes it and focus returns to the button, including Escape pressed as an opening focus scroll settles."

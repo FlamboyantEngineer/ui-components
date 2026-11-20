@@ -231,7 +231,7 @@ test.describe('Drawer lab', () => {
     await expect(drawer).toBeFocused();
     await expect(page.locator('.ui-drawer__panel[data-entering]')).toHaveCount(0);
     const panel = await boxOf(page.locator('.ui-drawer__panel'));
-    const dialog = await boxOf(page.locator('.ui-modal__panel'));
+    const dialog = await boxOf(page.locator('.ui-dialog__panel'));
     // The drawer makes the dialog inert, which hit testing skips; lift it to compare paint order.
     const hits = await page.evaluate(
       (points) => {
@@ -239,7 +239,7 @@ test.describe('Drawer lab', () => {
         for (const element of inert) element.inert = false;
         const owners = points.map(
           ({ x, y }) =>
-            document.elementFromPoint(x, y)?.closest('.ui-drawer, .ui-modal')?.classList[0] ?? '',
+            document.elementFromPoint(x, y)?.closest('.ui-drawer, .ui-dialog')?.classList[0] ?? '',
         );
         for (const element of inert) element.inert = true;
         return owners;

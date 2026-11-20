@@ -20,7 +20,7 @@ import {
   useMoreEscape,
   useRegions,
 } from './card-more.js';
-import { CardHeaderContext, type CardHeaderParts } from './card-parts.js';
+import { CardHeaderContext, type CardHeaderParts, type CardHeaderProps } from './card-parts.js';
 import type { CardPresentation } from './card-presentation.js';
 
 const hooks = cardHooks;
@@ -34,11 +34,12 @@ export interface CardToggle {
   toggle: () => void;
 }
 
-export interface CardHeaderProps {
+export interface ManagedCardHeaderProps {
   title: ReactNode;
   description: ReactNode;
   actions: ReactNode;
   header: ReactNode;
+  headerProps?: Omit<CardHeaderProps, 'children'> | undefined;
   leading: ReactNode;
   meta: ReactNode;
   /** The selection checkbox of the grid item holding the card, at the start of the header row. */
@@ -63,7 +64,10 @@ export interface CardHeaderProps {
 }
 
 /** The title's content: the action link or button when the card has one, else the title itself. */
-function TitleContent({ title, action }: Pick<CardHeaderProps, 'title' | 'action'>): ReactNode {
+function TitleContent({
+  title,
+  action,
+}: Pick<ManagedCardHeaderProps, 'title' | 'action'>): ReactNode {
   if (!action.isActionable) return title;
   return (
     <CardActionTitle
@@ -82,7 +86,7 @@ function TitleContent({ title, action }: Pick<CardHeaderProps, 'title' | 'action
  * as the heading's (and the card's) accessible name.
  */
 function CardTitleHeading(
-  props: Pick<CardHeaderProps, 'title' | 'abbreviation' | 'presentation' | 'action'> & {
+  props: Pick<ManagedCardHeaderProps, 'title' | 'abbreviation' | 'presentation' | 'action'> & {
     headingLevel: HeadingLevel;
     titleId: string;
   },
@@ -151,13 +155,16 @@ function Toggle({
   return <div {...regions.place('toggle')}>{button}</div>;
 }
 
-/** What the custom header's `CardTitle` and `CardAction` take from the card. */
+/** What the custom header's `CardTitle` and `CardTitleAction` take from the card. */
 function useHeaderParts({
   headingLevel,
   titleId,
   titleRef,
   action,
-}: Pick<CardHeaderProps, 'headingLevel' | 'titleId' | 'titleRef' | 'action'>): CardHeaderParts {
+}: Pick<
+  ManagedCardHeaderProps,
+  'headingLevel' | 'titleId' | 'titleRef' | 'action'
+>): CardHeaderParts {
   const { options, isActionable, ref } = action;
   const { href, target, rel, onAction } = options;
   return useMemo(
@@ -180,11 +187,12 @@ function useHeaderParts({
 }
 
 /** A custom header: the caller's content, which names the card through its `CardTitle`. */
-function CustomHeader(props: CardHeaderProps) {
+function CustomHeader(props: ManagedCardHeaderProps) {
   const parts = useHeaderParts(props);
   const regions = useRegions(props);
   const onKeyDown = useMoreEscape(props.more, regions.ids);
-  const { abbreviation, toggle, titleId } = props;
+  const { abbreviation, toggle, titleId, headerProps = {} } = props;
+  const { className, ...attributes } = headerProps;
   const isAbbreviated = props.presentation === 'minimal' && abbreviation !== undefined;
   // Without an abbreviation the content keeps the title on screen, so it stays in place.
   const heading = isAbbreviated
@@ -195,7 +203,7 @@ function CustomHeader(props: CardHeaderProps) {
     ...(toggle ? ['toggle' as const] : []),
   ];
   return (
-    <header {...hooks.slot('header')} onKeyDown={onKeyDown}>
+    <header {...attributes} {...hooks.slot('header', undefined, className)} onKeyDown={onKeyDown}>
       {props.selection}
       {isAbbreviated ? (
         <span {...hooks.slot('abbreviation')} aria-hidden="true">
@@ -218,12 +226,16 @@ function CustomHeader(props: CardHeaderProps) {
  * toggle and More, in that order; the actions follow on a line of their own.
  * Every region keeps its place in every presentation, so its content stays mounted with its state;
  * a smaller presentation hides the regions it moves until the More button opens them. Custom
- * content's `CardTitle` and `CardAction` take the title's and the action's props from the card.
+ * content's `CardTitle` and `CardTitleAction` take the title's and the action's props from the card.
  */
-export function CardHeader(props: CardHeaderProps) {
+export function ManagedCardHeader(props: ManagedCardHeaderProps) {
+  if (props.headerProps || !isEmptyNode(props.header)) return <CustomHeader {...props} />;
+  return <DefaultCardHeader {...props} />;
+}
+
+function DefaultCardHeader(props: ManagedCardHeaderProps) {
   const regions = useRegions(props);
   const onKeyDown = useMoreEscape(props.more, regions.ids);
-  if (!isEmptyNode(props.header)) return <CustomHeader {...props} />;
   const { title, titleId, toggle } = props;
   const has = {
     leading: !isEmptyNode(props.leading),

@@ -33,6 +33,11 @@ interface ScrollKeeperSources {
   mounted(): { keys: readonly string[]; elements: readonly HTMLElement[] };
 }
 
+interface ScrollKeeperOptions {
+  /** Opts into lightweight scroller semantics. Returns whether to follow from the live edge. */
+  canFollowLiveEnd?: (() => boolean) | undefined;
+}
+
 /** Keeps the transcript's scroll position where the reader expects it as content changes. */
 export interface ScrollKeeper {
   hold(): TranscriptHold;
@@ -56,6 +61,8 @@ export interface ScrollKeeper {
   scrolled(): void;
   /** Holds the view at the bottom, following new content. */
   holdBottom(): void;
+  /** Lets the reader's position stand, even when it coincides with an edge. */
+  release(): void;
   /** Anchors a message at the top of the view while what follows it fills in below. */
   anchor(key: string | null): void;
   /** Scrolls an element into view and holds the view where that leaves it. */
@@ -84,17 +91,17 @@ function fitSpacer(
   sources: ScrollKeeperSources,
   viewport: HTMLElement,
   anchorKey: string | null,
-): number | null {
+): { top: number; reserve: number } | null {
   const element = anchorKey === null ? null : sources.element(anchorKey);
   const spacer = sources.spacer();
   if (!element) return null;
   const top = resolveTopAlignment(element, viewport);
-  if (spacer) {
-    const spacerTop = viewport.scrollTop + readOffset(spacer, viewport);
-    const end = spacerTop + readViewportPadding(viewport).bottom;
-    resizeSpacer(sources, Math.max(0, Math.ceil(top + viewport.clientHeight - end)));
-  }
-  return top;
+  if (!spacer) return { top, reserve: 0 };
+  const spacerTop = viewport.scrollTop + readOffset(spacer, viewport);
+  const end = spacerTop + readViewportPadding(viewport).bottom;
+  const reserve = top + viewport.clientHeight - end;
+  resizeSpacer(sources, Math.max(0, Math.ceil(reserve)));
+  return { top, reserve };
 }
 
 /**
@@ -137,74 +144,147 @@ function restoreSnapshot(
   if (Math.abs(delta) >= 0.5) viewport.scrollTop += delta;
 }
 
-/**
- * Creates the keeper. Held at the bottom it follows new content; anchored, it keeps the anchored
- * message at the top, sizing the spacer after the messages so the scroll range reaches that far;
- * left free, it keeps the first message in view where it was, so content added or resized above
- * (older history, a message that grew) never moves what the reader is looking at.
- */
-export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
-  let hold: TranscriptHold = 'bottom';
-  let anchorKey: string | null = null;
-  let snapshot: ScrollSnapshot | null = null;
-  // Where the keeper last left the scroll position, to notice a scroll it has not heard of yet, and
-  // the viewport's height then.
-  let known: number | null = null;
-  let knownHeight = 0;
-  const remember = (viewport: HTMLElement) => {
-    known = viewport.scrollTop;
-    knownHeight = viewport.clientHeight;
-  };
+interface KeeperPosition {
+  hold: TranscriptHold;
+  anchorKey: string | null;
+  snapshot: ScrollSnapshot | null;
+  anchorReserve: number | null;
+  /** Where the keeper last left the viewport, to distinguish late events from reader movement. */
+  known: number | null;
+  knownHeight: number;
+}
 
-  const classify = () => {
-    const viewport = sources.viewport();
-    if (!viewport) return;
-    hold = resolveHold(sources, viewport, { anchorKey, current: hold });
-    snapshot = readSnapshot(sources, viewport);
-    remember(viewport);
+function initialPosition(): KeeperPosition {
+  return {
+    hold: 'bottom',
+    anchorKey: null,
+    snapshot: null,
+    anchorReserve: null,
+    known: null,
+    knownHeight: 0,
   };
+}
 
-  const settle = () => {
-    const viewport = sources.viewport();
-    if (!viewport) return;
-    // The reader scrolled before the scroll event arrived: their position wins over the hold. A
-    // position the browser clamped as the scroll range shrank is layout, not the reader.
-    const moved = known === null ? 0 : Math.abs(viewport.scrollTop - known);
-    if (moved >= ownScrollTolerance && known !== null && !isClamped(viewport, known)) classify();
-    const anchorTop = fitSpacer(sources, viewport, anchorKey);
-    if (hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
-    else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;
-    else restoreSnapshot(sources, viewport, snapshot);
-    // Held free on the same message, the place stays where the reader left it, so shifts too small
-    // to correct one at a time cannot add up to a visible one.
-    const next = readSnapshot(sources, viewport);
-    snapshot = hold === 'free' && next && next.key === snapshot?.key ? snapshot : next;
-    remember(viewport);
-  };
+function remember(position: KeeperPosition, viewport: HTMLElement) {
+  position.known = viewport.scrollTop;
+  position.knownHeight = viewport.clientHeight;
+}
+
+function classifyPosition(
+  position: KeeperPosition,
+  sources: ScrollKeeperSources,
+  canFollowLiveEnd: ScrollKeeperOptions['canFollowLiveEnd'],
+) {
+  const viewport = sources.viewport();
+  if (!viewport) return;
+  position.hold = canFollowLiveEnd
+    ? canFollowLiveEnd() && readDistanceToBottom(viewport) < ownScrollTolerance
+      ? 'bottom'
+      : 'free'
+    : resolveHold(sources, viewport, { anchorKey: position.anchorKey, current: position.hold });
+  position.snapshot = readSnapshot(sources, viewport);
+  remember(position, viewport);
+}
+
+function updateAnchorReserve(
+  position: KeeperPosition,
+  reserve: number,
+  canFollowLiveEnd: ScrollKeeperOptions['canFollowLiveEnd'],
+) {
+  // The first settle shows the prompt even if the turn already fills the viewport.
+  if (
+    canFollowLiveEnd?.() &&
+    position.anchorReserve !== null &&
+    reserve <= 0 &&
+    reserve < position.anchorReserve
+  ) {
+    position.hold = 'bottom';
+    position.anchorKey = null;
+  }
+  position.anchorReserve = reserve;
+}
+
+function settlePosition(
+  position: KeeperPosition,
+  sources: ScrollKeeperSources,
+  canFollowLiveEnd: ScrollKeeperOptions['canFollowLiveEnd'],
+) {
+  const viewport = sources.viewport();
+  if (!viewport) return;
+  const { known } = position;
+  // A reader who scrolled before their event arrived owns the position. A clamp is layout.
+  if (
+    known !== null &&
+    Math.abs(viewport.scrollTop - known) >= ownScrollTolerance &&
+    !isClamped(viewport, known)
+  ) {
+    classifyPosition(position, sources, canFollowLiveEnd);
+  }
+  const anchor = fitSpacer(sources, viewport, position.anchorKey);
+  if (anchor && position.hold === 'anchor') {
+    updateAnchorReserve(position, anchor.reserve, canFollowLiveEnd);
+  }
+  if (position.hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
+  else if (position.hold === 'anchor' && anchor) viewport.scrollTop = anchor.top;
+  else restoreSnapshot(sources, viewport, position.snapshot);
+  const next = readSnapshot(sources, viewport);
+  // Keep the original offset so individually subpixel shifts cannot accumulate.
+  if (position.hold !== 'free' || !next || next.key !== position.snapshot?.key) {
+    position.snapshot = next;
+  }
+  remember(position, viewport);
+}
+
+/** Holds the latest edge, a turn anchor, or the first visible message as the transcript changes. */
+export function createScrollKeeper(
+  sources: ScrollKeeperSources,
+  { canFollowLiveEnd }: ScrollKeeperOptions = {},
+): ScrollKeeper {
+  let position = initialPosition();
+  const classify = () => classifyPosition(position, sources, canFollowLiveEnd);
+  const settle = () => settlePosition(position, sources, canFollowLiveEnd);
 
   return {
-    hold: () => hold,
-    anchorKey: () => anchorKey,
-    snapshot: () => snapshot,
+    hold: () => position.hold,
+    anchorKey: () => position.anchorKey,
+    snapshot: () => position.snapshot,
     settle,
     classify,
     scrolled() {
       const viewport = sources.viewport();
+      const { known, knownHeight, hold } = position;
       if (!viewport || known === null) return classify();
       const top = viewport.scrollTop;
-      const isResized = viewport.clientHeight !== knownHeight;
-      if (top < known && hold !== 'free' && isResized) known = top;
-      if (Math.abs(top - known) < ownScrollTolerance) settle();
+      if (
+        !canFollowLiveEnd &&
+        top < known &&
+        hold !== 'free' &&
+        viewport.clientHeight !== knownHeight
+      )
+        position.known = top;
+      if (
+        Math.abs(top - (position.known ?? top)) < ownScrollTolerance ||
+        (canFollowLiveEnd && isClamped(viewport, known))
+      )
+        settle();
       else classify();
     },
     holdBottom() {
-      hold = 'bottom';
+      position.hold = 'bottom';
       settle();
     },
+    release() {
+      const viewport = sources.viewport();
+      if (!viewport) return;
+      position.hold = 'free';
+      position.snapshot = readSnapshot(sources, viewport);
+      remember(position, viewport);
+    },
     anchor(key) {
-      anchorKey = key;
-      if (key !== null) hold = 'anchor';
-      else if (hold === 'anchor') hold = 'bottom';
+      position.anchorKey = key;
+      position.anchorReserve = null;
+      if (key !== null) position.hold = 'anchor';
+      else if (position.hold === 'anchor') position.hold = 'bottom';
       if (key === null) resizeSpacer(sources, 0);
       settle();
     },
@@ -215,10 +295,7 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
       classify();
     },
     reset() {
-      hold = 'bottom';
-      anchorKey = null;
-      snapshot = null;
-      known = null;
+      position = initialPosition();
       resizeSpacer(sources, 0);
     },
   };

@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { AnchoredTooltip, type AnchoredTooltipProps, type TooltipAnchor } from './tooltip.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('.ui-tooltip');
@@ -27,11 +27,11 @@ describe('AnchoredTooltip', () => {
       const anchor = useRef<HTMLSpanElement>(null);
       return (
         <>
-          <Modal isOpen title="Build details" cancelAction={{ label: 'Close' }}>
+          <Dialog isOpen title="Build details" cancelAction={{ label: 'Close' }}>
             <span ref={anchor} role="status" aria-label="Build status">
               Passing
             </span>
-          </Modal>
+          </Dialog>
           <AnchoredTooltip isOpen anchor={anchor} content="All checks passed" />
         </>
       );

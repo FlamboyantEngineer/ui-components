@@ -3,6 +3,14 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { FolderGlyph } from '../../core/glyphs.js';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './empty-parts.js';
 import { EmptyState } from './empty-state.js';
 
 describe('EmptyState', () => {
@@ -155,5 +163,40 @@ describe('EmptyState root ref', () => {
     );
     expect(ref.current).not.toBeNull();
     expect(ref.current).toBe(container.querySelector('.ui-empty-state'));
+  });
+});
+
+it('UIC-EMPTY-STATE-3.1 lays out a composed notice with decorative media and independent actions', async () => {
+  const user = userEvent.setup();
+  const onClear = vi.fn();
+  const { container } = render(
+    <Empty size="sm">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <img src="/illustration.svg" alt="No matches" />
+        </EmptyMedia>
+        <EmptyTitle headingLevel={4}>No matching records</EmptyTitle>
+        <EmptyDescription>Clear your filters to see all records.</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <button type="button" onClick={onClear}>
+          Clear filters
+        </button>
+      </EmptyContent>
+    </Empty>,
+  );
+  expect(
+    screen.getByRole('heading', { name: 'No matching records', level: 4 }),
+  ).toBeInTheDocument();
+  expect(screen.getByText('Clear your filters to see all records.')).toHaveClass(
+    'ui-empty-state__description',
+  );
+  expect(screen.queryByRole('img', { name: 'No matches' })).not.toBeInTheDocument();
+  expect(container.querySelector('.ui-empty-state__media')).toHaveAttribute('data-variant', 'icon');
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+  expect(onClear).toHaveBeenCalledTimes(1);
+  expectHooksMatchSpec(container, 'EMPTY-STATE', {
+    slots: ['header', 'media', 'title', 'description', 'content'],
   });
 });

@@ -44,7 +44,7 @@ const registries = new WeakMap<Document, Registry>();
  * `aria-modal` element.
  */
 const modalSelector = [
-  '.ui-modal:not([data-non-modal]):not([data-exiting])',
+  '.ui-dialog:not([data-non-modal]):not([data-exiting])',
   '.ui-drawer:not([data-exiting])',
   '.ui-command-palette:not([data-exiting])',
   '.ui-tour:not([data-non-modal])',

@@ -6,7 +6,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
-import { Avatar, getDisplayName, splitAvatarIdentity } from './avatar.js';
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
+  getDisplayName,
+  splitAvatarIdentity,
+} from './avatar.js';
 import { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';
 
 function root(container: HTMLElement): HTMLElement {
@@ -412,4 +419,42 @@ describe('Avatar', () => {
     expect(avatar.querySelector('.ui-avatar__surface .ui-avatar__indicator')).toBeNull();
     expect(avatar.querySelector('.ui-avatar__indicator')).toHaveAttribute('aria-hidden', 'true');
   });
+});
+
+it('UIC-AVATAR-12.1 composes the fallback, image and badge through each request', () => {
+  const statuses = vi.fn();
+  const imageRef = { current: null as HTMLImageElement | null };
+  function Portrait({ src }: { src: string }) {
+    return (
+      <Avatar status="away" onLoadingStatusChange={statuses}>
+        <>
+          <AvatarImage src={src} alt="Clara Walker" ref={imageRef} className="portrait" />
+          <AvatarFallback>CW</AvatarFallback>
+        </>
+        <AvatarBadge label="Contributor">✦</AvatarBadge>
+      </Avatar>
+    );
+  }
+  const { container, rerender } = render(<Portrait src="/first.png" />);
+  const avatar = screen.getByRole('img', { name: /Clara Walker.*Away.*Contributor/i });
+  const image = avatar.querySelector('.ui-avatar__image') as HTMLImageElement;
+  expect(image).toBe(imageRef.current);
+  expect(image).toHaveAttribute('alt', '');
+  expect(image).toHaveClass('portrait');
+  expect(image).toHaveAttribute('data-state', 'loading');
+  expect(screen.getByText('CW')).toHaveAttribute('aria-hidden', 'true');
+  expect(screen.getByText('✦')).toHaveAttribute('data-placement', 'top-end');
+  expectHooksMatchSpec(container, 'AVATAR', { slots: ['image', 'fallback', 'badge', 'indicator'] });
+
+  fireEvent.load(image);
+  expect(image).toHaveAttribute('data-state', 'loaded');
+  expect(screen.queryByText('CW')).not.toBeInTheDocument();
+  rerender(<Portrait src="/second.png" />);
+  const second = avatar.querySelector('.ui-avatar__image') as HTMLImageElement;
+  expect(second).not.toBe(image);
+
+  fireEvent.error(second);
+  expect(screen.getByText('CW')).toBeInTheDocument();
+  expect(imageRef.current).toBeNull();
+  expect(statuses.mock.calls.flat()).toEqual(['loading', 'loaded', 'loading', 'error']);
 });

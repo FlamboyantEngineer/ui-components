@@ -7,7 +7,7 @@ import { measureInScroller } from '../../utils/scroll-geometry.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { scrollStripTo } from '../../utils/use-scroll-strip-overflow.js';
-import { Tab, TabList } from '../tabs/tabs.js';
+import { TabsList, TabsTrigger } from '../tabs/tabs.js';
 import { DockPanelFades, useDockPanelFades } from './dock-panel-fades.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import { dockPanelCountMax, type DockPanelLauncherPane } from './dock-panel-launchers.js';
@@ -104,7 +104,7 @@ export function DockPanelTabList({
   listRef?: Ref<HTMLDivElement> | undefined;
 }) {
   return (
-    <TabList
+    <TabsList
       ref={listRef}
       aria-label={label}
       overflow="scroll"
@@ -113,7 +113,7 @@ export function DockPanelTabList({
       {...hooks.slot('tab-list')}
     >
       {panes.map((pane) => (
-        <Tab
+        <TabsTrigger
           key={toKeyIdentity(pane.id)}
           id={pane.id}
           ref={focus.tabRef(pane.id)}
@@ -125,8 +125,8 @@ export function DockPanelTabList({
           {...hooks.slot('tab')}
         >
           {pane.label}
-        </Tab>
+        </TabsTrigger>
       ))}
-    </TabList>
+    </TabsList>
   );
 }

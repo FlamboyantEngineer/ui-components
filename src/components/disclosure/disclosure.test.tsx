@@ -8,8 +8,14 @@ import { I18nProvider } from '../../primitives/index.js';
 import { Outline } from '../outline/outline.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   Disclosure,
-  DisclosureGroup,
   DisclosureHeader,
   DisclosurePanel,
   DisclosureTitle,
@@ -20,15 +26,15 @@ const glyphOf = (trigger: HTMLElement) =>
 
 const fruits = ['Apples', 'Pears', 'Plums'] as const;
 
-function FruitGroup(props: Omit<Parameters<typeof DisclosureGroup>[0], 'children'>) {
+function FruitGroup(props: Omit<Parameters<typeof Accordion>[0], 'children'>) {
   return (
-    <DisclosureGroup {...props}>
+    <Accordion {...props}>
       {fruits.map((fruit) => (
         <Disclosure key={fruit} id={fruit.toLowerCase()} title={fruit}>
           <p>{fruit} in rows</p>
         </Disclosure>
       ))}
-    </DisclosureGroup>
+    </Accordion>
   );
 }
 
@@ -293,7 +299,7 @@ describe('Composed disclosures', () => {
   });
 });
 
-describe('DisclosureGroup', () => {
+describe('Accordion', () => {
   it('UIC-DISCLOSURE-3.1 opens one disclosure at a time unless multiple are allowed', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(<FruitGroup />);
@@ -348,7 +354,7 @@ describe('DisclosureGroup', () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();
     render(
-      <DisclosureGroup
+      <Accordion
         allowsMultipleExpanded
         defaultExpandedKeys={[0]}
         onExpandedChange={onExpandedChange}
@@ -362,7 +368,7 @@ describe('DisclosureGroup', () => {
         <Disclosure id="0" title="Text zero">
           Third
         </Disclosure>
-      </DisclosureGroup>,
+      </Accordion>,
     );
     expect(screen.getByRole('button', { name: 'Zero' })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Text zero' })).toHaveAttribute(
@@ -377,14 +383,14 @@ describe('DisclosureGroup', () => {
 
   it('UIC-DISCLOSURE-3.2 lets the group keys win over a disclosure state', () => {
     render(
-      <DisclosureGroup defaultExpandedKeys={['figs']}>
+      <Accordion defaultExpandedKeys={['figs']}>
         <Disclosure id="figs" title="Figs" defaultExpanded={false}>
           Purple
         </Disclosure>
         <Disclosure id="dates" title="Dates" defaultExpanded>
           Brown
         </Disclosure>
-      </DisclosureGroup>,
+      </Accordion>,
     );
     expect(screen.getByRole('button', { name: 'Figs' })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Dates' })).toHaveAttribute('aria-expanded', 'false');
@@ -436,16 +442,16 @@ describe('Disclosure accessibility', () => {
   it('UIC-DISCLOSURE-4.2 moves between the triggers of a group with arrows, Home and End', async () => {
     const user = userEvent.setup();
     render(
-      <DisclosureGroup defaultExpandedKeys={['three']}>
+      <Accordion defaultExpandedKeys={['three']}>
         <Disclosure id="one" title="One" />
         <Disclosure id="two" title="Two" isDisabled />
         <Disclosure id="three" title="Three">
-          <DisclosureGroup>
+          <Accordion>
             <Disclosure id="inner" title="Inner" />
-          </DisclosureGroup>
+          </Accordion>
         </Disclosure>
         <Disclosure id="four" title="Four" />
-      </DisclosureGroup>,
+      </Accordion>,
     );
     const button = (name: string) => screen.getByRole('button', { name });
     button('One').focus();
@@ -505,7 +511,7 @@ describe('Disclosure content scope', () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();
     render(
-      <DisclosureGroup defaultExpandedKeys={['section']} onExpandedChange={onExpandedChange}>
+      <Accordion defaultExpandedKeys={['section']} onExpandedChange={onExpandedChange}>
         <Disclosure id="section" title="Section">
           <Disclosure title="Advanced" defaultExpanded>
             <p>Advanced options</p>
@@ -514,7 +520,7 @@ describe('Disclosure content scope', () => {
         <Disclosure id="other" title="Other">
           <p>Other options</p>
         </Disclosure>
-      </DisclosureGroup>,
+      </Accordion>,
     );
     const advanced = screen.getByRole('button', { name: 'Advanced' });
     expect(advanced).toHaveAttribute('aria-expanded', 'true');
@@ -552,4 +558,67 @@ describe('Disclosure content scope', () => {
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
+});
+
+it('UIC-DISCLOSURE-5.1 composes a headingless collapsible with a stable panel and trigger ref', async () => {
+  const user = userEvent.setup();
+  const triggerRef = { current: null as HTMLButtonElement | null };
+  const onPress = vi.fn();
+  render(
+    <HeadingLevelContext value={3}>
+      <Collapsible>
+        <CollapsibleTrigger ref={triggerRef} className="caller" onPress={onPress}>
+          Show shipping terms
+        </CollapsibleTrigger>
+        <CollapsibleContent role="region">
+          <Disclosure title="Domestic shipping">Ships in two days.</Disclosure>
+        </CollapsibleContent>
+      </Collapsible>
+    </HeadingLevelContext>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Show shipping terms' });
+  expect(trigger).toBe(triggerRef.current);
+  expect(trigger).toHaveClass('caller', 'ui-disclosure__trigger');
+  expect(screen.queryByRole('heading', { name: 'Show shipping terms' })).not.toBeInTheDocument();
+  await user.click(trigger);
+  expect(onPress).toHaveBeenCalledTimes(1);
+  const panel = screen.getByRole('region', { name: 'Show shipping terms' });
+  expect(trigger).toHaveAttribute('aria-controls', panel.id);
+  expect(within(panel).getByRole('heading', { name: 'Domestic shipping', level: 4 })).toBeVisible();
+});
+
+it('UIC-DISCLOSURE-5.1 composes accordion headings with contextual actions and shared expansion', async () => {
+  const user = userEvent.setup();
+  const onEdit = vi.fn();
+  render(
+    <Accordion defaultExpandedKeys={[0]}>
+      <AccordionItem id={0}>
+        <DisclosureHeader>
+          <AccordionTrigger>First shipment</AccordionTrigger>
+          <button type="button" onClick={onEdit}>
+            Edit shipment
+          </button>
+        </DisclosureHeader>
+        <AccordionContent>Ships on Tuesday.</AccordionContent>
+      </AccordionItem>
+      <AccordionItem id="">
+        <AccordionTrigger>Second shipment</AccordionTrigger>
+        <AccordionContent>Ships on Thursday.</AccordionContent>
+      </AccordionItem>
+    </Accordion>,
+  );
+  const heading = screen.getByRole('heading', { name: 'First shipment', level: 3 });
+  const first = within(heading).getByRole('button', { name: 'First shipment' });
+  const second = screen.getByRole('button', { name: 'Second shipment' });
+  expect(first).toHaveAttribute('aria-expanded', 'true');
+  expect(first).toHaveAttribute('data-indicator-position', 'end');
+  await user.click(screen.getByRole('button', { name: 'Edit shipment' }));
+  expect(onEdit).toHaveBeenCalledTimes(1);
+  expect(first).toHaveAttribute('aria-expanded', 'true');
+  await user.click(first);
+  await user.keyboard('{ArrowDown}');
+  expect(second).toHaveFocus();
+  await user.keyboard('{Enter}');
+  expect(second).toHaveAttribute('aria-expanded', 'true');
+  expect(first).toHaveAttribute('aria-expanded', 'false');
 });

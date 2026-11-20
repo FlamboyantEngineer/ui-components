@@ -132,7 +132,7 @@ interface CardActionTitleProps extends AriaLabellingProps, Omit<BaseProps, 'id' 
 
 /**
  * The card's action element: a link through the provider's renderer, or a button. The card's title
- * draws it, and so does a `CardAction` in a custom header.
+ * draws it, and so does a `CardTitleAction` in a custom header.
  */
 export function CardActionTitle({
   options,

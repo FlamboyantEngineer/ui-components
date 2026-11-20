@@ -1,7 +1,7 @@
 // Shared identity options for the person labs: what the avatar of a User Identity or a person preview
 // can be told beyond the name, and its corner badges.
 
-import type { AvatarImageProps } from '../../src/components/avatar/avatar.js';
+import type { AvatarImageAttributes } from '../../src/components/avatar/avatar.js';
 import { otherPicture, samplePicture } from './people-samples.js';
 
 export const identityShapes = ['circle', 'rounded', 'square'] as const;
@@ -9,7 +9,7 @@ export const identityOptions = ['initials', 'color key', 'color slot', 'image pr
 export const badgePlacements = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
 
 /** A picture with a sharper candidate for dense screens, loaded only near the viewport. */
-const responsiveImage: AvatarImageProps = {
+const responsiveImage: AvatarImageAttributes = {
   srcSet: `${samplePicture} 1x, ${otherPicture} 2x`,
   sizes: '32px',
   loading: 'lazy',

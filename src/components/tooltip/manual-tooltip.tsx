@@ -15,7 +15,7 @@ import {
 import { TooltipContext, TooltipTriggerStateContext } from '../../primitives/index.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { TooltipPanel, type TooltipPlacement } from './tooltip.js';
+import { TooltipContent, type TooltipPlacement } from './tooltip.js';
 
 /** The state of a manually driven tooltip, shaped as React Aria's tooltip trigger state. */
 export interface ManualTooltipState {
@@ -90,21 +90,13 @@ export function ManualTooltip({
   placement,
   children,
 }: ManualTooltipProps) {
-  const context = useMemo(
-    () => (tooltipProps ? { ...tooltipProps, triggerRef } : null),
-    [tooltipProps, triggerRef],
-  );
+  const context = useMemo(() => ({ ...tooltipProps, triggerRef }), [tooltipProps, triggerRef]);
   return (
     <TooltipContext value={context}>
       <TooltipTriggerStateContext value={state}>
-        <TooltipPanel
-          variant="default"
-          className={className}
-          triggerRef={triggerRef}
-          placement={placement}
-        >
+        <TooltipContent className={className} placement={placement}>
           {children}
-        </TooltipPanel>
+        </TooltipContent>
       </TooltipTriggerStateContext>
     </TooltipContext>
   );

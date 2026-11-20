@@ -75,7 +75,7 @@ const allVariants: ButtonVariant[] = [
   'secondary',
   'tertiary',
   'ghost',
-  'danger',
+  'destructive',
   'link',
   'accent',
   'chip',

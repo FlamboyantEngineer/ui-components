@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
 import { Button } from '../button/button.js';
-import { Tab, TabList, TabPanel, Tabs } from './tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.js';
 
 describe('Tab action parts', () => {
   it('UIC-TABS-3.11 owns only actual tabs after late rendering and keeps ordinary actions separate', async () => {
@@ -13,15 +13,15 @@ describe('Tab action parts', () => {
     const selection = vi.fn();
     const { container } = render(
       <Tabs defaultSelectedKey="one" onSelectionChange={selection}>
-        <TabList
+        <TabsList
           aria-label="Sections"
           renderAfterTab={(key) => (key === 'one' ? <Button onPress={add}>Add item</Button> : null)}
         >
-          <Tab id="one">One</Tab>
-          <Tab id="two">Two</Tab>
-        </TabList>
-        <TabPanel id="one">First page.</TabPanel>
-        <TabPanel id="two">Second page.</TabPanel>
+          <TabsTrigger id="one">One</TabsTrigger>
+          <TabsTrigger id="two">Two</TabsTrigger>
+        </TabsList>
+        <TabsContent id="one">First page.</TabsContent>
+        <TabsContent id="two">Second page.</TabsContent>
       </Tabs>,
     );
     const owner = screen.getByRole('tablist', { name: 'Sections' });
@@ -52,14 +52,14 @@ it('UIC-TABS-3.11 preserves typed and whitespace keys and keeps every action ind
   const seen = vi.fn((key: Key) => <Button>{`After ${typeof key}:${key}`}</Button>);
   render(
     <Tabs defaultSelectedKey={1} onSelectionChange={selection}>
-      <TabList aria-label="Typed pages" renderAfterTab={seen}>
-        <Tab id={1}>Numeric</Tab>
-        <Tab id="1">String</Tab>
-        <Tab id=" one ">Spaced</Tab>
-      </TabList>
-      <TabPanel id={1}>Numeric page.</TabPanel>
-      <TabPanel id="1">String page.</TabPanel>
-      <TabPanel id=" one ">Spaced page.</TabPanel>
+      <TabsList aria-label="Typed pages" renderAfterTab={seen}>
+        <TabsTrigger id={1}>Numeric</TabsTrigger>
+        <TabsTrigger id="1">String</TabsTrigger>
+        <TabsTrigger id=" one ">Spaced</TabsTrigger>
+      </TabsList>
+      <TabsContent id={1}>Numeric page.</TabsContent>
+      <TabsContent id="1">String page.</TabsContent>
+      <TabsContent id=" one ">Spaced page.</TabsContent>
     </Tabs>,
   );
   expect(seen).toHaveBeenCalledWith(1);
@@ -78,18 +78,18 @@ it('UIC-TABS-3.11 null action output retains the native list and its public rend
   const add = vi.fn();
   render(
     <Tabs>
-      <TabList
+      <TabsList
         ref={listRef}
         aria-label="Pages"
         renderAfterTab={() => null}
         onAdd={add}
         render={(props) => <div {...props} data-custom-list="true" />}
       >
-        <Tab id="one">One</Tab>
-        <Tab id="two">Two</Tab>
-      </TabList>
-      <TabPanel id="one">First page.</TabPanel>
-      <TabPanel id="two">Second page.</TabPanel>
+        <TabsTrigger id="one">One</TabsTrigger>
+        <TabsTrigger id="two">Two</TabsTrigger>
+      </TabsList>
+      <TabsContent id="one">First page.</TabsContent>
+      <TabsContent id="two">Second page.</TabsContent>
     </Tabs>,
   );
   const list = screen.getByRole('tablist', { name: 'Pages' });
@@ -103,18 +103,18 @@ it('UIC-TABS-3.11 null action output retains the native list and its public rend
 it('UIC-TABS-3.11 tracks mounted ID changes and a replacement visual list', async () => {
   const content = (replacement: boolean, extra: boolean) => (
     <Tabs>
-      <TabList
+      <TabsList
         aria-label="Pages"
         renderAfterTab={(key) => (key === 'one' ? <Button>Add item</Button> : null)}
         render={(props) => <div key={String(replacement)} {...props} />}
       >
-        <Tab id="one">One</Tab>
-        <Tab id="two">Two</Tab>
-        {extra && <Tab id="three">Three</Tab>}
-      </TabList>
-      <TabPanel id="one">First page.</TabPanel>
-      <TabPanel id="two">Second page.</TabPanel>
-      {extra && <TabPanel id="three">Third page.</TabPanel>}
+        <TabsTrigger id="one">One</TabsTrigger>
+        <TabsTrigger id="two">Two</TabsTrigger>
+        {extra && <TabsTrigger id="three">Three</TabsTrigger>}
+      </TabsList>
+      <TabsContent id="one">First page.</TabsContent>
+      <TabsContent id="two">Second page.</TabsContent>
+      {extra && <TabsContent id="three">Third page.</TabsContent>}
     </Tabs>
   );
   const { rerender } = render(content(false, false));

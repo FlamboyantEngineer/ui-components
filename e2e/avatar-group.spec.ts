@@ -140,3 +140,17 @@ test('UIC-AVATAR-GROUP-1.1 carries identity overrides and the palette size into 
     'Maria Ortega',
   ]);
 });
+
+test('UIC-AVATAR-GROUP-13.1 sizes and stacks composed avatars and the count', async ({
+  lab,
+  page,
+}) => {
+  await lab.open('avatar-group');
+  const group = page.getByRole('group', { name: 'Hiking club' });
+  const first = await group.getByRole('img', { name: 'Avery Chen' }).boundingBox();
+  const second = await group.getByRole('img', { name: 'Sam Lee' }).boundingBox();
+  expect(first?.height).toBe(24);
+  expect(second?.height).toBe(24);
+  expect((second?.x ?? 0) - (first?.x ?? 0)).toBeLessThan(24);
+  await expect(group.getByRole('img', { name: /3 more/i })).toHaveText('+3');
+});

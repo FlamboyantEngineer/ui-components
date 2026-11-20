@@ -6,7 +6,14 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
 import { Section, SectionHeader } from '../section-header/section-header.js';
-import { Popover, type PopoverProps, PopoverTrigger } from './popover.js';
+import {
+  Popover,
+  PopoverDescription,
+  PopoverHeader,
+  type PopoverProps,
+  PopoverTitle,
+  PopoverTrigger,
+} from './index.js';
 
 /** A page with a field, a trigger and the popover it opens. */
 function Page({ triggerProps = {}, ...props }: Partial<PopoverProps> & { triggerProps?: object }) {
@@ -58,9 +65,55 @@ describe('Popover', () => {
     expect(panel()?.contains(dialog)).toBe(true);
     expect(container.contains(dialog)).toBe(false);
     expectHooksMatchSpec(document.body, 'POPOVER', {
-      slots: 'all',
+      slots: ['arrow', 'dialog', 'header', 'title', 'close', 'body'],
       callerAttributes: ['data-lab'],
     });
+  });
+
+  it('UIC-POPOVER-3.5 names and describes the popover from composed parts', async () => {
+    const user = userEvent.setup();
+    function Panel({
+      showDescription,
+      describedBy,
+    }: {
+      showDescription: boolean;
+      describedBy?: string;
+    }) {
+      return (
+        <PopoverTrigger>
+          <Button>Settings</Button>
+          <Popover aria-describedby={describedBy}>
+            <PopoverHeader className="settings-header" data-section="display">
+              <PopoverTitle>Display settings</PopoverTitle>
+              {showDescription && (
+                <PopoverDescription id="appearance-hint">
+                  Choose how reports are displayed.
+                </PopoverDescription>
+              )}
+            </PopoverHeader>
+            <p id="custom-hint">Available to all readers.</p>
+          </Popover>
+        </PopoverTrigger>
+      );
+    }
+
+    const { rerender } = render(<Panel showDescription />);
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Display settings' });
+    const heading = screen.getByRole('heading', { name: 'Display settings', level: 2 });
+    expect(heading.closest('.ui-popover__header')).toHaveClass('settings-header');
+    expect(heading.closest('.ui-popover__header')).toHaveAttribute('data-section', 'display');
+    expect(dialog).toHaveAccessibleDescription('Choose how reports are displayed.');
+    expect(dialog).toHaveAttribute('aria-describedby', 'appearance-hint');
+    expectHooksMatchSpec(document.body, 'POPOVER', {
+      slots: ['dialog', 'header', 'title', 'description', 'body'],
+      callerAttributes: ['data-section'],
+    });
+
+    rerender(<Panel showDescription describedBy="custom-hint" />);
+    expect(dialog).toHaveAccessibleDescription('Available to all readers.');
+    rerender(<Panel showDescription={false} />);
+    expect(dialog).not.toHaveAttribute('aria-describedby');
   });
 
   it('UIC-POPOVER-1.1 follows a controlled trigger and opens at first with defaultOpen', async () => {

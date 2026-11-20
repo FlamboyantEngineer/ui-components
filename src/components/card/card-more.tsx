@@ -11,7 +11,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { joinIds } from '../../utils/join-ids.js';
 import { getElementByIdFrom } from '../../utils/owner-window.js';
 import { Button } from '../button/button.js';
-import type { CardHeaderProps } from './card-header.js';
+import type { ManagedCardHeaderProps } from './card-header.js';
 import { cardHooks as hooks } from './card-hooks.js';
 import type { CardPresentation } from './card-presentation.js';
 
@@ -71,7 +71,7 @@ const movedRegions = {
  * The ids of a header's regions, and which a presentation moved: a moved region keeps its place
  * and its mounted content, and shows only while More is open.
  */
-export function useRegions(props: CardHeaderProps) {
+export function useRegions(props: ManagedCardHeaderProps) {
   const id = useId();
   const moved = new Set<string>(movedRegions[props.presentation]);
   const ids: Record<MovableRegion | 'more', string> = {
@@ -116,7 +116,7 @@ export function useMoreEscape(more: CardMore, ids: Record<MovableRegion | 'more'
 
 /** The More button when the presentation moved any present region, with the ids it reveals. */
 export function MoreControl(props: {
-  header: CardHeaderProps;
+  header: ManagedCardHeaderProps;
   regions: ReturnType<typeof useRegions>;
   present: MovableRegion[];
 }) {

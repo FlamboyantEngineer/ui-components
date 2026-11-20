@@ -12,10 +12,15 @@ export interface AvatarGroupWindow {
   overflow: number;
 }
 
-type AvatarGroupWindowOptions = Pick<AvatarGroupProps, 'people' | 'maxVisible' | 'overflowCount'>;
+interface PeopleOptions {
+  people: readonly AvatarGroupPerson[];
+}
+
+type AvatarGroupWindowOptions = PeopleOptions &
+  Pick<AvatarGroupProps, 'maxVisible' | 'overflowCount'>;
 
 interface PresenceLabelOptions
-  extends Pick<AvatarGroupProps, 'people' | 'hiddenNames'>, Omit<AvatarGroupWindow, 'visible'> {
+  extends PeopleOptions, Pick<AvatarGroupProps, 'hiddenNames'>, Omit<AvatarGroupWindow, 'visible'> {
   ariaLabel: string | undefined;
 }
 

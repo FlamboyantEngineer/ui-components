@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
 import { CommandPalette } from '../command-palette/command-palette.js';
+import { Dialog } from '../dialog/dialog.js';
 import { Drawer } from '../drawer/drawer.js';
 import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
-import { Modal } from '../modal/modal.js';
 import { SelectField } from '../select-field/select-field.js';
 import { Skeleton } from '../skeleton/skeleton.js';
 import { LoadingRegion } from './loading-overlay.js';
@@ -185,9 +185,9 @@ function DialogPage({
 }) {
   const dialog =
     kind === 'modal' ? (
-      <Modal title="Edit" isOpen={isOpen} onOpenChange={() => {}} cancelAction={null}>
+      <Dialog title="Edit" isOpen={isOpen} onOpenChange={() => {}} cancelAction={null}>
         <Actions />
-      </Modal>
+      </Dialog>
     ) : kind === 'drawer' ? (
       <Drawer title="Edit" isOpen={isOpen} onOpenChange={() => {}}>
         <Actions />

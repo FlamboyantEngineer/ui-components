@@ -1,5 +1,6 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import {
   LoadingCard,
   type LoadingCardProps,
@@ -8,7 +9,6 @@ import {
   LoadingRegion,
 } from '../../src/components/loading-overlay/loading-overlay.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { Table } from '../../src/components/table/table.js';
 import { useEnterExit } from '../../src/utils/use-enter-exit.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
@@ -340,7 +340,7 @@ function DialogFromRegion() {
     <div data-lab-demo="dialog-from-region">
       <LoadingRegion isLoading={isLoading} label="Refreshing the list">
         <Button onPress={() => setOpen(true)}>Edit the list</Button>
-        <Modal
+        <Dialog
           title="Edit the list"
           isOpen={isOpen}
           onOpenChange={setOpen}
@@ -369,7 +369,7 @@ function DialogFromRegion() {
               />
             </MenuPopover>
           </MenuTrigger>
-        </Modal>
+        </Dialog>
       </LoadingRegion>
       <p>
         Sorted: <output data-lab-output="sorted">{last}</output>
@@ -387,15 +387,20 @@ function SavingFromDialog() {
     return () => window.clearTimeout(timer);
   }, [isSaving]);
   return (
-    <ModalTrigger>
+    <DialogTrigger>
       <Button>Edit the recipe</Button>
-      <Modal title="Edit the recipe" cancelAction={null} data-lab-modal="saving">
+      <Dialog
+        title="Edit the recipe"
+        isDismissable={!isSaving}
+        cancelAction={null}
+        data-lab-modal="saving"
+      >
         <Button onPress={() => setSaving(true)}>Save the recipe</Button>
         {isSaving ? (
           <LoadingOverlay fullscreen label="Saving the recipe" data-lab-overlay="from-dialog" />
         ) : null}
-      </Modal>
-    </ModalTrigger>
+      </Dialog>
+    </DialogTrigger>
   );
 }
 

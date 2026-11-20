@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { SearchField } from '../search-field/search-field.js';
 import { Table } from './table.js';
 
@@ -59,9 +59,9 @@ describe('Table header controls', () => {
       const onSort = vi.fn();
       const onSave = vi.fn();
       render(
-        <ModalTrigger>
+        <DialogTrigger>
           <Button>Filter</Button>
-          <Modal
+          <Dialog
             title="Filter fruit"
             primaryAction={{
               label: 'Apply',
@@ -72,8 +72,8 @@ describe('Table header controls', () => {
             }}
           >
             <FilterTable onSort={onSort} />
-          </Modal>
-        </ModalTrigger>,
+          </Dialog>
+        </DialogTrigger>,
       );
       await user.click(screen.getByRole('button', { name: 'Filter' }));
       const dialog = await screen.findByRole('dialog', { name: 'Filter fruit' });

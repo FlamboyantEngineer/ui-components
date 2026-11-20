@@ -170,3 +170,23 @@ button.ui-avatar-group__overflow[data-focus-visible] {
   font-size: var(--ref-font-size-xs);
   font-weight: var(--ref-font-weight-medium);
 }
+
+.ui-avatar-group[data-layout='stack'] > .ui-avatar {
+  box-shadow: 0 0 0 2px var(--ref-canvas);
+}
+
+.ui-avatar-group[data-layout='stack'] > .ui-avatar ~ :is(.ui-avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -10px;
+}
+
+.ui-avatar-group[data-layout='stack']:is([data-size='xs'], [data-size='sm'])
+  > .ui-avatar
+  ~ :is(.ui-avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -6px;
+}
+
+.ui-avatar-group[data-layout='stack'][data-size='lg']
+  > .ui-avatar
+  ~ :is(.ui-avatar, .ui-avatar-group__overflow) {
+  margin-inline-start: -12px;
+}

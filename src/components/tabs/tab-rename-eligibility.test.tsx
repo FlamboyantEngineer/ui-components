@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
-import { Tab, TabList, TabPanel, Tabs } from './tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.js';
 
 interface ListOptions {
   onRename?: ((key: Key, name: string) => void) | undefined;
@@ -18,17 +18,17 @@ function list({ onRename, isDisabled, disabledKeys, disabledTab, ids }: ListOpti
   const shown = ids ?? Object.keys(names);
   return (
     <Tabs isDisabled={isDisabled} disabledKeys={disabledKeys}>
-      <TabList aria-label="Fruit" onRename={onRename}>
+      <TabsList aria-label="Fruit" onRename={onRename}>
         {shown.map((id) => (
-          <Tab key={id} id={id} isDisabled={id === disabledTab}>
+          <TabsTrigger key={id} id={id} isDisabled={id === disabledTab}>
             {names[id]}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {shown.map((id) => (
-        <TabPanel key={id} id={id}>
+        <TabsContent key={id} id={id}>
           About {names[id]}
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );

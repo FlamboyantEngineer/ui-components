@@ -1,7 +1,7 @@
 'use client';
 
 // Focus targets a caller names (`initialFocus`, `finalFocus`) and returning focus to one when a
-// focus-managing container leaves the page. Shared by Modal and FocusScope.
+// focus-managing container leaves the page. Shared by Dialog and FocusScope.
 
 import { type RefObject, useLayoutEffect, useRef } from 'react';
 import { containsComposed, getComposedActiveElement, isFocusLost } from './composed-focus.js';

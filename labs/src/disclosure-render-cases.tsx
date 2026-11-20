@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  Accordion,
   Disclosure,
-  DisclosureGroup,
   DisclosurePanel,
   DisclosureTitle,
 } from '../../src/components/disclosure/disclosure.js';
@@ -22,7 +22,7 @@ function RenderedRoots() {
       <Button size="sm" variant="secondary" onPress={() => triggerRef.current?.focus()}>
         Focus the packing trigger
       </Button>
-      <DisclosureGroup
+      <Accordion
         isDisabled={isDisabled}
         allowsMultipleExpanded
         defaultExpandedKeys={['route']}
@@ -74,7 +74,7 @@ function RenderedRoots() {
             <TextField label="Things to bring" defaultValue="Water and a map" />
           </DisclosurePanel>
         </Disclosure>
-      </DisclosureGroup>
+      </Accordion>
     </div>
   );
 }

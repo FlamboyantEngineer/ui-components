@@ -10,7 +10,7 @@ import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { I18nProvider } from '../../primitives/index.js';
-import { Tab, TabList, TabPanel, Tabs, type TabsProps } from './tabs.js';
+import { Tabs, TabsContent, TabsList, type TabsProps, TabsTrigger } from './tabs.js';
 
 /** Gives the document a font set whose `loadingdone` the test fires; returns the firing. */
 function stubFonts() {
@@ -23,14 +23,14 @@ function Fruit(props: Omit<TabsProps, 'children'> & { listLabel?: string }) {
   const { listLabel = 'Fruit', ...rest } = props;
   return (
     <Tabs {...rest}>
-      <TabList aria-label={listLabel}>
-        <Tab id="apple">Apple</Tab>
-        <Tab id="banana">Banana</Tab>
-        <Tab id="cherry">Cherry</Tab>
-      </TabList>
-      <TabPanel id="apple">Apples are crisp.</TabPanel>
-      <TabPanel id="banana">Bananas are soft.</TabPanel>
-      <TabPanel id="cherry">Cherries are small.</TabPanel>
+      <TabsList aria-label={listLabel}>
+        <TabsTrigger id="apple">Apple</TabsTrigger>
+        <TabsTrigger id="banana">Banana</TabsTrigger>
+        <TabsTrigger id="cherry">Cherry</TabsTrigger>
+      </TabsList>
+      <TabsContent id="apple">Apples are crisp.</TabsContent>
+      <TabsContent id="banana">Bananas are soft.</TabsContent>
+      <TabsContent id="cherry">Cherries are small.</TabsContent>
     </Tabs>
   );
 }
@@ -96,11 +96,11 @@ describe('Tabs', () => {
   ])('UIC-TABS-1.2 normalizes the count cap %s like other library counts', (countMax, shown) => {
     render(
       <Tabs>
-        <TabList aria-label="Counted">
-          <Tab id="counted" count={5.9} countMax={Number(countMax)}>
+        <TabsList aria-label="Counted">
+          <TabsTrigger id="counted" count={5.9} countMax={Number(countMax)}>
             Entries
-          </Tab>
-        </TabList>
+          </TabsTrigger>
+        </TabsList>
       </Tabs>,
     );
     const tab = screen.getByRole('tab', { name: `Entries ${shown}` });
@@ -115,24 +115,24 @@ describe('Tabs', () => {
           older than a year
         </p>
         <Tabs>
-          <TabList aria-label="Mail">
-            <Tab id="inbox" icon={InfoGlyph} count={15} countMax={9}>
+          <TabsList aria-label="Mail">
+            <TabsTrigger id="inbox" icon={InfoGlyph} count={15} countMax={9}>
               Inbox
-            </Tab>
-            <Tab id="sent" icon={<svg className="custom-glyph" />} count={9} countMax={9}>
+            </TabsTrigger>
+            <TabsTrigger id="sent" icon={<svg className="custom-glyph" />} count={9} countMax={9}>
               Sent
-            </Tab>
-            <Tab id="drafts" count={3} countLabel="3 unsaved">
+            </TabsTrigger>
+            <TabsTrigger id="drafts" count={3} countLabel="3 unsaved">
               Drafts
-            </Tab>
-            <Tab id="spam" count={0}>
+            </TabsTrigger>
+            <TabsTrigger id="spam" count={0}>
               Spam
-            </Tab>
-            <Tab id="archive" count={250} aria-describedby="mail-hint">
+            </TabsTrigger>
+            <TabsTrigger id="archive" count={250} aria-describedby="mail-hint">
               Archive
-            </Tab>
-          </TabList>
-          <TabPanel id="inbox">Inbox panel</TabPanel>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent id="inbox">Inbox panel</TabsContent>
         </Tabs>
       </>,
     );
@@ -197,8 +197,8 @@ describe('Tabs', () => {
     const onContextMenu = vi.fn((event: React.MouseEvent) => event.preventDefault());
     const { container } = render(
       <Tabs className="caller-root" id="fruit" ref={rootRef} data-size="x">
-        <TabList aria-label="Fruit" className="caller-list">
-          <Tab
+        <TabsList aria-label="Fruit" className="caller-list">
+          <TabsTrigger
             id="apple"
             className="caller-tab"
             ref={tabRef}
@@ -206,11 +206,11 @@ describe('Tabs', () => {
             onContextMenu={onContextMenu}
           >
             Apple
-          </Tab>
-        </TabList>
-        <TabPanel id="apple" className="caller-panel">
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent id="apple" className="caller-panel">
           Apples
-        </TabPanel>
+        </TabsContent>
       </Tabs>,
     );
     const list = screen.getByRole('tablist', { name: 'Fruit' });
@@ -280,15 +280,15 @@ describe('Tabs', () => {
     const onSelectionChange = vi.fn();
     const { container, rerender } = render(
       <Tabs onSelectionChange={onSelectionChange}>
-        <TabList aria-label="Fruit">
-          <Tab id="apple">Apple</Tab>
-          <Tab id="banana" isDisabled>
+        <TabsList aria-label="Fruit">
+          <TabsTrigger id="apple">Apple</TabsTrigger>
+          <TabsTrigger id="banana" isDisabled>
             Banana
-          </Tab>
-          <Tab id="cherry">Cherry</Tab>
-        </TabList>
-        <TabPanel id="apple">Apples</TabPanel>
-        <TabPanel id="cherry">Cherries</TabPanel>
+          </TabsTrigger>
+          <TabsTrigger id="cherry">Cherry</TabsTrigger>
+        </TabsList>
+        <TabsContent id="apple">Apples</TabsContent>
+        <TabsContent id="cherry">Cherries</TabsContent>
       </Tabs>,
     );
     onSelectionChange.mockClear();
@@ -316,15 +316,15 @@ describe('Tabs', () => {
     render(
       <UiProvider navigate={navigate}>
         <Tabs selectedKey="overview">
-          <TabList aria-label="Sections">
-            <Tab id="overview" href="/overview">
+          <TabsList aria-label="Sections">
+            <TabsTrigger id="overview" href="/overview">
               Overview
-            </Tab>
-            <Tab id="settings" href="/settings">
+            </TabsTrigger>
+            <TabsTrigger id="settings" href="/settings">
               Settings
-            </Tab>
-          </TabList>
-          <TabPanel id="overview">Overview panel</TabPanel>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent id="overview">Overview panel</TabsContent>
         </Tabs>
       </UiProvider>,
     );
@@ -454,14 +454,14 @@ describe('Tabs', () => {
       const [key, setKey] = useState<Key>('apple');
       return (
         <Tabs selectedKey={key} onSelectionChange={setKey}>
-          <TabList aria-label="Fruit">
-            <Tab id="apple">Apple</Tab>
-            <Tab id="banana">Banana</Tab>
-          </TabList>
-          <TabPanel id="apple">Apples</TabPanel>
-          <TabPanel id="banana" shouldForceMount>
+          <TabsList aria-label="Fruit">
+            <TabsTrigger id="apple">Apple</TabsTrigger>
+            <TabsTrigger id="banana">Banana</TabsTrigger>
+          </TabsList>
+          <TabsContent id="apple">Apples</TabsContent>
+          <TabsContent id="banana" shouldForceMount>
             Bananas
-          </TabPanel>
+          </TabsContent>
         </Tabs>
       );
     }
@@ -603,12 +603,12 @@ describe('Tabs remembered selection', () => {
 it('UIC-TABS-1.2 propagates the shared count appearance', () => {
   const { container } = render(
     <Tabs>
-      <TabList aria-label="Items">
-        <Tab id="notes" count={7} countVariant="solid">
+      <TabsList aria-label="Items">
+        <TabsTrigger id="notes" count={7} countVariant="solid">
           Notes
-        </Tab>
-      </TabList>
-      <TabPanel id="notes">Content</TabPanel>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent id="notes">Content</TabsContent>
     </Tabs>,
   );
   expect(container.querySelector('.ui-tabs__count')).toHaveClass('ui-badge');

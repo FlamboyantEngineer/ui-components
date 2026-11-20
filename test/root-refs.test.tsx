@@ -48,6 +48,7 @@ import { createMenuController } from '../src/components/context-menu/menu-contro
 import { DateTimeField } from '../src/components/date-time-field/date-time-field.js';
 import { DescriptionList, DescriptionRow } from '../src/components/description-list/index.js';
 import { DiagramPaletteItem } from '../src/components/diagram-canvas/index.js';
+import { Dialog } from '../src/components/dialog/dialog.js';
 import {
   Disclosure,
   DisclosureHeader,
@@ -94,7 +95,6 @@ import {
   MessageComposerToggle,
 } from '../src/components/message-composer/index.js';
 import { MetaLine } from '../src/components/meta-line/meta-line.js';
-import { Modal } from '../src/components/modal/modal.js';
 import { MultiDateField } from '../src/components/multi-date-field/multi-date-field.js';
 import {
   NavigationMenu,
@@ -397,13 +397,13 @@ const cases: Record<string, RootRefCase> = {
     ),
     root: 'ui-menu-separator',
   },
-  Modal: {
+  Dialog: {
     element: (ref) => (
-      <Modal ref={ref} title="Settings" isOpen>
+      <Dialog ref={ref} title="Settings" isOpen>
         Body
-      </Modal>
+      </Dialog>
     ),
-    root: 'ui-modal',
+    root: 'ui-dialog',
   },
   Popover: {
     element: (ref) => (
@@ -765,7 +765,7 @@ const panelCases: Record<string, RootRefCase> = {
         isOpen
       />
     ),
-    root: 'ui-modal',
+    root: 'ui-dialog',
   },
   MessageComposerAttachButton: {
     element: (ref) => inComposer(<MessageComposerAttachButton ref={ref} />),

@@ -2,35 +2,35 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  Tab,
-  TabList,
-  type TabListProps,
-  TabPanel,
-  type TabProps,
   Tabs,
+  TabsContent,
+  TabsList,
+  type TabsListProps,
   type TabsProps,
+  TabsTrigger,
+  type TabsTriggerProps,
 } from './tabs.js';
 
-function TypedTabs({ list, ...props }: TabsProps & { list?: Partial<TabListProps> }) {
+function TypedTabs({ list, ...props }: TabsProps & { list?: Partial<TabsListProps> }) {
   return (
     <Tabs {...props}>
-      <TabList aria-label="Typed tabs" {...list}>
-        <Tab id={1}>Numeric</Tab>
-        <Tab id="1">Text</Tab>
-        <Tab id="a b">Spaced</Tab>
-        <Tab id="ab">Compact</Tab>
-      </TabList>
-      <TabPanel id={1}>Numeric panel</TabPanel>
-      <TabPanel id="1">Text panel</TabPanel>
-      <TabPanel id="a b">Spaced panel</TabPanel>
-      <TabPanel id="ab">Compact panel</TabPanel>
+      <TabsList aria-label="Typed tabs" {...list}>
+        <TabsTrigger id={1}>Numeric</TabsTrigger>
+        <TabsTrigger id="1">Text</TabsTrigger>
+        <TabsTrigger id="a b">Spaced</TabsTrigger>
+        <TabsTrigger id="ab">Compact</TabsTrigger>
+      </TabsList>
+      <TabsContent id={1}>Numeric panel</TabsContent>
+      <TabsContent id="1">Text panel</TabsContent>
+      <TabsContent id="a b">Spaced panel</TabsContent>
+      <TabsContent id="ab">Compact panel</TabsContent>
     </Tabs>
   );
 }
 
-/** A host component around `Tab`, as React Aria's reuse pattern writes it. */
-function NamedTab(props: TabProps) {
-  return <Tab {...props} />;
+/** A host component around `TabsTrigger`, as React Aria's reuse pattern writes it. */
+function NamedTab(props: TabsTriggerProps) {
+  return <TabsTrigger {...props} />;
 }
 
 describe('Tab key identities', () => {
@@ -39,17 +39,17 @@ describe('Tab key identities', () => {
     function Panels() {
       return (
         <>
-          <TabPanel id={1}>Numeric panel</TabPanel>
-          <TabPanel id="1">Text panel</TabPanel>
+          <TabsContent id={1}>Numeric panel</TabsContent>
+          <TabsContent id="1">Text panel</TabsContent>
         </>
       );
     }
     render(
       <Tabs>
-        <TabList aria-label="Wrapped panels">
-          <Tab id={1}>Numeric</Tab>
-          <Tab id="1">Text</Tab>
-        </TabList>
+        <TabsList aria-label="Wrapped panels">
+          <TabsTrigger id={1}>Numeric</TabsTrigger>
+          <TabsTrigger id="1">Text</TabsTrigger>
+        </TabsList>
         <Panels />
       </Tabs>,
     );
@@ -72,12 +72,12 @@ describe('Tab key identities', () => {
     const onSelectionChange = vi.fn();
     render(
       <Tabs disabledKeys="all" defaultSelectedKey="rest" onSelectionChange={onSelectionChange}>
-        <TabList aria-label="Letters">
-          <Tab id="a">Letter A</Tab>
-          <Tab id="l">Letter L</Tab>
-          <Tab id="all">All</Tab>
-          <Tab id="rest">Rest</Tab>
-        </TabList>
+        <TabsList aria-label="Letters">
+          <TabsTrigger id="a">Letter A</TabsTrigger>
+          <TabsTrigger id="l">Letter L</TabsTrigger>
+          <TabsTrigger id="all">All</TabsTrigger>
+          <TabsTrigger id="rest">Rest</TabsTrigger>
+        </TabsList>
       </Tabs>,
     );
     await user.click(screen.getByRole('tab', { name: 'Letter A' }));
@@ -155,14 +155,14 @@ describe('Tab key identities', () => {
     const onSelectionChange = vi.fn();
     render(
       <Tabs defaultSelectedKey="b" disabledKeys={['c']} onSelectionChange={onSelectionChange}>
-        <TabList aria-label="Wrapped tabs">
+        <TabsList aria-label="Wrapped tabs">
           <NamedTab id="a">Apple</NamedTab>
           <NamedTab id="b">Banana</NamedTab>
           <NamedTab id="c">Cherry</NamedTab>
-        </TabList>
-        <TabPanel id="a">Apple panel</TabPanel>
-        <TabPanel id="b">Banana panel</TabPanel>
-        <TabPanel id="c">Cherry panel</TabPanel>
+        </TabsList>
+        <TabsContent id="a">Apple panel</TabsContent>
+        <TabsContent id="b">Banana panel</TabsContent>
+        <TabsContent id="c">Cherry panel</TabsContent>
       </Tabs>,
     );
     const banana = screen.getByRole('tab', { name: 'Banana' });
@@ -181,10 +181,10 @@ describe('Tab key identities', () => {
     const onRename = vi.fn();
     render(
       <Tabs>
-        <TabList aria-label="Wrapped tabs" onRemove={onRemove} onRename={onRename}>
+        <TabsList aria-label="Wrapped tabs" onRemove={onRemove} onRename={onRename}>
           <NamedTab id={1}>Numeric</NamedTab>
           <NamedTab id="1">Text</NamedTab>
-        </TabList>
+        </TabsList>
       </Tabs>,
     );
     const text = screen.getByRole('tab', { name: 'Text' });

@@ -162,7 +162,7 @@ function DenyForm({ state }: { state: ToolCallApprovalState }) {
         onChange={state.setReason}
         autoFocus={state.focusesReason}
       />
-      <Button type="submit" size="sm" variant="danger">
+      <Button type="submit" size="sm" variant="destructive">
         {strings.send}
       </Button>
       <Button size="sm" onPress={state.closeDenyForm}>

@@ -13,9 +13,16 @@ import {
 import { Skeleton } from '../skeleton/skeleton.js';
 import { type CardActionOptions, useCardAction } from './card-action.js';
 import { useFocusRescue } from './card-focus.js';
-import { CardHeader, type CardToggle } from './card-header.js';
+import { type CardToggle, ManagedCardHeader } from './card-header.js';
 import { cardHooks as hooks } from './card-hooks.js';
+import { resolveCardLayout } from './card-layout.js';
 import { CardSummary, useCardMore } from './card-more.js';
+import {
+  CardContent,
+  type CardContentProps,
+  CardFooter,
+  type CardFooterProps,
+} from './card-parts.js';
 import {
   type CardPresentation,
   type CardPresentationSteps,
@@ -55,14 +62,14 @@ export interface CardProps
   headingLevel?: HeadingLevel | undefined;
   /**
    * Custom header content, in place of the title, description and actions. A `CardTitle` in it is
-   * the card's title and names the card, and a `CardAction` is the card's action.
+   * the card's title and names the card, and a `CardTitleAction` is the card's action.
    */
   header?: ReactNode;
   /** Full-bleed media before the header, such as a cover image or a preview. */
   media?: ReactNode;
   /** The content is loading: the body shows a decorative skeleton and the card is busy. */
   isLoading?: boolean | undefined;
-  /** The body. */
+  /** The body, or CardHeader, CardContent and CardFooter composed in a client component. */
   children?: ReactNode;
   /** Closing content, such as a timestamp or secondary actions, in a `<footer>`. */
   footer?: ReactNode;
@@ -111,14 +118,13 @@ export interface CardProps
  * custom header) unless the caller names it.
  */
 function toLabelledBy(
-  props: Pick<CardProps, 'title' | 'header' | 'aria-label' | 'aria-labelledby'>,
-  title: { id: string; hasSlottedTitle: boolean },
+  props: Pick<CardProps, 'aria-label' | 'aria-labelledby'>,
+  titleId: string | undefined,
 ): string | undefined {
   if (props['aria-labelledby'] !== undefined || props['aria-label'] !== undefined) {
     return props['aria-labelledby'];
   }
-  const hasTitle = isEmptyNode(props.header) ? !isEmptyNode(props.title) : title.hasSlottedTitle;
-  return hasTitle ? title.id : undefined;
+  return titleId;
 }
 
 /** The card's action options, apart from its other props. */
@@ -143,8 +149,8 @@ function useCardCollapse(
     | 'onExpandedChange'
     | 'isToggleDisabled'
     | 'media'
-    | 'footer'
   >,
+  layout: { content: CardContentProps; footer?: CardFooterProps | undefined },
 ): CardCollapse {
   const id = useId();
   const [expanded, setExpanded] = useControllableState(
@@ -152,12 +158,16 @@ function useCardCollapse(
     props.defaultExpanded ?? true,
     props.onExpandedChange,
   );
-  const ids = { media: `${id}-media`, body: `${id}-body`, footer: `${id}-footer` };
+  const ids = {
+    media: `${id}-media`,
+    body: layout.content.id ?? `${id}-body`,
+    footer: layout.footer?.id ?? `${id}-footer`,
+  };
   if (!props.isCollapsible) return { isExpanded: true, toggle: null, ids };
   const controls = [
     isEmptyNode(props.media) ? null : ids.media,
     ids.body,
-    isEmptyNode(props.footer) ? null : ids.footer,
+    layout.footer ? ids.footer : null,
   ];
   return {
     isExpanded: expanded,
@@ -197,6 +207,20 @@ function useCardRoot(ref: CardProps['ref']) {
   return [root, useMergedRefs(setRoot, ref)] as const;
 }
 
+/** Links a managed or custom title to the card and its content's outline. */
+function useCardHeading(props: CardProps, hasCustomHeader: boolean) {
+  const titleId = useId();
+  const headingLevel = useHeadingLevel(props.headingLevel);
+  const parentLevel = useContext(HeadingLevelContext);
+  const [slottedTitle, titleRef] = useState<HTMLElement | null>(null);
+  const hasTitle = slottedTitle !== null || (!hasCustomHeader && !isEmptyNode(props.title));
+  return {
+    header: { headingLevel, titleId, titleRef },
+    labelledBy: toLabelledBy(props, hasTitle ? titleId : undefined),
+    contentLevel: hasTitle ? headingLevel : parentLevel,
+  };
+}
+
 /**
  * A framed container for a self-contained group of content: optional media, an optional header, a
  * body and a footer. With `href` or `onAction` the whole card is a link or press target whose title
@@ -205,15 +229,14 @@ function useCardRoot(ref: CardProps['ref']) {
  * the space its container gives it.
  */
 export function Card(props: CardProps) {
-  const { title, header, media, children, footer, isLoading = false, ref } = props;
-  const titleId = useId();
-  const level = useHeadingLevel(props.headingLevel);
-  const parentLevel = useContext(HeadingLevelContext);
+  const { title, media, isLoading = false, ref } = props;
+  const layout = resolveCardLayout(props);
+  const { header, headerProps, content, footer } = layout;
+  const heading = useCardHeading(props, layout.hasCustomHeader);
   const [root, rootRef] = useCardRoot(ref);
-  const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
   const options = toActionOptions(props);
   const { isActionable, actionRef, onClick, onPointerDownCapture } = useCardAction(options);
-  const collapse = useCardCollapse(props);
+  const collapse = useCardCollapse(props, layout);
   const selection = useClaimedSelection();
   const presentation = useCardPresentation(root, props.presentationSteps);
   const { more, summary } = useCardMore(presentation, {
@@ -221,10 +244,7 @@ export function Card(props: CardProps) {
     isExpanded: collapse.isExpanded,
   });
   useFocusRescue(root, presentation, collapse.isExpanded);
-  const labelledBy = toLabelledBy(props, { id: titleId, hasSlottedTitle: slottedTitle !== null });
   const isHidden = !collapse.isExpanded || undefined;
-  // A titled card, by its own title or a slotted `CardTitle`, is a level of the outline.
-  const isTitled = !isEmptyNode(title) || slottedTitle !== null;
 
   return (
     <section
@@ -238,7 +258,7 @@ export function Card(props: CardProps) {
       hidden={props.hidden}
       role={props.role}
       aria-label={props['aria-label']}
-      aria-labelledby={labelledBy}
+      aria-labelledby={heading.labelledBy}
       aria-busy={isLoading || undefined}
       onClick={isActionable ? onClick : undefined}
       onPointerDownCapture={isActionable ? onPointerDownCapture : undefined}
@@ -250,8 +270,9 @@ export function Card(props: CardProps) {
             {media}
           </div>
         )}
-        <CardHeader
+        <ManagedCardHeader
           header={header}
+          headerProps={headerProps}
           title={title}
           description={props.description}
           actions={props.actions}
@@ -263,25 +284,20 @@ export function Card(props: CardProps) {
           presentation={presentation}
           more={more}
           toggle={collapse.toggle}
-          headingLevel={level}
-          titleId={titleId}
-          titleRef={setSlottedTitle}
+          {...heading.header}
           action={{ options, isActionable, ref: actionRef }}
         />
         <CardSummary id={summary.id} isMoved={summary.isMoved} isHidden={summary.isHidden}>
           {props.summary}
         </CardSummary>
-        <div {...hooks.slot('body')} id={collapse.ids.body} hidden={isHidden}>
-          {/* Always the same provider, so a title that arrives or leaves never remounts the body. */}
-          <HeadingLevelContext value={isTitled ? level : parentLevel}>
-            {isLoading ? <Skeleton className={hooks.slotClass('skeleton')} /> : children}
+        <CardContent {...content} id={collapse.ids.body} hidden={isHidden || content.hidden}>
+          <HeadingLevelContext value={heading.contentLevel}>
+            {isLoading ? <Skeleton className={hooks.slotClass('skeleton')} /> : content.children}
           </HeadingLevelContext>
-        </div>
-        {isEmptyNode(footer) ? null : (
-          <footer {...hooks.slot('footer')} id={collapse.ids.footer} hidden={isHidden}>
-            {footer}
-          </footer>
-        )}
+        </CardContent>
+        {footer ? (
+          <CardFooter {...footer} id={collapse.ids.footer} hidden={isHidden || footer.hidden} />
+        ) : null}
       </CardSelectionContext>
     </section>
   );

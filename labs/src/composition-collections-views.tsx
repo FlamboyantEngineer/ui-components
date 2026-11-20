@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { Dialog } from '../../src/components/dialog/dialog.js';
 import { Cluster, Stack } from '../../src/components/layout/layout.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
-import { Modal } from '../../src/components/modal/modal.js';
 import { SelectField } from '../../src/components/select-field/select-field.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 
@@ -75,7 +75,8 @@ export function ViewCollectionRecipe() {
         Current view: {view?.label}
         {dirty ? ' (unsaved)' : ''}
       </output>
-      <Modal
+      <Dialog
+        isDismissable={false}
         title={
           dialog === 'delete'
             ? 'Delete saved view'
@@ -116,7 +117,7 @@ export function ViewCollectionRecipe() {
         ) : (
           <TextField label="View name" value={name} onChange={setName} autoFocus />
         )}
-      </Modal>
+      </Dialog>
     </Stack>
   );
 }

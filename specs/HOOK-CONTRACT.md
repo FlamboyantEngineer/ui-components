@@ -6,14 +6,14 @@ The library ships behaviour and markup, never appearance. Every component expose
 
 ### UIC-HOOKS-1.1 - Root class
 
-Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-modal`). The root class is always present, whatever props the caller passes.
+Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-dialog`). The root class is always present, whatever props the caller passes.
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-1.2 - Slot classes
 
-A component shall mark each named part a stylesheet may need with the class `ui-<component>__<slot>` (`ui-button__icon`, `ui-modal__footer`). A slot class is present whenever that part renders. Components declare their slots up front, in one `createHooks` call per component (a `<name>-hooks.ts` module when several modules write them), so an undeclared slot name is a type error and the component's slots are listed in one place. `npm run check:structure` rejects a second `createHooks` call with the same name.
+A component shall mark each named part a stylesheet may need with the class `ui-<component>__<slot>` (`ui-button__icon`, `ui-dialog__footer`). A slot class is present whenever that part renders. Components declare their slots up front, in one `createHooks` call per component (a `<name>-hooks.ts` module when several modules write them), so an undeclared slot name is a type error and the component's slots are listed in one place. `npm run check:structure` rejects a second `createHooks` call with the same name.
 
 Implementation: `src/core/hooks.ts`, `scripts/structure-rules.mjs`
 Verification: `src/core/hooks.test.ts`

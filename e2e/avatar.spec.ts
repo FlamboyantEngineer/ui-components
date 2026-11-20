@@ -369,3 +369,14 @@ test('UIC-AVATAR-1.3 keeps a key-derived color across renames and follows the pa
   expect(await check('index')).toBe('11');
   await lab.expectAccessible();
 });
+
+test('UIC-AVATAR-12.1 draws the composed fallback and badge after a failed request', async ({
+  lab,
+  page,
+}) => {
+  await lab.open('avatar');
+  const avatar = page.getByRole('img', { name: /Clara Walker.*Away.*Contributor/i });
+  await expect(avatar.locator('.ui-avatar__image')).toHaveCount(0);
+  await expect(avatar.getByText('CW')).toBeVisible();
+  await expect(avatar.locator('.ui-avatar__badge')).toHaveAttribute('data-placement', 'top-end');
+});

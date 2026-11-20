@@ -9,7 +9,7 @@ import {
   useRef,
 } from 'react';
 import { ChevronDownGlyph, CloseGlyph, SearchGlyph } from '../../core/glyphs.js';
-import type { ControlSize } from '../../core/props.js';
+import type { BaseProps, ControlSize, RefProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import {
   Button as AriaButton,
@@ -31,6 +31,7 @@ import {
 import { useMarkedAction } from './combobox-reasons.js';
 
 interface ComboboxFieldProps {
+  fieldProps?: (BaseProps & RefProps<HTMLDivElement>) | undefined;
   variant: 'default' | 'search';
   size: ControlSize;
   placeholder: string | undefined;
@@ -134,11 +135,12 @@ export function ComboboxField({
   chips,
   completion,
   input,
+  fieldProps,
 }: ComboboxFieldProps) {
   const { ref: inputRef, setRef } = input;
   const onChange = useInlineCompletion(completion, inputRef);
   return (
-    <Group className={hooks.slotClass('field')}>
+    <Group {...fieldProps} {...hooks.slot('field', {}, fieldProps?.className)}>
       {/* Chips and the input wrap together, so the controls after them keep the trailing edge. */}
       <span {...hooks.slot('entry')}>
         {chips === null ? null : (

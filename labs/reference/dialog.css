@@ -1,0 +1,285 @@
+/* Dialog. The overlay's position and z-index come from the component. */
+
+/* One track exactly the overlay's padded size, so a tall panel's 100% resolves against the viewport
+   and its body scrolls instead of the panel growing past the screen. */
+.ui-dialog {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  box-sizing: border-box;
+  padding: 16px;
+  overflow: auto;
+  background: var(--ref-scrim);
+}
+
+/* A modal opened over another dims the page less, since the one beneath is already dimmed. */
+
+.ui-dialog[data-stack-index]:not([data-stack-index='0']) {
+  background: var(--ref-scrim-weak);
+}
+
+.ui-dialog[data-entering] {
+  animation: ref-fade-in var(--ref-duration-fast) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-dialog[data-entering] {
+    animation: none;
+  }
+}
+
+@keyframes ref-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.ui-dialog__panel {
+  display: flex;
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: min(800px, 100%);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
+}
+
+.ui-dialog[data-size='sm'] .ui-dialog__panel {
+  width: min(400px, 100%);
+}
+
+.ui-dialog[data-size='lg'] .ui-dialog__panel {
+  width: min(800px, 100%);
+}
+
+.ui-dialog[data-size='xl'] .ui-dialog__panel {
+  width: min(1120px, 100%);
+  max-height: 100%;
+}
+
+.ui-dialog[data-size='full'] .ui-dialog__panel {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+}
+
+/* Every tone but neutral tints the panel's border. */
+
+.ui-dialog:not([data-tone='neutral']) .ui-dialog__panel {
+  border-color: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-border), var(--ref-border));
+}
+
+/* A non-modal dialog leaves the page visible: no backdrop, and the panel floats at the end corner. */
+
+.ui-dialog[data-non-modal] {
+  place-items: end;
+  background: none;
+}
+
+.ui-dialog[data-non-modal] .ui-dialog__panel {
+  width: min(360px, 100%);
+}
+
+/* An anchored dialog is a popover holding the dialog directly. */
+
+.ui-dialog[data-layer='dropdown'] {
+  display: flex;
+  box-sizing: border-box;
+  width: min(320px, calc(100vw - 16px));
+  padding: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
+}
+
+.ui-dialog[data-layer='dropdown'] .ui-dialog__header {
+  padding: 12px 12px 4px;
+}
+
+.ui-dialog[data-layer='dropdown'] .ui-dialog__title {
+  font-size: var(--ref-font-size);
+}
+
+.ui-dialog[data-layer='dropdown'] .ui-dialog__body {
+  padding: 4px 12px 12px;
+}
+
+.ui-dialog[data-layer='dropdown'] .ui-dialog__footer {
+  padding: 8px 12px;
+}
+
+.ui-dialog[data-layer='dropdown']
+  :is(.ui-dialog__cancel, .ui-dialog__secondary, .ui-dialog__primary) {
+  min-width: 0;
+}
+
+.ui-dialog__dialog {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  outline: none;
+}
+
+.ui-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 8px;
+}
+
+.ui-dialog__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-dialog__title {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-strong);
+  line-height: 1.4;
+}
+
+.ui-dialog__description {
+  margin: 2px 0 0;
+  color: var(--ref-muted);
+}
+
+.ui-dialog__header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-dialog__close {
+  flex: none;
+  margin-block-start: -4px;
+  margin-inline-end: -6px;
+}
+
+/* The body is the containing block of what it positions, such as the visually hidden inputs of
+   checkboxes: otherwise they escape its scroll region, give the overlay scroll room, and focusing a
+   field scrolls the whole frame off screen. */
+.ui-dialog__body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 8px 16px 16px;
+  overflow: auto;
+}
+
+.ui-dialog__body > :first-child {
+  margin-top: 0;
+}
+
+.ui-dialog__body > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-dialog[data-body-layout='column'] .ui-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ui-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-dialog__footer-content,
+.ui-dialog__message {
+  flex: 1 1 12rem;
+  min-width: 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-dialog__message[data-tone='danger'] {
+  color: var(--ref-danger);
+}
+
+.ui-dialog__actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.ui-dialog__cancel,
+.ui-dialog__secondary,
+.ui-dialog__primary {
+  min-width: 72px;
+}
+
+/* Confirm Dialog, on top of Dialog */
+
+.ui-dialog .ui-dialog__body {
+  padding-top: 4px;
+}
+
+.ui-dialog__message {
+  margin: 0;
+}
+
+.ui-dialog__confirmation-icon {
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+}
+
+.ui-dialog:not([data-tone='neutral']) .ui-dialog__confirmation-icon {
+  color: var(--ref-tone);
+}
+
+.ui-dialog__header:not(:has(> .ui-dialog__heading)) {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ui-dialog__footer .ui-dialog__close {
+  margin: 0;
+}
+
+.ui-dialog[data-side] {
+  padding: 0;
+}
+
+.ui-dialog[data-side] .ui-dialog__panel {
+  max-height: 100%;
+  border-radius: 0;
+}
+
+.ui-dialog[data-side='left'] {
+  place-items: stretch start;
+}
+
+.ui-dialog[data-side='right'] {
+  place-items: stretch end;
+}
+
+.ui-dialog[data-side='top'] {
+  place-items: start stretch;
+}
+
+.ui-dialog[data-side='bottom'] {
+  place-items: end stretch;
+}
+
+.ui-dialog:is([data-side='top'], [data-side='bottom']) .ui-dialog__panel {
+  width: 100%;
+}

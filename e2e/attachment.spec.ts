@@ -6,7 +6,7 @@ function cell(page: Page, status: string, removable: string, kind: string) {
 }
 
 async function settledViewer(page: Page) {
-  const overlay = page.locator('.ui-modal.ui-media-viewer');
+  const overlay = page.locator('.ui-dialog.ui-media-viewer');
   await expect(overlay).toBeVisible();
   await expect(overlay).not.toHaveAttribute('data-entering');
 }
@@ -83,7 +83,7 @@ test.describe('Chat Attachment lab', () => {
     await settledViewer(page);
     const dialog = page.getByRole('dialog', { name: 'Tower.svg' });
     await expect(dialog.locator('.ui-media-viewer__counter')).toHaveText('2 of 4');
-    await lab.expectAccessible('.ui-modal');
+    await lab.expectAccessible('.ui-dialog');
     await page.keyboard.press('ArrowRight');
     await expect(page.getByRole('dialog', { name: 'Meadow.svg' })).toBeVisible();
     await page.keyboard.press('Escape');

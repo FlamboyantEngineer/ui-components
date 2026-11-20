@@ -435,12 +435,22 @@ While the field is dirty and its committed value names an option, the frame shal
 Implementation: `src/components/select-field/select-native-field.tsx`
 Verification: `src/components/select-field/select-native-field.test.tsx`
 
+## UIC-SELECT-FIELD-15 - Composed single select
+
+### UIC-SELECT-FIELD-15.1 - Trigger and choices
+
+`Select` supplies the controlled choice to a caller-placed `SelectTrigger` with a `SelectValue`, and to `SelectContent` with `SelectItem` and optional `SelectGroup` children. The trigger's name includes its current label or placeholder and the field's accessible name. The popup supports keyboard navigation through the choices, leaves disabled items visible, and restores focus to the trigger on selection. Group titles name their groups. `onChange` takes the original key or `null`, preserving numeric and text identity. A named select submits the original key as text and can associate with an external form through `form`.
+
+Implementation: `src/components/select-field/select.tsx`
+Verification: `src/components/select-field/select.test.tsx`, `e2e/composed-pickers.spec.ts`
+
 ## Hooks
 
 | Hook                                  | Kind      | Values                                     | Description                                                                                                                |
 | ------------------------------------- | --------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `ui-select-field`                     | root      |                                            | The field root (also `ui-field`).                                                                                          |
+| `ui-select-field`                     | root      |                                            | The field root (also `ui-field`), or the composed select root (also `ui-select-field__select`).                            |
 | `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.                                                             |
+| `ui-select-field__select-label`       | slot      |                                            | The visible label of a composed select.                                                                                    |
 | `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger (the native select in `native` mode).                                             |
 | `ui-select-field__native`             | slot      |                                            | The native `<select>` in `native` mode.                                                                                    |
 | `ui-select-field__chip-frame`         | slot      |                                            | With `chipPlacement="inside"`: holds the chips, then the select.                                                           |

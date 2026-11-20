@@ -1,11 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
 import { PortalContainerProvider } from '../portal/portal.js';
-import { Tooltip } from './tooltip.js';
+import { Tooltip, TooltipContent, TooltipTrigger } from './index.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
 
@@ -96,6 +97,52 @@ describe('Tooltip', () => {
     expectHooksMatchSpec(document.body, 'TOOLTIP', {
       slots: ['ui-tooltip__arrow', 'ui-tooltip__content'],
     });
+  });
+
+  it('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.4 UIC-TOOLTIP-1.8 composes a native button and a portalled hint', async () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(
+      <TooltipTrigger trigger="focus">
+        <button type="button">Export</button>
+        <TooltipContent ref={ref} variant="info" className="host-hint" data-source="reports">
+          Downloads a CSV file
+        </TooltipContent>
+      </TooltipTrigger>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Export' });
+    expect(trigger.parentElement).toBe(container);
+    await hover(trigger);
+    await advance(500);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+    await tabTo(trigger);
+    const panel = screen.getByRole('tooltip');
+    expect(trigger).toHaveAccessibleDescription('Downloads a CSV file');
+    expect(container.contains(panel)).toBe(false);
+    expect(ref.current).toBe(panel);
+    expect(panel).toHaveClass('host-hint');
+    expect(panel).toHaveAttribute('data-variant', 'info');
+    expect(panel).toHaveAttribute('data-source', 'reports');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('UIC-TOOLTIP-1.4 describes a library Button inside the composed trigger', async () => {
+    render(
+      <TooltipTrigger trigger="focus">
+        <Button>Export</Button>
+        <TooltipContent>Downloads a CSV file</TooltipContent>
+      </TooltipTrigger>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Export' });
+    await tabTo(trigger);
+    expect(trigger).toHaveAccessibleDescription('Downloads a CSV file');
+    await user.keyboard('{Escape}');
+    expect(trigger).not.toHaveAccessibleDescription();
+    expect(trigger).toHaveFocus();
   });
 
   it('UIC-TOOLTIP-1.2 opens at once on keyboard focus and honours a custom delay', async () => {

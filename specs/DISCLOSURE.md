@@ -1,6 +1,6 @@
 # Disclosure
 
-`Disclosure` is a collapsible section built on React Aria's `Disclosure`: a heading whose trigger shows or hides a panel. Given a `title` it draws its own title and panel; without one, the caller composes it from `DisclosureTitle`, `DisclosureHeader` and `DisclosurePanel`, for example to put actions beside the trigger. `DisclosureGroup` (React Aria's `DisclosureGroup`) expands its disclosures together, one at a time as an accordion or several at once. A section whose header also carries a description and actions is a collapsible [Section](SECTION-HEADER.md); a property panel's categories are [Property Panel](PROPERTY-PANEL.md) sections.
+`Disclosure` is a collapsible section built on React Aria's `Disclosure`: a heading whose trigger shows or hides a panel. Given a `title` it draws its own title and panel; without one, the caller composes it from `DisclosureTitle`, `DisclosureHeader` and `DisclosurePanel`, for example to put actions beside the trigger. `Accordion` (React Aria's `DisclosureGroup`) expands its disclosures together, one at a time as an accordion or several at once. A section whose header also carries a description and actions is a collapsible [Section](SECTION-HEADER.md); a property panel's categories are [Property Panel](PROPERTY-PANEL.md) sections.
 
 ## UIC-DISCLOSURE-1 - Disclosure
 
@@ -48,7 +48,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-1.7 - Hooks and caller attributes
 
-The disclosure parts shall carry the hooks below and append the caller's `className`. `Disclosure` forwards caller `data-*` attributes and `ref` to its root and takes `render`, typed `ElementRender<'div', DisclosureRenderState>` (`isExpanded`, `isFocusVisibleWithin`, `isDisabled`); its `id`, a `Key`, is its key in a group and stays off the element. `DisclosureGroup` forwards `id`, `ref` and caller `data-*` attributes to its root and takes `render`, typed `ElementRender<'div', DisclosureGroupRenderState>` (`isDisabled`). `DisclosureHeader`, `DisclosureTitle` (on its heading) and `DisclosurePanel` forward `id` and caller `data-*` attributes; caller attributes never replace a hook attribute.
+The disclosure parts shall carry the hooks below and append the caller's `className`. `Disclosure` forwards caller `data-*` attributes and `ref` to its root and takes `render`, typed `ElementRender<'div', DisclosureRenderState>` (`isExpanded`, `isFocusVisibleWithin`, `isDisabled`); its `id`, a `Key`, is its key in a group and stays off the element. `Accordion` forwards `id`, `ref` and caller `data-*` attributes to its root and takes `render`, typed `ElementRender<'div', AccordionRenderState>` (`isDisabled`). `DisclosureHeader`, `DisclosureTitle` (on its heading) and `DisclosurePanel` forward `id` and caller `data-*` attributes; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`
@@ -73,7 +73,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-3.1 - Accordion
 
-`DisclosureGroup` shall render a `ui-disclosure-group` element whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open. Only the group's own disclosures join it: a disclosure's panel scopes its content out of the disclosure, so a disclosure inside a panel keeps its own `defaultExpanded` or `isExpanded` state and never changes the group's keys, and an expand toggle inside a panel owns its state rather than taking the disclosure's (UIC-EXPAND-TOGGLE-1.7). `PropertySection` and `PropertyCard` panels scope their content the same way.
+`Accordion` shall render a `ui-disclosure-group` element whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open. Only the group's own disclosures join it: a disclosure's panel scopes its content out of the disclosure, so a disclosure inside a panel keeps its own `defaultExpanded` or `isExpanded` state and never changes the group's keys, and an expand toggle inside a panel owns its state rather than taking the disclosure's (UIC-EXPAND-TOGGLE-1.7). `PropertySection` and `PropertyCard` panels scope their content the same way.
 
 Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
@@ -113,6 +113,15 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 When the browser's find in page matches text in a collapsed panel, the disclosure shall expand (the `beforematch` event of `hidden="until-found"`), through the group's keys inside a group.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
+Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
+
+## UIC-DISCLOSURE-5 - Composition
+
+### UIC-DISCLOSURE-5.1 - Collapsible and accordion parts
+
+`Collapsible` shall compose a `CollapsibleTrigger` button and a `CollapsibleContent` panel. It contributes no outline level. `Accordion` shall accept `AccordionItem` children with an `AccordionTrigger` and an `AccordionContent` panel. An accordion trigger draws a heading and defaults to an end indicator. Both triggers carry the caller's button class, data attributes and ref, report `onPress`, and retain the panel relationship and shared expansion policy. The content parts share the panel's heading scope where applicable, role and mounting behaviour. `DisclosureHeader` can group an accordion trigger with contextual controls.
+
+Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
 
 ## Hooks

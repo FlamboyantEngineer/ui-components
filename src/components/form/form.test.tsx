@@ -6,9 +6,9 @@ import { TextField as PlainField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { Button } from '../button/button.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { Fieldset } from '../field/field.js';
 import { useFieldScope } from '../field/field-scope.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { PeriodField } from '../period-field/period-field.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
@@ -307,15 +307,15 @@ describe('Form', () => {
       const onInnerSubmit = vi.fn(prevent);
       render(
         <PageForm onSubmit={onSubmit}>
-          <ModalTrigger>
+          <DialogTrigger>
             <Button>Rename</Button>
-            <Modal title="Rename">
+            <Dialog title="Rename">
               <Form aria-label="Rename" onSubmit={onInnerSubmit}>
                 <TextField label="New name" />
                 <button type="submit">Apply</button>
               </Form>
-            </Modal>
-          </ModalTrigger>
+            </Dialog>
+          </DialogTrigger>
         </PageForm>,
       );
       await user.click(screen.getByRole('button', { name: 'Rename' }));

@@ -13,14 +13,14 @@ Verification: `e2e/composition-workflows.spec.ts`, `labs/src/composition-workflo
 
 ### UIC-COMPOSITION-WORKFLOWS-1.2 - Host state and decisions
 
-The examples shall keep availability and response state in the host. DropdownMenu, Modal, ChoiceGroup, TextField and Button shall supply keyboard operation, validation labels and accessible disabled actions. A required explanation prevents confirmation until entered.
+The examples shall keep availability and response state in the host. DropdownMenu, Dialog, ChoiceGroup, TextField and Button shall supply keyboard operation, validation labels and accessible disabled actions. A required explanation prevents confirmation until entered.
 
 Implementation: `labs/src/composition-workflows-actions.tsx`
 Verification: `e2e/composition-workflows.spec.ts`, `labs/src/composition-workflows-actions.test.tsx`
 
 ### UIC-COMPOSITION-WORKFLOWS-1.3 - Signature and async action
 
-The signing composition shall use SignaturePad and TextField in a Modal. The generic modal shall keep failed asynchronous actions open with an error, allow retry, prevent duplicate submission while pending, and restore focus to its trigger on completion. Opening a new signing session clears host-owned credentials and signature values.
+The signing composition shall use SignaturePad and TextField in a Dialog. The generic modal shall keep failed asynchronous actions open with an error, allow retry, prevent duplicate submission while pending, and restore focus to its trigger on completion. Opening a new signing session clears host-owned credentials and signature values.
 
 Implementation: `labs/src/composition-workflows-actions.tsx`
 Verification: `e2e/composition-workflows.spec.ts`, `labs/src/composition-workflows-actions.test.tsx`

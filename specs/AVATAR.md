@@ -166,6 +166,15 @@ A pressable avatar (with `onPress` or `card`) shall keep the same button element
 Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar-root.tsx`
 Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
 
+## UIC-AVATAR-12 - Composition
+
+### UIC-AVATAR-12.1 - Image, fallback and badge
+
+In a client component, `Avatar` shall accept an `AvatarImage`, an `AvatarFallback` and an `AvatarBadge` as direct children, including within fragments. Each replaces the equivalent managed part. Without a root name, the image's `alt` supplies it. The image is decorative inside that named root, carries `data-state` of `loading` or `loaded`, and is removed on error. The fallback is decorative and draws while the image is missing, loading or has failed. A badge's label is part of the root's name and its placement yields to the presence indicator.
+
+Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar-parts.tsx`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
+
 ## Hooks
 
 | Hook                  | Kind      | Values                         | Description                                              |
@@ -190,3 +199,5 @@ Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-pres
 | `data-pressed` | state | `true` | While a pressable avatar is pressed (React Aria). |
 | `data-focused` | state | `true` | While a pressable avatar has focus (React Aria). |
 | `data-focus-visible` | state | `true` | While it has keyboard focus (React Aria). |
+| `ui-avatar__fallback` | slot | | The caller's fallback content. |
+| `data-state` | state | `loading`, `loaded` | On the image. |

@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import {
   type ChatFeedback,
   ChatMessageActions,
@@ -317,14 +317,14 @@ describe('ChatMessageActions', () => {
     expect(onReact).toHaveBeenLastCalledWith(':otter:');
   });
 
-  it('UIC-CHAT-20.4 reacts from the picker inside an open Modal and leaves the Modal open', async () => {
+  it('UIC-CHAT-20.4 reacts from the picker inside an open Dialog and leaves the Dialog open', async () => {
     const user = userEvent.setup();
     const onReact = vi.fn();
     const onOpenChange = vi.fn();
     render(
-      <Modal title="Thread" isOpen onOpenChange={onOpenChange}>
+      <Dialog title="Thread" isOpen onOpenChange={onOpenChange}>
         <ChatMessageActions onReact={onReact} loadEmoji={loadEmoji} />
-      </Modal>,
+      </Dialog>,
     );
     await user.click(screen.getByRole('button', { name: 'Add reaction' }));
     await screen.findByRole('dialog', { name: 'Emoji picker' });

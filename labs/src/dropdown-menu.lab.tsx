@@ -6,6 +6,7 @@ import { ExpandGlyph, MoreVerticalGlyph, PlusGlyph, SaveGlyph } from '../../src/
 import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ComposedDropdownInDialog, ComposedDropdownMenu } from './dropdown-menu-composed.js';
 import { DropdownMenuCoverageSections } from './dropdown-menu-coverage-cases.js';
 
 const variants: ButtonVariant[] = [
@@ -13,7 +14,7 @@ const variants: ButtonVariant[] = [
   'secondary',
   'tertiary',
   'ghost',
-  'danger',
+  'destructive',
   'link',
   'accent',
   'chip',
@@ -293,6 +294,10 @@ function Controlled() {
 
 mountLab(
   <>
+    <LabSection title="Dropdown menu parts">
+      <ComposedDropdownMenu />
+      <ComposedDropdownInDialog />
+    </LabSection>
     <LabSection title="Variants and sizes" description="The trigger is a Button with a caret.">
       <StateMatrix
         axes={{ variant: variants, size: sizes }}

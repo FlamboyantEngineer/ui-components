@@ -1,4 +1,14 @@
-# Embedded Chat
+# Chat integration
+
+## Composable assistant thread
+
+The [assistant thread lab](../labs/assistant-chat.html) uses `MessageScrollerProvider`, `MessageScroller`, and `MessageScrollerItem` from `/message-scroller`. Give the viewport a bounded height through its containing layout and a label. Pass a stable `messageId` to each row and mark the reader's rows with `scrollAnchor`. With `autoScroll` enabled, a new turn starts at its prompt and follows the reply once it fills the viewport. Scroll away to pause and use `MessageScrollerButton` to return. Use a conversation key on the provider to reset its scroll and announcement state when switching threads.
+
+Use `Message` and `Bubble` parts for layout. `ChatParts` from `/chat/parts` renders Markdown and activity from a host's typed parts. Pass `isStreaming` on a row through its lifetime. While the reply waits for an inline approval or answer, pass `aria-busy={false}` on the item so assistive technology can reach the request.
+
+A native form with `InputGroup`, `InputGroupTextarea`, `InputGroupAddon`, and `InputGroupButton` composes the plain prompt. The `usePromptSubmission` hook from `/message-composer` handles the keyboard and draft lifecycle. The host supplies the draft, the submission callback, and the pending state. These entries work without the rich editor peers. The [lab source](../labs/src/assistant-chat-cases.tsx) shows the entire composition with a scripted transport.
+
+## Embedded Chat
 
 The reference stylesheet supports a bounded flex-column panel containing `LoadingRegion` and `Chat`. Give the host panel a height (or a bounded flex share) and `min-height: 0`; do the same for any intervening host flex items. The region's own content wrapper fills and shrinks automatically. Page placement, sidebar widths and application breakpoints belong to the host. Header titles truncate while actions remain available. Jump to latest is centered. Use `composerEndControls` for trailing controls; start and end follow the document direction, including after wrapping.
 

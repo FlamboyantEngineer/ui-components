@@ -14,6 +14,7 @@ import {
 import { PlusGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ComposedContextMenu } from './context-menu-composed.js';
 import { ContextMenuCoverageSections } from './context-menu-coverage-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -247,6 +248,9 @@ function Layers() {
 
 mountLab(
   <>
+    <LabSection title="Context menu parts">
+      <ComposedContextMenu />
+    </LabSection>
     <LabSection
       title="Targets by size"
       description="Right-click a target, long-press it on a touch screen, or focus it and press Shift+F10 or the Context Menu key. Disabled targets leave the browser menu alone and cancel a pending long press. Focus returns to a focusable target."

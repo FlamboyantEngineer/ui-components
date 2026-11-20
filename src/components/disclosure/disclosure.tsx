@@ -32,12 +32,12 @@ export interface DisclosureRenderState {
 }
 
 /** The state a disclosure group passes to `render` with its root's props. */
-export interface DisclosureGroupRenderState {
+export interface AccordionRenderState {
   isDisabled: boolean;
 }
 
 export interface DisclosureProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
-  /** The disclosure's key among a `DisclosureGroup`'s expanded keys; it stays off the element. */
+  /** The disclosure's key among a `Accordion`'s expanded keys; it stays off the element. */
   id?: Key | undefined;
   /** Whether the panel shows (controlled). */
   isExpanded?: boolean | undefined;
@@ -63,7 +63,7 @@ export interface DisclosureProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDiv
   render?: ElementRender<'div', DisclosureRenderState> | undefined;
 }
 
-export interface DisclosureGroupProps extends BaseProps, RefProps<HTMLDivElement> {
+export interface AccordionProps extends BaseProps, RefProps<HTMLDivElement> {
   /** The `id`s of the open disclosures (controlled). */
   expandedKeys?: Iterable<Key> | undefined;
   /** The `id`s of the disclosures open at first when uncontrolled. */
@@ -77,7 +77,7 @@ export interface DisclosureGroupProps extends BaseProps, RefProps<HTMLDivElement
   /** The group's disclosures, each with an `id` naming it in the expanded keys. */
   children?: ReactNode;
   /** Replaces the root `<div>` with the caller's own, given its props and state. */
-  render?: ElementRender<'div', DisclosureGroupRenderState> | undefined;
+  render?: ElementRender<'div', AccordionRenderState> | undefined;
 }
 
 /**
@@ -91,9 +91,31 @@ function toGroupKeys(keys: Iterable<Key> | undefined): Key[] | undefined {
 /**
  * A collapsible section: a heading whose trigger toggles a panel. With
  * `title` it draws its own title and panel; without it, the caller composes the parts. Inside a
- * `DisclosureGroup` its `id` is its key among the group's expanded keys.
+ * `Accordion` its `id` is its key among the group's expanded keys.
  */
-export function Disclosure({
+export function Disclosure(props: DisclosureProps) {
+  return <DisclosureRoot {...props} hasHeading />;
+}
+
+export type CollapsibleProps = Omit<
+  DisclosureProps,
+  'title' | 'headingLevel' | 'indicatorPosition'
+>;
+
+export type AccordionItemProps = Omit<DisclosureProps, 'title'>;
+
+/** A single show-and-hide region whose trigger need not be a heading. */
+export function Collapsible(props: CollapsibleProps) {
+  return <DisclosureRoot {...props} indicatorPosition="end" hasHeading={false} />;
+}
+
+/** A composed row in an accordion, with its indicator at the end by default. */
+export function AccordionItem({ indicatorPosition = 'end', ...rest }: AccordionItemProps) {
+  return <DisclosureRoot {...rest} indicatorPosition={indicatorPosition} hasHeading />;
+}
+
+function DisclosureRoot({
+  hasHeading,
   id,
   title,
   headingLevel,
@@ -101,9 +123,12 @@ export function Disclosure({
   children,
   className,
   ...rest
-}: DisclosureProps) {
+}: DisclosureProps & { hasHeading: boolean }) {
   const level = useHeadingLevel(headingLevel);
-  const parts = useMemo(() => ({ level, indicatorPosition }), [level, indicatorPosition]);
+  const parts = useMemo(
+    () => ({ level, indicatorPosition, hasHeading }),
+    [level, indicatorPosition, hasHeading],
+  );
   return (
     <AriaDisclosure
       {...rest}
@@ -128,14 +153,14 @@ export function Disclosure({
  * Disclosures that expand together, one at a time as an accordion
  * unless `allowsMultipleExpanded`. Arrow keys, Home and End move focus between their triggers.
  */
-export function DisclosureGroup({
+export function Accordion({
   expandedKeys,
   defaultExpandedKeys,
   onExpandedChange,
   className,
   children,
   ...rest
-}: DisclosureGroupProps) {
+}: AccordionProps) {
   const ariaExpandedKeys = useMemo(() => toGroupKeys(expandedKeys), [expandedKeys]);
   const ariaDefaultExpandedKeys = useMemo(
     () => toGroupKeys(defaultExpandedKeys),
@@ -158,15 +183,27 @@ export function DisclosureGroup({
 }
 
 export type {
+  AccordionTriggerProps,
+  CollapsibleTriggerProps,
   DisclosureHeaderProps,
   DisclosurePanelProps,
   DisclosurePanelRenderState,
   DisclosurePanelRole,
   DisclosureTitleProps,
 } from './disclosure-parts.js';
+export type {
+  DisclosurePanelProps as AccordionContentProps,
+  DisclosurePanelProps as CollapsibleContentProps,
+} from './disclosure-parts.js';
 export {
+  AccordionTrigger,
+  CollapsibleTrigger,
   DisclosureContentScope,
   DisclosureHeader,
   DisclosurePanel,
   DisclosureTitle,
+} from './disclosure-parts.js';
+export {
+  DisclosurePanel as AccordionContent,
+  DisclosurePanel as CollapsibleContent,
 } from './disclosure-parts.js';

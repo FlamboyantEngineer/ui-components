@@ -2,14 +2,14 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 async function settled(page: Page) {
-  const overlay = page.locator('.ui-modal.ui-media-viewer');
+  const overlay = page.locator('.ui-dialog.ui-media-viewer');
   await expect(overlay).toBeVisible();
   await expect(overlay).not.toHaveAttribute('data-entering');
   await expect(page.locator('.ui-media-viewer__stage')).toHaveAttribute('data-status', 'loaded');
 }
 
 function title(page: Page) {
-  return page.locator('.ui-media-viewer .ui-modal__title');
+  return page.locator('.ui-media-viewer .ui-dialog__title');
 }
 
 test.describe('Media Viewer lab', () => {
@@ -25,10 +25,10 @@ test.describe('Media Viewer lab', () => {
     await expect(dialog.locator('.ui-media-viewer__counter')).toHaveText('3 of 3');
     await expect(dialog.getByRole('group', { name: 'Meadow.svg, viewer' })).toBeFocused();
     await expect(dialog.getByRole('button', { name: 'Next' })).toBeDisabled();
-    await lab.expectAccessible('.ui-modal');
+    await lab.expectAccessible('.ui-dialog');
     await dialog.getByRole('button', { name: 'Previous' }).click();
     await expect(title(page)).toHaveText('Tower.svg');
-    await expect(page.locator('.ui-media-viewer .ui-modal__description')).toHaveText(
+    await expect(page.locator('.ui-media-viewer .ui-dialog__description')).toHaveText(
       'The old tower in the evening.',
     );
     await page.keyboard.press('Escape');
@@ -55,7 +55,7 @@ test.describe('Media Viewer lab', () => {
       await settled(page);
       const dialog = page.getByRole('dialog');
       const controls = [
-        dialog.locator('.ui-modal__title'),
+        dialog.locator('.ui-dialog__title'),
         dialog.getByRole('button', { name: /^Close/ }),
         dialog.getByRole('button', { name: 'Next' }),
         dialog.getByRole('link', { name: /Download/ }),
@@ -65,7 +65,7 @@ test.describe('Media Viewer lab', () => {
         // The point under the control's centre belongs to it, not to the bar.
         const hit = await control.evaluate((node) => {
           const box = node.getBoundingClientRect();
-          const frame = node.closest('.ui-modal__dialog')?.getBoundingClientRect();
+          const frame = node.closest('.ui-dialog__dialog')?.getBoundingClientRect();
           const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
           // Inside the viewer's frame, not cut off at a narrow width, and the topmost thing there.
           const inside =
@@ -204,7 +204,7 @@ test.describe('Media Viewer lab', () => {
     await lab.open('media-viewer', { theme: 'dark' });
     await page.locator('[data-lab-open="mixed-last"]').click();
     await settled(page);
-    await lab.expectAccessible('.ui-modal');
+    await lab.expectAccessible('.ui-dialog');
   });
 
   test('UIC-MEDIA-VIEWER-1.3 requests only the thumbnails near the strip of a large set', async ({
@@ -354,7 +354,7 @@ test.describe('Media Viewer lab', () => {
       'Expired link.svg, Missing.svg, Missing.svg',
     );
     await expect(page.getByRole('button', { name: 'Previous' })).toBeEnabled();
-    await lab.expectAccessible('.ui-modal');
+    await lab.expectAccessible('.ui-dialog');
   });
 
   test('UIC-MEDIA-VIEWER-3.1 keeps the caller rendering of each file apart', async ({

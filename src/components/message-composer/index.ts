@@ -25,9 +25,11 @@ export type {
   MessageComposerChords,
   MessageComposerProps,
   MessageComposerShortcuts,
+  PromptSubmission,
+  PromptSubmissionOptions,
 } from './message-composer.js';
 export { MessageComposer } from './message-composer.js';
-export { useMessageComposerControls } from './message-composer.js';
+export { useMessageComposerControls, usePromptSubmission } from './message-composer.js';
 export type {
   MessageReferenceData,
   MessageReferencePresentation,

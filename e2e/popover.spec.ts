@@ -31,6 +31,19 @@ const sides = [
 ] as const;
 
 test.describe('Popover lab', () => {
+  test('UIC-POPOVER-3.5 announces the composed name and description', async ({ page, lab }) => {
+    await lab.open('popover');
+    const trigger = page.getByRole('button', { name: 'Open display settings' });
+    await trigger.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Display settings' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAccessibleDescription('Choose how reports are displayed.');
+    await expect(dialog.getByRole('heading', { level: 2 })).toHaveText('Display settings');
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-POPOVER-1.1 UIC-POPOVER-1.3 UIC-POPOVER-1.4 UIC-POPOVER-1.5 UIC-POPOVER-3.1 opens on each side with its arrow', async ({
     page,
     lab,

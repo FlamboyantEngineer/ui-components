@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
-import { Tab, TabList, type TabMove, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import {
+  type TabMove,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../src/components/tabs/tabs.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LinkGlyph, StarGlyph } from '../../src/core/glyphs.js';
 import type { Key } from '../../src/core/props.js';
@@ -23,9 +29,9 @@ function KeyPanels({ items }: { items: readonly { id: Key; label: string }[] }) 
   return (
     <>
       {items.map((item) => (
-        <TabPanel key={`${typeof item.id}:${item.id}`} id={item.id}>
+        <TabsContent key={`${typeof item.id}:${item.id}`} id={item.id}>
           {item.label} panel
-        </TabPanel>
+        </TabsContent>
       ))}
     </>
   );
@@ -42,13 +48,13 @@ export function TypedKeyTabs() {
   return (
     <div data-lab-demo="typed-tab-keys">
       <Tabs selectedKey={selected} onSelectionChange={setSelected}>
-        <TabList aria-label="Typed tab keys">
+        <TabsList aria-label="Typed tab keys">
           {items.map((item) => (
-            <Tab key={`${typeof item.id}:${item.id}`} id={item.id}>
+            <TabsTrigger key={`${typeof item.id}:${item.id}`} id={item.id}>
               {item.label}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         <KeyPanels items={items} />
       </Tabs>
       <p data-lab-output="selected">
@@ -65,19 +71,19 @@ export function DisabledRemovalTabs() {
     <div data-lab-demo="disabled-removal">
       <Button onPress={() => setDisabled(!isDisabled)}>Toggle disabled tabs</Button>
       <Tabs isDisabled={isDisabled} disabledKeys={['summer']}>
-        <TabList
+        <TabsList
           aria-label="Removable seasons"
           onRemove={(keys) => setRemoved([...keys].join(', '))}
         >
-          <Tab id="spring">Spring</Tab>
-          <Tab id="summer">Summer</Tab>
-          <Tab id="autumn" isDisabled>
+          <TabsTrigger id="spring">Spring</TabsTrigger>
+          <TabsTrigger id="summer">Summer</TabsTrigger>
+          <TabsTrigger id="autumn" isDisabled>
             Autumn
-          </Tab>
-        </TabList>
-        <TabPanel id="spring">Spring details.</TabPanel>
-        <TabPanel id="summer">Summer details.</TabPanel>
-        <TabPanel id="autumn">Autumn details.</TabPanel>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent id="spring">Spring details.</TabsContent>
+        <TabsContent id="summer">Summer details.</TabsContent>
+        <TabsContent id="autumn">Autumn details.</TabsContent>
       </Tabs>
       <p data-lab-output="removed">Remove requested: {removed}</p>
     </div>
@@ -135,7 +141,7 @@ export function MealTabs() {
   return (
     <div data-lab-demo="meals" style={{ width: 480 }}>
       <Tabs selectedKey={selected} onSelectionChange={setSelected}>
-        <TabList
+        <TabsList
           aria-label="Meals"
           onRename={(key, name) =>
             setMeals(meals.map((meal) => (meal.id === key ? { ...meal, name } : meal)))
@@ -156,15 +162,15 @@ export function MealTabs() {
           getMenuItems={keepLastTab(meals.length)}
         >
           {meals.map((meal) => (
-            <Tab key={meal.id} id={meal.id}>
+            <TabsTrigger key={meal.id} id={meal.id}>
               {meal.name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {meals.map((meal) => (
-          <TabPanel key={meal.id} id={meal.id}>
+          <TabsContent key={meal.id} id={meal.id}>
             Recipes for {meal.name.toLowerCase()}.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="meals">Tabs: {meals.map((meal) => meal.name).join(', ')}</p>
@@ -178,17 +184,17 @@ export function VerticalReorderTabs() {
   return (
     <div data-lab-demo="seasons">
       <Tabs orientation="vertical">
-        <TabList aria-label="Seasons" onReorder={(move) => setSeasons(applyMove(seasons, move))}>
+        <TabsList aria-label="Seasons" onReorder={(move) => setSeasons(applyMove(seasons, move))}>
           {seasons.map((season) => (
-            <Tab key={season.id} id={season.id}>
+            <TabsTrigger key={season.id} id={season.id}>
               {season.name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {seasons.map((season) => (
-          <TabPanel key={season.id} id={season.id}>
+          <TabsContent key={season.id} id={season.id}>
             Produce in {season.name.toLowerCase()}.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="seasons">Order: {seasons.map((season) => season.name).join(', ')}</p>
@@ -202,17 +208,17 @@ export function RememberedTabs() {
   return (
     <div data-lab-demo="remembered">
       <Tabs key={mount} persistKey="lab-tabs-remembered" defaultSelectedKey="Summer">
-        <TabList aria-label="Remembered seasons">
+        <TabsList aria-label="Remembered seasons">
           {SEASONS.map((name) => (
-            <Tab key={name} id={name}>
+            <TabsTrigger key={name} id={name}>
               {name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {SEASONS.map((name) => (
-          <TabPanel key={name} id={name}>
+          <TabsContent key={name} id={name}>
             Remembered: {name}.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <Button variant="secondary" size="sm" onPress={() => setMount(mount + 1)}>
@@ -248,7 +254,7 @@ export function LockingTabs() {
         </Button>
       </p>
       <Tabs isDisabled={isLocked}>
-        <TabList
+        <TabsList
           aria-label="Courses"
           onRename={(key, name) => {
             setLast(`renamed ${String(key)}`);
@@ -261,15 +267,15 @@ export function LockingTabs() {
           getMenuItems={(_key, standard) => standard}
         >
           {names.map((name) => (
-            <Tab key={name} id={name}>
+            <TabsTrigger key={name} id={name}>
               {name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {names.map((name) => (
-          <TabPanel key={name} id={name}>
+          <TabsContent key={name} id={name}>
             The {name.toLowerCase()} course.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="locking">Last change: {last}</p>
@@ -299,7 +305,7 @@ export function SwitchingTabs() {
         </Button>
       </p>
       <Tabs>
-        <TabList
+        <TabsList
           aria-label="Times"
           scrollButtons={hasButtons}
           onRename={(key, name) =>
@@ -307,15 +313,15 @@ export function SwitchingTabs() {
           }
         >
           {names.map((name) => (
-            <Tab key={name} id={name}>
+            <TabsTrigger key={name} id={name}>
               {name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {names.map((name) => (
-          <TabPanel key={name} id={name}>
+          <TabsContent key={name} id={name}>
             The {name.toLowerCase()} plan.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="switching">Times: {names.join(', ')}</p>
@@ -368,17 +374,17 @@ export function LiveRenameTabs() {
         </Button>
       </p>
       <Tabs selectedKey={selected} onSelectionChange={setSelected}>
-        <TabList aria-label="Pages">
+        <TabsList aria-label="Pages">
           {pages.map((page) => (
-            <Tab key={page.id} id={page.id}>
+            <TabsTrigger key={page.id} id={page.id}>
               {tabName(page.name)}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {pages.map((page) => (
-          <TabPanel key={page.id} id={page.id}>
+          <TabsContent key={page.id} id={page.id}>
             <TextField label={`Draft for ${tabName(page.name)}`} multiline />
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="live-rename">
@@ -398,7 +404,7 @@ export function IconMenuTabs() {
   return (
     <div data-lab-demo="icon-menu" style={{ width: 420 }}>
       <Tabs>
-        <TabList
+        <TabsList
           aria-label="Regions"
           onRename={(key, name) => {
             setLast(`renamed ${String(key)}`);
@@ -422,15 +428,15 @@ export function IconMenuTabs() {
           ]}
         >
           {names.map((name) => (
-            <Tab key={name} id={name}>
+            <TabsTrigger key={name} id={name}>
               {name}
-            </Tab>
+            </TabsTrigger>
           ))}
-        </TabList>
+        </TabsList>
         {names.map((name) => (
-          <TabPanel key={name} id={name}>
+          <TabsContent key={name} id={name}>
             The {name.toLowerCase()} region.
-          </TabPanel>
+          </TabsContent>
         ))}
       </Tabs>
       <p data-lab-output="icon-menu">Last change: {last}</p>

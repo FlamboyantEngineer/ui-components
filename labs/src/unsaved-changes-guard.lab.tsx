@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Link } from '../../src/components/link/link.js';
 import { Switch } from '../../src/components/switch/switch.js';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/tabs/tabs.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   UnsavedChangesGuard,
@@ -105,16 +105,16 @@ function GuardedForm() {
         selectedKey={tab}
         onSelectionChange={(next) => void confirmLeave().then((ok) => ok && setTab(next))}
       >
-        <TabList aria-label="Profile sections">
-          <Tab id="person">Person</Tab>
-          <Tab id="home">Home</Tab>
-        </TabList>
-        <TabPanel id="person">
+        <TabsList aria-label="Profile sections">
+          <TabsTrigger id="person">Person</TabsTrigger>
+          <TabsTrigger id="home">Home</TabsTrigger>
+        </TabsList>
+        <TabsContent id="person">
           <DraftField label="Display name" initial="Maria Santos" shouldFail={shouldFail} />
-        </TabPanel>
-        <TabPanel id="home">
+        </TabsContent>
+        <TabsContent id="home">
           <DraftField label="Home city" initial="Lisbon" shouldFail={shouldFail} />
-        </TabPanel>
+        </TabsContent>
       </Tabs>
       <DirtyNote />
     </div>

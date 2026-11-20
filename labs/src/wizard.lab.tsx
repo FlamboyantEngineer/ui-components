@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Wizard, type WizardStep } from '../../src/components/wizard/wizard.js';
@@ -108,9 +108,9 @@ function NewProjectModal() {
   const [created, setCreated] = useState<string | null>(null);
   return (
     <div data-lab-demo="modal">
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>New project</Button>
-        <Modal title="New project" size="lg">
+        <Dialog isDismissable={false} title="New project" size="lg">
           {({ close }) => (
             <Wizard
               steps={projectSteps(project, setProject)}
@@ -122,8 +122,8 @@ function NewProjectModal() {
               }}
             />
           )}
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       <p data-lab-result>{created ? `Created ${created}` : 'Nothing created yet'}</p>
     </div>
   );
@@ -327,7 +327,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="In a modal"
-      description="The same wizard as the body of a Modal: Cancel closes it and focus stays inside as the steps change."
+      description="The same wizard as the body of a Dialog: Cancel closes it and focus stays inside as the steps change."
     >
       <NewProjectModal />
     </LabSection>

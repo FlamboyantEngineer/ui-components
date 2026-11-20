@@ -3,6 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 /** The hook classes every module of the select-field family writes (specs/SELECT-FIELD.md). */
 export const selectFieldHooks = createHooks('select-field', [
   'select',
+  'select-label',
   'chips',
   'chip-frame',
   'chip',

@@ -4,8 +4,8 @@ import {
   CommandPalette,
   type CommandPaletteProps,
 } from '../../src/components/command-palette/command-palette.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { type MenuEntry, MenuItem, MenuSection } from '../../src/components/menu/menu.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import {
   splitMatchTerms,
@@ -134,12 +134,12 @@ function ChordOwners() {
       <Button onPress={() => setHasPane(!hasPane)}>
         {hasPane ? 'Remove the pane palette' : 'Add a pane palette'}
       </Button>{' '}
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Settings</Button>
-        <Modal title="Settings">
+        <Dialog title="Settings">
           <TextField label="Display name" />
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       {hasPane ? (
         <CommandPalette
           aria-label="Pane commands"

@@ -2,6 +2,7 @@
 
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
 import { type ReactNode, type Ref, useContext } from 'react';
+import type { AriaLabellingProps, PressEventProps } from '../../core/events.js';
 import { ChevronDownGlyph, ChevronUpGlyph, type GlyphComponent } from '../../core/glyphs.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
@@ -30,6 +31,18 @@ export interface DisclosureHeaderProps extends RefProps<HTMLDivElement>, BasePro
   /** A `DisclosureTitle` and the controls beside it, which do not toggle the disclosure. */
   children?: ReactNode;
 }
+
+export interface CollapsibleTriggerProps
+  extends
+    BaseProps,
+    RefProps<HTMLButtonElement>,
+    AriaLabellingProps,
+    Pick<PressEventProps, 'onPress'> {
+  /** The button's visible label and any decorative indicator. */
+  children?: ReactNode;
+}
+
+export type AccordionTriggerProps = CollapsibleTriggerProps;
 
 export interface DisclosureTitleProps extends RefProps<HTMLHeadingElement>, BaseProps {
   /** The title, inside the trigger. */
@@ -110,38 +123,70 @@ export function DisclosureHeader({ className, children, ...rest }: DisclosureHea
   );
 }
 
-/**
- * The disclosure's heading, at its level, holding the trigger: a button that toggles the panel and
- * shows the indicator glyph before or after the title.
- */
-export function DisclosureTitle({
-  className,
-  children,
-  triggerRef,
-  ...rest
-}: DisclosureTitleProps) {
-  const { level, indicatorPosition } = useContext(DisclosurePartsContext);
-  const isExpanded = useContext(DisclosureStateContext)?.isExpanded ?? false;
-  const glyph = useIndicatorGlyph(indicatorPosition, isExpanded);
-  const onKeyDown = useGroupNavigation();
-  const indicator = <Glyph icon={glyph} className={hooks.slotClass('indicator')} />;
+/** A button that shows and hides the content without introducing a heading. */
+export function CollapsibleTrigger(props: CollapsibleTriggerProps) {
+  return <DisclosureTrigger {...props} hasIndicator={false} />;
+}
+
+/** An accordion's heading and its trigger, whose ref and attributes go to the button. */
+export function AccordionTrigger(props: AccordionTriggerProps) {
+  return (
+    <DisclosureHeading>
+      <DisclosureTrigger {...props} hasIndicator />
+    </DisclosureHeading>
+  );
+}
+
+function DisclosureHeading({ className, ...rest }: Omit<DisclosureTitleProps, 'triggerRef'>) {
+  const { level } = useContext(DisclosurePartsContext);
   return (
     <Heading
       {...rest}
       level={level}
       className={mergeClassNames(hooks.slotClass('heading'), className)}
+    />
+  );
+}
+
+/** The disclosure's heading with optional access to its heading and trigger elements separately. */
+export function DisclosureTitle({ children, triggerRef, ...rest }: DisclosureTitleProps) {
+  return (
+    <DisclosureHeading {...rest}>
+      <DisclosureTrigger ref={triggerRef} hasIndicator>
+        {children}
+      </DisclosureTrigger>
+    </DisclosureHeading>
+  );
+}
+
+function DisclosureTrigger({
+  className,
+  children,
+  hasIndicator,
+  ...rest
+}: CollapsibleTriggerProps & { hasIndicator: boolean }) {
+  const { indicatorPosition } = useContext(DisclosurePartsContext);
+  const isExpanded = useContext(DisclosureStateContext)?.isExpanded ?? false;
+  const glyph = useIndicatorGlyph(indicatorPosition, isExpanded);
+  const onKeyDown = useGroupNavigation();
+  const indicator = hasIndicator ? (
+    <Glyph icon={glyph} className={hooks.slotClass('indicator')} />
+  ) : null;
+  return (
+    <AriaButton
+      {...rest}
+      {...hooks.slot(
+        'trigger',
+        { indicatorPosition: hasIndicator ? indicatorPosition : undefined },
+        className,
+      )}
+      slot="trigger"
+      onKeyDown={onKeyDown}
     >
-      <AriaButton
-        {...hooks.slot('trigger', { indicatorPosition })}
-        slot="trigger"
-        ref={triggerRef}
-        onKeyDown={onKeyDown}
-      >
-        {indicatorPosition === 'start' ? indicator : null}
-        <span {...hooks.slot('title')}>{children}</span>
-        {indicatorPosition === 'end' ? indicator : null}
-      </AriaButton>
-    </Heading>
+      {indicatorPosition === 'start' ? indicator : null}
+      <span {...hooks.slot('title')}>{children}</span>
+      {indicatorPosition === 'end' ? indicator : null}
+    </AriaButton>
   );
 }
 
@@ -164,10 +209,11 @@ export function DisclosureContentScope({ children }: { children: ReactNode }) {
  * content's own (`DisclosureContentScope`).
  */
 export function DisclosurePanel({ className, children, ...rest }: DisclosurePanelProps) {
-  const { level } = useContext(DisclosurePartsContext);
+  const { level, hasHeading } = useContext(DisclosurePartsContext);
+  const parentLevel = useContext(HeadingLevelContext);
   return (
     <AriaDisclosurePanel {...rest} className={mergeClassNames(hooks.slotClass('panel'), className)}>
-      <HeadingLevelContext value={level}>
+      <HeadingLevelContext value={hasHeading ? level : parentLevel}>
         <DisclosureContentScope>{children}</DisclosureContentScope>
       </HeadingLevelContext>
     </AriaDisclosurePanel>

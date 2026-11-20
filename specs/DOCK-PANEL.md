@@ -15,7 +15,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-1.2 - Tabs
 
-While expanded and docked, the header shall hold one horizontal `TabList` in a `ui-dock-panel__strip` element, named by the panel's label, with a `Tab` per pane (`ui-dock-panel__tab`): its `icon`, its `label` as given and its `count` capped at `9+`, using the pane's `countVariant` (`subtle` by default), whose accessible description keeps the full count (UIC-TABS-1.2), refused while the pane `isDisabled`. Each tab controls its pane, which is labelled by it. The collapse toggle (UIC-DOCK-PANEL-2.2) sits after the strip, outside it, so the strip scrolls without it. While the panel is collapsed or an overlay the strip stays mounted but `hidden`, so the tabs keep pairing with their panes.
+While expanded and docked, the header shall hold one horizontal `TabsList` in a `ui-dock-panel__strip` element, named by the panel's label, with a `TabsTrigger` per pane (`ui-dock-panel__tab`): its `icon`, its `label` as given and its `count` capped at `9+`, using the pane's `countVariant` (`subtle` by default), whose accessible description keeps the full count (UIC-TABS-1.2), refused while the pane `isDisabled`. Each tab controls its pane, which is labelled by it. The collapse toggle (UIC-DOCK-PANEL-2.2) sits after the strip, outside it, so the strip scrolls without it. While the panel is collapsed or an overlay the strip stays mounted but `hidden`, so the tabs keep pairing with their panes.
 
 Implementation: `src/components/dock-panel/dock-panel-tabs.tsx`, `labs/reference/dock-panel.css`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`
@@ -29,7 +29,7 @@ Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.s
 
 ### UIC-DOCK-PANEL-1.4 - Pane
 
-Inside an `DockPanel`, `DockPanelPane` shall render as its tab's `TabPanel` in a `ui-dock-panel__pane` slot: an `ActionRow` of its `actions` in a `ui-dock-panel__actions` slot when it has any (`size="sm"`), its children in a `ui-dock-panel__content` slot, which is in the tab order (`tabIndex="0"`) so the keyboard can scroll it when it overflows, and its `footer` in a `ui-dock-panel__footer` slot when given. It draws no title: its tab already names it. Outside an `DockPanel` the pane renders the same parts in a visible `<section>`.
+Inside an `DockPanel`, `DockPanelPane` shall render as its tab's `TabsContent` in a `ui-dock-panel__pane` slot: an `ActionRow` of its `actions` in a `ui-dock-panel__actions` slot when it has any (`size="sm"`), its children in a `ui-dock-panel__content` slot, which is in the tab order (`tabIndex="0"`) so the keyboard can scroll it when it overflows, and its `footer` in a `ui-dock-panel__footer` slot when given. It draws no title: its tab already names it. Outside an `DockPanel` the pane renders the same parts in a visible `<section>`.
 
 Implementation: `src/components/dock-panel/dock-panel-pane.tsx`
 Verification: `src/components/dock-panel/dock-panel.test.tsx`, `e2e/dock-panel.spec.ts`

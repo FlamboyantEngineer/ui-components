@@ -18,6 +18,13 @@ export interface TranscriptLayout {
 }
 
 const VIEWPORT = 'ui-scroll-region__viewport';
+
+function isViewport(element: Element): boolean {
+  return (
+    element.classList.contains(VIEWPORT) ||
+    element.classList.contains('ui-message-scroller__viewport')
+  );
+}
 /** The callbacks of the resize observers the transcript created, until it disconnects them. */
 const resizeCallbacks = new Set<() => void>();
 const scrollTops = new WeakMap<Element, number>();
@@ -39,7 +46,7 @@ function heightOf(element: Element): number {
       sizes.heights.get(element.getAttribute('data-message-id') ?? element.id) ??
       sizes.messageHeight
     );
-  if (element.classList.contains(VIEWPORT)) return sizes.viewportHeight;
+  if (isViewport(element)) return sizes.viewportHeight;
   if (element.classList.contains('ui-chat-transcript__history')) return sizes.historyHeight;
   if (element.children.length === 0) return element.textContent ? sizes.textHeight : 0;
   let sum = 0;
@@ -57,7 +64,7 @@ function contentHeight(viewport: Element): number {
 function contentTop(element: Element): { top: number; viewport: Element } | null {
   let top = 0;
   let node: Element | null = element;
-  while (node && !node.classList.contains(VIEWPORT)) {
+  while (node && !isViewport(node)) {
     for (
       let sibling = node.previousElementSibling;
       sibling;
@@ -98,7 +105,6 @@ export function installTranscriptLayout(sizes: Partial<TranscriptLayout> = {}): 
     textHeight: 20,
     ...sizes,
   };
-  const isViewport = (element: Element) => element.classList.contains(VIEWPORT);
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
     configurable: true,
     get(this: HTMLElement) {
