@@ -11,6 +11,7 @@ import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
+import { ComposedCodeBlocks } from './code-block-composed.js';
 import { languageSamples, largeFile, tokenizeTypeScript } from './code-block-samples.js';
 
 const keywords = new Set(['const', 'let', 'function', 'return', 'if', 'else', 'export', 'await']);
@@ -364,6 +365,12 @@ mountLab(
       description="createCodeBlockOverride draws a Markdown answer's code blocks as code blocks: highlighted by fence language, a console fence as a terminal, with an Insert action."
     >
       <MarkdownDemo />
+    </LabSection>
+    <LabSection
+      title="Composed from parts"
+      description="A block composed from its header, title, Copy button, lines and footer: a removed line, an added one and a highlighted one, plain or numbered."
+    >
+      <ComposedCodeBlocks />
     </LabSection>
   </>,
 );

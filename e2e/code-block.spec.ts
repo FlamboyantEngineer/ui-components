@@ -325,3 +325,34 @@ test.describe('Code Block lab', () => {
     await lab.expectAccessible('[data-lab-demo="highlighted-languages"]');
   });
 });
+
+test('UIC-CODE-BLOCK-6.1 UIC-CODE-BLOCK-6.2 draws a composed block with marked lines', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('code-block');
+  const block = page.getByRole('group', { name: 'numbered composed block' });
+  await expect(block.locator('.ui-code-block__footer')).toHaveText('One line changed');
+  const removed = block.locator('del.ui-code-block__line');
+  const added = block.locator('ins.ui-code-block__line');
+  const style = (line: typeof removed) =>
+    line.evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        background: computed.backgroundColor,
+        decoration: computed.textDecorationLine,
+        display: computed.display,
+      };
+    });
+  const removedStyle = await style(removed);
+  const addedStyle = await style(added);
+  expect(removedStyle.decoration).toBe('none');
+  expect(addedStyle.decoration).toBe('none');
+  expect(removedStyle.display).toBe('block');
+  expect(removedStyle.background).not.toBe(addedStyle.background);
+  await expect(block.locator('.ui-code-block__line-number').first()).toHaveAttribute(
+    'data-line-number',
+    '12',
+  );
+  await lab.expectAccessible('[data-lab-section="Composed from parts"]');
+});
