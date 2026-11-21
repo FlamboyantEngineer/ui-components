@@ -5,7 +5,7 @@
  * the footer is a muted band under a border. The title is 16 pixel medium type, 8 pixels above the
  * description (6 in an alert dialog, whose title keeps its line height); the close button is a 28
  * pixel square in the corner. A small dialog is 384 pixels wide. The cancel button is drawn as the
- * outline button. A sheet is a 384 pixel edge panel with the large shadow and a border on its inner
+ * outline button. A sheet is a 384 pixel side panel with the large shadow and a border on its inner
  * edge; its footer stacks full-width buttons, the primary one first.
  */
 
