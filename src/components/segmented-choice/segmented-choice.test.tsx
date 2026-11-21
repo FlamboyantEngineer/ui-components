@@ -124,6 +124,21 @@ describe('SegmentedChoice', () => {
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
   });
 
+  it('UIC-SEGMENTED-CHOICE-1.12 publishes the spacing, joined by default in either variant', () => {
+    const { container, rerender } = render(<SegmentedChoice aria-label="View" options={views} />);
+    const group = screen.getByRole('radiogroup');
+    expect(group).toHaveAttribute('data-spacing', 'joined');
+    rerender(<SegmentedChoice aria-label="View" options={views} variant="outline" />);
+    expect(group).toHaveAttribute('data-spacing', 'joined');
+    rerender(
+      <SegmentedChoice aria-label="View" options={views} variant="outline" spacing="spaced" />,
+    );
+    expect(group).toHaveAttribute('data-spacing', 'spaced');
+    rerender(<SegmentedChoice aria-label="View" options={views} spacing="spaced" />);
+    expect(group).toHaveAttribute('data-spacing', 'spaced');
+    expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
+  });
+
   it('UIC-SEGMENTED-CHOICE-1.4 lays out vertically and moves focus with the vertical arrows', async () => {
     const { container } = render(
       <SegmentedChoice aria-label="View" options={views} orientation="vertical" />,

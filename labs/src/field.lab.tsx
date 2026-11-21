@@ -495,6 +495,24 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Responsive layout"
+      description="A responsive field fills its container: stacked in a narrow one, the label beside the control from 28rem, with the description under the control."
+    >
+      <StateMatrix
+        axes={{ width: ['320px', '560px'] }}
+        render={({ width }) => (
+          <div style={{ width }}>
+            <SampleField
+              label="Fruit"
+              labelLayout="responsive"
+              description="Shown on the order."
+              options={stateOptions.resting}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Parts"
       description="Description, help, menu and a decoration slot holding a host badge."
     >

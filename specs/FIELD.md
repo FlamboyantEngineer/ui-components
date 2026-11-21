@@ -13,7 +13,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.2 - Label layouts
 
-`labelLayout` shall choose where the label sits and publish it as `data-label-layout`: `label-control` (the default) puts the label before the control, `control-label` after it, `label-colon-control` before it followed by the provider's `labelColon` punctuation (`ui-field__colon`, hidden from assistive technology; `:` in English, a spaced colon in French, a full-width colon in Japanese), and `control-only` draws no label: the control is named by `aria-label` with the label text instead. The reference sheet stacks `label-control` and lays the other layouts on one row. In `label-colon-control` the description and message start under the control, not the label, wrapped lines included, so they line up with the input in either reading direction; the label column takes at most half the field. A message holding a list (several issues drawn by `renderMessage`) has no indent or bullets, so its text starts where a single message does.
+`labelLayout` shall choose where the label sits and publish it as `data-label-layout`: `label-control` (the default) puts the label before the control, `control-label` after it, `label-colon-control` before it followed by the provider's `labelColon` punctuation (`ui-field__colon`, hidden from assistive technology; `:` in English, a spaced colon in French, a full-width colon in Japanese), `control-only` draws no label: the control is named by `aria-label` with the label text instead, and `responsive` puts the label before the control and lets the stylesheet choose by the field's width (shadcn/ui's `responsive` orientation). The reference sheet stacks `label-control` and lays the other layouts on one row; a `responsive` field fills its container's width and stacks below 28rem, and from 28rem puts the label in a column beside the control, with the description and message under the control. In `label-colon-control` the description and message start under the control, not the label, wrapped lines included, so they line up with the input in either reading direction; the label column takes at most half the field. A message holding a list (several issues drawn by `renderMessage`) has no indent or bullets, so its text starts where a single message does.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `labs/reference/field.css`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -502,36 +502,36 @@ Verification: `test/field-controller.test.tsx`, `e2e/field-controller.spec.ts`
 
 ## Hooks
 
-| Hook                             | Kind      | Values                                                                  | Description                                                      |
-| -------------------------------- | --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `ui-field`                       | root      | `field`                                                                 | The field's `<div>`.                                             |
-| `ui-field__label`                | slot      | `field-label`                                                           | The `<label>`; the `control-only` layout draws none.             |
-| `ui-field__required`             | slot      |                                                                         | The asterisk of a required field, inside the label.              |
-| `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
-| `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
-| `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-button`).                              |
-| `ui-field__help-tooltip`         | slot      |                                                                         | The help the menu's Help shows (also `ui-tooltip`).              |
-| `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
-| `ui-field__description`          | slot      | `field-description`                                                     | The description.                                                 |
-| `ui-field__message`              | slot      | `field-error`                                                           | The validation message; empty while valid.                       |
-| `ui-field__message-tooltip`      | slot      |                                                                         | The tooltip showing the message with `messageDisplay="tooltip"`. |
-| `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
-| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
-| `data-density`                   | attribute | `default`, `compact`                                                    | The room the field keeps for its message and restore button.     |
-| `data-restore-button`            | attribute | `true`                                                                  | The field draws its restore button (`showRestoreButton`).        |
-| `data-change-layout`             | attribute | `inline`, `stacked`, `hidden`                                           | Where the control shows the value a dirty field's edit replaced. |
-| `data-message-display`           | attribute | `inline`, `tooltip`                                                     | Where the validation message shows.                              |
-| `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
-| `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
-| `data-required`                  | state     | `true`                                                                  | A value is required.                                             |
-| `data-readonly`                  | state     | `true`                                                                  | Read-only.                                                       |
-| `data-disabled`                  | state     | `true`                                                                  | Disabled.                                                        |
-| `data-touched`                   | state     | `true`                                                                  | Focus has left the field at least once.                          |
-| `data-filled`                    | state     | `true`                                                                  | The value is not empty.                                          |
-| `data-focused`                   | state     | `true`                                                                  | Focus is inside the field, popovers it opens included.           |
-| `data-severity`                  | state     | `error`, `warning`                                                      | On the message: the severity of the message shown.               |
-| `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-button`).                             |
-| `ui-field-previous-value`        | root      |                                                                         | A previous-value marker.                                         |
-| `ui-field-previous-value__value` | slot      |                                                                         | The previous value, in a `<del>` element.                        |
-| `ui-fieldset`                    | root      | `field-set`                                                             | A fieldset's `<fieldset>`.                                       |
-| `ui-fieldset__legend`            | slot      | `field-legend`                                                          | The fieldset's `<legend>`.                                       |
+| Hook                             | Kind      | Values                                                                                | Description                                                      |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `ui-field`                       | root      | `field`                                                                               | The field's `<div>`.                                             |
+| `ui-field__label`                | slot      | `field-label`                                                                         | The `<label>`; the `control-only` layout draws none.             |
+| `ui-field__required`             | slot      |                                                                                       | The asterisk of a required field, inside the label.              |
+| `ui-field__colon`                | slot      |                                                                                       | The colon of the `label-colon-control` layout, inside the label. |
+| `ui-field__control`              | slot      |                                                                                       | Holds the control.                                               |
+| `ui-field__help`                 | slot      |                                                                                       | The help button (also `ui-button`).                              |
+| `ui-field__help-tooltip`         | slot      |                                                                                       | The help the menu's Help shows (also `ui-tooltip`).              |
+| `ui-field__decoration`           | slot      |                                                                                       | The host's badges and marks.                                     |
+| `ui-field__description`          | slot      | `field-description`                                                                   | The description.                                                 |
+| `ui-field__message`              | slot      | `field-error`                                                                         | The validation message; empty while valid.                       |
+| `ui-field__message-tooltip`      | slot      |                                                                                       | The tooltip showing the message with `messageDisplay="tooltip"`. |
+| `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only`, `responsive` | Where the label sits.                                            |
+| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                                | The control size.                                                |
+| `data-density`                   | attribute | `default`, `compact`                                                                  | The room the field keeps for its message and restore button.     |
+| `data-restore-button`            | attribute | `true`                                                                                | The field draws its restore button (`showRestoreButton`).        |
+| `data-change-layout`             | attribute | `inline`, `stacked`, `hidden`                                                         | Where the control shows the value a dirty field's edit replaced. |
+| `data-message-display`           | attribute | `inline`, `tooltip`                                                                   | Where the validation message shows.                              |
+| `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                              | Validation status.                                               |
+| `data-dirty`                     | state     | `true`                                                                                | The value differs from the committed value.                      |
+| `data-required`                  | state     | `true`                                                                                | A value is required.                                             |
+| `data-readonly`                  | state     | `true`                                                                                | Read-only.                                                       |
+| `data-disabled`                  | state     | `true`                                                                                | Disabled.                                                        |
+| `data-touched`                   | state     | `true`                                                                                | Focus has left the field at least once.                          |
+| `data-filled`                    | state     | `true`                                                                                | The value is not empty.                                          |
+| `data-focused`                   | state     | `true`                                                                                | Focus is inside the field, popovers it opens included.           |
+| `data-severity`                  | state     | `error`, `warning`                                                                    | On the message: the severity of the message shown.               |
+| `ui-field-restore-button`        | root      |                                                                                       | A restore button (also `ui-button`).                             |
+| `ui-field-previous-value`        | root      |                                                                                       | A previous-value marker.                                         |
+| `ui-field-previous-value__value` | slot      |                                                                                       | The previous value, in a `<del>` element.                        |
+| `ui-fieldset`                    | root      | `field-set`                                                                           | A fieldset's `<fieldset>`.                                       |
+| `ui-fieldset__legend`            | slot      | `field-legend`                                                                        | The fieldset's `<legend>`.                                       |

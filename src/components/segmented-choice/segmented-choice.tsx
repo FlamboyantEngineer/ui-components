@@ -28,6 +28,9 @@ export type SegmentedChoiceSizing = 'equal' | 'content';
 /** `default` draws segments on one shared frame; `outline` gives each segment its own border. */
 export type SegmentedChoiceVariant = 'default' | 'outline';
 
+/** `joined` sets the segments edge to edge; `spaced` a small gap apart (shadcn/ui's `spacing`). */
+export type SegmentedChoiceSpacing = 'joined' | 'spaced';
+
 export interface SegmentedChoiceOption {
   value: string;
   /** The segment's text and accessible name. */
@@ -78,6 +81,8 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   orientation?: Orientation | undefined;
   /** Segment chrome. Defaults to `default`. */
   variant?: SegmentedChoiceVariant | undefined;
+  /** Whether the segments touch. Defaults to `joined`. */
+  spacing?: SegmentedChoiceSpacing | undefined;
   /** Segment block size. Defaults to `md`. */
   size?: ControlSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
@@ -159,6 +164,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   isReadOnly = false,
   isInvalid = false,
   variant = 'default',
+  spacing = 'joined',
   size = 'md',
   sizing = 'equal',
   iconOnly = false,
@@ -186,6 +192,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   useNativeReset(group, selection.reset);
   const isDisabled = useScopedDisabled(rest.isDisabled);
   const showsIcons = useSegmentIcons(group, iconOnly, options);
+  const look = { variant, spacing, size, sizing };
 
   return (
     <ToggleButtonGroup
@@ -196,9 +203,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
         className,
         props: rest,
         data: {
-          variant,
-          size,
-          sizing,
+          ...look,
           selectionMode: selection.selectionMode,
           iconOnly: showsIcons,
           inherited: isInherited,

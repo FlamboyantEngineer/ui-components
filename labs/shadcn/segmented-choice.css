@@ -67,35 +67,59 @@
   box-shadow: var(--ref-focus-halo);
 }
 
-.ui-segmented-choice[data-variant='outline'] {
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'] {
   border-width: 1px;
   border-color: var(--input);
 }
 
-.ui-segmented-choice[data-variant='outline'] .ui-segmented-choice__segment {
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'] .ui-segmented-choice__segment {
   height: calc(var(--ref-control-height-md) - 2px);
 }
 
-.ui-segmented-choice[data-variant='outline'][data-size='xs'] .ui-segmented-choice__segment {
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-size='xs']
+  .ui-segmented-choice__segment {
   height: calc(var(--ref-control-height-xs) - 2px);
 }
 
-.ui-segmented-choice[data-variant='outline'][data-size='sm'] .ui-segmented-choice__segment {
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-size='sm']
+  .ui-segmented-choice__segment {
   height: calc(var(--ref-control-height-sm) - 2px);
 }
 
-.ui-segmented-choice[data-variant='outline'][data-size='lg'] .ui-segmented-choice__segment {
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-size='lg']
+  .ui-segmented-choice__segment {
   height: calc(var(--ref-control-height-lg) - 2px);
 }
 
-.ui-segmented-choice[data-variant='outline']:not([data-orientation='vertical'])
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined']:not(
+    [data-orientation='vertical']
+  )
   .ui-segmented-choice__segment
   + .ui-segmented-choice__segment {
   border-inline-start: 1px solid var(--input);
 }
 
-.ui-segmented-choice[data-variant='outline'][data-orientation='vertical']
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-orientation='vertical']
   .ui-segmented-choice__segment
   + .ui-segmented-choice__segment {
   border-block-start: 1px solid var(--input);
+}
+
+/*
+ * Spaced (shadcn/ui's default spacing of 2): toggles 8 pixels apart, each rounded-lg; outline ones
+ * keep their own input-colored border.
+ */
+.ui-segmented-choice[data-spacing='spaced'] {
+  gap: 8px;
+}
+
+.ui-segmented-choice[data-spacing='spaced'] .ui-segmented-choice__segment {
+  border-radius: var(--ref-radius);
+}
+
+.ui-segmented-choice[data-variant='outline'][data-spacing='spaced'] .ui-segmented-choice__segment,
+.ui-segmented-choice[data-variant='outline'][data-spacing='spaced'][data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  border: 1px solid var(--input);
 }

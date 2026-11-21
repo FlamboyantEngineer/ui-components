@@ -74,6 +74,8 @@ export interface MenuItemProps
   trailing?: ReactNode;
   /** Defaults to `neutral`. */
   tone?: MenuItemTone | undefined;
+  /** Starts the label where an icon's label would start, for a row without an icon (shadcn/ui's `inset`). */
+  inset?: boolean | undefined;
   /** Keeps the item visible but out of reach. */
   isDisabled?: boolean | undefined;
   /** Keeps a disabled item in keyboard navigation, with `aria-disabled="true"`, refusing activation. */
@@ -95,6 +97,8 @@ export interface MenuSectionProps
   title?: ReactNode;
   /** Names the group when it has no `title`. */
   'aria-label'?: string | undefined;
+  /** Starts the title where an icon item's label starts (shadcn/ui's `inset` label). */
+  inset?: boolean | undefined;
   /** Whether activating one of its items closes the menu. Defaults to the menu's setting. */
   shouldCloseOnSelect?: boolean | undefined;
   children?: ReactNode;
@@ -268,6 +272,7 @@ export function MenuItem({
   trailing,
   tone = 'neutral',
   isPending = false,
+  inset = false,
   isDisabled = false,
   focusableWhenDisabled = false,
   isSelected,
@@ -284,7 +289,7 @@ export function MenuItem({
       {...rest}
       {...(render ? { render } : { href })}
       id={toCollectionItemKey(id)}
-      {...itemHooks.root({ className, props: rest, data: { tone, pending: isPending } })}
+      {...itemHooks.root({ className, props: rest, data: { tone, pending: isPending, inset } })}
       textValue={textValue ?? (typeof children === 'string' ? children : undefined)}
       isDisabled={isPending || (isDisabled && !own.focusableDisabled) || undefined}
     >
@@ -319,6 +324,7 @@ export function MenuSection({
   selectedKeys,
   defaultSelectedKeys,
   onSelectionChange,
+  inset = false,
   ...rest
 }: MenuSectionProps) {
   const sectionHooks = useDataSlotHooks(menuSectionHooks);
@@ -329,7 +335,7 @@ export function MenuSection({
       {...sectionHooks.root({ className, props: rest })}
       {...toCollectionSelectionProps({ selectedKeys, defaultSelectedKeys, onSelectionChange })}
     >
-      {title ? <Header {...sectionHooks.slot('header')}>{title}</Header> : null}
+      {title ? <Header {...sectionHooks.slot('header', { inset })}>{title}</Header> : null}
       {keyCollectionChildren(children)}
     </AriaMenuSection>
   );

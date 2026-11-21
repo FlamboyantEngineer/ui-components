@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, useId, useMemo, useRef } from 'react';
+import { type CSSProperties, type ReactNode, useId, useMemo, useRef } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -48,6 +48,9 @@ export { createCodeBlockOverride } from './markdown-code-block.js';
 /** `code` shows source; `terminal` shows commands after a prompt and their output. */
 export type CodeBlockVariant = 'code' | 'terminal';
 
+/** `sm` tightens the block's padding and type, shadcn/ui's small code block. */
+export type CodeBlockSize = 'default' | 'sm';
+
 /** The data of a code block, as a message part carries it. */
 export interface CodeBlockData {
   /** The code, shown exactly as given. */
@@ -61,6 +64,8 @@ export interface CodeBlockData {
 }
 
 export interface CodeBlockDataProps extends RefProps<HTMLDivElement>, BaseProps, CodeBlockData {
+  /** Padding and type size. Defaults to `default`. */
+  size?: CodeBlockSize | undefined;
   /** Shows an Apply action that hands over the block's value, such as to insert it in a file. */
   onApply?: ((code: string) => void) | undefined;
   /** Names the Apply action. Defaults to the provider's `codeBlockApply` string. */
@@ -120,12 +125,46 @@ export function CodeBlock(props: CodeBlockProps) {
   return isDataBlock(props) ? <DataCodeBlock {...props} /> : <CodeBlockFrame {...props} />;
 }
 
+/** The data block's header: its title, then its Apply and Copy actions. */
+function DataCodeBlockHeader(props: {
+  titleId: string;
+  title: ReactNode;
+  onApply: ((code: string) => void) | undefined;
+  applyLabel: string | undefined;
+  value: string;
+  copyLabel: string;
+}) {
+  const { onApply, value } = props;
+  const strings = useUiStrings();
+  return (
+    <div {...hooks.slot('header')}>
+      <span {...hooks.slot('title')} id={props.titleId}>
+        {props.title}
+      </span>
+      <span {...hooks.slot('actions')}>
+        {onApply ? (
+          <Button
+            className={hooks.slotClass('apply')}
+            size="sm"
+            variant="ghost"
+            onPress={() => onApply(value)}
+          >
+            {props.applyLabel ?? strings.codeBlockApply}
+          </Button>
+        ) : null}
+        <CopyButton {...hooks.slot('copy')} value={value} label={props.copyLabel} size="sm" />
+      </span>
+    </div>
+  );
+}
+
 function DataCodeBlock({
   ref,
   code,
   language,
   title,
   variant = 'code',
+  size = 'default',
   onApply,
   applyLabel,
   tokenize,
@@ -151,34 +190,19 @@ function DataCodeBlock({
   return (
     <div
       ref={ref}
-      {...hooks.root({ className, props: rest, data: { variant, language } })}
+      {...hooks.root({ className, props: rest, data: { variant, size, language } })}
       id={id}
       role="group"
       aria-labelledby={titleId}
     >
-      <div {...hooks.slot('header')}>
-        <span {...hooks.slot('title')} id={titleId}>
-          {title ?? language ?? strings.codeBlockTitle(variant)}
-        </span>
-        <span {...hooks.slot('actions')}>
-          {onApply ? (
-            <Button
-              className={hooks.slotClass('apply')}
-              size="sm"
-              variant="ghost"
-              onPress={() => onApply(value)}
-            >
-              {applyLabel ?? strings.codeBlockApply}
-            </Button>
-          ) : null}
-          <CopyButton
-            {...hooks.slot('copy')}
-            value={value}
-            label={readCopyLabel(strings, variant, commands)}
-            size="sm"
-          />
-        </span>
-      </div>
+      <DataCodeBlockHeader
+        titleId={titleId}
+        title={title ?? language ?? strings.codeBlockTitle(variant)}
+        onApply={onApply}
+        applyLabel={applyLabel}
+        value={value}
+        copyLabel={readCopyLabel(strings, variant, commands)}
+      />
       <pre
         {...hooks.slot('code', { overflowing: isOverflowing, wrap, lineNumbers })}
         ref={codeRef}

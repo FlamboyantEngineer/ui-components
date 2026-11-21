@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react';
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import {
   CodeBlock,
+  CodeBlockContent,
+  CodeBlockFooter,
+  CodeBlockHeader,
+  CodeBlockTitle,
   type CodeBlockVariant,
   createCodeBlockOverride,
 } from '../../src/components/code-block/index.js';
@@ -272,6 +276,34 @@ mountLab(
               tokenize={tokenizeScript}
               onApply={actions === 'apply' ? () => undefined : undefined}
             />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Sizes"
+      description="The default block and the small one, with tighter padding and smaller type, as data and composed with a footer."
+    >
+      <StateMatrix
+        axes={{ size: ['default', 'sm'], kind: ['data', 'composed'] }}
+        render={({ size, kind }) => (
+          <div style={{ width: 360 }}>
+            {kind === 'data' ? (
+              <CodeBlock
+                code={samples.code.short}
+                size={size}
+                language="ts"
+                tokenize={tokenizeScript}
+              />
+            ) : (
+              <CodeBlock size={size} aria-label={`Composed, ${size}`}>
+                <CodeBlockHeader>
+                  <CodeBlockTitle>totals.ts</CodeBlockTitle>
+                </CodeBlockHeader>
+                <CodeBlockContent>{samples.code.short}</CodeBlockContent>
+                <CodeBlockFooter>Shown at {size}</CodeBlockFooter>
+              </CodeBlock>
+            )}
           </div>
         )}
       />

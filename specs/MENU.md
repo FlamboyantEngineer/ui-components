@@ -92,6 +92,13 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 Implementation: `src/components/menu/menu-item.tsx`, `src/components/menu/menu.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
+### UIC-MENU-2.9 - Inset rows
+
+`inset` on a `MenuItem` (or an item entry) shall publish `data-inset` on the item, and on a `MenuSection` (or a section entry) on its title, so a row without an icon starts its text where an icon row's text starts, as shadcn/ui's `inset` items and labels do. The reference sheet indents the label and description, or the title, by the icon's width and gap; `inset` changes no behaviour.
+
+Implementation: `src/components/menu/menu-item.tsx`, `labs/reference/menu.css`
+Verification: `src/components/menu/menu-item.test.tsx`
+
 ## UIC-MENU-3 - Sections, separators and selection
 
 ### UIC-MENU-3.1 - Sections
@@ -247,6 +254,7 @@ Verification: `src/components/menu/menu-action-icons.test.tsx`, `e2e/menu.spec.t
 | `data-tone`                       | attribute | `neutral`, `danger`                                                                           | Emphasis.                                                           |
 | `data-key`                        | state     |                                                                                               | Opaque collection key (React Aria): not the `id`, not for styling.  |
 | `data-pending`                    | state     | `true`                                                                                        | A placeholder for loading actions.                                  |
+| `data-inset`                      | attribute | `true`                                                                                        | The text starts where an icon row's text starts.                    |
 | `data-disabled`                   | state     | `true`                                                                                        | Disabled (React Aria).                                              |
 | `data-hovered`                    | state     | `true`                                                                                        | Pointer over the item.                                              |
 | `data-focused`                    | state     | `true`                                                                                        | Focused.                                                            |

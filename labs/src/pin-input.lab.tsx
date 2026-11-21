@@ -206,6 +206,13 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Separators"
+      description="A six-character code read as two groups of three, and as three groups of two."
+    >
+      <PinInput label="Code in threes" length={6} separators={[3]} defaultValue="123456" />
+      <PinInput label="Code in pairs" length={6} separators={[2, 4]} />
+    </LabSection>
+    <LabSection
       title="One-time code"
       description="Type, paste or autofill a code; onComplete runs once per complete code."
     >

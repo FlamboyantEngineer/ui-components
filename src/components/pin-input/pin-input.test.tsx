@@ -62,7 +62,7 @@ describe('PinInput', () => {
     ]);
     await user.keyboard('34');
     expect(root(container)).toHaveAttribute('data-complete', 'true');
-    expectHooksMatchSpec(container, 'PIN-INPUT', { slots: 'all' });
+    expectHooksMatchSpec(container, 'PIN-INPUT', { slots: ['group', 'cell'] });
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control', 'message'] });
   });
 
@@ -90,7 +90,7 @@ describe('PinInput', () => {
     for (const cell of cells()) expect(cell).toBeDisabled();
     rerender(<PinInput id="code" label="Code" length={3} isReadOnly />);
     expect(screen.getByRole('group', { name: 'Code' })).toHaveAttribute('data-readonly', 'true');
-    expectHooksMatchSpec(container, 'PIN-INPUT', { slots: 'all' });
+    expectHooksMatchSpec(container, 'PIN-INPUT', { slots: ['group', 'cell'] });
   });
 
   it('UIC-PIN-INPUT-1.3 takes only the characters of its type', async () => {
@@ -124,6 +124,21 @@ describe('PinInput', () => {
       expect(cell).toHaveAttribute('placeholder', '○');
     }
     expect(masked[0]).toHaveValue('1');
+  });
+
+  it('UIC-PIN-INPUT-1.9 draws hidden separators between cells without changing typing', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<PinInput label="Code" length={6} separators={[0, 3, 6]} />);
+    const group = screen.getByRole('group', { name: 'Code' });
+    const order = [...group.children].map((part) =>
+      part.classList.contains('ui-pin-input__separator') ? '-' : 'c',
+    );
+    expect(order.join('')).toBe('ccc-ccc');
+    expect(group.querySelector('.ui-pin-input__separator')).toHaveAttribute('aria-hidden', 'true');
+    await user.click(cells()[0] as HTMLInputElement);
+    await user.keyboard('123456');
+    expect(values()).toEqual(['1', '2', '3', '4', '5', '6']);
+    expectHooksMatchSpec(container, 'PIN-INPUT', { slots: ['separator'] });
   });
 
   it('UIC-PIN-INPUT-1.5 puts the autocomplete hint on the first cell and spreads autofill', () => {

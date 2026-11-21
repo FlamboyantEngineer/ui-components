@@ -48,6 +48,13 @@ describe('CodeBlock', () => {
     );
   });
 
+  it('UIC-CODE-BLOCK-1.7 publishes its size, default unless sm', () => {
+    const { rerender } = render(<CodeBlock code="x" language="ts" />);
+    expect(screen.getByRole('group', { name: 'ts' })).toHaveAttribute('data-size', 'default');
+    rerender(<CodeBlock code="x" language="ts" size="sm" />);
+    expect(screen.getByRole('group', { name: 'ts' })).toHaveAttribute('data-size', 'sm');
+  });
+
   it('UIC-CODE-BLOCK-1.2 renders its text through TextMatch', () => {
     const { container } = render(
       <TextMatchProvider query="price">

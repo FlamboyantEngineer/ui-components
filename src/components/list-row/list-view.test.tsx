@@ -473,7 +473,7 @@ describe('ListView', () => {
     expect(header).toHaveTextContent('Fruit');
     expect(groups[0]).toHaveAccessibleName('Fruit');
     expect(within(groups[1] as HTMLElement).getAllByRole('row')).toHaveLength(2);
-    expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['header'] });
+    expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['ui-list-view-section__header'] });
   });
 
   it('UIC-LIST-ROW-3.5 draws a drag handle on rows the list lets the reader drag', () => {

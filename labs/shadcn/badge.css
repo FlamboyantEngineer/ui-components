@@ -68,3 +68,31 @@
   background: transparent;
   color: var(--foreground);
 }
+
+/* Ghost: no fill or border, a muted fill while a link holding it is hovered; link: primary text. */
+.ui-badge:is([data-variant='ghost'], [data-variant='link']):not([data-bare]) {
+  border-color: transparent;
+  background: transparent;
+}
+
+.ui-badge[data-variant='ghost'][data-tone='neutral'] {
+  color: var(--foreground);
+}
+
+:is(a, .ui-link):hover .ui-badge[data-variant='ghost']:not([data-bare]) {
+  background: var(--muted);
+  color: var(--ref-muted);
+}
+
+:where(.dark, [data-theme='dark']) :is(a, .ui-link):hover .ui-badge[data-variant='ghost'] {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.ui-badge[data-variant='link'][data-tone='neutral'] {
+  color: var(--primary);
+}
+
+:is(a, .ui-link):hover .ui-badge[data-variant='link']:not([data-bare]) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

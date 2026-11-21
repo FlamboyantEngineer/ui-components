@@ -2,10 +2,17 @@
 
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Density, Orientation, RefProps } from '../../core/props.js';
+import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type {
+  BaseProps,
+  ContainerProps,
+  Density,
+  Orientation,
+  RefProps,
+} from '../../core/props.js';
 import { Group } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { Separator, type SeparatorProps } from '../separator/separator.js';
 
 /** The states a button group passes to `render` with its root's props. */
 export interface ButtonGroupRenderState {
@@ -32,7 +39,18 @@ export interface ButtonGroupProps extends BaseProps, AriaLabellingProps, RefProp
   render?: ElementRender<'div', ButtonGroupRenderState> | undefined;
 }
 
-const hooks = createHooks('button-group', [], { root: 'button-group' });
+export type ButtonGroupSeparatorProps = Omit<
+  SeparatorProps,
+  'label' | 'labelPosition' | 'labelPlacement'
+>;
+
+export type ButtonGroupTextProps = ContainerProps<'span'> & BaseProps;
+
+const hooks = createHooks('button-group', ['separator', 'text'], {
+  root: 'button-group',
+  separator: 'button-group-separator',
+  text: 'button-group-text',
+});
 
 /**
  * A labelled cluster of related buttons (`role="group"`): spaced or attached,
@@ -57,4 +75,28 @@ export function ButtonGroup({
       })}
     />
   );
+}
+
+/**
+ * A rule between buttons of a group (also `ui-separator`), across the group's direction: vertical
+ * unless `orientation` says otherwise.
+ */
+export function ButtonGroupSeparator({
+  orientation = 'vertical',
+  className,
+  ...rest
+}: ButtonGroupSeparatorProps) {
+  return (
+    <Separator
+      {...rest}
+      orientation={orientation}
+      className={mergeClassNames(hooks.slotClass('separator'), className)}
+      data-slot={hooks.dataSlot('separator')}
+    />
+  );
+}
+
+/** Text that sits in a group beside its buttons, such as a unit or a prefix. */
+export function ButtonGroupText({ className, ...rest }: ButtonGroupTextProps) {
+  return <span {...rest} {...hooks.slot('text', undefined, className)} />;
 }
