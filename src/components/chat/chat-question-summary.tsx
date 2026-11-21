@@ -1,5 +1,6 @@
 'use client';
 
+import { type ReactNode, useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
@@ -9,6 +10,7 @@ import {
   listAnswerLabels,
   readAnswerText,
 } from './chat-question-model.js';
+import { readQuestionText } from './chat-question-text.js';
 
 /** What a summary says of one question's answer. */
 function describeAnswer(
@@ -24,7 +26,7 @@ function describeAnswer(
   return labels.length > 0 ? strings.questionChose(labels) : strings.questionNoAnswer;
 }
 
-/** An answered card: each question with what the reader chose or wrote. */
+/** An answered card: each question's title with what the reader chose or wrote. */
 export function QuestionSummary({
   questions,
   answers = [],
@@ -33,11 +35,15 @@ export function QuestionSummary({
   answers?: readonly ChatQuestionAnswer[] | undefined;
 }) {
   const strings = useUiStrings();
+  const titles = useMemo(
+    () => questions.map((item) => readQuestionText(item.question).title),
+    [questions],
+  );
   return (
     <dl {...hooks.slot('summary')}>
-      {questions.map((item) => (
+      {questions.map((item, index) => (
         <div key={item.id} {...hooks.slot('summary-item')}>
-          <dt {...hooks.slot('summary-question')}>{item.question}</dt>
+          <dt {...hooks.slot('summary-question')}>{titles[index]}</dt>
           <dd {...hooks.slot('summary-answer')}>
             {describeAnswer(
               item,
@@ -51,12 +57,12 @@ export function QuestionSummary({
   );
 }
 
-/** A dismissed card: its first question and a short "Dismissed". */
-export function QuestionDismissal({ question }: { question: string | undefined }) {
+/** A dismissed card: its first question's title and a short "Dismissed". */
+export function QuestionDismissal({ title }: { title: ReactNode }) {
   const strings = useUiStrings();
   return (
     <>
-      {question ? <p {...hooks.slot('question')}>{question}</p> : null}
+      {title ? <div {...hooks.slot('question')}>{title}</div> : null}
       <p {...hooks.slot('status')}>{strings.questionDismissed}</p>
     </>
   );

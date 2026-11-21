@@ -58,7 +58,7 @@ export interface QuestionnaireItemProps extends RefProps<HTMLFieldSetElement>, B
 
 export interface QuestionnaireTitleProps extends ContainerProps<'legend'>, BaseProps {}
 
-export interface QuestionnaireDescriptionProps extends ContainerProps<'p'>, BaseProps {}
+export interface QuestionnaireDescriptionProps extends ContainerProps<'div'>, BaseProps {}
 
 export interface QuestionnaireErrorProps extends ContainerProps<'p'>, BaseProps {}
 
@@ -223,12 +223,12 @@ export function QuestionnaireTitle({ className, ...rest }: QuestionnaireTitlePro
   return <legend {...rest} {...hooks.slot('title', undefined, className)} id={item.titleId} />;
 }
 
-/** More about the question, which describes it. */
+/** More about the question, which describes it: a block that may hold paragraphs and lists. */
 export function QuestionnaireDescription({ className, ...rest }: QuestionnaireDescriptionProps) {
   const item = readQuestionnaire(useContext(QuestionnaireItemContext), 'QuestionnaireDescription');
   useShownPart('description', item);
   return (
-    <p {...rest} {...hooks.slot('description', undefined, className)} id={item.descriptionId} />
+    <div {...rest} {...hooks.slot('description', undefined, className)} id={item.descriptionId} />
   );
 }
 

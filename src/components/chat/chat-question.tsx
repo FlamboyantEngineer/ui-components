@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { containsFocus, isFocusLost } from '../../utils/focus-target.js';
@@ -17,6 +17,7 @@ import {
 import { PendingQuestions } from './chat-question-pending.js';
 import { useQuestionRequest } from './chat-question-request.js';
 import { QuestionDismissal, QuestionSummary } from './chat-question-summary.js';
+import { readQuestionText } from './chat-question-text.js';
 
 export type {
   ChatQuestionAnswer,
@@ -68,6 +69,20 @@ function useSettledFocus(status: ChatQuestionData['status']) {
 }
 
 /**
+ * The card's name, from the words of its first question's title, and that title for a dismissed
+ * card.
+ */
+function useCardName(questions: ChatQuestionData['questions']) {
+  const strings = useUiStrings();
+  const first = questions[0]?.question;
+  const text = useMemo(() => (first === undefined ? undefined : readQuestionText(first)), [first]);
+  return {
+    name: text === undefined ? undefined : strings.questionAsked(text.words, questions.length),
+    title: text?.title,
+  };
+}
+
+/**
  * An inline card in which an agent asks the reader one or several questions: a `group` named from
  * the first question, answered by radios, checkboxes or the reader's own words and submitted
  * together, read-only without `onSubmit`. A pending card announces itself politely once and is
@@ -86,7 +101,6 @@ export function ChatQuestion({
   className,
   ...rest
 }: ChatQuestionProps) {
-  const strings = useUiStrings();
   const stateKey = usePartStateKey(id);
   const { rootRef, settle } = useSettledFocus(status);
   const rootRefs = useMergedRefs(rootRef, ref);
@@ -95,8 +109,7 @@ export function ChatQuestion({
   const [isAnnounced, setAnnounced] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the empty live region commits first
   useLayoutEffect(() => setAnnounced(true), []);
-  const first = questions[0]?.question;
-  const name = first === undefined ? undefined : strings.questionAsked(first, questions.length);
+  const { name, title } = useCardName(questions);
   const isPending = status === 'pending';
   useRetainedStateReset(
     [`question-drafts:${stateKey}`, `question-step:${stateKey}`, `question-request:${stateKey}`],
@@ -145,7 +158,7 @@ export function ChatQuestion({
         />
       ) : null}
       {status === 'answered' ? <QuestionSummary questions={questions} answers={answers} /> : null}
-      {status === 'dismissed' ? <QuestionDismissal question={first} /> : null}
+      {status === 'dismissed' ? <QuestionDismissal title={title} /> : null}
       {isPending ? (
         <VisuallyHidden as="span" className={hooks.slotClass('announcement')} role="status">
           {isAnnounced ? name : null}
