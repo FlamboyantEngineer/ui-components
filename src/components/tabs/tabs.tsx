@@ -1,7 +1,6 @@
 'use client';
 
 import { type ReactNode, useMemo } from 'react';
-import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation, RefProps, Size } from '../../core/props.js';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
@@ -152,7 +151,7 @@ export function TabsContent({ className, id, ...rest }: TabsContentProps) {
     <AriaTabPanel
       {...rest}
       id={toCollectionItemKey(id)}
-      className={mergeClassNames(hooks.slotClass('panel'), className)}
+      {...hooks.slot('panel', undefined, className)}
     />
   );
 }

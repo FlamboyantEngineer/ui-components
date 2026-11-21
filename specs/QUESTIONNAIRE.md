@@ -66,20 +66,20 @@ Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questi
 
 | Hook                            | Kind      | Values                              | Description                          |
 | ------------------------------- | --------- | ----------------------------------- | ------------------------------------ |
-| `ui-questionnaire`              | root      |                                     | The `<form>`.                        |
-| `ui-questionnaire__progress`    | slot      |                                     | Where the reader is, while stepping. |
-| `ui-questionnaire__item`        | slot      |                                     | One question's `<fieldset>`.         |
-| `ui-questionnaire__title`       | slot      |                                     | The question, as its legend.         |
-| `ui-questionnaire__description` | slot      |                                     | More about the question.             |
-| `ui-questionnaire__choices`     | slot      |                                     | The question's options.              |
-| `ui-questionnaire__choice`      | slot      |                                     | One option around its Choice.        |
-| `ui-questionnaire__input`       | slot      |                                     | An answer in the reader's words.     |
-| `ui-questionnaire__error`       | slot      |                                     | Why the question cannot be left.     |
-| `ui-questionnaire__actions`     | slot      |                                     | The row of actions.                  |
-| `ui-questionnaire__previous`    | slot      |                                     | Back to the previous question.       |
-| `ui-questionnaire__skip`        | slot      |                                     | Passes over an optional question.    |
-| `ui-questionnaire__next`        | slot      |                                     | On to the next question.             |
-| `ui-questionnaire__submit`      | slot      |                                     | Submits the answers.                 |
+| `ui-questionnaire`              | root      | `questionnaire`                     | The `<form>`.                        |
+| `ui-questionnaire__progress`    | slot      | `questionnaire-progress`            | Where the reader is, while stepping. |
+| `ui-questionnaire__item`        | slot      | `questionnaire-item`                | One question's `<fieldset>`.         |
+| `ui-questionnaire__title`       | slot      | `questionnaire-title`               | The question, as its legend.         |
+| `ui-questionnaire__description` | slot      | `questionnaire-description`         | More about the question.             |
+| `ui-questionnaire__choices`     | slot      | `questionnaire-choices`             | The question's options.              |
+| `ui-questionnaire__choice`      | slot      | `questionnaire-choice`              | One option around its Choice.        |
+| `ui-questionnaire__input`       | slot      | `questionnaire-input`               | An answer in the reader's words.     |
+| `ui-questionnaire__error`       | slot      | `questionnaire-error`               | Why the question cannot be left.     |
+| `ui-questionnaire__actions`     | slot      | `questionnaire-actions`             | The row of actions.                  |
+| `ui-questionnaire__previous`    | slot      | `questionnaire-previous`            | Back to the previous question.       |
+| `ui-questionnaire__skip`        | slot      | `questionnaire-skip`                | Passes over an optional question.    |
+| `ui-questionnaire__next`        | slot      | `questionnaire-next`                | On to the next question.             |
+| `ui-questionnaire__submit`      | slot      | `questionnaire-submit`              | Submits the answers.                 |
 | `data-stepping`                 | state     | `true`                              | Questions show one at a time.        |
 | `data-read-only`                | state     | `true`                              | The answers cannot be changed.       |
 | `data-status`                   | state     | `unanswered`, `answered`, `skipped` | A question's answer.                 |

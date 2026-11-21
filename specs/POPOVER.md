@@ -112,12 +112,12 @@ Verification: `src/components/popover/use-popover-gutter.test.tsx`, `e2e/popover
 
 | Hook                      | Kind  | Values                           | Description                                                 |
 | ------------------------- | ----- | -------------------------------- | ----------------------------------------------------------- |
-| `ui-popover`              | root  |                                  | The floating panel (React Aria `Popover`).                  |
+| `ui-popover`              | root  | `popover-content`                | The floating panel (React Aria `Popover`).                  |
 | `ui-popover__arrow`       | slot  |                                  | The arrow pointing at the trigger.                          |
 | `ui-popover__dialog`      | slot  |                                  | The `role="dialog"` element.                                |
-| `ui-popover__header`      | slot  |                                  | The title and close button row.                             |
-| `ui-popover__title`       | slot  |                                  | The `<h2>` title.                                           |
-| `ui-popover__description` | slot  |                                  | The paragraph describing the dialog.                        |
+| `ui-popover__header`      | slot  | `popover-header`                 | The title and close button row.                             |
+| `ui-popover__title`       | slot  | `popover-title`                  | The `<h2>` title.                                           |
+| `ui-popover__description` | slot  | `popover-description`            | The paragraph describing the dialog.                        |
 | `ui-popover__close`       | slot  |                                  | The header close button (also `ui-button`).                 |
 | `ui-popover__body`        | slot  |                                  | The body.                                                   |
 | `data-placement`          | state | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |

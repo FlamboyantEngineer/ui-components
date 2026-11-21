@@ -91,29 +91,32 @@ interface DrawerHeaderProps extends Pick<DrawerProps, 'title' | 'showCloseButton
   onClose: () => void;
 }
 
-const hooks = createHooks('drawer', [
-  'backdrop',
-  'panel',
-  'dialog',
-  'header',
-  'title',
-  'close',
-  'body',
-  'footer',
-]);
+const hooks = createHooks(
+  'drawer',
+  ['backdrop', 'panel', 'dialog', 'header', 'title', 'close', 'body', 'footer'],
+  {
+    root: 'drawer-overlay',
+    panel: 'drawer-content',
+    dialog: 'drawer',
+    header: 'drawer-header',
+    title: 'drawer-title',
+    close: 'drawer-close',
+    footer: 'drawer-footer',
+  },
+);
 
 function DrawerHeader({ title, showCloseButton, isDisabled, onClose }: DrawerHeaderProps) {
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('header')}>
-      <Heading slot="title" className={hooks.slotClass('title')}>
+      <Heading slot="title" {...hooks.slot('title')}>
         {title}
       </Heading>
       {showCloseButton ? (
         <Button
           icon={CloseGlyph}
           label={strings.close}
-          className={hooks.slotClass('close')}
+          {...hooks.slot('close')}
           isDisabled={isDisabled}
           onPress={onClose}
         />
@@ -206,10 +209,10 @@ export function Drawer({
     >
       <DrawerOpening overlayRef={overlayRef}>
         <SheetBackdrop className={hooks.slotClass('backdrop')} />
-        <Sheet className={hooks.slotClass('panel')}>
+        <Sheet {...hooks.slot('panel')}>
           <SheetContent
             id={id}
-            className={hooks.slotClass('dialog')}
+            {...hooks.slot('dialog')}
             // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
             render={(props) => <section {...props} onKeyDown={onKeyDown} />}
           >

@@ -81,6 +81,40 @@ describe('createHooks', () => {
   });
 });
 
+describe('createHooks shadcn/ui slot names', () => {
+  const hooks = createHooks('dialog', ['close', 'body'], {
+    root: 'dialog-overlay',
+    close: 'dialog-close',
+  });
+
+  it('UIC-HOOKS-1.5 writes the declared data-slot on the root and on named slots only', () => {
+    expect(hooks.root()).toEqual({ className: 'ui-dialog', 'data-slot': 'dialog-overlay' });
+    expect(hooks.slot('close')).toEqual({
+      className: 'ui-dialog__close',
+      'data-slot': 'dialog-close',
+    });
+    expect(hooks.slot('body')).toEqual({ className: 'ui-dialog__body' });
+    expect(hooks.dataSlot('close')).toBe('dialog-close');
+    expect(hooks.dataSlot('body')).toBeUndefined();
+  });
+
+  it('UIC-HOOKS-1.5 lets a caller data-slot name a composed part', () => {
+    const button = createHooks('button', [], { root: 'button' });
+    expect(button.root({ props: hooks.slot('close') })['data-slot']).toBe('dialog-close');
+    expect(button.root({ props: {} })['data-slot']).toBe('button');
+    expect(button.root({ className: 'host ui-dialog__close' })['data-slot']).toBe('dialog-close');
+    expect(button.root({ className: 'ui-dialog__body' })['data-slot']).toBe('button');
+  });
+
+  it('UIC-HOOKS-1.5 renders no data-slot for a component that declares none', () => {
+    expect(createHooks('pdf-viewer', ['page']).root()).toEqual({ className: 'ui-pdf-viewer' });
+  });
+
+  it('UIC-HOOKS-1.5 rejects slot names that are not kebab case', () => {
+    expect(() => createHooks('card', [], { root: 'Card' })).toThrow();
+  });
+});
+
 describe('dataAttributes', () => {
   it('UIC-HOOKS-2.2 renders true states as "true" and omits false ones', () => {
     expect(

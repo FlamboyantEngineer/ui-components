@@ -198,16 +198,16 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 
 | Hook                     | Kind      | Values                   | Description                                                                              |
 | ------------------------ | --------- | ------------------------ | ---------------------------------------------------------------------------------------- |
-| `ui-tabs`                | root      |                          | The `Tabs` element holding the list and panels.                                          |
+| `ui-tabs`                | root      | `tabs`                   | The `Tabs` element holding the list and panels.                                          |
 | `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons, edge fades or an add button.      |
 | `ui-tabs__owner`         | slot      |                          | The semantic tablist owning mounted tabs when action parts are present.                  |
 | `ui-tabs__action`        | slot      |                          | An ordinary action part, excluded from tab selection.                                    |
-| `ui-tabs__list`          | slot      |                          | The visual `TabsList` (`role="group"` with actions, otherwise `tablist`).                |
+| `ui-tabs__list`          | slot      | `tabs-list`              | The visual `TabsList` (`role="group"` with actions, otherwise `tablist`).                |
 | `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                                      |
 | `ui-tabs__fade`          | slot      |                          | A decorative fade over an edge of a scrolling list that hides tabs.                      |
 | `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                                             |
 | `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                                       |
-| `ui-tabs__tab`           | slot      |                          | One `TabsTrigger` (`role="tab"`, an `<a>` with `href`).                                  |
+| `ui-tabs__tab`           | slot      | `tabs-trigger`           | One `TabsTrigger` (`role="tab"`, an `<a>` with `href`).                                  |
 | `ui-tabs__indicator`     | slot      |                          | The selection indicator inside the selected tab.                                         |
 | `ui-tabs__icon`          | slot      |                          | A tab's leading icon (also `ui-icon`).                                                   |
 | `ui-tabs__label`         | slot      |                          | A tab's label.                                                                           |
@@ -216,7 +216,7 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | `ui-tabs__rename`        | slot      |                          | The element after the list laid over a tab being renamed.                                |
 | `ui-tabs__rename-input`  | slot      |                          | The name field of a tab being renamed.                                                   |
 | `ui-tabs__rename-error`  | slot      |                          | The message of a refused name.                                                           |
-| `ui-tabs__panel`         | slot      |                          | One `TabsContent` (`role="tabpanel"`).                                                   |
+| `ui-tabs__panel`         | slot      | `tabs-content`           | One `TabsContent` (`role="tabpanel"`).                                                   |
 | `data-size`              | attribute | `sm`, `md`, `lg`         | Tab block size, on the root.                                                             |
 | `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria).               |
 | `data-inline-actions`    | state     | `true`                   | The bar contains independent action parts; its reference layout fills the available row. |

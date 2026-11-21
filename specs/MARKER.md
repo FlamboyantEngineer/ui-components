@@ -15,7 +15,7 @@ Verification: `src/components/marker/marker.test.tsx`, `e2e/marker.spec.ts`
 
 | Hook                 | Kind      | Values                           | Description        |
 | -------------------- | --------- | -------------------------------- | ------------------ |
-| `ui-marker`          | root      |                                  | The marker line.   |
-| `ui-marker__icon`    | slot      |                                  | Decorative glyph.  |
-| `ui-marker__content` | slot      |                                  | The marker's text. |
+| `ui-marker`          | root      | `marker`                         | The marker line.   |
+| `ui-marker__icon`    | slot      | `marker-icon`                    | Decorative glyph.  |
+| `ui-marker__content` | slot      | `marker-content`                 | The marker's text. |
 | `data-variant`       | attribute | `default`, `separator`, `border` | How it sets apart. |

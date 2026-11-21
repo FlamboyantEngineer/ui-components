@@ -105,14 +105,11 @@ type ButtonPartsProps = Pick<
   opensNewTab?: boolean | undefined;
 };
 
-const hooks = createHooks('button', [
-  'spinner',
-  'start-icon',
-  'label',
-  'end-icon',
-  'icon',
-  'new-tab-label',
-]);
+const hooks = createHooks(
+  'button',
+  ['spinner', 'start-icon', 'label', 'end-icon', 'icon', 'new-tab-label'],
+  { root: 'button' },
+);
 
 /** The busy indicator of a pending button: the library spinner, named so it is announced. */
 export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {

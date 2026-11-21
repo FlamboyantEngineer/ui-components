@@ -87,8 +87,8 @@ Verification: `src/components/menubar/menubar-removal.test.tsx`, `e2e/menubar.sp
 
 | Hook                  | Kind      | Values                   | Description                                                               |
 | --------------------- | --------- | ------------------------ | ------------------------------------------------------------------------- |
-| `ui-menubar`          | root      |                          | The `role="menubar"` element.                                             |
-| `ui-menubar__trigger` | slot      |                          | A top-level item: the `<button role="menuitem">` of a `MenubarMenu`.      |
+| `ui-menubar`          | root      | `menubar`                | The `role="menubar"` element.                                             |
+| `ui-menubar__trigger` | slot      | `menubar-trigger`        | A top-level item: the `<button role="menuitem">` of a `MenubarMenu`.      |
 | `data-orientation`    | attribute | `horizontal`, `vertical` | How the top-level items are laid out.                                     |
 | `data-size`           | attribute | `xs`, `sm`, `md`, `lg`   | Row density of the bar; `xs` menus use `sm`.                              |
 | `data-open`           | state     | `true`                   | On a top-level item while its menu is open.                               |

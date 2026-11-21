@@ -157,14 +157,14 @@ function CrumbMenu({ item, index, isDisabled, onAction }: CrumbMenuProps) {
 
 function Separator({ glyph }: { glyph: IconSource }) {
   if (glyph === null || glyph === false) return null;
-  return <Icon {...toIconProps(glyph)} size="sm" className={hooks.slotClass('separator')} />;
+  return <Icon {...toIconProps(glyph)} size="sm" {...hooks.slot('separator')} />;
 }
 
 function Crumb({ item, index, isLast, separator, isDisabled, onAction }: CrumbProps) {
   return (
-    <AriaBreadcrumb id={toCrumbKey(item, index)} className={hooks.slotClass('item')}>
+    <AriaBreadcrumb id={toCrumbKey(item, index)} {...hooks.slot('item')}>
       <AriaLink
-        className={hooks.slotClass('link')}
+        {...hooks.slot('link')}
         href={isLast ? undefined : item.href}
         render={renderLinkElement}
       >
@@ -254,7 +254,7 @@ export function Breadcrumb({
   return (
     <VisibleCollection keys={collapse.visibleKeys}>
       <AriaBreadcrumbs
-        className={hooks.slotClass('list')}
+        {...hooks.slot('list')}
         isDisabled={isDisabled}
         onAction={onAction}
         aria-label={ariaLabel}

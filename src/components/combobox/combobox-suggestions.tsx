@@ -107,9 +107,9 @@ function renderItems(display: ComboboxOptionDisplay) {
   return (item: ComboboxItem) => {
     if (!isPickerSection(item)) return <OptionRow option={item} display={display} />;
     return (
-      <ListBoxSection id={item.id} className={hooks.slotClass('section')}>
+      <ListBoxSection id={item.id} {...hooks.slot('section')}>
         {isEmptyNode(item.label) ? null : (
-          <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
+          <Header {...hooks.slot('section-header')}>{item.label}</Header>
         )}
         {item.options.map((option) => (
           <OptionRow key={toKeyIdentity(option.id)} option={option} display={display} />
@@ -162,7 +162,7 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
     !hasOptionLabelled(flattenPickerItems(items), created);
   const list = (
     <ListBox<ComboboxItem>
-      className={hooks.slotClass('listbox')}
+      {...hooks.slot('listbox')}
       renderEmptyState={
         loading.isLoading ? undefined : () => <span {...hooks.slot('empty')}>{renderEmpty()}</span>
       }

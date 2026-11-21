@@ -46,18 +46,22 @@ export interface FieldControlProps {
   disabled: boolean;
 }
 
-export const fieldHooks = createHooks('field', [
-  'label',
-  'required',
-  'colon',
-  'control',
-  'help',
-  'help-tooltip',
-  'decoration',
-  'description',
-  'message',
-  'message-tooltip',
-]);
+export const fieldHooks = createHooks(
+  'field',
+  [
+    'label',
+    'required',
+    'colon',
+    'control',
+    'help',
+    'help-tooltip',
+    'decoration',
+    'description',
+    'message',
+    'message-tooltip',
+  ],
+  { root: 'field', label: 'field-label', description: 'field-description', message: 'field-error' },
+);
 
 const controlSizes: readonly ControlSize[] = ['xs', 'sm', 'md', 'lg'];
 

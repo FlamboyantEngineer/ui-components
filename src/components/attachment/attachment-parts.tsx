@@ -12,23 +12,41 @@ import { Link } from '../link/link.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
 import { AttachmentRemovalContext } from './attachment-context.js';
 
-export const attachmentHooks = createHooks('attachment', [
-  'preview',
-  'thumbnail',
-  'icon',
-  'name',
-  'size',
-  'progress',
-  'error',
-  'download',
-  'remove',
-  'media',
-  'content',
-  'title',
-  'description',
-  'actions',
-  'action',
-]);
+export const attachmentHooks = createHooks(
+  'attachment',
+  [
+    'preview',
+    'thumbnail',
+    'icon',
+    'name',
+    'size',
+    'progress',
+    'error',
+    'download',
+    'remove',
+    'media',
+    'content',
+    'title',
+    'description',
+    'actions',
+    'action',
+  ],
+  {
+    root: 'attachment',
+    media: 'attachment-media',
+    content: 'attachment-content',
+    title: 'attachment-title',
+    description: 'attachment-description',
+    actions: 'attachment-actions',
+    action: 'attachment-action',
+    name: 'attachment-title',
+    size: 'attachment-description',
+    thumbnail: 'attachment-media',
+    icon: 'attachment-media',
+    remove: 'attachment-action',
+    download: 'attachment-action',
+  },
+);
 
 const hooks = attachmentHooks;
 

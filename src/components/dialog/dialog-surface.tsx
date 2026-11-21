@@ -240,7 +240,7 @@ export function DialogSurface({
             ref={dialogRef}
             id={id}
             role={role}
-            className={hooks.slotClass('dialog')}
+            {...hooks.slot('dialog')}
             aria-label={ariaLabel}
             aria-describedby={descriptionId ?? ariaDescribedby}
             // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.

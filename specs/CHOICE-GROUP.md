@@ -152,10 +152,10 @@ Verification: `src/components/choice-group/radio-group.test.tsx`
 | Hook                          | Kind      | Values                   | Description                                                            |
 | ----------------------------- | --------- | ------------------------ | ---------------------------------------------------------------------- |
 | `ui-choice-group`             | root      |                          | The field's root (also `ui-field`).                                    |
-| `ui-choice-group__box`        | slot      |                          | The React Aria radio or checkbox group (role `radiogroup` or `group`). |
-| `ui-choice`                   | root      |                          | A choice's `<div>`, around its button and description.                 |
+| `ui-choice-group__box`        | slot      | `radio-group`            | The React Aria radio or checkbox group (role `radiogroup` or `group`). |
+| `ui-choice`                   | root      | `radio-group-item`       | A choice's `<div>`, around its button and description.                 |
 | `ui-choice__button`           | slot      |                          | The `<label>` around the hidden input, the indicator and the label.    |
-| `ui-choice__indicator`        | slot      |                          | The drawn indicator.                                                   |
+| `ui-choice__indicator`        | slot      | `radio-group-indicator`  | The drawn indicator.                                                   |
 | `ui-choice__label`            | slot      |                          | The label content.                                                     |
 | `ui-choice__description`      | slot      |                          | The radio's description.                                               |
 | `ui-choice-group__select-all` | slot      |                          | Parent checkbox for multiple choice.                                   |

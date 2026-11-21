@@ -86,7 +86,9 @@ interface DropdownMenuPartsProps {
   placement: Placement;
 }
 
-const hooks = createHooks('dropdown-menu', ['caret', 'action', 'toggle']);
+const hooks = createHooks('dropdown-menu', ['caret', 'action', 'toggle'], {
+  root: 'dropdown-menu-trigger',
+});
 
 /** The menu button: a `Button` with a caret, or showing only an icon, publishing the open state. */
 function DropdownMenuTrigger({

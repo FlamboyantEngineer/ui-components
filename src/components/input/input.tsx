@@ -10,7 +10,7 @@ export interface InputProps
     RefProps<HTMLInputElement>,
     Omit<ContainerProps<'input'>, 'children' | 'ref'> {}
 
-const hooks = createHooks('input');
+const hooks = createHooks('input', [], { root: 'input' });
 
 /** A native single-line input with interaction and styling hooks. Supply an accessible name. */
 export function Input({ className, ...props }: InputProps) {

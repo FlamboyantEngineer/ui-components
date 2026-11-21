@@ -104,16 +104,11 @@ interface SearchBoxProps {
   clearText: string | undefined;
 }
 
-const hooks = createHooks('search-field', [
-  'label',
-  'group',
-  'glyph',
-  'input',
-  'spinner',
-  'clear',
-  'description',
-  'message',
-]);
+const hooks = createHooks(
+  'search-field',
+  ['label', 'group', 'glyph', 'input', 'spinner', 'clear', 'description', 'message'],
+  { group: 'input-group', glyph: 'input-group-addon', input: 'input-group-control' },
+);
 
 /**
  * The clear button. React Aria's own clear button is left out of the tab order and moves focus as a
@@ -145,7 +140,7 @@ function SearchBox({
 }: SearchBoxProps) {
   return (
     <>
-      <Glyph icon={SearchGlyph} className={hooks.slotClass('glyph')} />
+      <Glyph icon={SearchGlyph} {...hooks.slot('glyph')} />
       <Input
         {...hooks.slot('input')}
         ref={inputRef}

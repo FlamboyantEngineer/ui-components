@@ -9,21 +9,40 @@ export type QuestionnaireItemStatus = 'unanswered' | 'answered' | 'skipped';
 /** The answers by question name: the values its choices and input submit, empty ones left out. */
 export type QuestionnaireAnswers = Record<string, string[]>;
 
-export const questionnaireHooks = createHooks('questionnaire', [
-  'progress',
-  'item',
-  'title',
-  'description',
-  'choices',
-  'choice',
-  'input',
-  'error',
-  'actions',
-  'previous',
-  'skip',
-  'next',
-  'submit',
-]);
+export const questionnaireHooks = createHooks(
+  'questionnaire',
+  [
+    'progress',
+    'item',
+    'title',
+    'description',
+    'choices',
+    'choice',
+    'input',
+    'error',
+    'actions',
+    'previous',
+    'skip',
+    'next',
+    'submit',
+  ],
+  {
+    root: 'questionnaire',
+    progress: 'questionnaire-progress',
+    item: 'questionnaire-item',
+    title: 'questionnaire-title',
+    description: 'questionnaire-description',
+    choices: 'questionnaire-choices',
+    choice: 'questionnaire-choice',
+    input: 'questionnaire-input',
+    error: 'questionnaire-error',
+    actions: 'questionnaire-actions',
+    previous: 'questionnaire-previous',
+    skip: 'questionnaire-skip',
+    next: 'questionnaire-next',
+    submit: 'questionnaire-submit',
+  },
+);
 
 /** The questionnaire as its parts read it. */
 export interface QuestionnaireState {

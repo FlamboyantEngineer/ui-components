@@ -119,13 +119,13 @@ Verification: `src/components/carousel/carousel.test.tsx`
 
 | Hook                         | Kind      | Values                       | Description                                                   |
 | ---------------------------- | --------- | ---------------------------- | ------------------------------------------------------------- |
-| `ui-carousel`                | root      |                              | The carousel (`<section>`).                                   |
+| `ui-carousel`                | root      | `carousel`                   | The carousel (`<section>`).                                   |
 | `ui-carousel__controls`      | slot      |                              | The rotation, previous and next buttons.                      |
 | `ui-carousel__rotation`      | slot      |                              | The button that stops or starts rotation (also `ui-button`).  |
-| `ui-carousel__previous`      | slot      |                              | The previous button (also `ui-button`).                       |
-| `ui-carousel__next`          | slot      |                              | The next button (also `ui-button`).                           |
-| `ui-carousel__viewport`      | slot      |                              | The live region holding the slides.                           |
-| `ui-carousel__slide`         | slot      |                              | Each slide's group.                                           |
+| `ui-carousel__previous`      | slot      | `carousel-previous`          | The previous button (also `ui-button`).                       |
+| `ui-carousel__next`          | slot      | `carousel-next`              | The next button (also `ui-button`).                           |
+| `ui-carousel__viewport`      | slot      | `carousel-content`           | The live region holding the slides.                           |
+| `ui-carousel__slide`         | slot      | `carousel-item`              | Each slide's group.                                           |
 | `ui-carousel__pagination`    | slot      |                              | The group of slide pickers.                                   |
 | `ui-carousel__dot`           | slot      |                              | A slide's dot button.                                         |
 | `ui-carousel__thumbnail`     | slot      |                              | A slide's thumbnail button.                                   |

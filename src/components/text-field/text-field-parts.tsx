@@ -72,16 +72,16 @@ interface TextFieldEdit {
   controlRef: RefObject<TextFieldElement | null>;
 }
 
-export const textFieldHooks = createHooks('text-field', [
-  'box',
-  'group',
-  'start',
-  'input',
-  'end',
-  'reveal',
-  'count',
-  'completions',
-]);
+export const textFieldHooks = createHooks(
+  'text-field',
+  ['box', 'group', 'start', 'input', 'end', 'reveal', 'count', 'completions'],
+  {
+    group: 'input-group',
+    start: 'input-group-addon',
+    input: 'input-group-control',
+    end: 'input-group-addon',
+  },
+);
 
 const hooks = textFieldHooks;
 

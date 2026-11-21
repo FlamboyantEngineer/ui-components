@@ -84,14 +84,11 @@ export function NavigationMenuItem({
       }}
     >
       <AriaDisclosure isExpanded={isOpen} onExpandedChange={changeExpanded} isDisabled={isDisabled}>
-        <AriaButton ref={triggerRef} className={hooks.slotClass('trigger')} slot="trigger">
+        <AriaButton ref={triggerRef} {...hooks.slot('trigger')} slot="trigger">
           {label}
-          <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('indicator')} />
+          <Glyph icon={ChevronDownGlyph} {...hooks.slot('indicator')} />
         </AriaButton>
-        <AriaDisclosurePanel
-          ref={isOpen ? menu.panelRef : undefined}
-          className={hooks.slotClass('panel')}
-        >
+        <AriaDisclosurePanel ref={isOpen ? menu.panelRef : undefined} {...hooks.slot('panel')}>
           <DisclosureContentScope>
             <NavigationMenuPanelContext value>{children}</NavigationMenuPanelContext>
           </DisclosureContentScope>

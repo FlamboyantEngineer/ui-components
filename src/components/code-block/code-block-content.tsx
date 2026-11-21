@@ -26,19 +26,32 @@ function endsInContinuation(text: string): boolean {
   return run % 2 === 1;
 }
 
-export const codeBlockHooks = createHooks('code-block', [
-  'header',
-  'title',
-  'actions',
-  'apply',
-  'copy',
-  'code',
-  'token',
-  'line',
-  'line-number',
-  'prompt',
-  'footer',
-]);
+export const codeBlockHooks = createHooks(
+  'code-block',
+  [
+    'header',
+    'title',
+    'actions',
+    'apply',
+    'copy',
+    'code',
+    'token',
+    'line',
+    'line-number',
+    'prompt',
+    'footer',
+  ],
+  {
+    root: 'code-block',
+    header: 'code-block-header',
+    title: 'code-block-title',
+    actions: 'code-block-actions',
+    copy: 'code-block-copy-button',
+    code: 'code-block-code',
+    line: 'code-block-line',
+    footer: 'code-block-footer',
+  },
+);
 
 const hooks = codeBlockHooks;
 

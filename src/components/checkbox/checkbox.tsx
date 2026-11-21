@@ -43,7 +43,10 @@ export interface CheckboxProps extends BaseProps, RefProps<HTMLLabelElement>, Ar
   children?: ReactNode;
 }
 
-const hooks = createHooks('checkbox', ['box', 'glyph', 'label']);
+const hooks = createHooks('checkbox', ['box', 'glyph', 'label'], {
+  root: 'checkbox',
+  box: 'checkbox-indicator',
+});
 
 /**
  * A tick box on a native checkbox input, with an optional visible label. A native form reset

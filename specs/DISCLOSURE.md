@@ -126,21 +126,21 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ## Hooks
 
-| Hook                        | Kind      | Values         | Description                                                       |
-| --------------------------- | --------- | -------------- | ----------------------------------------------------------------- |
-| `ui-disclosure`             | root      |                | A disclosure's `<div>` (React Aria `Disclosure`).                 |
-| `ui-disclosure__header`     | slot      |                | A `DisclosureHeader`: the title and the controls beside it.       |
-| `ui-disclosure__heading`    | slot      |                | The heading around the trigger.                                   |
-| `ui-disclosure__trigger`    | slot      |                | The trigger button.                                               |
-| `ui-disclosure__indicator`  | slot      |                | The indicator glyph (also `ui-glyph`).                            |
-| `ui-disclosure__title`      | slot      |                | The title inside the trigger.                                     |
-| `ui-disclosure__panel`      | slot      |                | The panel (React Aria `DisclosurePanel`).                         |
-| `ui-disclosure-group`       | root      |                | A group's `<div>` (React Aria `DisclosureGroup`).                 |
-| `data-indicator-position`   | attribute | `start`, `end` | On a disclosure and its trigger: where the indicator sits.        |
-| `data-expanded`             | state     | `true`         | On a disclosure: the panel shows (React Aria).                    |
-| `data-disabled`             | state     | `true`         | On a group, a disclosure and its trigger: disabled (React Aria).  |
-| `data-focus-visible-within` | state     | `true`         | On a disclosure or its panel: keyboard focus inside (React Aria). |
-| `data-hovered`              | state     | `true`         | On the trigger, while the pointer is over it (React Aria).        |
-| `data-pressed`              | state     | `true`         | On the trigger, while pressed (React Aria).                       |
-| `data-focused`              | state     | `true`         | On the trigger, while focused (React Aria).                       |
-| `data-focus-visible`        | state     | `true`         | On the trigger, while focused by keyboard (React Aria).           |
+| Hook                        | Kind      | Values                | Description                                                       |
+| --------------------------- | --------- | --------------------- | ----------------------------------------------------------------- |
+| `ui-disclosure`             | root      | `collapsible`         | A disclosure's `<div>` (React Aria `Disclosure`).                 |
+| `ui-disclosure__header`     | slot      |                       | A `DisclosureHeader`: the title and the controls beside it.       |
+| `ui-disclosure__heading`    | slot      |                       | The heading around the trigger.                                   |
+| `ui-disclosure__trigger`    | slot      | `collapsible-trigger` | The trigger button.                                               |
+| `ui-disclosure__indicator`  | slot      |                       | The indicator glyph (also `ui-glyph`).                            |
+| `ui-disclosure__title`      | slot      |                       | The title inside the trigger.                                     |
+| `ui-disclosure__panel`      | slot      | `collapsible-content` | The panel (React Aria `DisclosurePanel`).                         |
+| `ui-disclosure-group`       | root      | `accordion`           | A group's `<div>` (React Aria `DisclosureGroup`).                 |
+| `data-indicator-position`   | attribute | `start`, `end`        | On a disclosure and its trigger: where the indicator sits.        |
+| `data-expanded`             | state     | `true`                | On a disclosure: the panel shows (React Aria).                    |
+| `data-disabled`             | state     | `true`                | On a group, a disclosure and its trigger: disabled (React Aria).  |
+| `data-focus-visible-within` | state     | `true`                | On a disclosure or its panel: keyboard focus inside (React Aria). |
+| `data-hovered`              | state     | `true`                | On the trigger, while the pointer is over it (React Aria).        |
+| `data-pressed`              | state     | `true`                | On the trigger, while pressed (React Aria).                       |
+| `data-focused`              | state     | `true`                | On the trigger, while focused (React Aria).                       |
+| `data-focus-visible`        | state     | `true`                | On the trigger, while focused by keyboard (React Aria).           |

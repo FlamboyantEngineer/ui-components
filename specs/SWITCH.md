@@ -43,9 +43,9 @@ Verification: `src/components/switch/switch.test.tsx`
 
 | Hook                 | Kind      | Values                 | Description                                |
 | -------------------- | --------- | ---------------------- | ------------------------------------------ |
-| `ui-switch`          | root      |                        | The `<label>` around the input.            |
+| `ui-switch`          | root      | `switch`               | The `<label>` around the input.            |
 | `ui-switch__track`   | slot      |                        | The drawn track.                           |
-| `ui-switch__thumb`   | slot      |                        | The thumb inside the track.                |
+| `ui-switch__thumb`   | slot      | `switch-thumb`         | The thumb inside the track.                |
 | `ui-switch__label`   | slot      |                        | The visible label text.                    |
 | `data-size`          | attribute | `xs`, `sm`, `md`, `lg` | Row size.                                  |
 | `data-selected`      | state     | `true`                 | On (React Aria).                           |

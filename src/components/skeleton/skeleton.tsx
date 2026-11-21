@@ -30,7 +30,7 @@ export interface SkeletonTextProps
   lines?: number | undefined;
 }
 
-const hooks = createHooks('skeleton', ['content']);
+const hooks = createHooks('skeleton', ['content'], { root: 'skeleton' });
 const textHooks = createHooks('skeleton-text', ['line']);
 
 /** A skeleton has no focusable root to hold focus on; an overlay's own restoration applies. */

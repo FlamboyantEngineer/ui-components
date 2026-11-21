@@ -172,7 +172,7 @@ function DataCodeBlock({
             </Button>
           ) : null}
           <CopyButton
-            className={hooks.slotClass('copy')}
+            {...hooks.slot('copy')}
             value={value}
             label={readCopyLabel(strings, variant, commands)}
             size="sm"

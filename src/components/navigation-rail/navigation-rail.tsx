@@ -113,7 +113,7 @@ function RailResizeHandle({
   const strings = useUiStrings();
   return (
     <ResizeHandle
-      className={hooks.slotClass('resize-handle')}
+      {...hooks.slot('resize-handle')}
       aria-label={strings.resizeNavigation}
       orientation="vertical"
       value={width}
@@ -145,7 +145,7 @@ function RailToggle({ isCollapsed, bodyId, onPress }: RailToggleProps) {
   const pointsLeft = isCollapsed === (direction === 'rtl');
   return (
     <Button
-      className={hooks.slotClass('toggle')}
+      {...hooks.slot('toggle')}
       icon={pointsLeft ? ChevronDoubleLeftGlyph : ChevronDoubleRightGlyph}
       label={label}
       tooltip={label}

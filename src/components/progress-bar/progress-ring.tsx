@@ -1,4 +1,4 @@
-import type { ComponentHooks } from '../../core/hooks.js';
+import { type ComponentHooks, composedDataSlot } from '../../core/hooks.js';
 import type { ProgressBarShape } from './progress-bar.js';
 
 /** The share of the ring an indeterminate ring and the spinner leave open: a quarter arc is drawn. */
@@ -31,9 +31,18 @@ export function ProgressRing({
       aria-hidden="true"
       focusable="false"
     >
-      {trackClass ? <circle className={trackClass} cx="16" cy="16" r="13" fill="none" /> : null}
+      {trackClass ? (
+        <circle
+          className={trackClass}
+          data-slot={composedDataSlot(trackClass)}
+          cx="16"
+          cy="16"
+          r="13"
+          fill="none"
+        />
+      ) : null}
       <circle
-        className={hooks.slotClass('fill')}
+        {...hooks.slot('fill')}
         cx="16"
         cy="16"
         r="13"

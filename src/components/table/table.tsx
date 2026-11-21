@@ -229,7 +229,7 @@ function TableGridElement<T extends TableRow>({
     <AriaTable
       {...ariaProps}
       ref={gridRef}
-      className={hooks.slotClass('grid')}
+      {...hooks.slot('grid')}
       // A static table is a CSS grid of these tracks (UIC-TABLE-4.6); a virtualized one places its
       // cells itself from React Aria's measured widths.
       style={

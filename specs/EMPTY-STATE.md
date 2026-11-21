@@ -75,14 +75,14 @@ Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-stat
 
 | Hook                          | Kind      | Values                                         | Description                                     |
 | ----------------------------- | --------- | ---------------------------------------------- | ----------------------------------------------- |
-| `ui-empty-state`              | root      |                                                | The `<section>`.                                |
+| `ui-empty-state`              | root      | `empty`                                        | The `<section>`.                                |
 | `ui-empty-state__spinner`     | slot      |                                                | The decorative busy indicator while loading.    |
-| `ui-empty-state__icon`        | slot      |                                                | The decorative illustration (also `ui-icon`).   |
-| `ui-empty-state__title`       | slot      |                                                | The heading.                                    |
-| `ui-empty-state__description` | slot      |                                                | The description paragraph.                      |
-| `ui-empty-state__actions`     | slot      |                                                | The calls to action.                            |
+| `ui-empty-state__icon`        | slot      | `empty-icon`                                   | The decorative illustration (also `ui-icon`).   |
+| `ui-empty-state__title`       | slot      | `empty-title`                                  | The heading.                                    |
+| `ui-empty-state__description` | slot      | `empty-description`                            | The description paragraph.                      |
+| `ui-empty-state__actions`     | slot      | `empty-content`                                | The calls to action.                            |
 | `data-variant`                | attribute | `empty`, `loading`, `error`, `default`, `icon` | Root notice state or media presentation.        |
 | `data-size`                   | attribute | `sm`, `md`                                     | Density.                                        |
-| `ui-empty-state__header`      | slot      |                                                | Groups the composed notice's text and media.    |
-| `ui-empty-state__media`       | slot      |                                                | Decorative media in a composed notice.          |
-| `ui-empty-state__content`     | slot      |                                                | Composed calls to action or additional content. |
+| `ui-empty-state__header`      | slot      | `empty-header`                                 | Groups the composed notice's text and media.    |
+| `ui-empty-state__media`       | slot      | `empty-icon`                                   | Decorative media in a composed notice.          |
+| `ui-empty-state__content`     | slot      | `empty-content`                                | Composed calls to action or additional content. |

@@ -32,7 +32,13 @@ export interface InputGroupButtonProps extends Omit<ButtonProps, 'size'> {
 export interface InputGroupTextProps
   extends BaseProps, RefProps<HTMLSpanElement>, Omit<ContainerProps<'span'>, 'ref'> {}
 
-const hooks = createHooks('input-group', ['addon', 'control', 'button', 'text']);
+const hooks = createHooks('input-group', ['addon', 'control', 'button', 'text'], {
+  root: 'input-group',
+  addon: 'input-group-addon',
+  control: 'input-group-control',
+  button: 'input-group-button',
+  text: 'input-group-text',
+});
 
 const interactiveAddonChild =
   'a[href], button, input, textarea, select, label, summary, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [tabindex]';

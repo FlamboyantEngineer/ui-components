@@ -24,14 +24,19 @@ export interface NavigationMenuState {
   panelRef: Ref<HTMLDivElement>;
 }
 
-export const navigationMenuHooks = createHooks('navigation-menu', [
-  'list',
-  'item',
-  'trigger',
-  'indicator',
-  'panel',
-  'link',
-]);
+export const navigationMenuHooks = createHooks(
+  'navigation-menu',
+  ['list', 'item', 'trigger', 'indicator', 'panel', 'link'],
+  {
+    root: 'navigation-menu',
+    list: 'navigation-menu-list',
+    item: 'navigation-menu-item',
+    trigger: 'navigation-menu-trigger',
+    indicator: 'navigation-menu-indicator',
+    panel: 'navigation-menu-content',
+    link: 'navigation-menu-link',
+  },
+);
 
 const closedMenu: NavigationMenuState = {
   openKey: null,

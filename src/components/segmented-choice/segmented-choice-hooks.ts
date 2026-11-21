@@ -1,10 +1,7 @@
 import { createHooks } from '../../core/hooks.js';
 
-export const segmentedChoiceHooks = createHooks('segmented-choice', [
-  'segment',
-  'indicator',
-  'icon',
-  'label',
-  'count',
-  'accessible-label',
-]);
+export const segmentedChoiceHooks = createHooks(
+  'segmented-choice',
+  ['segment', 'indicator', 'icon', 'label', 'count', 'accessible-label'],
+  { root: 'toggle-group', segment: 'toggle-group-item' },
+);

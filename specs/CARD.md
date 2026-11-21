@@ -214,13 +214,13 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 | Hook                          | Kind      | Values                                       | Description                                                                                  |
 | ----------------------------- | --------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `ui-card`                     | root      |                                              | The `<section>`.                                                                             |
+| `ui-card`                     | root      | `card`                                       | The `<section>`.                                                                             |
 | `ui-card__media`              | slot      |                                              | Full-bleed media before the header.                                                          |
-| `ui-card__header`             | slot      |                                              | The `<header>`, when the card has header content.                                            |
+| `ui-card__header`             | slot      | `card-header`                                | The `<header>`, when the card has header content.                                            |
 | `ui-card__heading`            | slot      |                                              | Groups the title and description.                                                            |
-| `ui-card__title`              | slot      |                                              | The title heading.                                                                           |
-| `ui-card__action`             | slot      |                                              | The title's link or button, or the slotted action.                                           |
-| `ui-card__description`        | slot      |                                              | Supporting text under the title.                                                             |
+| `ui-card__title`              | slot      | `card-title`                                 | The title heading.                                                                           |
+| `ui-card__action`             | slot      | `card-action`                                | The title's link or button, or the slotted action.                                           |
+| `ui-card__description`        | slot      | `card-description`                           | Supporting text under the title.                                                             |
 | `ui-card__actions`            | slot      |                                              | Header controls or status, on their own line after the header row.                           |
 | `ui-card__leading`            | slot      |                                              | Leading content before the title block.                                                      |
 | `ui-card__abbreviation`       | slot      |                                              | The minimal presentation's short title (hidden from AT).                                     |
@@ -228,9 +228,9 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 | `ui-card__toggle`             | slot      |                                              | The expand and collapse control (also `ui-button`).                                          |
 | `ui-card__more`               | slot      |                                              | The More disclosure button (also `ui-button`).                                               |
 | `ui-card__summary`            | slot      |                                              | The collapsed card's preview.                                                                |
-| `ui-card__body`               | slot      |                                              | The body.                                                                                    |
+| `ui-card__body`               | slot      | `card-content`                               | The body.                                                                                    |
 | `ui-card__skeleton`           | slot      |                                              | The loading placeholder (also `ui-skeleton`).                                                |
-| `ui-card__footer`             | slot      |                                              | The `<footer>`.                                                                              |
+| `ui-card__footer`             | slot      | `card-footer`                                | The `<footer>`.                                                                              |
 | `ui-card-grid`                | root      |                                              | The card collection (`role="grid"`).                                                         |
 | `ui-card-grid__loader`        | slot      |                                              | The loading item after the cards while more load.                                            |
 | `ui-card-grid-item`           | root      |                                              | One item of the collection (`role="row"`).                                                   |

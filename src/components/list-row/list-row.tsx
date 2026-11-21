@@ -82,9 +82,17 @@ type PrimaryOptions = Pick<
   'href' | 'target' | 'rel' | 'onPress' | 'onAuxPress' | 'isCurrent' | 'isDisabled'
 >;
 
-const listHooks = createHooks('list');
-const rowHooks = createHooks('list-row', ['primary', 'trailing']);
-const contentHooks = createHooks('list-row-content', ['leading', 'text', 'title', 'meta']);
+const listHooks = createHooks('list', [], { root: 'item-group' });
+const rowHooks = createHooks('list-row', ['primary', 'trailing'], {
+  root: 'item',
+  trailing: 'item-actions',
+});
+const contentHooks = createHooks('list-row-content', ['leading', 'text', 'title', 'meta'], {
+  leading: 'item-media',
+  text: 'item-content',
+  title: 'item-title',
+  meta: 'item-description',
+});
 
 function resolveKind({ href, onPress }: PrimaryOptions): ListRowKind {
   if (href !== undefined) return 'link';

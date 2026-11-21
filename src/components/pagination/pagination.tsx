@@ -27,7 +27,15 @@ export interface PaginationProps extends RefProps<HTMLElement>, BaseProps {
 /** One entry of a page list: a page number, or a gap standing for the pages it skips. */
 export type PaginationItem = number | 'start-gap' | 'end-gap';
 
-const hooks = createHooks('pagination', ['list', 'item', 'previous', 'next', 'page', 'ellipsis']);
+const hooks = createHooks('pagination', ['list', 'item', 'previous', 'next', 'page', 'ellipsis'], {
+  root: 'pagination',
+  list: 'pagination-content',
+  item: 'pagination-item',
+  previous: 'pagination-previous',
+  next: 'pagination-next',
+  page: 'pagination-link',
+  ellipsis: 'pagination-ellipsis',
+});
 
 /** Pages always listed at each end, and on each side of the current page. */
 const edgePages = 1;
@@ -107,7 +115,7 @@ export function Pagination({
       <ul {...hooks.slot('list')}>
         <li {...hooks.slot('item')}>
           <Button
-            className={hooks.slotClass('previous')}
+            {...hooks.slot('previous')}
             icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
             label={strings.previousPage}
             size="sm"
@@ -120,7 +128,7 @@ export function Pagination({
           <li key={item} {...hooks.slot('item')}>
             {typeof item === 'number' ? (
               <Button
-                className={hooks.slotClass('page')}
+                {...hooks.slot('page')}
                 variant="ghost"
                 size="sm"
                 isDisabled={isDisabled}
@@ -140,7 +148,7 @@ export function Pagination({
         ))}
         <li {...hooks.slot('item')}>
           <Button
-            className={hooks.slotClass('next')}
+            {...hooks.slot('next')}
             icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
             label={strings.nextPage}
             size="sm"

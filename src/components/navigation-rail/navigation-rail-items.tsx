@@ -86,7 +86,7 @@ function ItemCount({ id, count, description, isCollapsed }: ItemCountProps) {
     <>
       {' '}
       <Badge
-        className={hooks.slotClass('count')}
+        {...hooks.slot('count')}
         count={count}
         max={countMax}
         size="sm"
@@ -141,7 +141,7 @@ export function NavigationRailSection({
 }: NavigationRailSectionProps) {
   const { isCollapsed } = useContext(NavigationRailContext);
   const titleId = useId();
-  const titleProps = { id: titleId, className: hooks.slotClass('section-title') };
+  const titleProps = { id: titleId, ...hooks.slot('section-title') };
   return (
     <div {...rest} {...hooks.slot('section', undefined, className)}>
       {title === undefined ? null : isCollapsed ? (
@@ -185,7 +185,7 @@ export function NavigationRailItem({
     <li {...rest} {...hooks.slot('item', { current: isCurrent }, className)}>
       <Tooltip content={label} placement="end" isDisabled={!isCollapsed}>
         <Link
-          className={hooks.slotClass('link')}
+          {...hooks.slot('link')}
           href={href}
           onPress={onPress}
           variant="secondary"
@@ -258,7 +258,7 @@ export function NavigationRailGroup({
             <Glyph icon={glyph} className={hooks.slotClass('indicator')} />
           </AriaButton>
         </Tooltip>
-        <AriaDisclosurePanel className={hooks.slotClass('group-panel')}>
+        <AriaDisclosurePanel {...hooks.slot('group-panel')}>
           <DisclosureContentScope>
             <CurrentItemContext value={register}>
               <ul {...hooks.slot('list')}>{children}</ul>

@@ -17,16 +17,13 @@ interface DisclosureParts {
 }
 
 /** The hooks of the disclosure family, shared by its modules. */
-export const disclosureHooks = createHooks('disclosure', [
-  'header',
-  'heading',
-  'trigger',
-  'indicator',
-  'title',
-  'panel',
-]);
+export const disclosureHooks = createHooks(
+  'disclosure',
+  ['header', 'heading', 'trigger', 'indicator', 'title', 'panel'],
+  { root: 'collapsible', trigger: 'collapsible-trigger', panel: 'collapsible-content' },
+);
 
-export const disclosureGroupHooks = createHooks('disclosure-group');
+export const disclosureGroupHooks = createHooks('disclosure-group', [], { root: 'accordion' });
 
 /** The enclosing disclosure's heading level and indicator position. */
 export const DisclosurePartsContext = createContext<DisclosureParts>({

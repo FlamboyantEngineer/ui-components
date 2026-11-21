@@ -115,23 +115,23 @@ Verification: `src/components/command-palette/command-palette.test.tsx`
 
 ## Hooks
 
-| Hook                               | Kind      | Values           | Description                                                          |
-| ---------------------------------- | --------- | ---------------- | -------------------------------------------------------------------- |
-| `ui-command-palette`               | root      |                  | The overlay covering the viewport.                                   |
-| `ui-command-palette__panel`        | slot      |                  | The box holding the dialog.                                          |
-| `ui-command-palette__dialog`       | slot      |                  | The `role="dialog"` element.                                         |
-| `ui-command-palette__page`         | slot      |                  | Above the search field on an inner page: Back and the page title.    |
-| `ui-command-palette__back`         | slot      |                  | The Back button (also `ui-button`).                                  |
-| `ui-command-palette__page-title`   | slot      |                  | The open page's title.                                               |
-| `ui-command-palette__search`       | slot      |                  | The search field.                                                    |
-| `ui-command-palette__search-icon`  | slot      |                  | The decorative `search` glyph before the input (also `ui-glyph`).    |
-| `ui-command-palette__search-input` | slot      |                  | The `role="searchbox"` input.                                        |
-| `ui-command-palette__empty`        | slot      |                  | The message shown while no command matches.                          |
-| `data-layer`                       | attribute | `modal`          | The overlay layer; the z-index is set inline from it.                |
-| `data-size`                        | attribute | `sm`, `md`, `lg` | Row density of the commands.                                         |
-| `data-entering`                    | state     | `true`           | On the overlay and panel while an entry animation runs (React Aria). |
-| `data-exiting`                     | state     | `true`           | On the overlay and panel while an exit animation runs (React Aria).  |
-| `data-empty`                       | state     | `true`           | On the search field while it holds no text (React Aria).             |
-| `data-focused`                     | state     | `true`           | On the input while focused (React Aria).                             |
-| `data-focus-visible`               | state     | `true`           | On the input while keyboard focused (React Aria).                    |
-| `data-hovered`                     | state     | `true`           | On the input while the pointer is over it (React Aria).              |
+| Hook                               | Kind      | Values                  | Description                                                          |
+| ---------------------------------- | --------- | ----------------------- | -------------------------------------------------------------------- |
+| `ui-command-palette`               | root      | `dialog-overlay`        | The overlay covering the viewport.                                   |
+| `ui-command-palette__panel`        | slot      | `dialog-content`        | The box holding the dialog.                                          |
+| `ui-command-palette__dialog`       | slot      | `command`               | The `role="dialog"` element.                                         |
+| `ui-command-palette__page`         | slot      |                         | Above the search field on an inner page: Back and the page title.    |
+| `ui-command-palette__back`         | slot      |                         | The Back button (also `ui-button`).                                  |
+| `ui-command-palette__page-title`   | slot      |                         | The open page's title.                                               |
+| `ui-command-palette__search`       | slot      | `command-input-wrapper` | The search field.                                                    |
+| `ui-command-palette__search-icon`  | slot      |                         | The decorative `search` glyph before the input (also `ui-glyph`).    |
+| `ui-command-palette__search-input` | slot      | `command-input`         | The `role="searchbox"` input.                                        |
+| `ui-command-palette__empty`        | slot      | `command-empty`         | The message shown while no command matches.                          |
+| `data-layer`                       | attribute | `modal`                 | The overlay layer; the z-index is set inline from it.                |
+| `data-size`                        | attribute | `sm`, `md`, `lg`        | Row density of the commands.                                         |
+| `data-entering`                    | state     | `true`                  | On the overlay and panel while an entry animation runs (React Aria). |
+| `data-exiting`                     | state     | `true`                  | On the overlay and panel while an exit animation runs (React Aria).  |
+| `data-empty`                       | state     | `true`                  | On the search field while it holds no text (React Aria).             |
+| `data-focused`                     | state     | `true`                  | On the input while focused (React Aria).                             |
+| `data-focus-visible`               | state     | `true`                  | On the input while keyboard focused (React Aria).                    |
+| `data-hovered`                     | state     | `true`                  | On the input while the pointer is over it (React Aria).              |

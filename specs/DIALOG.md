@@ -480,17 +480,17 @@ Verification: `src/components/dialog/dialog-host-exit.test.tsx`, `e2e/dialog-con
 
 | Hook                           | Kind      | Values / Meaning                                  |
 | ------------------------------ | --------- | ------------------------------------------------- |
-| `ui-dialog`                    | root      |                                                   | The overlay covering the viewport, or an anchored dialog's popover.       |
-| `ui-dialog__panel`             | slot      |                                                   | The box holding the dialog.                                               |
-| `ui-dialog__dialog`            | slot      |                                                   | The `role="dialog"` element.                                              |
-| `ui-dialog__header`            | slot      |                                                   | The header row.                                                           |
+| `ui-dialog`                    | root      | `dialog-overlay`                                  | The overlay covering the viewport, or an anchored dialog's popover.       |
+| `ui-dialog__panel`             | slot      | `dialog-content`                                  | The box holding the dialog.                                               |
+| `ui-dialog__dialog`            | slot      | `dialog`                                          | The `role="dialog"` element.                                              |
+| `ui-dialog__header`            | slot      | `dialog-header`                                   | The header row.                                                           |
 | `ui-dialog__heading`           | slot      |                                                   | Groups the title and description.                                         |
-| `ui-dialog__title`             | slot      |                                                   | The `<h2>` title.                                                         |
-| `ui-dialog__description`       | slot      |                                                   | The description under the title.                                          |
+| `ui-dialog__title`             | slot      | `dialog-title`                                    | The `<h2>` title.                                                         |
+| `ui-dialog__description`       | slot      | `dialog-description`                              | The description under the title.                                          |
 | `ui-dialog__header-actions`    | slot      |                                                   | Caller content at the end of the header.                                  |
-| `ui-dialog__close`             | slot      |                                                   | The close button (also `ui-button`).                                      |
+| `ui-dialog__close`             | slot      | `dialog-close`                                    | The close button (also `ui-button`).                                      |
 | `ui-dialog__body`              | slot      |                                                   | The body.                                                                 |
-| `ui-dialog__footer`            | slot      |                                                   | The footer.                                                               |
+| `ui-dialog__footer`            | slot      | `dialog-footer`                                   | The footer.                                                               |
 | `ui-dialog__footer-content`    | slot      |                                                   | Caller content at the start of the footer.                                |
 | `ui-dialog__message`           | slot      |                                                   | The footer status or error message.                                       |
 | `ui-dialog__actions`           | slot      |                                                   | The action bar.                                                           |

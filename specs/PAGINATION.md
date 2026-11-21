@@ -48,14 +48,14 @@ Verification: `src/components/pagination/pagination.test.tsx`
 
 ## Hooks
 
-| Hook                      | Kind  | Values | Description                                                         |
-| ------------------------- | ----- | ------ | ------------------------------------------------------------------- |
-| `ui-pagination`           | root  |        | The `<nav>` landmark.                                               |
-| `ui-pagination__list`     | slot  |        | The list (`<ul>`).                                                  |
-| `ui-pagination__item`     | slot  |        | One entry (`<li>`).                                                 |
-| `ui-pagination__previous` | slot  |        | The previous button (also `ui-button`).                             |
-| `ui-pagination__next`     | slot  |        | The next button (also `ui-button`).                                 |
-| `ui-pagination__page`     | slot  |        | One page's button (also `ui-button`).                               |
-| `ui-pagination__ellipsis` | slot  |        | A gap standing for skipped pages.                                   |
-| `data-current`            | state | `true` | The current page's button.                                          |
-| `data-disabled`           | state | `true` | The root while every button is disabled, and each disabled control. |
+| Hook                      | Kind  | Values                | Description                                                         |
+| ------------------------- | ----- | --------------------- | ------------------------------------------------------------------- |
+| `ui-pagination`           | root  | `pagination`          | The `<nav>` landmark.                                               |
+| `ui-pagination__list`     | slot  | `pagination-content`  | The list (`<ul>`).                                                  |
+| `ui-pagination__item`     | slot  | `pagination-item`     | One entry (`<li>`).                                                 |
+| `ui-pagination__previous` | slot  | `pagination-previous` | The previous button (also `ui-button`).                             |
+| `ui-pagination__next`     | slot  | `pagination-next`     | The next button (also `ui-button`).                                 |
+| `ui-pagination__page`     | slot  | `pagination-link`     | One page's button (also `ui-button`).                               |
+| `ui-pagination__ellipsis` | slot  | `pagination-ellipsis` | A gap standing for skipped pages.                                   |
+| `data-current`            | state | `true`                | The current page's button.                                          |
+| `data-disabled`           | state | `true`                | The root while every button is disabled, and each disabled control. |
