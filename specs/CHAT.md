@@ -1204,7 +1204,7 @@ Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-quest
 
 ### UIC-CHAT-31.2 - Question
 
-A pending card shall render through the [Questionnaire](QUESTIONNAIRE.md) parts: a stepping `Questionnaire` (`ui-chat-question__form`) over the questions' ids, whose current question follows the card's step, which reads the answered questions from the card's drafts (UIC-QUESTIONNAIRE-1.4) and is read-only while the card is (UIC-QUESTIONNAIRE-1.5). Each question is a `QuestionnaireItem` (`ui-chat-question__item`, a `<fieldset>` named by the question, required while the reader can answer) that publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's text in its `QuestionnaireTitle` (`ui-chat-question__question`, a `<legend>`) and then its answer; every question is mounted in the shown panel and only the shown one is visible. The question's `header` labels its tab ([UIC-CHAT-33.1](#uic-chat-331---tabs)).
+A pending card shall render through the [Questionnaire](QUESTIONNAIRE.md) parts: a stepping `Questionnaire` (`ui-chat-question__form`) over the questions' ids, whose current question follows the card's step, which reads the answered questions from the card's drafts (UIC-QUESTIONNAIRE-1.4) and is read-only while the card is (UIC-QUESTIONNAIRE-1.5). Each question is a `QuestionnaireItem` (`ui-chat-question__item`, a `<fieldset>` named by the question, required while the reader can answer) that publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's title in its `QuestionnaireTitle` (`ui-chat-question__question`, a `<legend>`), the rest of its text ([UIC-CHAT-31.9](#uic-chat-319---rich-text)) and then its answer; every question is mounted in the shown panel and only the shown one is visible. The question's `header` labels its tab ([UIC-CHAT-33.1](#uic-chat-331---tabs)).
 
 Implementation: `src/components/chat/chat-question-item.tsx`, `labs/reference/chat.css`
 Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-question.spec.ts`
@@ -1250,6 +1250,13 @@ The group, the Other field and the preview of a question with options shall sit 
 
 Implementation: `src/components/chat/chat-question-choices.tsx`, `src/components/chat/chat-question-model.ts`, `labs/reference/chat.css`
 Verification: `src/components/chat/chat-question.test.tsx`, `src/components/chat/chat-question-model.test.ts`, `e2e/chat-chat-question.spec.ts`
+
+### UIC-CHAT-31.9 - Rich text
+
+A question's `question` and an option's `description` shall be [Markdown](MARKDOWN.md): bold, italic, strikethrough, inline code, links, lists, quotes and code blocks render as `Markdown` renders them, and raw HTML stays text. The question's opening paragraph or heading is its title: its inline elements fill the `QuestionnaireTitle`, and its words, without their formatting, name the card (UIC-CHAT-31.1), its choices (UIC-CHAT-31.3, UIC-CHAT-31.4) and its free-text field (UIC-CHAT-31.5). The blocks after the title render as `Markdown` in a `QuestionnaireDescription` (`ui-chat-question__body`), which describes the question's fieldset. A question that opens with another block, such as a list, is all title. A description of one paragraph renders as inline elements; one of several blocks renders as `Markdown`. An answered card's summary and a dismissed card show each question's title. Option labels stay plain text.
+
+Implementation: `src/components/chat/chat-question-text.tsx`, `src/components/chat/chat-question-item.tsx`, `src/components/chat/chat-question-fields.tsx`, `src/components/chat/chat-question-summary.tsx`, `labs/reference/chat.css`
+Verification: `src/components/chat/chat-question-text.test.tsx`, `e2e/chat-chat-question.spec.ts`
 
 ## UIC-CHAT-32 - Answering
 
@@ -1817,7 +1824,8 @@ Verification: `e2e/assistant-chat.spec.ts`
 | `ui-chat-question__progress`                | slot      |                                                                                          | The counter after the tabs.                                                        |
 | `ui-chat-question__panel`                   | slot      |                                                                                          | The shown question's panel (also `ui-tabs__panel`).                                |
 | `ui-chat-question__item`                    | slot      |                                                                                          | One question (also `ui-questionnaire__item`).                                      |
-| `ui-chat-question__question`                | slot      |                                                                                          | The question's text.                                                               |
+| `ui-chat-question__question`                | slot      |                                                                                          | The question's title.                                                              |
+| `ui-chat-question__body`                    | slot      |                                                                                          | The blocks after the question's title (also `ui-questionnaire__description`).      |
 | `ui-chat-question__answer`                  | slot      |                                                                                          | The options, the Other field and the preview.                                      |
 | `ui-chat-question__options`                 | slot      |                                                                                          | The radio group or checkbox group.                                                 |
 | `ui-chat-question__option`                  | slot      |                                                                                          | One option: its radio or checkbox and description.                                 |

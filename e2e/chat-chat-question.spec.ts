@@ -41,6 +41,33 @@ test.describe('Chat Question lab', () => {
     await lab.expectAccessible('[data-lab-section="Selection modes"]');
     await lab.expectAccessible('[data-lab-section="Several questions"]');
   });
+  test('UIC-CHAT-31.9 draws questions and descriptions as Markdown and passes axe', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-question');
+    const title = 'How should notes sync between devices?';
+    const pending = demo(page, 'rich-pending');
+    await expect(pending.getByRole('radiogroup', { name: title })).toBeVisible();
+    const body = pending.locator('.ui-chat-question__body');
+    await expect(body.locator('ul > li')).toHaveCount(2);
+    await expect(body.locator('ol > li')).toHaveCount(2);
+    await expect(body.getByRole('link', { name: /^the sync notes/ })).toBeVisible();
+    await expect(body).toContainText('Raw HTML such as <b>this</b> stays text.');
+    await expect(pending.locator('.ui-chat-question__description strong')).toHaveText(
+      'line by line',
+    );
+    await expect(demo(page, 'rich-answered')).toContainText('You chose Merge edits');
+    await expect(demo(page, 'rich-dismissed').locator('.ui-chat-question__question')).toHaveText(
+      title,
+    );
+    await expect(
+      demo(page, 'rich-text').getByRole('textbox', {
+        name: 'What should the sync setting be called?',
+      }),
+    ).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Rich text"]');
+  });
   test('UIC-CHAT-31.6 UIC-CHAT-31.7 UIC-CHAT-32.5 passes axe with Other, previews and a message shown', async ({
     page,
     lab,

@@ -131,3 +131,47 @@ export const setupAnswers: ChatQuestionAnswer[] = [
   { questionId: 'features', optionIds: ['search', 'export'], otherText: 'Offline mode' },
   { questionId: 'name', optionIds: [], otherText: 'Pocket Notes' },
 ];
+
+export const syncQuestion: ChatQuestionItem = {
+  id: 'sync',
+  question: [
+    'How should notes **sync** between devices?',
+    '',
+    'Both keep working _offline_. Keep in mind:',
+    '',
+    '- Notes can be large, up to `5 MB` each',
+    '- Most readers use **two or three** devices',
+    '',
+    'Then the app:',
+    '',
+    '1. Saves on the device first',
+    '2. Sends the change when it is back online',
+    '',
+    'Raw HTML such as <b>this</b> stays text. See [the sync notes](https://example.com/sync).',
+  ].join('\n'),
+  header: 'Sync',
+  selectionMode: 'single',
+  options: [
+    {
+      id: 'merge',
+      label: 'Merge edits',
+      description: 'Combines edits **line by line**; see [merging](https://example.com/merge).',
+      isRecommended: true,
+    },
+    {
+      id: 'latest',
+      label: 'Latest wins',
+      description: 'Keeps the _most recent_ save and drops the other, with `updatedAt` deciding.',
+    },
+  ],
+};
+
+export const syncNameQuestion: ChatQuestionItem = {
+  id: 'sync-name',
+  question: 'What should the **sync** setting be called?\n\nFor example _Keep in sync_.',
+  header: 'Setting',
+  selectionMode: 'none',
+  options: [],
+};
+
+export const syncAnswers: ChatQuestionAnswer[] = [{ questionId: 'sync', optionIds: ['merge'] }];

@@ -15,6 +15,9 @@ import {
   servingsQuestion,
   setupAnswers,
   setupQuestions,
+  syncAnswers,
+  syncNameQuestion,
+  syncQuestion,
   toppingsQuestion,
   tripQuestions,
 } from './chat-question-samples.js';
@@ -250,6 +253,26 @@ export function ChatQuestionCases() {
       >
         <Recorded name="other-single" questions={[servingsQuestion]} />
         <Recorded name="other-multiple" questions={[toppingsQuestion]} />
+      </LabSection>
+      <LabSection
+        title="Rich text"
+        description="Questions and option descriptions are Markdown: the opening sentence is the question's title and names its choices; the lists, links and code after it describe the question. Raw HTML stays text. The answered summary and the dismissed card keep the title."
+      >
+        <StateMatrix
+          axes={{ status: statuses }}
+          render={({ status }) => (
+            <ChatQuestion
+              id={`ask-rich-${status}`}
+              questions={[syncQuestion]}
+              status={status}
+              answers={syncAnswers}
+              onSubmit={() => {}}
+              onDismiss={() => {}}
+              data-lab-demo={`rich-${status}`}
+            />
+          )}
+        />
+        <Recorded name="rich-text" questions={[syncNameQuestion]} />
       </LabSection>
       <LabSection
         title="Previews"

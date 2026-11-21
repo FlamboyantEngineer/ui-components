@@ -1,19 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
 import { useMarkdownBlocks } from './markdown-block-cache.js';
 import { listMarkdownHeadings } from './markdown-headings.js';
 import { markdownHooks as hooks } from './markdown-hooks.js';
-import type { MarkdownDocument } from './markdown-nodes.js';
+import type { MarkdownDocument, MarkdownInline } from './markdown-nodes.js';
 import type { MarkdownRenderNode } from './markdown-place.js';
-import type { MarkdownImagePolicy } from './markdown-render.js';
+import { type MarkdownImagePolicy, renderMarkdownNodes } from './markdown-render.js';
 import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import { parseMarkdown } from './parse-markdown.js';
 import { parseStreamingMarkdown, type StreamingMarkdownParse } from './parse-streaming-markdown.js';
 
-export type { MarkdownNode } from './markdown-nodes.js';
+export type { MarkdownBlock, MarkdownDocument, MarkdownNode } from './markdown-nodes.js';
 export { parseMarkdown } from './parse-markdown.js';
 
 export interface MarkdownProps extends RefProps<HTMLDivElement>, BaseProps {
@@ -100,4 +100,13 @@ export function Markdown({
       {blocks}
     </div>
   );
+}
+
+/**
+ * Inline nodes as a paragraph renders them, for a caller that draws them where blocks cannot go,
+ * such as a fieldset's legend.
+ */
+export function renderMarkdownInlines(nodes: readonly MarkdownInline[]): ReactNode[] {
+  const context = { renderNode: undefined, headingIdPrefix: undefined, images: 'show' } as const;
+  return renderMarkdownNodes(nodes, { ...context, headingIds: new Set() });
 }

@@ -102,7 +102,10 @@ function renderEntries(entries: RenderEntry[], context: RenderContext): ReactNod
 }
 
 /** Renders nodes from the leaves up, without recursion, so deep nesting cannot overflow the stack. */
-function renderAll(nodes: readonly MarkdownNode[], context: RenderContext): ReactNode[] {
+export function renderMarkdownNodes(
+  nodes: readonly MarkdownNode[],
+  context: RenderContext,
+): ReactNode[] {
   return renderEntries(
     nodes.map((node) => ({ node, isTight: false, isInteractive: false })),
     context,
@@ -235,12 +238,15 @@ function renderInline(
 function renderTable(node: MarkdownTable, context: RenderContext) {
   const header = node.header.map((cell, column) => ({
     key: String(column),
-    content: renderAll(cell, context),
+    content: renderMarkdownNodes(cell, context),
     align: node.align[column] ?? undefined,
   }));
   const rows = node.rows.map((row, index) => ({
     key: String(index),
-    cells: row.map((cell, column) => ({ key: String(column), content: renderAll(cell, context) })),
+    cells: row.map((cell, column) => ({
+      key: String(column),
+      content: renderMarkdownNodes(cell, context),
+    })),
   }));
   return (
     <MarkdownTableFrame>
