@@ -43,7 +43,11 @@ describe('SelectField native presentation', () => {
     const root = container.querySelector('.ui-select-field');
     expect(root).toHaveAttribute('data-mode', 'native');
     expect(root).toHaveAttribute('data-selection-mode', 'single');
-    expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['frame', 'native'] });
+    const icon = select.nextElementSibling;
+    expect(icon).toHaveClass('ui-select-field__native-icon');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(icon).toHaveAttribute('data-slot', 'native-select-icon');
+    expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['frame', 'native', 'native-icon'] });
   });
 
   it('UIC-SELECT-FIELD-14.1 draws labelled groups as optgroups and unlabelled groups in place', () => {

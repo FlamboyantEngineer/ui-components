@@ -1,8 +1,9 @@
 'use client';
 
 import { type ChangeEvent, Fragment, type KeyboardEvent, type MouseEvent, type Ref } from 'react';
+import { ChevronDownGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   Field,
@@ -162,6 +163,7 @@ function NativeSelect({
         ) : null}
         <NativeOptions items={options} />
       </select>
+      <Glyph icon={ChevronDownGlyph} className={hooks.slotClass('native-icon')} />
     </div>
   );
 }
