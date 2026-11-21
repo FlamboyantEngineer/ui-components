@@ -81,7 +81,7 @@
 
 :is(a, .ui-link):hover .ui-badge[data-variant='ghost']:not([data-bare]) {
   background: var(--muted);
-  color: var(--muted-foreground);
+  color: var(--ref-muted);
 }
 
 :where(.dark, [data-theme='dark']) :is(a, .ui-link):hover .ui-badge[data-variant='ghost'] {
@@ -90,4 +90,9 @@
 
 .ui-badge[data-variant='link'][data-tone='neutral'] {
   color: var(--primary);
+}
+
+:is(a, .ui-link):hover .ui-badge[data-variant='link']:not([data-bare]) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
