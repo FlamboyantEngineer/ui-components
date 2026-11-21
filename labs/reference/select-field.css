@@ -531,6 +531,11 @@
   outline: none;
 }
 
+/* The reference sheet keeps the platform's arrow, so the chevron for sheets that draw their own stays hidden. */
+.ui-select-field__native-icon {
+  display: none;
+}
+
 .ui-select-field__native:hover:enabled {
   border-color: var(--ref-border-strong);
 }

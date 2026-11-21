@@ -40,6 +40,7 @@ export const selectFieldHooks = createHooks(
     'chevron',
     'clear',
     'native',
+    'native-icon',
   ],
   {
     trigger: 'select-trigger',
@@ -53,5 +54,6 @@ export const selectFieldHooks = createHooks(
     search: 'select-input-wrapper',
     'search-input': 'select-input',
     native: 'native-select',
+    'native-icon': 'native-select-icon',
   },
 );
