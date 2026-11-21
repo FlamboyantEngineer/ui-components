@@ -39,6 +39,13 @@ A component that matches a shadcn/ui component shall also mark its root and each
 Implementation: `src/core/hooks.ts`, `test/hooks.ts`
 Verification: `src/core/hooks.test.ts`, `test/hooks.test.tsx`
 
+### UIC-HOOKS-1.6 - Names a presentation gives shared parts
+
+Where one family of parts is drawn by several shadcn/ui components, the presentation that draws them shall choose the parts' `data-slot` names, so each presentation carries its counterpart's names: a sheet's title is `sheet-title` and a context menu's item is `context-menu-item`, while the hook classes stay the family's (`ui-dialog__title`, `ui-menu-item`). The presentation wraps the parts in a `DataSlotNames` scope that names them by hook class, usually built with `prefixDataSlots`, which swaps the family's prefix (`dialog` to `sheet`) and can rename or drop single part words; each part reads its names with `useDataSlotHooks`. An inner scope's names win, and a presentation that draws the family's own names restores them for the parts inside it. A family's hook table lists every name its parts can carry; a family without names of its own (`TagGroup`) lists none, and the presentation's spec names them.
+
+Implementation: `src/core/data-slot-names.tsx`, `src/core/hooks.ts`, `test/hooks.ts`
+Verification: `src/core/data-slot-names.test.tsx`, `test/hooks.test.tsx`
+
 ## UIC-HOOKS-2 - Data attributes
 
 ### UIC-HOOKS-2.1 - Options

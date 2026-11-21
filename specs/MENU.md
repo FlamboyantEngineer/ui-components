@@ -161,6 +161,13 @@ Every component of the family that draws an element shall carry the hooks below,
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`, `src/components/menu/menu-popover.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`
 
+### UIC-MENU-4.7 - Part names in other presentations
+
+The family's parts shall carry `dropdown-menu-*` names (`dropdown-menu-content`, `dropdown-menu-item`, `dropdown-menu-shortcut`, `dropdown-menu-group`, `dropdown-menu-label`, `dropdown-menu-separator`) unless the presentation that draws the menu names them (UIC-HOOKS-1.6): `prefixMenuDataSlots` gives the names with another prefix, for a context menu, a menubar's menus and the command palette's list.
+
+Implementation: `src/components/menu/menu-hooks.ts`, `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`
+Verification: `src/components/menu/menu-slot-names.test.tsx`
+
 ## UIC-MENU-5 - Long menus
 
 ### UIC-MENU-5.1 - Filterable menu
@@ -216,45 +223,45 @@ Verification: `src/components/menu/menu-action-icons.test.tsx`, `e2e/menu.spec.t
 
 ## Hooks
 
-| Hook                              | Kind      | Values                                                                        | Description                                                         |
-| --------------------------------- | --------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `ui-menu`                         | root      | `dropdown-menu-content`                                                       | The `role="menu"` list.                                             |
-| `data-size`                       | attribute | `sm`, `md`, `lg`                                                              | Row density.                                                        |
-| `data-empty`                      | state     | `true`                                                                        | The menu has no items, or the search field no text (React Aria).    |
-| `data-virtualized`                | state     | `true`                                                                        | Only the rows in view render.                                       |
-| `ui-menu__search`                 | slot      |                                                                               | The search field of a filterable menu.                              |
-| `ui-menu__search-input`           | slot      |                                                                               | Its text input (`role="searchbox"`).                                |
-| `ui-menu__empty`                  | slot      |                                                                               | The no-match message of a filterable menu.                          |
-| `ui-menu__load-more`              | slot      |                                                                               | The loading row at the end of the menu.                             |
-| `ui-menu__load-more-spinner`      | slot      |                                                                               | The busy indicator of the loading row.                              |
-| `data-collection`                 | state     |                                                                               | React Aria's collection marker, on the menu and its items.          |
-| `ui-menu-item`                    | root      | `dropdown-menu-item`                                                          | One item (`menuitem`, `menuitemradio` or `menuitemcheckbox`).       |
-| `ui-menu-item__check`             | slot      |                                                                               | Selection check, also on check items; holds the glyph when checked. |
-| `ui-menu-item__icon`              | slot      |                                                                               | Leading icon (also `ui-icon`).                                      |
-| `ui-menu-item__spinner`           | slot      |                                                                               | Busy indicator of a pending item.                                   |
-| `ui-menu-item__label`             | slot      |                                                                               | The label.                                                          |
-| `ui-menu-item__description`       | slot      |                                                                               | Secondary text.                                                     |
-| `ui-menu-item__shortcut`          | slot      | `dropdown-menu-shortcut`                                                      | Keyboard chord (also `ui-shortcut`).                                |
-| `ui-menu-item__trailing`          | slot      |                                                                               | Trailing content, such as a count badge.                            |
-| `ui-menu-item__submenu-indicator` | slot      |                                                                               | Chevron of a submenu trigger (also `ui-glyph`).                     |
-| `data-tone`                       | attribute | `neutral`, `danger`                                                           | Emphasis.                                                           |
-| `data-key`                        | state     |                                                                               | Opaque collection key (React Aria): not the `id`, not for styling.  |
-| `data-pending`                    | state     | `true`                                                                        | A placeholder for loading actions.                                  |
-| `data-disabled`                   | state     | `true`                                                                        | Disabled (React Aria).                                              |
-| `data-hovered`                    | state     | `true`                                                                        | Pointer over the item.                                              |
-| `data-focused`                    | state     | `true`                                                                        | Focused.                                                            |
-| `data-focus-visible`              | state     | `true`                                                                        | Keyboard focus.                                                     |
-| `data-pressed`                    | state     | `true`                                                                        | Being pressed.                                                      |
-| `data-selected`                   | state     | `true`                                                                        | Checked.                                                            |
-| `data-selection-mode`             | state     | `single`, `multiple`                                                          | The selection the item belongs to.                                  |
-| `data-has-submenu`                | state     | `true`                                                                        | Opens a submenu.                                                    |
-| `data-open`                       | state     | `true`                                                                        | Its submenu is open.                                                |
-| `ui-menu-section`                 | root      | `dropdown-menu-group`                                                         | A `role="group"` of items.                                          |
-| `ui-menu-section__header`         | slot      | `dropdown-menu-label`                                                         | The section title.                                                  |
-| `ui-menu-separator`               | root      | `dropdown-menu-separator`                                                     | A `role="separator"` rule.                                          |
-| `ui-menu-popover`                 | root      |                                                                               | The floating surface of a menu or submenu.                          |
-| `data-layer`                      | attribute | `backdrop`, `drawer`, `modal`, `dropdown`, `context-menu`, `tooltip`, `toast` | Overlay layer; the z-index is set inline from it.                   |
-| `data-placement`                  | state     | `top`, `bottom`, `left`, `right`, `center`                                    | Side of the anchor it opened on (React Aria).                       |
-| `data-trigger`                    | state     | `MenuTrigger`, `SubmenuTrigger`                                               | What opened it (React Aria).                                        |
-| `data-entering`                   | state     | `true`                                                                        | Entry animation (React Aria).                                       |
-| `data-exiting`                    | state     | `true`                                                                        | Exit animation (React Aria).                                        |
+| Hook                              | Kind      | Values                                                                                        | Description                                                         |
+| --------------------------------- | --------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `ui-menu`                         | root      | `dropdown-menu-content`, `context-menu-content`, `menubar-content`, `command-list`            | The `role="menu"` list.                                             |
+| `data-size`                       | attribute | `sm`, `md`, `lg`                                                                              | Row density.                                                        |
+| `data-empty`                      | state     | `true`                                                                                        | The menu has no items, or the search field no text (React Aria).    |
+| `data-virtualized`                | state     | `true`                                                                                        | Only the rows in view render.                                       |
+| `ui-menu__search`                 | slot      |                                                                                               | The search field of a filterable menu.                              |
+| `ui-menu__search-input`           | slot      |                                                                                               | Its text input (`role="searchbox"`).                                |
+| `ui-menu__empty`                  | slot      |                                                                                               | The no-match message of a filterable menu.                          |
+| `ui-menu__load-more`              | slot      |                                                                                               | The loading row at the end of the menu.                             |
+| `ui-menu__load-more-spinner`      | slot      |                                                                                               | The busy indicator of the loading row.                              |
+| `data-collection`                 | state     |                                                                                               | React Aria's collection marker, on the menu and its items.          |
+| `ui-menu-item`                    | root      | `dropdown-menu-item`, `context-menu-item`, `menubar-item`, `command-item`                     | One item (`menuitem`, `menuitemradio` or `menuitemcheckbox`).       |
+| `ui-menu-item__check`             | slot      |                                                                                               | Selection check, also on check items; holds the glyph when checked. |
+| `ui-menu-item__icon`              | slot      |                                                                                               | Leading icon (also `ui-icon`).                                      |
+| `ui-menu-item__spinner`           | slot      |                                                                                               | Busy indicator of a pending item.                                   |
+| `ui-menu-item__label`             | slot      |                                                                                               | The label.                                                          |
+| `ui-menu-item__description`       | slot      |                                                                                               | Secondary text.                                                     |
+| `ui-menu-item__shortcut`          | slot      | `dropdown-menu-shortcut`, `context-menu-shortcut`, `menubar-shortcut`, `command-shortcut`     | Keyboard chord (also `ui-shortcut`).                                |
+| `ui-menu-item__trailing`          | slot      |                                                                                               | Trailing content, such as a count badge.                            |
+| `ui-menu-item__submenu-indicator` | slot      |                                                                                               | Chevron of a submenu trigger (also `ui-glyph`).                     |
+| `data-tone`                       | attribute | `neutral`, `danger`                                                                           | Emphasis.                                                           |
+| `data-key`                        | state     |                                                                                               | Opaque collection key (React Aria): not the `id`, not for styling.  |
+| `data-pending`                    | state     | `true`                                                                                        | A placeholder for loading actions.                                  |
+| `data-disabled`                   | state     | `true`                                                                                        | Disabled (React Aria).                                              |
+| `data-hovered`                    | state     | `true`                                                                                        | Pointer over the item.                                              |
+| `data-focused`                    | state     | `true`                                                                                        | Focused.                                                            |
+| `data-focus-visible`              | state     | `true`                                                                                        | Keyboard focus.                                                     |
+| `data-pressed`                    | state     | `true`                                                                                        | Being pressed.                                                      |
+| `data-selected`                   | state     | `true`                                                                                        | Checked.                                                            |
+| `data-selection-mode`             | state     | `single`, `multiple`                                                                          | The selection the item belongs to.                                  |
+| `data-has-submenu`                | state     | `true`                                                                                        | Opens a submenu.                                                    |
+| `data-open`                       | state     | `true`                                                                                        | Its submenu is open.                                                |
+| `ui-menu-section`                 | root      | `dropdown-menu-group`, `context-menu-group`, `menubar-group`, `command-group`                 | A `role="group"` of items.                                          |
+| `ui-menu-section__header`         | slot      | `dropdown-menu-label`, `context-menu-label`, `menubar-label`                                  | The section title.                                                  |
+| `ui-menu-separator`               | root      | `dropdown-menu-separator`, `context-menu-separator`, `menubar-separator`, `command-separator` | A `role="separator"` rule.                                          |
+| `ui-menu-popover`                 | root      |                                                                                               | The floating surface of a menu or submenu.                          |
+| `data-layer`                      | attribute | `backdrop`, `drawer`, `modal`, `dropdown`, `context-menu`, `tooltip`, `toast`                 | Overlay layer; the z-index is set inline from it.                   |
+| `data-placement`                  | state     | `top`, `bottom`, `left`, `right`, `center`                                                    | Side of the anchor it opened on (React Aria).                       |
+| `data-trigger`                    | state     | `MenuTrigger`, `SubmenuTrigger`                                                               | What opened it (React Aria).                                        |
+| `data-entering`                   | state     | `true`                                                                                        | Entry animation (React Aria).                                       |
+| `data-exiting`                    | state     | `true`                                                                                        | Exit animation (React Aria).                                        |

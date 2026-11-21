@@ -22,12 +22,19 @@ export interface HookExpectations {
   slots?: readonly string[] | 'all';
   /** `data-*` attributes the test passed as caller attributes; they are exempt from the spec check. */
   callerAttributes?: readonly string[];
+  /**
+   * The `data-slot` names the presentation under test gives, by hook class (UIC-HOOKS-1.6): an
+   * element with one of these classes must carry exactly that name, or none for `null`, in place
+   * of a declared one.
+   */
+  dataSlots?: Readonly<Record<string, string | null>>;
 }
 
 /** What the element checks share: class owners, exempt attributes, and the findings so far. */
 interface CheckContext {
   owners: Map<string, SpecHooks>;
   callerAttributes: Set<string>;
+  dataSlots: Readonly<Record<string, string | null>>;
   problems: string[];
   seen: Set<string>;
 }
@@ -53,14 +60,17 @@ function isClassHook(entry: SpecHook): boolean {
 /**
  * The `data-slot` names an element may carry: those its slot classes declare, else those its root
  * classes declare, so a composed part (`ui-dialog__close`, also `ui-button`) carries the part's name.
+ * A class the test names in `dataSlots` takes that name instead of its declared ones.
  */
-function expectedDataSlots(hookClasses: string[], owners: Map<string, SpecHooks>): Set<string> {
+function expectedDataSlots(hookClasses: string[], context: CheckContext): Set<string> {
+  const { owners, dataSlots } = context;
   const declared = (classes: string[]) =>
-    classes.flatMap((token) =>
-      (owners.get(token)?.hooks ?? [])
+    classes.flatMap((token) => {
+      if (Object.hasOwn(dataSlots, token)) return dataSlots[token] ?? [];
+      return (owners.get(token)?.hooks ?? [])
         .filter((entry) => entry.hook === token && isClassHook(entry))
-        .flatMap((entry) => entry.values ?? []),
-    );
+        .flatMap((entry) => entry.values ?? []);
+    });
   const fromSlots = declared(hookClasses.filter((token) => token.includes('__')));
   return new Set(fromSlots.length > 0 ? fromSlots : declared(hookClasses));
 }
@@ -72,7 +82,7 @@ function checkDataSlot(
   label: string,
 ) {
   if (context.callerAttributes.has(dataSlotAttribute)) return;
-  const expected = expectedDataSlots(hookClasses, context.owners);
+  const expected = expectedDataSlots(hookClasses, context);
   const actual = element.getAttribute(dataSlotAttribute);
   if (actual === null) {
     if (expected.size > 0)
@@ -212,7 +222,11 @@ export function expectHooksMatchSpec(
     for (const { hook } of entry.hooks.filter(isClassHook)) owners.set(hook, entry);
   }
   const callerAttributes = new Set(expectations.callerAttributes ?? []);
-  const context: CheckContext = { owners, callerAttributes, problems: [], seen: new Set() };
+  const dataSlots = expectations.dataSlots ?? {};
+  const context: CheckContext = {
+    ...{ owners, callerAttributes, dataSlots },
+    ...{ problems: [], seen: new Set<string>() },
+  };
   for (const element of [container, ...container.querySelectorAll('*')]) {
     checkElement(element, context);
   }

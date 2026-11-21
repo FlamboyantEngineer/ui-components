@@ -8,8 +8,8 @@ import {
   useContext,
   useState,
 } from 'react';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -31,6 +31,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { type MenuSize, MenuSizeContext } from './menu-context.js';
 import { renderMenuChildren } from './menu-entries.js';
+import { menuHooks as hooks } from './menu-hooks.js';
 import type { MenuItemProps, MenuItemRenderState, MenuSectionProps } from './menu-item.js';
 
 export { MenuTrigger, type MenuTriggerProps } from './menu-trigger.js';
@@ -100,12 +101,6 @@ export interface SubmenuTriggerProps {
   /** The `MenuItem` that opens the submenu, then the submenu's `MenuPopover`. */
   children: ReactElement[];
 }
-
-const hooks = createHooks(
-  'menu',
-  ['search', 'search-input', 'empty', 'load-more', 'load-more-spinner'],
-  { root: 'dropdown-menu-content' },
-);
 
 const MenuActionContext = createContext<MenuProps['onAction']>(undefined);
 
@@ -221,6 +216,7 @@ function MenuVirtualizer({
  * and end with a sentinel that loads more of them.
  */
 export function Menu(props: MenuProps) {
+  const namedHooks = useDataSlotHooks(hooks);
   const {
     items,
     children,
@@ -250,7 +246,7 @@ export function Menu(props: MenuProps) {
   let menu = (
     <AriaMenu
       {...rest}
-      {...hooks.root({ className, props: rest, data: { size: resolvedSize, virtualized } })}
+      {...namedHooks.root({ className, props: rest, data: { size: resolvedSize, virtualized } })}
       onAction={action && ((key) => action(fromCollectionKey(key)))}
       {...toCollectionSelectionProps({ ...selection, disabledKeys })}
       renderEmptyState={renderEmptyState}
@@ -303,6 +299,7 @@ export type {
   MenuSeparatorProps,
 } from './menu-item.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
+export { prefixMenuDataSlots } from './menu-hooks.js';
 export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';
 export type { MenuOverlayProps, MenuPopoverProps } from './menu-popover.js';
 export { MenuOverlay, MenuPopover } from './menu-popover.js';

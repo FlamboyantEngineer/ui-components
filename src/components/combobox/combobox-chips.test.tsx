@@ -9,6 +9,12 @@ import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem, type ComboboxOption } from './combobox.js';
 
+// The names a combobox gives its TagGroup chips (UIC-COMBOBOX-3.8).
+const chipNames = {
+  'ui-tag-group__tag': 'combobox-chip',
+  'ui-tag-group__remove': 'combobox-chip-remove',
+};
+
 const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon'].map((name) => ({
   id: name.toLowerCase(),
   label: name,
@@ -122,7 +128,7 @@ describe('Combobox chips', () => {
           .getAllByRole('row')
           .map((row) => row.textContent),
       ).toEqual(['Lima', 'Oslo']);
-      expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['chips'] });
+      expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['chips'], dataSlots: chipNames });
     },
   );
 
@@ -294,8 +300,42 @@ describe('Combobox chips', () => {
     ).not.toBeNull();
     const oslo = within(chips).getByRole('row', { name: 'Oslo' });
     expect(oslo.querySelector('.ui-combobox__chip-icon')).toBeNull();
-    expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });
+    expectHooksMatchSpec(container, 'COMBOBOX', {
+      slots: ['chips', 'chip-icon'],
+      dataSlots: chipNames,
+    });
   });
+  it('UIC-COMBOBOX-3.8 names the chips, their remove buttons and the input after them', () => {
+    const { rerender } = render(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        defaultItems={[
+          { id: 'paris', label: 'Paris' },
+          { id: 'oslo', label: 'Oslo' },
+        ]}
+        defaultValue={['paris']}
+      />,
+    );
+    const chip = screen.getByRole('row', { name: 'Paris' });
+    expect(chip).toHaveAttribute('data-slot', 'combobox-chip');
+    expect(within(chip).getByRole('button', { name: 'Remove Paris' })).toHaveAttribute(
+      'data-slot',
+      'combobox-chip-remove',
+    );
+    expect(screen.getByRole('combobox', { name: 'Cities' })).toHaveAttribute(
+      'data-slot',
+      'combobox-chip-input',
+    );
+    rerender(
+      <Combobox key="single" label="Cities" defaultItems={[{ id: 'paris', label: 'Paris' }]} />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Cities' })).toHaveAttribute(
+      'data-slot',
+      'combobox-input',
+    );
+  });
+
   it('UIC-COMBOBOX-3.1 UIC-COMBOBOX-3.5 keeps the latest icon when suggestions change', () => {
     const option: ComboboxOption = { id: 'paris', label: 'Paris', icon: FolderGlyph };
     const { rerender } = render(

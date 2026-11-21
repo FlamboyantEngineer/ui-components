@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { DataSlotNames } from '../../core/data-slot-names.js';
 import type { BaseProps, Key, Placement, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -19,7 +20,7 @@ import {
   type RootMenuTriggerState,
   RootMenuTriggerStateContext,
 } from '../../primitives/index.js';
-import { Menu, MenuOverlay, type MenuPopoverProps } from '../menu/menu.js';
+import { Menu, MenuOverlay, type MenuPopoverProps, prefixMenuDataSlots } from '../menu/menu.js';
 import { type ContextMenuTargetProps, useContextMenuTarget } from './context-menu-target.js';
 import { useMenuAnchor } from './menu-anchor.js';
 import {
@@ -78,6 +79,9 @@ export interface ContextMenuTriggerProps extends Omit<
  * The root menu state React Aria reads for submenus and to close a whole menu tree, for a menu
  * whose open state lives elsewhere. `close` empties the submenu stack, then calls `onClose`.
  */
+/** Its menus' parts are named `context-menu-*` (UIC-CONTEXT-MENU-3.2). */
+const contextMenuSlotNames = prefixMenuDataSlots({ to: 'context-menu' });
+
 function useRootMenuState(isOpen: boolean, onClose: () => void): RootMenuTriggerState {
   const [expandedKeysStack, setExpandedKeysStack] = useState<Key[]>([]);
   const close = useCallback(() => {
@@ -149,7 +153,11 @@ export function ContextMenu({
           onOpenChange={state.setOpen}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <MenuContext value={menuDefaults}>{children ?? <Menu items={items ?? []} />}</MenuContext>
+          <DataSlotNames names={contextMenuSlotNames}>
+            <MenuContext value={menuDefaults}>
+              {children ?? <Menu items={items ?? []} />}
+            </MenuContext>
+          </DataSlotNames>
         </MenuOverlay>
       </RootMenuTriggerStateContext>
     </>

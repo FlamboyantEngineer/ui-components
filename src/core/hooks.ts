@@ -35,6 +35,8 @@ export interface ComponentHooks<Slot extends string> {
   readonly name: string;
   /** The root class, e.g. `ui-button`. */
   readonly className: string;
+  /** The declared slot names, e.g. `icon`. */
+  readonly slots: readonly string[];
   /** Props for the root element: root class, caller class, caller data attributes, then hook values. */
   root(options?: RootHookOptions): HookProps;
   /** Props for a slot element: `ui-<component>__<slot>` plus hook values. */
@@ -43,7 +45,15 @@ export interface ComponentHooks<Slot extends string> {
   slotClass(slot: Slot): string;
   /** The declared shadcn/ui slot name of the root or a slot, e.g. `dialog-close`. */
   dataSlot(part: 'root' | Slot): string | undefined;
+  /**
+   * The same hooks with other `data-slot` names for the hook classes `names` lists (`null` drops
+   * the name), so a presentation can name the shared parts it renders (`sheet-title`).
+   */
+  withDataSlots(names: DataSlotOverrides): ComponentHooks<Slot>;
 }
+
+/** `data-slot` names by hook class (`ui-dialog__title`); `null` renders no name. */
+export type DataSlotOverrides = Readonly<Record<string, string | null>>;
 
 const kebabName = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const dataSlotAttribute = 'data-slot';
@@ -177,17 +187,49 @@ export function createHooks<const Slot extends string = never>(
       throw new Error(`Invalid data-slot name "${slotName}" for ${name} ${part}`);
     }
   }
+  const hooks = buildHooks(name, slots, dataSlots);
+  const rootName = dataSlots.root;
+  if (rootName !== undefined) dataSlotByClass.set(hooks.className, rootName);
+  for (const slot of slots) {
+    const slotName = dataSlots[slot];
+    if (slotName !== undefined) dataSlotByClass.set(hooks.slotClass(slot), slotName);
+  }
+  return hooks;
+}
+
+/** The declared names with `names` applied to the classes it lists. */
+function renameDataSlots<Slot extends string>(
+  { rootClass, slots, dataSlots }: HookNames<Slot>,
+  names: DataSlotOverrides,
+): DataSlotNames<Slot> {
+  const renamed: Partial<Record<'root' | Slot, string>> = {};
+  const pick = (part: 'root' | Slot, hookClass: string) => {
+    const value = Object.hasOwn(names, hookClass) ? names[hookClass] : dataSlots[part];
+    if (typeof value === 'string') renamed[part] = value;
+  };
+  pick('root', rootClass);
+  for (const slot of slots) pick(slot, `${rootClass}__${slot}`);
+  return renamed;
+}
+
+interface HookNames<Slot extends string> {
+  rootClass: string;
+  slots: readonly Slot[];
+  dataSlots: DataSlotNames<Slot>;
+}
+
+function buildHooks<Slot extends string>(
+  name: string,
+  slots: readonly Slot[],
+  dataSlots: DataSlotNames<Slot>,
+): ComponentHooks<Slot> {
   const rootClass = `ui-${name}`;
   const slotClass = (slot: Slot) => `${rootClass}__${slot}`;
   const dataSlot = (part: 'root' | Slot): string | undefined => dataSlots[part];
-  if (dataSlots.root !== undefined) dataSlotByClass.set(rootClass, dataSlots.root);
-  for (const slot of slots) {
-    const slotName = dataSlots[slot];
-    if (slotName !== undefined) dataSlotByClass.set(slotClass(slot), slotName);
-  }
   return {
     name,
     className: rootClass,
+    slots,
     root({ className, data, props } = {}) {
       const attributes: DataAttributes = props ? pickDataAttributes(props) : {};
       // A caller's data-slot, or a part class in its className, names a composed part; the
@@ -209,6 +251,9 @@ export function createHooks<const Slot extends string = never>(
     },
     slotClass,
     dataSlot,
+    withDataSlots(names) {
+      return buildHooks(name, slots, renameDataSlots({ rootClass, slots, dataSlots }, names));
+    },
   };
 }
 

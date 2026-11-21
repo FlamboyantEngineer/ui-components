@@ -1,13 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { DataSlotNames } from '../../core/data-slot-names.js';
 import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement, RefProps, Size, Tone } from '../../core/props.js';
 import { DialogTrigger as AriaDialogTrigger } from '../../primitives/index.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import type { DialogFocusTarget } from './dialog-focus.js';
-import { dialogHooks as hooks } from './dialog-hooks.js';
+import { dialogHooks, dialogSlotNames } from './dialog-hooks.js';
 import {
   DialogPresentation,
   resolveDismissal,
@@ -159,6 +160,12 @@ function canDismissOutside({
   );
 }
 
+/** The part names of the presentation: an alert dialog's, a sheet's or a dialog's. */
+function toSlotNames(role: DialogRole | undefined, side: SheetSide | undefined) {
+  if (role === 'alertdialog') return dialogSlotNames.alertDialog;
+  return side ? dialogSlotNames.sheet : dialogSlotNames.dialog;
+}
+
 function DialogOverlay({
   isOpen,
   defaultOpen,
@@ -184,8 +191,9 @@ function DialogOverlay({
   const isRetained = useRetention(ownState, keepMounted && !placement);
   const [, dialogProps] = splitDataAttributes(rest);
   const isFloating = isNonModal && !placement;
+  const slotNames = toSlotNames(dialogProps.role, side);
   const rootProps = {
-    ...hooks.root({
+    ...dialogHooks.withDataSlots(slotNames).root({
       className,
       props: rest,
       data: {
@@ -220,12 +228,14 @@ function DialogOverlay({
     />
   );
   return (
-    <DialogPresentation
-      {...dismissal}
-      {...{ state: ownState, rootProps, placement, isFloating, isRetained }}
-    >
-      {dialog}
-    </DialogPresentation>
+    <DataSlotNames names={slotNames}>
+      <DialogPresentation
+        {...dismissal}
+        {...{ state: ownState, rootProps, placement, isFloating, isRetained }}
+      >
+        {dialog}
+      </DialogPresentation>
+    </DataSlotNames>
   );
 }
 
