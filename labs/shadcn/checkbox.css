@@ -1,0 +1,29 @@
+/*
+ * shadcn/ui stylesheet: checkboxes.
+ * A light input border that fills with the primary color when checked.
+ */
+
+.ui-checkbox__box {
+  border-color: var(--input);
+  background: var(--ref-field-fill);
+  border-radius: var(--ref-radius-xs);
+  color: var(--primary-foreground);
+}
+
+.ui-checkbox:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.ui-checkbox[data-hovered]:not([data-selected], [data-indeterminate]) .ui-checkbox__box {
+  border-color: var(--input);
+}
+
+.ui-checkbox[data-focus-visible] .ui-checkbox__box {
+  border-color: var(--ref-focus);
+  outline-offset: 0;
+}
+
+.ui-checkbox[data-invalid] .ui-checkbox__box {
+  border-color: var(--ref-danger);
+}

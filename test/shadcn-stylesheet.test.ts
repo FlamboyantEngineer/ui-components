@@ -23,6 +23,7 @@ function check(parts: Record<string, string>) {
     join(reference, 'base.css'),
     ':root { --ref-text: #000; --ref-radius: 6px; }\n.ui-button { color: var(--ref-text); }\n',
   );
+  writeFileSync(join(reference, 'card.css'), '.ui-card { border-radius: var(--ref-radius); }\n');
   for (const [name, css] of Object.entries(parts)) writeFileSync(join(shadcn, name), css);
   return spawnSync(process.execPath, [script, '--dir', shadcn, '--reference', reference], {
     encoding: 'utf8',
@@ -44,7 +45,8 @@ describe('shadcn/ui stylesheet parts', () => {
     const result = check({
       'tokens.css': ':root { --primary: oklch(0.2 0 0); }\n',
       'bridge.css': ':root { --ref-text: var(--foreground); --ref-shadcn-ring: 0 0 0 1px red; }\n',
-      'retouch.css': '.ui-button { color: var(--primary); box-shadow: var(--ref-shadcn-ring); }\n',
+      'base.css': '.ui-button { color: var(--primary); box-shadow: var(--ref-shadcn-ring); }\n',
+      'card.css': '.ui-card .ui-button, .ui-card:where(.dark *) { color: var(--card); }\n',
     });
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
@@ -54,7 +56,7 @@ describe('shadcn/ui stylesheet parts', () => {
     const result = check({
       'tokens.css': ':root { --brand: #123456; }\n',
       'bridge.css': ':root { --ref-shadcn-unused: 1px; }\n',
-      'retouch.css': [
+      'base.css': [
         '.ui-buton { color: var(--ref-txt); }',
         '.ui-button { background: #fff; --primary: black; }',
         '#lab-root .ui-button { --ref-shadcn-own: 0; }',
@@ -63,16 +65,31 @@ describe('shadcn/ui stylesheet parts', () => {
     expect(result.status).toBe(1);
     for (const problem of [
       'tokens.css:1: --brand is neither a shadcn/ui token',
-      'retouch.css:1: .ui-buton is not a hook any reference partial draws',
-      'retouch.css:1: --ref-txt is neither a reference token',
-      'retouch.css:2: literal color',
-      'retouch.css:2: --primary is the host',
-      'retouch.css:3: #lab-root styles the lab page',
-      'retouch.css:3: --ref-shadcn-own belongs in bridge.css',
+      'base.css:1: .ui-buton is not a hook any reference partial draws',
+      'base.css:1: --ref-txt is neither a reference token',
+      'base.css:2: literal color',
+      'base.css:2: --primary is the host',
+      'base.css:3: #lab-root styles the lab page',
+      'base.css:3: --ref-shadcn-own belongs in bridge.css',
       'bridge.css: --ref-shadcn-unused is defined but never used',
     ]) {
       expect(result.stderr).toContain(problem);
     }
+  });
+
+  it('UIC-LABS-3.11 keeps each component partial to the reference partial it is named after', () => {
+    const result = check({
+      'card.css':
+        '.ui-card, .ui-card .ui-button {}\n.ui-button,\n  .ui-button:where(.ui-card) {}\n',
+      'cards.css': '.ui-card {}\n',
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'card.css:2: .ui-button selects no hook reference/card.css draws',
+    );
+    expect(result.stderr).not.toContain('card.css:1:');
+    expect(result.stderr).not.toContain(':where(.ui-card)');
+    expect(result.stderr).toContain('cards.css: no reference partial is named cards.css');
   });
 
   it('UIC-LABS-3.11 orders the token defaults, the reference partials and the overrides', async () => {
@@ -87,10 +104,18 @@ describe('shadcn/ui stylesheet parts', () => {
     expect(index).toContain('@layer ui-shadcn-tokens, ui-reference, ui-shadcn;');
     expect(imports[0]).toBe('ui-shadcn-tokens shadcn/tokens.css');
     expect(imports[1]).toBe('ui-reference reference/base.css');
-    expect(imports.slice(-2)).toEqual([
-      'ui-shadcn shadcn/bridge.css',
-      'ui-shadcn shadcn/retouch.css',
-    ]);
+    const overrides = imports.filter((entry) => entry.startsWith('ui-shadcn '));
+    expect(imports.slice(-overrides.length)).toEqual(overrides);
+    expect(overrides[0]).toBe('ui-shadcn shadcn/bridge.css');
+    const components = overrides.slice(1).map((entry) => entry.slice('ui-shadcn shadcn/'.length));
+    const referenceOrder = imports
+      .filter((entry) => entry.startsWith('ui-reference '))
+      .map((entry) => entry.slice('ui-reference reference/'.length));
+    expect(components).toEqual(referenceOrder.filter((name) => components.includes(name)));
+    expect(components).toContain('button.css');
+    for (const name of components) {
+      expect(imports).toContain(`ui-reference reference/${name}`);
+    }
     expect(imports.filter((entry) => entry.startsWith('ui-reference ')).length).toBeGreaterThan(
       100,
     );

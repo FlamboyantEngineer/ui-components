@@ -1,0 +1,14 @@
+/*
+ * shadcn/ui stylesheet: sheets.
+ * A light scrim that blurs the page, under a panel with shadcn/ui's large shadow.
+ */
+
+.ui-drawer__backdrop {
+  backdrop-filter: blur(4px);
+}
+
+.ui-drawer__panel {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--ref-shadcn-shadow-lg);
+}

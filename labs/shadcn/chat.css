@@ -1,0 +1,27 @@
+/*
+ * shadcn/ui stylesheet: chat.
+ * The composer is an input group, with the input border, a small shadow and the focus ring while
+ * its text has focus; the queue box on its top edge takes the muted fill. Enter in an empty Other
+ * field of a question marks it invalid; the field carries the message, so the choices keep their
+ * input border.
+ */
+
+.ui-chat__composer.ui-message-composer {
+  box-shadow: var(--ref-shadcn-shadow-sm);
+}
+
+.ui-chat__composer.ui-message-composer:has(.ui-message-composer__input:focus) {
+  border-color: var(--ref-focus);
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-chat__queue {
+  background: color-mix(in oklab, var(--muted) 50%, var(--background));
+}
+
+.ui-chat-question__options
+  .ui-choice__button[data-invalid]:not([data-selected])
+  .ui-choice__indicator {
+  border-color: var(--input);
+}

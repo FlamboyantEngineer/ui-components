@@ -42,7 +42,7 @@
   --ref-shadow: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
   --ref-shadcn-shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
   --ref-shadcn-shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
-  /* shadcn/ui dims behind a dialog only lightly, and blurs what it covers (retouch.css). */
+  /* shadcn/ui dims behind a dialog only lightly, and blurs what it covers (dialog.css, drawer.css). */
   --ref-scrim: oklch(0 0 0 / 0.1);
   --ref-scrim-weak: oklch(0 0 0 / 0.05);
 
