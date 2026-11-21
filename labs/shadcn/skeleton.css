@@ -1,0 +1,13 @@
+/*
+ * shadcn/ui stylesheet: skeletons, after the skeleton of shadcn/ui's "nova" style: the muted fill
+ * with the medium radius, pulsing; circles stay round.
+ */
+
+.ui-skeleton[data-loading] {
+  border-radius: calc(var(--radius) * 0.8);
+  background: var(--muted);
+}
+
+.ui-skeleton[data-loading][data-shape='circle'] {
+  border-radius: 50%;
+}

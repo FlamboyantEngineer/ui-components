@@ -1,0 +1,38 @@
+/*
+ * shadcn/ui stylesheet: shortcuts, after the kbd of shadcn/ui's "nova" style. Keycaps are 20 pixel
+ * muted chips at least as wide as they are high, with 4 pixels of padding, the small radius and 12
+ * pixel medium text in the sheet's font, 4 pixels apart; in a tooltip they turn to a faint wash of
+ * the page color on the tooltip's ink. Shortcuts written as text keep the reference look.
+ */
+
+.ui-shortcut[data-appearance='keycaps'] .ui-shortcut__keys,
+.ui-shortcut[data-appearance='keycaps'] .ui-shortcut__chord {
+  gap: 4px;
+}
+
+.ui-shortcut[data-appearance='keycaps'] .ui-shortcut__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: calc(var(--radius) * 0.6);
+  background: var(--muted);
+  color: var(--ref-muted);
+  font: var(--ref-font-weight-medium) var(--ref-font-size-xs) / 1 var(--ref-font);
+}
+
+.ui-tooltip .ui-shortcut[data-appearance='keycaps'] .ui-shortcut__key {
+  background: color-mix(in oklab, var(--background) 20%, transparent);
+  color: var(--background);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-tooltip
+  .ui-shortcut[data-appearance='keycaps']
+  .ui-shortcut__key {
+  background: color-mix(in oklab, var(--background) 10%, transparent);
+}

@@ -1,0 +1,33 @@
+/*
+ * shadcn/ui stylesheet: progress bars and meters, after the progress of shadcn/ui's "nova" style.
+ * A 4 pixel muted track with full rounding under a row of the 14 pixel medium label and, at the
+ * row's end, the muted value in tabular figures, 12 pixels apart; the fill is the primary color.
+ * The large size thickens the track to 6 pixels; tones and the finished state keep their fills.
+ */
+
+:is(.ui-progress-bar, .ui-meter) {
+  gap: 12px;
+}
+
+:is(.ui-progress-bar__label, .ui-meter__label) {
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+:is(.ui-progress-bar__value, .ui-meter__value) {
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+:is(.ui-progress-bar__track, .ui-meter__track) {
+  height: 4px;
+  background: var(--muted);
+}
+
+:is(.ui-progress-bar, .ui-meter)[data-size='lg'] :is(.ui-progress-bar__track, .ui-meter__track) {
+  height: 6px;
+}
+
+:is(.ui-progress-bar__fill, .ui-meter__fill) {
+  background: var(--primary);
+}
