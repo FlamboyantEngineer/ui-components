@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, type ReactElement, type ReactNode, useContext } from 'react';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { CloseGlyph } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
@@ -50,7 +51,7 @@ export interface TagProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement
   tone?: Tone | undefined;
 }
 
-const hooks = createHooks('tag-group', ['list', 'tag', 'label', 'remove', 'empty']);
+const tagGroupHooks = createHooks('tag-group', ['list', 'tag', 'label', 'remove', 'empty']);
 
 const ToneContext = createContext<Tone>('neutral');
 
@@ -73,6 +74,7 @@ export function TagGroup<T extends object>({
   onRemove,
   ...rest
 }: TagGroupProps<T>) {
+  const hooks = useDataSlotHooks(tagGroupHooks);
   return (
     <AriaTagGroup
       {...rest}
@@ -115,6 +117,7 @@ export function Tag({
   className,
   ...rest
 }: TagProps) {
+  const hooks = useDataSlotHooks(tagGroupHooks);
   const strings = useUiStrings();
   const groupTone = useContext(ToneContext);
   return (
@@ -137,6 +140,7 @@ export function Tag({
               variant="bare"
               size="xs"
               className={hooks.slotClass('remove')}
+              data-slot={hooks.dataSlot('remove')}
             />
           ) : null}
         </>

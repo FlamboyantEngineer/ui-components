@@ -2,6 +2,7 @@
 
 import { type KeyboardEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { DataSlotNames } from '../../core/data-slot-names.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { SearchGlyph } from '../../core/glyphs.js';
 import { splitDataAttributes } from '../../core/hooks.js';
@@ -23,7 +24,7 @@ import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
-import { Menu, type MenuProps, type MenuSize } from '../menu/menu.js';
+import { Menu, type MenuProps, type MenuSize, prefixMenuDataSlots } from '../menu/menu.js';
 import { useLayerZIndex, usePortalContainer } from '../portal/portal.js';
 import { isChordPress, type ShortcutChord, useShortcut } from '../shortcut/shortcut.js';
 import type { CommandPaletteEntry, CommandPaletteFilter } from './command-palette-entries.js';
@@ -88,6 +89,12 @@ type CommandPaletteDialogProps = Omit<
   isOpen: boolean;
   close: () => void;
 };
+
+/** Its list's parts are named as cmdk's: `command-list`, `command-item` (UIC-COMMAND-PALETTE-3.3). */
+const commandSlotNames = prefixMenuDataSlots({
+  to: 'command',
+  parts: { content: 'list', label: null },
+});
 
 /**
  * The dialog: a search field over a menu of commands (React Aria `Autocomplete`). Focus stays in
@@ -157,16 +164,18 @@ function CommandPaletteDialog({
             <Input ref={inputRef} {...hooks.slot('search-input')} placeholder={hint} />
           </SearchField>
           <MenuContext value={menuContext}>
-            <Menu
-              {...menu}
-              aria-label={pageLabel}
-              items={pages.menuItems}
-              onAction={pages.onAction}
-              highlightMatches
-              renderEmptyState={() => (
-                <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
-              )}
-            />
+            <DataSlotNames names={commandSlotNames}>
+              <Menu
+                {...menu}
+                aria-label={pageLabel}
+                items={pages.menuItems}
+                onAction={pages.onAction}
+                highlightMatches
+                renderEmptyState={() => (
+                  <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
+                )}
+              />
+            </DataSlotNames>
           </MenuContext>
         </Autocomplete>
       </AvailableLoadingBoundary>

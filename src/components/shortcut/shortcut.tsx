@@ -105,6 +105,7 @@ export function Shortcut({
       {...rest}
       {...hooks.root({
         className,
+        props: rest,
         data: { platform: resolved, appearance: appearance ?? inherited },
       })}
     >

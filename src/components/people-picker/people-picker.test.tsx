@@ -10,6 +10,12 @@ import {
   type PeoplePickerProps,
 } from './people-picker.js';
 
+// The names a multiple combobox gives its chips (UIC-COMBOBOX-3.8).
+const chipNames = {
+  'ui-tag-group__tag': 'combobox-chip',
+  'ui-tag-group__remove': 'combobox-chip-remove',
+};
+
 const directory: PeoplePickerPerson[] = [
   { id: 'ada', name: 'Ada Moreno', description: 'ada@example.com' },
   { id: 'ben', name: 'Ben Okafor', description: 'ben@example.com' },
@@ -167,7 +173,7 @@ describe('PeoplePicker', () => {
     expect(avatar).toHaveClass('ui-avatar');
     expect(avatar).toHaveAttribute('data-kind', 'group');
     expect(within(chips).getByRole('row', { name: 'Ben Okafor' })).toBeInTheDocument();
-    expectHooksMatchSpec(container, 'PEOPLE-PICKER', { slots: ['avatar'] });
+    expectHooksMatchSpec(container, 'PEOPLE-PICKER', { slots: ['avatar'], dataSlots: chipNames });
   });
 
   it('UIC-PEOPLE-PICKER-2.3 lists a disabled person with the reason and does not pick them', async () => {

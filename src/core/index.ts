@@ -217,6 +217,7 @@ export {
 export type {
   ComponentHooks,
   DataAttributes,
+  DataSlotOverrides,
   DataValue,
   DataValues,
   HookProps,

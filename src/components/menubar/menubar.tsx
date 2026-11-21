@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useContext, useId, useLayoutEffect, useRef } from 'react';
+import { DataSlotNames } from '../../core/data-slot-names.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../core/props.js';
 import {
@@ -11,7 +12,13 @@ import {
 import { mergeProps } from '../../utils/merge-props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useLatest } from '../../utils/use-latest.js';
-import { Menu, MenuOverlay, type MenuProps, MenuTrigger } from '../menu/menu.js';
+import {
+  Menu,
+  MenuOverlay,
+  type MenuProps,
+  MenuTrigger,
+  prefixMenuDataSlots,
+} from '../menu/menu.js';
 import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 
 export interface MenubarProps
@@ -31,6 +38,9 @@ export interface MenubarMenuProps
 }
 
 const hooks = createHooks('menubar', ['trigger'], { root: 'menubar', trigger: 'menubar-trigger' });
+
+/** Its menus' parts are named `menubar-*` (UIC-MENUBAR-2.7). */
+const menubarSlotNames = prefixMenuDataSlots({ to: 'menubar' });
 
 /**
  * A menubar (`role="menubar"`): a row or column of top-level items that each open a menu, like an
@@ -121,9 +131,11 @@ export function MenubarMenu({ items, children, onAction, ...trigger }: MenubarMe
         isNonModal
         shouldCloseOnInteractOutside={(element) => !bar.isInside(element)}
       >
-        <Menu items={items} onAction={onAction} size={bar.size}>
-          {children}
-        </Menu>
+        <DataSlotNames names={menubarSlotNames}>
+          <Menu items={items} onAction={onAction} size={bar.size}>
+            {children}
+          </Menu>
+        </DataSlotNames>
       </MenuOverlay>
     </MenuTrigger>
   );
