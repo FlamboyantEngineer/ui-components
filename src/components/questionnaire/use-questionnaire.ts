@@ -3,6 +3,7 @@
 import { type FormEvent, useLayoutEffect, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { containsFocus } from '../../utils/composed-focus.js';
+import { readOwn } from '../../utils/read-own.js';
 import {
   type QuestionnaireAnswers,
   questionnaireHooks as hooks,
@@ -34,20 +35,26 @@ function readItems(form: HTMLFormElement | null) {
   );
 }
 
-/** The non-empty values each question submits, by name: from `given` when the caller keeps them. */
+/**
+ * The non-empty values each question submits, by name: from `given` when the caller keeps them. A
+ * name such as `__proto__` is a key of its own.
+ */
 function readAnswers(
   form: HTMLFormElement | null,
   given: QuestionnaireAnswers | undefined,
 ): QuestionnaireAnswers {
   const data = form && !given ? new FormData(form) : null;
-  const answers: QuestionnaireAnswers = {};
-  for (const item of readItems(form)) {
-    const values: unknown[] = given ? (given[item.name] ?? []) : (data?.getAll(item.name) ?? []);
-    answers[item.name] = values
-      .filter((value): value is string => typeof value === 'string')
-      .filter((value) => value.trim() !== '');
-  }
-  return answers;
+  return Object.fromEntries(
+    readItems(form).map((item) => {
+      const values: unknown[] = given
+        ? (readOwn(given, item.name) ?? [])
+        : (data?.getAll(item.name) ?? []);
+      const filled = values
+        .filter((value): value is string => typeof value === 'string')
+        .filter((value) => value.trim() !== '');
+      return [item.name, filled];
+    }),
+  );
 }
 
 function readSnapshot(
@@ -56,7 +63,9 @@ function readSnapshot(
 ): Snapshot {
   const answers = readAnswers(form, given);
   return {
-    answered: new Set(Object.keys(answers).filter((name) => (answers[name] ?? []).length > 0)),
+    answered: new Set(
+      Object.keys(answers).filter((name) => (readOwn(answers, name) ?? []).length > 0),
+    ),
     required: new Set(
       readItems(form)
         .filter((item) => item.hasAttribute('data-required'))
