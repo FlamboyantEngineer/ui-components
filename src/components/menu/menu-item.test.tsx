@@ -520,6 +520,43 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     expectHooksMatchSpec(document.body, 'MENU');
   });
 
+  it('UIC-MENU-2.9 publishes inset on items, item entries and section titles', () => {
+    render(
+      <Menu aria-label="View">
+        <MenuSection title="Panels" inset>
+          <MenuItem inset>Ruler</MenuItem>
+          <MenuItem>Grid</MenuItem>
+        </MenuSection>
+      </Menu>,
+    );
+    expect(screen.getByRole('menuitem', { name: 'Ruler' })).toHaveAttribute('data-inset', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Grid' })).not.toHaveAttribute('data-inset');
+    const group = screen.getByRole('group', { name: 'Panels' });
+    expect(group.querySelector('.ui-menu-section__header')).toHaveAttribute('data-inset', 'true');
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['header'] });
+  });
+
+  it('UIC-MENU-2.9 takes inset on entries', () => {
+    render(
+      <Menu
+        aria-label="View"
+        items={[
+          {
+            type: 'section',
+            id: 'go',
+            title: 'Go to',
+            inset: true,
+            items: [{ id: 'top', label: 'Top', inset: true }],
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('menuitem', { name: 'Top' })).toHaveAttribute('data-inset', 'true');
+    expect(
+      screen.getByRole('group', { name: 'Go to' }).querySelector('.ui-menu-section__header'),
+    ).toHaveAttribute('data-inset', 'true');
+  });
+
   it('UIC-MENU-3.1 UIC-MENU-3.2 groups items under a titled section and separates them', () => {
     render(
       <Menu aria-label="Edit">

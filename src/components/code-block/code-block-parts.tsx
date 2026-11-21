@@ -20,7 +20,7 @@ import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { useScrollOverflow } from '../../utils/use-scroll-overflow.js';
 import type { CodeEditorWrap } from '../code-editor/code-editor.js';
 import { CopyButton } from '../copy-button/copy-button.js';
-import type { CodeBlockVariant } from './code-block.js';
+import type { CodeBlockSize, CodeBlockVariant } from './code-block.js';
 import { codeBlockHooks as hooks } from './code-block-content.js';
 
 /** How a composed line stands out: `added` and `removed` mark a change, `highlighted` draws the eye. */
@@ -32,6 +32,8 @@ export interface CodeBlockFrameProps extends ContainerProps<'div'>, BaseProps {
   code?: undefined;
   /** `code` (the default) shows source; `terminal` mutes output lines. */
   variant?: CodeBlockVariant | undefined;
+  /** Padding and type size. Defaults to `default`. */
+  size?: CodeBlockSize | undefined;
   /** A `CodeBlockHeader`, a `CodeBlockContent` and a `CodeBlockFooter`. */
   children?: ReactNode;
 }
@@ -84,6 +86,7 @@ const changeElements = { added: 'ins', removed: 'del' } as const;
 /** The root of a composed code block: a group named by its `CodeBlockTitle` unless labelled. */
 export function CodeBlockFrame({
   variant = 'code',
+  size = 'default',
   className,
   'aria-label': label,
   'aria-labelledby': labelledBy,
@@ -94,7 +97,7 @@ export function CodeBlockFrame({
     <FrameContext value={titleId}>
       <div
         {...rest}
-        {...hooks.root({ className, data: { variant } })}
+        {...hooks.root({ className, data: { variant, size } })}
         role="group"
         aria-label={label}
         aria-labelledby={labelledBy ?? (label === undefined ? titleId : undefined)}

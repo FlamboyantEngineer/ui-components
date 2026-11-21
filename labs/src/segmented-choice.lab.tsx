@@ -283,6 +283,24 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Spacing"
+      description="Joined segments touch; spaced segments sit a small gap apart. Both variants are joined unless spaced."
+    >
+      <StateMatrix
+        axes={{ variant: ['default', 'outline'], spacing: ['joined', 'spaced'] }}
+        render={({ variant, spacing }) => (
+          <SegmentedChoice
+            aria-label={`View, ${variant}, ${spacing}`}
+            options={views}
+            defaultValue="week"
+            variant={variant}
+            spacing={spacing}
+            sizing="content"
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="States"
       description="Hover, press and keyboard focus show on interaction. Tab into a group and use the arrow keys."
     >

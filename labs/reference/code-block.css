@@ -178,3 +178,29 @@
 .ui-code-block__line > :is(ins, del) {
   text-decoration: none;
 }
+
+/* Small: tighter padding and one step smaller type. */
+
+.ui-code-block[data-size='sm'] .ui-code-block__header {
+  min-height: var(--ref-control-height-sm);
+  padding-inline-start: 10px;
+}
+
+.ui-code-block[data-size='sm'] .ui-code-block__title,
+.ui-code-block[data-size='sm'] .ui-code-block__footer {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-code-block[data-size='sm'] .ui-code-block__code {
+  padding: 8px 10px;
+  font-size: 0.8em;
+}
+
+.ui-code-block[data-size='sm'] .ui-code-block__footer {
+  padding: 4px 10px;
+}
+
+.ui-code-block[data-size='sm'] .ui-code-block__line[data-variant] {
+  margin-inline: -10px;
+  padding-inline: 10px;
+}

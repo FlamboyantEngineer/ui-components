@@ -53,6 +53,13 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`
 
+### UIC-LIST-ROW-1.8 - Separator
+
+`ListSeparator` shall render an empty `<li aria-hidden="true">` between rows of a `List`, carrying `ui-list__separator` (shadcn/ui's item separator) and the caller's `className` and native props. It is decorative: a list holds only list items, so it takes no `separator` role, and assistive technology passes over it. Row keys skip it, since it has no primary control. The reference sheet draws it as a one-pixel rule.
+
+Implementation: `src/components/list-row/list-row.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-row.test.tsx`
+
 ## UIC-LIST-ROW-2 - Row
 
 ### UIC-LIST-ROW-2.1 - Primary control
@@ -125,6 +132,20 @@ Verification: `e2e/list-row.spec.ts`
 Implementation: `src/components/list-row/list-row.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-row.test.tsx`
 
+### UIC-LIST-ROW-2.11 - Header and footer
+
+`header` shall render a `ui-list-row__header` line before the primary control, and `footer` a `ui-list-row__footer` line after the trailing controls, shadcn/ui's item header and footer. Both sit outside the primary control, so a link row's link holds only the row text, and neither renders when empty. The reference sheet gives each the row's full width.
+
+Implementation: `src/components/list-row/list-row.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-row.test.tsx`
+
+### UIC-LIST-ROW-2.12 - Leading media kind
+
+`leadingVariant` shall publish `data-variant` on `ui-list-row-content__leading`: `default` (the default, media as given), `icon` (a small glyph in a framed square) or `image` (a cropped square thumbnail), shadcn/ui's item media variants. The reference sheet sizes the `image` square with the row size.
+
+Implementation: `src/components/list-row/list-row-content.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-row.test.tsx`
+
 ## UIC-LIST-ROW-3 - List view
 
 ### UIC-LIST-ROW-3.1 - Grid list of rows
@@ -187,11 +208,14 @@ Verification: `e2e/list-row.spec.ts`
 | Hook                             | Kind      | Values                        | Description                                                        |
 | -------------------------------- | --------- | ----------------------------- | ------------------------------------------------------------------ |
 | `ui-list`                        | root      | `item-group`                  | The `<ul>`.                                                        |
+| `ui-list__separator`             | slot      | `item-separator`              | A rule between rows (`ListSeparator`).                             |
 | `data-divided`                   | state     | `true`                        | Dividers between rows requested.                                   |
 | `data-pending`                   | state     | `true`                        | Rows are loading or updating.                                      |
 | `ui-list-row`                    | root      | `item`                        | The `<li>`.                                                        |
 | `ui-list-row__primary`           | slot      |                               | The link, button or read-only body holding the row text.           |
+| `ui-list-row__header`            | slot      | `item-header`                 | The line before the primary control.                               |
 | `ui-list-row__trailing`          | slot      | `item-actions`                | Trailing controls, after the primary control.                      |
+| `ui-list-row__footer`            | slot      | `item-footer`                 | The line after the trailing controls.                              |
 | `data-kind`                      | attribute | `link`, `action`, `static`    | What the primary control is.                                       |
 | `data-tone`                      | attribute | `neutral`, `danger`           | Semantic emphasis.                                                 |
 | `data-variant`                   | attribute | `default`, `outline`, `muted` | Row chrome.                                                        |
@@ -204,6 +228,7 @@ Verification: `e2e/list-row.spec.ts`
 | `data-focus-visible`             | state     | `true`                        | An action row's button has keyboard focus (React Aria).            |
 | `ui-list-row-content`            | root      |                               | The row text: leading media or icon, title and meta.               |
 | `ui-list-row-content__leading`   | slot      | `item-media`                  | Decorative leading media.                                          |
+| `data-variant`                   | attribute | `default`, `icon`, `image`    | What the leading media is, on the leading slot.                    |
 | `ui-list-row-content__text`      | slot      | `item-content`                | The title and meta lines (the `Label` label with `icon`).          |
 | `ui-list-row-content__title`     | slot      | `item-title`                  | The title line.                                                    |
 | `ui-list-row-content__meta`      | slot      | `item-description`            | The meta line.                                                     |

@@ -81,6 +81,13 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
+### UIC-SEGMENTED-CHOICE-1.12 - Spacing
+
+`spacing` shall publish `data-spacing` on the group: `joined` (the default; the segments edge to edge) or `spaced` (a small gap between them, each with its own corners), shadcn/ui's toggle group `spacing` of zero or more. The reference sheet draws joined `outline` segments sharing their edges and spaced `default` segments without the shared frame; spacing changes no behaviour.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
+
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 
 ### UIC-SEGMENTED-CHOICE-2.1 - Keyboard and accessibility
@@ -174,6 +181,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `ui-segmented-choice__accessible-label` | slot      |                          | The complete localized name when a count is shown.  |
 | `ui-segmented-choice__count`            | slot      |                          | A segment's count after its label.                  |
 | `data-variant`                          | attribute | `default`, `outline`     | Segment chrome.                                     |
+| `data-spacing`                          | attribute | `joined`, `spaced`       | Whether the segments touch.                         |
 | `data-size`                             | attribute | `xs`, `sm`, `md`, `lg`   | Segment block size.                                 |
 | `data-sizing`                           | attribute | `equal`, `content`       | How segments share the width.                       |
 | `data-orientation`                      | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |

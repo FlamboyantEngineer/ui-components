@@ -7,8 +7,7 @@ import { UiLink } from '../../core/provider.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { mergeSafeRel } from '../../utils/merge-safe-rel.js';
-import type { IconSource } from '../icon/icon.js';
-import { Label } from '../label/label.js';
+import { ListRowContent, type ListRowContentProps } from './list-row-content.js';
 import {
   RowRegistryContext,
   type RowTabStop,
@@ -16,6 +15,8 @@ import {
   useRowTabStop,
 } from './use-list-navigation.js';
 
+export type { ListRowContentProps, ListRowLeadingVariant } from './list-row-content.js';
+export { ListRowContent } from './list-row-content.js';
 export { ListView, ListViewItem } from './list-view.js';
 
 /** Imperative access to a `List`. */
@@ -35,18 +36,6 @@ export interface ListProps extends ContainerProps<'ul'>, BaseProps {
   handleRef?: Ref<ListHandle> | undefined;
 }
 
-export interface ListRowContentProps
-  extends Omit<ContainerProps<'span'>, 'title' | 'children'>, BaseProps {
-  /** The row's main text. */
-  title: ReactNode;
-  /** Secondary text below the title, such as a `MetaLine`. */
-  meta?: ReactNode;
-  /** An imported icon component or rendered element beside the title and meta, drawn through `Label`. */
-  icon?: IconSource;
-  /** Decorative leading media (an avatar, a thumbnail). Ignored when `icon` is set. */
-  leading?: ReactNode;
-}
-
 export type ListRowTone = Extract<Tone, 'neutral' | 'danger'>;
 
 /** `default` is a plain row, `outline` a bordered one, `muted` a row on a muted fill. */
@@ -59,7 +48,11 @@ export interface ListRowProps
   extends
     Omit<ContainerProps<'li'>, 'title' | 'children'>,
     BaseProps,
-    Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
+    Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading' | 'leadingVariant'> {
+  /** A line above the row's primary control and trailing controls, such as a category. */
+  header?: ReactNode;
+  /** A line below them, such as a status or a note. */
+  footer?: ReactNode;
   /** Makes the row's primary control a link, rendered through the provider's link renderer. */
   href?: string | undefined;
   /** Link target. A target that opens a new browsing context (`_blank` or a window name) adds `noopener` and `noreferrer` to `rel`. */
@@ -84,6 +77,8 @@ export interface ListRowProps
   size?: ListRowSize | undefined;
 }
 
+export type ListSeparatorProps = Omit<ContainerProps<'li'>, 'children'> & BaseProps;
+
 /** What the row's primary control is. */
 type ListRowKind = 'link' | 'action' | 'static';
 
@@ -92,16 +87,15 @@ type PrimaryOptions = Pick<
   'href' | 'target' | 'rel' | 'onPress' | 'onAuxPress' | 'isCurrent' | 'isDisabled'
 >;
 
-const listHooks = createHooks('list', [], { root: 'item-group' });
-const rowHooks = createHooks('list-row', ['primary', 'trailing'], {
-  root: 'item',
-  trailing: 'item-actions',
+const listHooks = createHooks('list', ['separator'], {
+  root: 'item-group',
+  separator: 'item-separator',
 });
-const contentHooks = createHooks('list-row-content', ['leading', 'text', 'title', 'meta'], {
-  leading: 'item-media',
-  text: 'item-content',
-  title: 'item-title',
-  meta: 'item-description',
+const rowHooks = createHooks('list-row', ['header', 'primary', 'trailing', 'footer'], {
+  root: 'item',
+  header: 'item-header',
+  trailing: 'item-actions',
+  footer: 'item-footer',
 });
 
 function resolveKind({ href, onPress }: PrimaryOptions): ListRowKind {
@@ -210,43 +204,6 @@ export function List({
 }
 
 /**
- * The text of a row without any control: leading media or icon, title and meta. `ListRow` draws it
- * inside its primary control; use it alone inside an element that is itself the link or button.
- */
-export function ListRowContent({
-  title,
-  meta,
-  icon,
-  leading,
-  className,
-  ...rest
-}: ListRowContentProps) {
-  const text = (
-    <span {...contentHooks.slot('text')}>
-      <span {...contentHooks.slot('title')}>{title}</span>
-      {isEmptyNode(meta) ? null : <span {...contentHooks.slot('meta')}>{meta}</span>}
-    </span>
-  );
-  const media = isEmptyNode(leading) ? null : (
-    <span {...contentHooks.slot('leading')} aria-hidden="true">
-      {leading}
-    </span>
-  );
-  return (
-    <span {...rest} {...contentHooks.root({ className, props: rest })}>
-      {!icon ? (
-        <>
-          {media}
-          {text}
-        </>
-      ) : (
-        <Label icon={icon} label={text} grow />
-      )}
-    </span>
-  );
-}
-
-/**
  * One row of a `List`: a primary control (a link, a button or a focusable read-only body) holding
  * the row text, followed by optional trailing controls as siblings. A link row renders exactly one
  * link and nothing interactive inside it.
@@ -256,6 +213,9 @@ export function ListRow({
   meta,
   icon,
   leading,
+  leadingVariant,
+  header,
+  footer,
   href,
   target,
   rel,
@@ -284,10 +244,20 @@ export function ListRow({
         tabStop.activate();
       }}
     >
+      {isEmptyNode(header) ? null : <div {...rowHooks.slot('header')}>{header}</div>}
       <ListRowPrimary kind={kind} options={options} tabStop={tabStop}>
-        <ListRowContent title={title} meta={meta} icon={icon} leading={leading} />
+        <ListRowContent {...{ title, meta, icon, leading, leadingVariant }} />
       </ListRowPrimary>
       {isEmptyNode(trailing) ? null : <div {...rowHooks.slot('trailing')}>{trailing}</div>}
+      {isEmptyNode(footer) ? null : <div {...rowHooks.slot('footer')}>{footer}</div>}
     </li>
   );
+}
+
+/**
+ * A decorative rule between rows of a `List` (shadcn/ui's item separator): an empty list item
+ * hidden from assistive technology, which the row keys skip.
+ */
+export function ListSeparator({ className, ...rest }: ListSeparatorProps) {
+  return <li {...rest} {...listHooks.slot('separator', undefined, className)} aria-hidden="true" />;
 }

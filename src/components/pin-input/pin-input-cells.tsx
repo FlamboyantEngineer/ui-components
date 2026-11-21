@@ -46,6 +46,8 @@ interface PinCellOptions extends PinCodeShape {
   /** The first cell's autocomplete hint; the others never autocomplete. */
   autoComplete: string;
   enterKeyHint: FieldEnterKeyHint | undefined;
+  /** Cell counts after which a decorative separator sits. */
+  separators: readonly number[];
 }
 
 interface PinInputCellsProps {
@@ -68,15 +70,16 @@ interface CellKeyContext {
   erase(index: number): void;
 }
 
-export const pinInputHooks = createHooks('pin-input', ['group', 'cell'], {
+export const pinInputHooks = createHooks('pin-input', ['group', 'cell', 'separator'], {
   root: 'input-otp',
   group: 'input-otp-group',
   cell: 'input-otp-slot',
+  separator: 'input-otp-separator',
 });
 
 const hooks = pinInputHooks;
 
-type CellSlots = SlotRegistry<'group' | 'cell'>;
+type CellSlots = SlotRegistry<'group' | 'cell' | 'separator'>;
 
 /**
  * The arrow keys, Home and End move between cells; Backspace erases and moves back; typing the
@@ -207,6 +210,12 @@ function useCellComposition(fill: (index: number, text: string) => void) {
   };
 }
 
+/** The decorative dash before a cell that starts a new group of the code. */
+function separatorBefore(index: number, separators: readonly number[]) {
+  if (index === 0 || !separators.includes(index)) return null;
+  return <span key={`separator-${index}`} {...hooks.slot('separator')} aria-hidden="true" />;
+}
+
 /**
  * The cells of a code, one input each, in a group named by the field's label. One cell is in the
  * tab order, and focus never lands past the cell that takes the next character, so the value has
@@ -252,9 +261,9 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null);
         }}
       >
-        {Array.from({ length }, (_, index) => (
+        {Array.from({ length }, (_, index) => [
+          separatorBefore(index, cells.separators),
           <Input
-            key={index}
             {...hooks.slot('cell', { filled: index < value.length })}
             ref={index === 0 ? firstRef : slots.refAt('cell', index)}
             id={index === 0 ? control.id : undefined}
@@ -288,8 +297,8 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
               setFocused(index);
               event.currentTarget.select();
             }}
-          />
-        ))}
+          />,
+        ])}
       </Group>
       <FieldFormValue name={name} value={value} isDisabled={state.isDisabled} />
     </>

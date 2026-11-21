@@ -46,6 +46,13 @@ Verification: `src/components/code-block/code-block-content.test.ts`, `src/compo
 Implementation: `src/components/code-block/code-block.tsx`, `labs/reference/code-block.css`
 Verification: `src/components/code-block/code-block.test.tsx`, `e2e/code-block.spec.ts`
 
+### UIC-CODE-BLOCK-1.7 - Size
+
+`size` (`default` by default, or `sm`) shall publish `data-size` on the root of a data block and of a composed one, shadcn/ui's code block `size`. The reference stylesheet draws a `sm` block with tighter padding and one step smaller type; size changes no behaviour.
+
+Implementation: `src/components/code-block/code-block.tsx`, `src/components/code-block/code-block-parts.tsx`, `labs/reference/code-block.css`
+Verification: `src/components/code-block/code-block.test.tsx`, `src/components/code-block/code-block-parts.test.tsx`
+
 ## UIC-CODE-BLOCK-2 - Actions
 
 ### UIC-CODE-BLOCK-2.1 - Copy
@@ -122,6 +129,7 @@ Verification: `src/components/code-block/code-block-parts.test.tsx`, `e2e/code-b
 | `ui-code-block__prompt`              | slot      |                                                                  | A command line's prompt, hidden from assistive technology.               |
 | `ui-code-block__footer`              | slot      | `code-block-footer`                                              | What follows composed code, such as a caption.                           |
 | `data-variant`                       | attribute | `code`, `terminal`, `default`, `added`, `removed`, `highlighted` | The kind of block; on a composed line, how it stands out.                |
+| `data-size`                          | attribute | `default`, `sm`                                                  | The block's padding and type size.                                       |
 | `data-language`                      | attribute |                                                                  | The block's language.                                                    |
 | `data-token`                         | attribute |                                                                  | On a token: its type, from the caller's tokenizer.                       |
 | `data-kind`                          | state     | `command`, `output`                                              | On a terminal line: a command after the prompt, or output.               |

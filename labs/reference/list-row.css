@@ -100,6 +100,31 @@
   font-size: var(--ref-font-size-xs);
 }
 
+/* Header and footer lines take the row's full width, above and below the row text. */
+.ui-list-row__header,
+.ui-list-row__footer {
+  display: flex;
+  flex: 0 0 100%;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding-inline: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+.ui-list-row__header {
+  padding-block-start: 4px;
+}
+.ui-list-row__footer {
+  padding-block-end: 4px;
+}
+
+.ui-list__separator {
+  height: 1px;
+  margin-block: 4px;
+  background: var(--ref-border);
+}
+
 .ui-list-row__trailing {
   display: flex;
   flex: none;
@@ -127,6 +152,37 @@
 .ui-list-row-content__leading {
   display: inline-flex;
   flex: none;
+}
+
+/* Leading media kinds: a glyph in a framed square, or a cropped square thumbnail. */
+.ui-list-row-content__leading[data-variant='icon'] {
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+.ui-list-row-content__leading[data-variant='image'] {
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ref-radius);
+}
+.ui-list-row[data-size='sm'] .ui-list-row-content__leading[data-variant='image'] {
+  width: 32px;
+  height: 32px;
+}
+.ui-list-row[data-size='xs'] .ui-list-row-content__leading[data-variant='image'] {
+  width: 24px;
+  height: 24px;
+}
+.ui-list-row-content__leading[data-variant='image'] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .ui-list-row-content__text {

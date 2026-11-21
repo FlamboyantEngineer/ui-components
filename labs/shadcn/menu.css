@@ -120,3 +120,16 @@
 .ui-menu-separator {
   margin: 4px -4px;
 }
+
+/* Inset rows and labels: shadcn/ui's pl-7, the text where an icon row's text starts. */
+.ui-menu .ui-menu-item[data-inset] {
+  padding-inline-start: 28px;
+}
+
+.ui-menu-item[data-inset] > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 0;
+}
+
+.ui-menu-section__header[data-inset] {
+  padding-inline-start: 28px;
+}

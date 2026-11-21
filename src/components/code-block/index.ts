@@ -11,6 +11,7 @@ export type {
   CodeBlockLineVariant,
   CodeBlockOverrideOptions,
   CodeBlockProps,
+  CodeBlockSize,
   CodeBlockTitleProps,
   CodeBlockVariant,
 } from './code-block.js';

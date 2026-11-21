@@ -163,12 +163,37 @@
   white-space: nowrap;
 }
 
-/* Outline: no shared frame; each segment is a bordered control of its own, a small gap apart. */
-.ui-segmented-choice[data-variant='outline'] {
-  gap: 4px;
+/*
+ * Spaced: no shared frame; the segments sit a small gap apart, each with its own corners. Outline:
+ * each segment is a bordered control of its own; joined, neighbours share an edge.
+ */
+.ui-segmented-choice:is([data-spacing='spaced'], [data-variant='outline']) {
   border: 0;
   background: transparent;
   overflow: visible;
+}
+.ui-segmented-choice[data-spacing='spaced'] {
+  gap: 4px;
+}
+.ui-segmented-choice[data-spacing='spaced'] .ui-segmented-choice__segment {
+  border-radius: var(--ref-radius);
+  overflow: hidden;
+}
+.ui-segmented-choice[data-spacing='spaced'][data-variant='default'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-md);
+  border: 0;
+}
+.ui-segmented-choice[data-spacing='spaced'][data-variant='default'][data-size='xs']
+  .ui-segmented-choice__segment {
+  height: var(--ref-control-height-xs);
+}
+.ui-segmented-choice[data-spacing='spaced'][data-variant='default'][data-size='sm']
+  .ui-segmented-choice__segment {
+  height: var(--ref-control-height-sm);
+}
+.ui-segmented-choice[data-spacing='spaced'][data-variant='default'][data-size='lg']
+  .ui-segmented-choice__segment {
+  height: var(--ref-control-height-lg);
 }
 .ui-segmented-choice[data-variant='outline'] .ui-segmented-choice__segment,
 .ui-segmented-choice[data-variant='outline'][data-orientation='vertical']
@@ -190,4 +215,36 @@
 }
 .ui-segmented-choice[data-variant='outline'][data-invalid] .ui-segmented-choice__segment {
   border-color: var(--ref-danger);
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'] .ui-segmented-choice__segment {
+  border-radius: 0;
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  margin-inline-start: -1px;
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  margin-block-start: -1px;
+  margin-inline-start: 0;
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined']
+  .ui-segmented-choice__segment:first-child {
+  border-start-start-radius: var(--ref-radius);
+  border-end-start-radius: var(--ref-radius);
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined']
+  .ui-segmented-choice__segment:last-child {
+  border-start-end-radius: var(--ref-radius);
+  border-end-end-radius: var(--ref-radius);
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-orientation='vertical']
+  .ui-segmented-choice__segment:first-child {
+  border-radius: var(--ref-radius) var(--ref-radius) 0 0;
+}
+.ui-segmented-choice[data-variant='outline'][data-spacing='joined'][data-orientation='vertical']
+  .ui-segmented-choice__segment:last-child {
+  border-radius: 0 0 var(--ref-radius) var(--ref-radius);
 }
