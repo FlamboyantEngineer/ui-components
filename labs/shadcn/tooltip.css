@@ -1,0 +1,11 @@
+/*
+ * shadcn/ui stylesheet: tooltips.
+ * The inverted chip, without a shadow.
+ */
+
+.ui-tooltip:not([data-variant='info']) {
+  border-radius: calc(var(--ref-radius) - 2px);
+  background: var(--foreground);
+  color: var(--background);
+  box-shadow: none;
+}

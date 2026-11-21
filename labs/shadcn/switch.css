@@ -1,0 +1,63 @@
+/*
+ * shadcn/ui stylesheet: switches.
+ * A 32 by 18 pixel track with a 16 pixel thumb at the default size, no border.
+ */
+
+.ui-switch {
+  --ref-switch-track-width: 32px;
+  --ref-switch-track-height: 18px;
+  --ref-switch-thumb: 16px;
+}
+
+.ui-switch[data-size='xs'] {
+  --ref-switch-track-width: 24px;
+  --ref-switch-track-height: 14px;
+  --ref-switch-thumb: 12px;
+}
+
+.ui-switch[data-size='sm'] {
+  --ref-switch-track-width: 28px;
+  --ref-switch-track-height: 16px;
+  --ref-switch-thumb: 14px;
+}
+
+.ui-switch[data-size='lg'] {
+  --ref-switch-track-width: 36px;
+  --ref-switch-track-height: 20px;
+  --ref-switch-thumb: 18px;
+}
+
+.ui-switch__track {
+  border-color: transparent;
+  background: var(--input);
+}
+
+.ui-switch__thumb {
+  background: var(--background);
+}
+
+.ui-switch[data-selected] .ui-switch__track {
+  border-color: transparent;
+  background: var(--primary);
+}
+
+.ui-switch[data-selected] .ui-switch__thumb {
+  background: var(--primary-foreground);
+}
+
+.ui-switch[data-hovered] .ui-switch__track {
+  border-color: transparent;
+}
+
+.ui-switch[data-focus-visible] .ui-switch__track {
+  border-color: var(--ref-focus);
+  outline-offset: 0;
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__track {
+  background: color-mix(in oklab, var(--input) 80%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__thumb {
+  background: var(--foreground);
+}

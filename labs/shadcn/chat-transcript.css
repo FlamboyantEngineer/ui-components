@@ -1,0 +1,11 @@
+/*
+ * shadcn/ui stylesheet: chat transcript.
+ * The jump button is an outline button with the small shadow, so it reads over the transcript in
+ * both themes.
+ */
+
+.ui-chat-transcript__jump {
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: var(--ref-shadcn-shadow-sm);
+}

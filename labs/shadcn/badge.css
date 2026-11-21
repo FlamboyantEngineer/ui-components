@@ -1,0 +1,29 @@
+/*
+ * shadcn/ui stylesheet: badges.
+ * Borderless pills. Solid neutral is the primary fill, subtle neutral the secondary grey, and the
+ * tones a light tint of their color. Bare, dot and status badges keep the reference look.
+ */
+
+.ui-badge:is([data-variant='subtle'], [data-variant='solid']):not([data-bare]) {
+  border-color: transparent;
+}
+
+.ui-badge[data-variant='subtle']:not([data-bare]) {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.ui-badge[data-variant='subtle']:not([data-tone='neutral'], [data-bare]) {
+  background: color-mix(in oklab, var(--ref-tone-fill) 10%, transparent);
+  color: var(--ref-tone);
+}
+
+.ui-badge[data-variant='solid']:not([data-bare]) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.ui-badge[data-variant='solid']:not([data-tone='neutral'], [data-bare]) {
+  background: var(--ref-tone-fill);
+  color: var(--ref-on-tone-fill);
+}

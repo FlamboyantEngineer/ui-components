@@ -1,0 +1,146 @@
+/*
+ * shadcn/ui stylesheet: buttons.
+ * shadcn/ui's variants on ours. Secondary, the default, is its grey fill; tertiary its outline;
+ * primary its dark fill; destructive a tinted fill. A press nudges the button down. This layer
+ * wins over every reference rule, so each rule names the variant or state it redraws.
+ */
+
+.ui-button {
+  background-clip: padding-box;
+  transition:
+    background-color var(--ref-duration-fast),
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-button[data-size='xs'] {
+  padding: 0 8px;
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-button[data-size='sm'] {
+  padding: 0 10px;
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-button[data-size='lg'] {
+  padding: 0 10px;
+}
+
+.ui-button[data-pressed]:not([aria-haspopup]) {
+  transform: translateY(1px);
+}
+
+.ui-button[data-variant='secondary'] {
+  border-color: transparent;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.ui-button[data-variant='secondary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
+}
+
+.ui-button:is(
+    [data-variant='secondary'],
+    [data-variant='tertiary'],
+    [data-variant='ghost']
+  )[data-selected] {
+  border-color: transparent;
+  background: color-mix(in oklch, var(--secondary), var(--foreground) 10%);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='primary'] {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.ui-button[data-variant='primary']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--primary) 80%, transparent);
+  filter: none;
+}
+
+.ui-button[data-variant='accent'] {
+  border-color: transparent;
+}
+
+.ui-button[data-variant='tertiary'] {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: var(--muted);
+}
+
+.ui-button[data-variant='destructive'] {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+  color: var(--ref-danger);
+}
+
+.ui-button[data-variant='destructive']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
+  color: var(--ref-danger);
+}
+
+.ui-button[data-variant='destructive'][data-focus-visible] {
+  border-color: color-mix(in oklab, var(--destructive) 40%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.ui-button[data-variant='link'] {
+  color: var(--primary);
+  text-underline-offset: 4px;
+}
+
+.ui-button[data-variant='chip'] {
+  border-color: var(--border);
+  background: var(--background);
+}
+
+.ui-button[data-variant='chip']:is([data-hovered], [data-pressed]) {
+  background: var(--muted);
+}
+
+/* Focus turns any variant's border to the ring color, inside the ring the bridge draws. */
+.ui-button[data-focus-visible]:not([data-variant='destructive']) {
+  border-color: var(--ref-focus);
+}
+
+/* An attached group shares outline borders; the grey fills meet with a hairline between them. */
+.ui-button-group[data-attached] > .ui-button[data-variant='secondary']:not(:first-child) {
+  border-inline-start-color: var(--border);
+}
+
+:where(.dark, [data-theme='dark']) .ui-button[data-variant='tertiary'] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-button[data-variant='destructive'] {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='destructive']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--destructive) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}

@@ -1,0 +1,64 @@
+/*
+ * shadcn/ui stylesheet: tabs.
+ * A row of tabs is a muted pill list, the selected tab a raised chip inside it.
+ */
+
+.ui-tabs:not([data-orientation='vertical']) > .ui-tabs__bar,
+.ui-tabs__list:not([data-orientation='vertical']) {
+  border-bottom: 0;
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) {
+  align-self: flex-start;
+  gap: 2px;
+  max-width: 100%;
+  padding: 3px;
+  border-radius: var(--ref-radius);
+  background: var(--muted);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-md) - 6px);
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--ref-radius) - 2px);
+  color: color-mix(in oklab, var(--foreground) 60%, transparent);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-tabs[data-size='sm'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-sm) - 6px);
+}
+
+.ui-tabs[data-size='lg'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
+  height: calc(var(--ref-control-height-lg) - 6px);
+  padding: 0 10px;
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-hovered] {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-selected] {
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: var(--ref-font-weight-medium); /* layout-exempt: tabs keep one weight */
+  box-shadow: var(--ref-shadcn-shadow-sm);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-focus-visible] {
+  border-color: var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__indicator {
+  display: none;
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-tabs__list:not([data-orientation='vertical'])
+  .ui-tabs__tab[data-selected] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}

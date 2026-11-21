@@ -21,7 +21,7 @@ export const REFERENCE_LAYER = 'ui-reference';
 /** The shadcn/ui stylesheet's default token values, below every other layer (UIC-LABS-1.11). */
 export const SHADCN_TOKENS_LAYER = 'ui-shadcn-tokens';
 
-/** The shadcn/ui stylesheet's bridge and retouch, above the reference partials it reuses. */
+/** The shadcn/ui stylesheet's bridge and component partials, above the reference partials it reuses. */
 export const SHADCN_LAYER = 'ui-shadcn';
 
 /** Rules the shipped sheet must carry, so a stale or partial bundle fails the package checks. */
@@ -86,7 +86,7 @@ export function referenceStylesheetProblems(css) {
 /** The shadcn/ui stylesheet the package ships beside the reference one (UIC-LABS-1.11). */
 export const SHADCN_STYLESHEET = 'labs/build/shadcn.css';
 
-/** Rules the shipped shadcn/ui sheet must carry: the reference partials, its bridge and retouch. */
+/** Rules the shipped shadcn/ui sheet must carry: the reference partials, its bridge and a component partial. */
 const SHADCN_REQUIRED_RULES = [
   ...REQUIRED_RULES,
   '--ref-accent: var(--primary)',
