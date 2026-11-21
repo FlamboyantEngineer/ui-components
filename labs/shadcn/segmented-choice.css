@@ -1,0 +1,101 @@
+/*
+ * shadcn/ui stylesheet: segmented choices, after the joined toggle group of shadcn/ui's "nova"
+ * style (spacing 0). No frame: the segments sit side by side in a rounded-lg group, each as tall as
+ * a control of its size with 8 pixels of padding and medium type. Hover and the selected segment
+ * take the muted fill. The outline variant frames the group and parts its segments in the input
+ * border color.
+ */
+
+.ui-segmented-choice {
+  border-width: 0;
+  background: transparent;
+  border-radius: var(--ref-radius);
+}
+
+.ui-segmented-choice:is([data-size='xs'], [data-size='sm']) {
+  border-radius: min(calc(var(--radius) * 0.8), 10px);
+}
+
+.ui-segmented-choice[data-invalid] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-segmented-choice__segment {
+  height: var(--ref-control-height-md);
+  padding: 0 8px;
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-segmented-choice__segment + .ui-segmented-choice__segment,
+.ui-segmented-choice[data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  border-inline-start: 0;
+  border-block-start: 0;
+}
+
+.ui-segmented-choice[data-size='xs'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-xs);
+  padding: 0 6px;
+}
+
+.ui-segmented-choice[data-size='sm'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-sm);
+  padding: 0 8px;
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.5;
+}
+
+.ui-segmented-choice[data-size='lg'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-lg);
+  padding: 0 8px;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-segmented-choice__segment:is([data-hovered], [data-pressed]),
+.ui-segmented-choice__indicator {
+  background: var(--muted);
+}
+
+.ui-segmented-choice__segment:is([data-hovered], [data-selected]) {
+  color: var(--foreground);
+}
+
+.ui-segmented-choice__segment[data-focus-visible] {
+  z-index: 1;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-segmented-choice[data-variant='outline'] {
+  border-width: 1px;
+  border-color: var(--input);
+}
+
+.ui-segmented-choice[data-variant='outline'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-md) - 2px);
+}
+
+.ui-segmented-choice[data-variant='outline'][data-size='xs'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-xs) - 2px);
+}
+
+.ui-segmented-choice[data-variant='outline'][data-size='sm'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-sm) - 2px);
+}
+
+.ui-segmented-choice[data-variant='outline'][data-size='lg'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-lg) - 2px);
+}
+
+.ui-segmented-choice[data-variant='outline']:not([data-orientation='vertical'])
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  border-inline-start: 1px solid var(--input);
+}
+
+.ui-segmented-choice[data-variant='outline'][data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  border-block-start: 1px solid var(--input);
+}
