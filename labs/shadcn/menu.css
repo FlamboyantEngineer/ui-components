@@ -1,0 +1,29 @@
+/*
+ * shadcn/ui stylesheet: menus.
+ * A popover's rounded-lg panel with a hairline ring; items take the accent fill.
+ */
+
+.ui-menu-popover {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  border-radius: var(--ref-radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.ui-menu-item {
+  border-radius: calc(var(--ref-radius) - 2px);
+}
+
+.ui-menu-item:is([data-focused], [data-open]) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.ui-menu-item[data-focus-visible] {
+  box-shadow: none;
+}
+
+.ui-menu-item[data-tone='danger']:is([data-focused], [data-open]) {
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+  color: var(--ref-danger);
+}

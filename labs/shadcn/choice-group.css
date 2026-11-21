@@ -1,0 +1,27 @@
+/*
+ * shadcn/ui stylesheet: radios.
+ * A light input border around a primary dot when selected.
+ */
+
+.ui-choice__indicator {
+  border-color: var(--input);
+  background: var(--ref-field-fill);
+}
+
+.ui-choice__button[data-hovered]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--input);
+}
+
+.ui-choice__button[data-selected] .ui-choice__indicator {
+  border-color: var(--primary);
+  background: var(--primary-foreground);
+}
+
+.ui-choice__button[data-focus-visible] .ui-choice__indicator {
+  border-color: var(--ref-focus);
+  outline-offset: 0;
+}
+
+.ui-choice__button[data-invalid]:not([data-selected]) .ui-choice__indicator {
+  border-color: var(--ref-danger);
+}
