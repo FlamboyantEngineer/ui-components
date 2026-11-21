@@ -109,9 +109,10 @@ describe('shipped reference stylesheet', () => {
 });
 
 describe('package manifest', () => {
-  it('UIC-LABS-1.2 distributes runnable labs separately from the installed library', () => {
+  it('UIC-LABS-1.2 UIC-LABS-1.11 distributes runnable labs separately from the installed library', () => {
     expect(manifest.files.filter((entry) => entry.startsWith('labs'))).toEqual([
       'labs/build/reference.css',
+      'labs/build/shadcn.css',
       'labs/build/fonts.css',
       'labs/build/vendor/fonts',
     ]);
@@ -148,7 +149,9 @@ describe('package manifest', () => {
 
   it('UIC-LABS-1.4 tags every exported build output with a manifest that builds nothing', () => {
     const release = readFileSync(join(process.cwd(), 'scripts/release.mjs'), 'utf8');
-    expect(release).toContain('REFERENCE_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY');
+    expect(release).toContain(
+      'REFERENCE_STYLESHEET, SHADCN_STYLESHEET, FONT_STYLESHEET, FONT_DIRECTORY',
+    );
     expect(release).toContain('delete manifest.scripts.prepare;');
     expect(release).toMatch(/'origin\/main'/);
     for (const script of ['check-package.mjs', 'check-server-components.mjs', 'release.mjs']) {
@@ -226,6 +229,7 @@ describe('Git branch install', () => {
       'npm run build && node scripts/build-labs.mjs --reference',
     );
     expect(manifest.exports['./reference.css']).toBe('./labs/build/reference.css');
+    expect(manifest.exports['./shadcn.css']).toBe('./labs/build/shadcn.css');
     expect(manifest.exports['./fonts.css']).toBe('./labs/build/fonts.css');
   });
 });
