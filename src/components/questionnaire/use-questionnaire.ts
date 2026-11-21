@@ -2,6 +2,7 @@
 
 import { type FormEvent, useLayoutEffect, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { containsFocus } from '../../utils/composed-focus.js';
 import {
   type QuestionnaireAnswers,
   questionnaireHooks as hooks,
@@ -74,7 +75,7 @@ function isSameSet(a: ReadonlySet<string>, b: ReadonlySet<string>) {
  */
 function focusItem(form: HTMLFormElement | null, name: string | null) {
   const item = readItems(form).find((candidate) => candidate.name === name);
-  if (item?.contains(item.ownerDocument.activeElement)) return;
+  if (containsFocus(item)) return;
   const control =
     item?.querySelector<HTMLInputElement>('input[type="radio"]:checked:not(:disabled)') ??
     item?.querySelector<HTMLInputElement>('input:not([type="hidden"]):not(:disabled)');

@@ -206,6 +206,17 @@ export function QuestionnaireItem({
   );
 }
 
+/**
+ * The questionnaire and the question around an answer control composed inside a question, such as a
+ * field of the caller's own that goes on with Enter and shows its question's invalid state.
+ */
+export function useQuestionnaireItem(part: string) {
+  return {
+    questionnaire: readQuestionnaire(useContext(QuestionnaireContext), part),
+    item: readQuestionnaire(useContext(QuestionnaireItemContext), part),
+  };
+}
+
 /** The question, as its fieldset's legend. */
 export function QuestionnaireTitle({ className, ...rest }: QuestionnaireTitleProps) {
   const item = readQuestionnaire(useContext(QuestionnaireItemContext), 'QuestionnaireTitle');

@@ -1,11 +1,10 @@
 'use client';
 
-import { type KeyboardEvent, useContext } from 'react';
+import type { KeyboardEvent } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Badge } from '../badge/badge.js';
-import { QuestionnaireChoice } from '../questionnaire/questionnaire.js';
-import { QuestionnaireContext, readQuestionnaire } from '../questionnaire/questionnaire-hooks.js';
+import { QuestionnaireChoice, useQuestionnaireItem } from '../questionnaire/questionnaire.js';
 import { TextField } from '../text-field/text-field.js';
 import {
   chatQuestionHooks as hooks,
@@ -54,7 +53,7 @@ export function QuestionTextField({
   autoFocus,
 }: QuestionTextFieldProps) {
   const strings = useUiStrings();
-  const questionnaire = readQuestionnaire(useContext(QuestionnaireContext), 'QuestionTextField');
+  const { questionnaire } = useQuestionnaireItem('QuestionTextField');
   const { isReadOnly } = questionnaire;
   return (
     <TextField

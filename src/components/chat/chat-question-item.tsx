@@ -1,11 +1,10 @@
 'use client';
 
-import { useContext } from 'react';
-import { QuestionnaireItem, QuestionnaireTitle } from '../questionnaire/questionnaire.js';
 import {
-  QuestionnaireItemContext,
-  readQuestionnaire,
-} from '../questionnaire/questionnaire-hooks.js';
+  QuestionnaireItem,
+  QuestionnaireTitle,
+  useQuestionnaireItem,
+} from '../questionnaire/questionnaire.js';
 import { QuestionChoices } from './chat-question-choices.js';
 import { QuestionTextField } from './chat-question-fields.js';
 import {
@@ -25,7 +24,7 @@ interface QuestionItemProps {
 /** The answer of a question: options as radios or checkboxes, or a field for the reader's words. */
 function QuestionAnswer({ item, draft, onDraftChange }: Omit<QuestionItemProps, 'isRequired'>) {
   // Next or Enter on a question left unanswered marks it invalid, which shows its field's validation.
-  const { isInvalid } = readQuestionnaire(useContext(QuestionnaireItemContext), 'QuestionAnswer');
+  const { isInvalid } = useQuestionnaireItem('QuestionAnswer').item;
   return item.selectionMode === 'none' ? (
     <QuestionTextField
       slot="text"

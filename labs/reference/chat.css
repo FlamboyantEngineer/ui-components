@@ -1125,7 +1125,7 @@
   vertical-align: middle;
 }
 
-/* The choice's own description lines it up with the label, past the radio or box. */
+/* The choice lines its description up with the label, past the radio or box. */
 .ui-chat-question__description {
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);

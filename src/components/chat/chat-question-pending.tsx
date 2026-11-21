@@ -7,8 +7,8 @@ import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
   Questionnaire,
-  type QuestionnaireAnswers,
   QuestionnaireActions,
+  type QuestionnaireAnswers,
   QuestionnaireNext,
   QuestionnairePrevious,
   QuestionnaireSubmit,
