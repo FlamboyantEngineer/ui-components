@@ -26,12 +26,16 @@ class FakeObserver {
   disconnect(): void {
     this.disconnected = true;
   }
-  /** Reports a content box, with a border box 4px wider and taller. */
-  report(content: Size, element = requireDefined(this.targets[0]).element): void {
+  /** Reports a content box, with a border box 4px wider and taller unless `border` says otherwise. */
+  report(
+    content: Size,
+    element = requireDefined(this.targets[0]).element,
+    border: Size = { width: content.width + 4, height: content.height + 4 },
+  ): void {
     const entry = {
       target: element,
       contentRect: { width: content.width, height: content.height },
-      borderBoxSize: [{ inlineSize: content.width + 4, blockSize: content.height + 4 }],
+      borderBoxSize: [{ inlineSize: border.width, blockSize: border.height }],
       contentBoxSize: [{ inlineSize: content.width, blockSize: content.height }],
       devicePixelContentBoxSize: [],
     } as unknown as ResizeObserverEntry;
@@ -190,6 +194,37 @@ test('UIC-MEASUREMENT-2.2 measures the border box, the client box or the parent'
   expect(latest()).toEqual({ width: 980, height: 600 });
   await act(async () => requireDefined(roots.pop()).unmount());
   expect(client.disconnected && scrollbar.disconnected).toBe(true);
+});
+
+test('UIC-MEASUREMENT-2.2 measures the scrollbar-free box, which a scrollbar leaves unchanged', async () => {
+  await mount({ box: 'scrollbar-free' });
+  const border = requireDefined(FakeObserver.instances[0]);
+  const content = requireDefined(FakeObserver.instances[1]);
+  const element = requireDefined(border.targets[0]).element as HTMLElement;
+  expect(border.targets[0]?.options).toEqual({ box: 'border-box' });
+  expect(content.targets).toEqual([{ element, options: { box: 'content-box' } }]);
+  Object.assign(element.style, {
+    borderLeftWidth: '1px',
+    borderRightWidth: '1px',
+    borderTopWidth: '2px',
+    borderBottomWidth: '2px',
+    borderStyle: 'solid',
+    paddingLeft: '3px',
+    paddingRight: '3px',
+    paddingTop: '4px',
+    paddingBottom: '4px',
+  });
+  const outer = { width: 1000, height: 600 };
+  await act(async () => border.report({ width: 992, height: 588 }, element, outer));
+  expect(latest()).toEqual({ width: 992, height: 588 });
+
+  // A scrollbar takes 15px of the content box but none of the border box.
+  const settled = latest();
+  await act(async () => {
+    content.report({ width: 977, height: 573 }, element, outer);
+    frames.run();
+  });
+  expect(latest()).toBe(settled);
 });
 
 test('UIC-MEASUREMENT-2.3 is null while disabled or unsupported, and stopping cancels the pending frame', async () => {
