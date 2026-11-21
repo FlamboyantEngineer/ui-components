@@ -401,6 +401,13 @@ The Dialog confirmation helper shall carry the hooks below on top of the modal's
 Implementation: `src/components/dialog/dialog-confirm.tsx`
 Verification: `src/components/dialog/dialog-confirm.test.tsx`
 
+### UIC-DIALOG-23.2 - Part names of each presentation
+
+The family's `data-slot` names (UIC-HOOKS-1.6) shall follow the presentation: an `AlertDialog`, or any dialog with `role="alertdialog"` (the confirmation helpers among them), writes `alert-dialog-*` (`alert-dialog-overlay`, `alert-dialog-content`, `alert-dialog`, `alert-dialog-header`, `alert-dialog-title`, `alert-dialog-description`, `alert-dialog-close`, `alert-dialog-footer`), a `Sheet` writes `sheet-*`, and a `Dialog` writes `dialog-*`, also when it opens inside a sheet or an alert dialog. The hook classes are the same in all three.
+
+Implementation: `src/components/dialog/dialog.tsx`, `src/components/dialog/dialog-hooks.ts`
+Verification: `src/components/dialog/dialog-slot-names.test.tsx`
+
 ## Dialog Controller
 
 `createDialogController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `DialogHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Dialog](DIALOG.md), or any modal the caller draws. [Confirm Dialog](DIALOG.md#uic-dialog-22---imperative-confirmation) builds awaitable helpers on it: `confirm` for a yes-or-no answer, `alert` for an acknowledgement and `prompt` for a line of text.
@@ -478,34 +485,34 @@ Verification: `src/components/dialog/dialog-host-exit.test.tsx`, `e2e/dialog-con
 
 ## Hooks
 
-| Hook                           | Kind      | Values / Meaning                                  |
-| ------------------------------ | --------- | ------------------------------------------------- |
-| `ui-dialog`                    | root      | `dialog-overlay`                                  | The overlay covering the viewport, or an anchored dialog's popover.       |
-| `ui-dialog__panel`             | slot      | `dialog-content`                                  | The box holding the dialog.                                               |
-| `ui-dialog__dialog`            | slot      | `dialog`                                          | The `role="dialog"` element.                                              |
-| `ui-dialog__header`            | slot      | `dialog-header`                                   | The header row.                                                           |
-| `ui-dialog__heading`           | slot      |                                                   | Groups the title and description.                                         |
-| `ui-dialog__title`             | slot      | `dialog-title`                                    | The `<h2>` title.                                                         |
-| `ui-dialog__description`       | slot      | `dialog-description`                              | The description under the title.                                          |
-| `ui-dialog__header-actions`    | slot      |                                                   | Caller content at the end of the header.                                  |
-| `ui-dialog__close`             | slot      | `dialog-close`                                    | The close button (also `ui-button`).                                      |
-| `ui-dialog__body`              | slot      |                                                   | The body.                                                                 |
-| `ui-dialog__footer`            | slot      | `dialog-footer`                                   | The footer.                                                               |
-| `ui-dialog__footer-content`    | slot      |                                                   | Caller content at the start of the footer.                                |
-| `ui-dialog__message`           | slot      |                                                   | The footer status or error message.                                       |
-| `ui-dialog__actions`           | slot      |                                                   | The action bar.                                                           |
-| `ui-dialog__cancel`            | slot      |                                                   | The Cancel button (also `ui-button`).                                     |
-| `ui-dialog__secondary`         | slot      |                                                   | The secondary action (also `ui-button`).                                  |
-| `ui-dialog__primary`           | slot      |                                                   | The primary action (also `ui-button`).                                    |
-| `data-layer`                   | attribute | `modal`, `dropdown`                               | The overlay layer (`dropdown` when anchored); z-index set inline.         |
-| `data-tone`                    | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On the overlay, emphasis; on the message, `danger` for an error.          |
-| `data-size`                    | attribute | `sm`, `md`, `lg`, `xl`, `full`                    | Dialog width.                                                             |
-| `data-side`                    | attribute | `top`, `right`, `bottom`, `left`                  | The viewport edge that holds a sheet.                                     |
-| `data-body-layout`             | attribute | `block`, `column`                                 | Body layout.                                                              |
-| `data-entering`                | state     | `true`                                            | On the overlay and panel while an entry animation runs (React Aria).      |
-| `data-exiting`                 | state     | `true`                                            | On the overlay and panel while an exit animation runs (React Aria).       |
-| `data-non-modal`               | state     | `true`                                            | On the overlay of a dialog that does not block the page.                  |
-| `data-stack-index`             | state     | `0`, `1`, …                                       | On a blocking dialog's overlay, its place among open ones, from 0.        |
-| `data-placement`               | state     | `top`, `bottom`, `left`, `right`, `center`        | On an anchored dialog, the side of the trigger it opened on (React Aria). |
-| `data-trigger`                 | state     | `DialogTrigger`                                   | On an anchored dialog, what opened it (React Aria).                       |
-| `ui-dialog__confirmation-icon` | slot      |                                                   | The decorative icon leading the title (also `ui-icon`).                   |
+| Hook                           | Kind      | Values / Meaning                                                      |
+| ------------------------------ | --------- | --------------------------------------------------------------------- |
+| `ui-dialog`                    | root      | `dialog-overlay`, `alert-dialog-overlay`, `sheet-overlay`             | The overlay covering the viewport, or an anchored dialog's popover.       |
+| `ui-dialog__panel`             | slot      | `dialog-content`, `alert-dialog-content`, `sheet-content`             | The box holding the dialog.                                               |
+| `ui-dialog__dialog`            | slot      | `dialog`, `alert-dialog`, `sheet`                                     | The `role="dialog"` element.                                              |
+| `ui-dialog__header`            | slot      | `dialog-header`, `alert-dialog-header`, `sheet-header`                | The header row.                                                           |
+| `ui-dialog__heading`           | slot      |                                                                       | Groups the title and description.                                         |
+| `ui-dialog__title`             | slot      | `dialog-title`, `alert-dialog-title`, `sheet-title`                   | The `<h2>` title.                                                         |
+| `ui-dialog__description`       | slot      | `dialog-description`, `alert-dialog-description`, `sheet-description` | The description under the title.                                          |
+| `ui-dialog__header-actions`    | slot      |                                                                       | Caller content at the end of the header.                                  |
+| `ui-dialog__close`             | slot      | `dialog-close`, `alert-dialog-close`, `sheet-close`                   | The close button (also `ui-button`).                                      |
+| `ui-dialog__body`              | slot      |                                                                       | The body.                                                                 |
+| `ui-dialog__footer`            | slot      | `dialog-footer`, `alert-dialog-footer`, `sheet-footer`                | The footer.                                                               |
+| `ui-dialog__footer-content`    | slot      |                                                                       | Caller content at the start of the footer.                                |
+| `ui-dialog__message`           | slot      |                                                                       | The footer status or error message.                                       |
+| `ui-dialog__actions`           | slot      |                                                                       | The action bar.                                                           |
+| `ui-dialog__cancel`            | slot      |                                                                       | The Cancel button (also `ui-button`).                                     |
+| `ui-dialog__secondary`         | slot      |                                                                       | The secondary action (also `ui-button`).                                  |
+| `ui-dialog__primary`           | slot      |                                                                       | The primary action (also `ui-button`).                                    |
+| `data-layer`                   | attribute | `modal`, `dropdown`                                                   | The overlay layer (`dropdown` when anchored); z-index set inline.         |
+| `data-tone`                    | attribute | `neutral`, `info`, `success`, `warning`, `danger`                     | On the overlay, emphasis; on the message, `danger` for an error.          |
+| `data-size`                    | attribute | `sm`, `md`, `lg`, `xl`, `full`                                        | Dialog width.                                                             |
+| `data-side`                    | attribute | `top`, `right`, `bottom`, `left`                                      | The viewport edge that holds a sheet.                                     |
+| `data-body-layout`             | attribute | `block`, `column`                                                     | Body layout.                                                              |
+| `data-entering`                | state     | `true`                                                                | On the overlay and panel while an entry animation runs (React Aria).      |
+| `data-exiting`                 | state     | `true`                                                                | On the overlay and panel while an exit animation runs (React Aria).       |
+| `data-non-modal`               | state     | `true`                                                                | On the overlay of a dialog that does not block the page.                  |
+| `data-stack-index`             | state     | `0`, `1`, …                                                           | On a blocking dialog's overlay, its place among open ones, from 0.        |
+| `data-placement`               | state     | `top`, `bottom`, `left`, `right`, `center`                            | On an anchored dialog, the side of the trigger it opened on (React Aria). |
+| `data-trigger`                 | state     | `DialogTrigger`                                                       | On an anchored dialog, what opened it (React Aria).                       |
+| `ui-dialog__confirmation-icon` | slot      |                                                                       | The decorative icon leading the title (also `ui-icon`).                   |

@@ -155,6 +155,13 @@ Verification: `src/components/combobox/combobox.test.tsx`
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-options.ts`, `src/components/combobox/combobox-chips.tsx`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `src/components/people-picker/people-picker.test.tsx`
 
+### UIC-COMBOBOX-3.8 - Chip part names
+
+A multiple combobox shall name its chips as shadcn/ui's combobox does (UIC-HOOKS-1.6): each chip (`ui-tag-group__tag`) is `combobox-chip`, its remove button (`ui-tag-group__remove`) `combobox-chip-remove`, and the input after the chips `combobox-chip-input` rather than `combobox-input`. A `TagGroup` elsewhere carries no names.
+
+Implementation: `src/components/combobox/combobox-chips.tsx`, `src/components/combobox/combobox-field.tsx`
+Verification: `src/components/combobox/combobox-chips.test.tsx`
+
 ## UIC-COMBOBOX-4 - Long lists and option content
 
 ### UIC-COMBOBOX-4.1 - Virtualized list
@@ -290,7 +297,7 @@ Verification: `src/components/combobox/combobox-parts.test.tsx`, `e2e/composed-p
 | `ui-combobox__field`              | slot      | `combobox-trigger`                         | The group framing the input and its buttons.                                                                                                              |
 | `ui-combobox__entry`              | slot      |                                            | The chips, search glyph and input, which wrap within it so the busy indicator, clear button and list button keep the trailing edge, centred in the field. |
 | `ui-combobox__search-icon`        | slot      |                                            | Leading search glyph of the `search` variant.                                                                                                             |
-| `ui-combobox__input`              | slot      | `combobox-input`                           | The text input (`role="combobox"`).                                                                                                                       |
+| `ui-combobox__input`              | slot      | `combobox-input`, `combobox-chip-input`    | The text input (`role="combobox"`).                                                                                                                       |
 | `ui-combobox__spinner`            | slot      |                                            | Busy indicator while pending.                                                                                                                             |
 | `ui-combobox__clear`              | slot      | `combobox-clear`                           | The clear button (also `ui-button`).                                                                                                                      |
 | `ui-combobox__button`             | slot      |                                            | The button that opens the list.                                                                                                                           |

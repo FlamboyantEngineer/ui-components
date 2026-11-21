@@ -106,6 +106,20 @@ describe('createHooks shadcn/ui slot names', () => {
     expect(button.root({ className: 'ui-dialog__body' })['data-slot']).toBe('button');
   });
 
+  it('UIC-HOOKS-1.6 gives other names to the classes listed, keeping the others', () => {
+    const sheet = hooks.withDataSlots({
+      'ui-dialog': 'sheet-overlay',
+      'ui-dialog__close': null,
+      'ui-dialog__body': 'sheet-body',
+    });
+    expect(sheet.root()['data-slot']).toBe('sheet-overlay');
+    expect(sheet.slot('close')).toEqual({ className: 'ui-dialog__close' });
+    expect(sheet.slot('body')['data-slot']).toBe('sheet-body');
+    expect(sheet.withDataSlots({}).dataSlot('root')).toBe('sheet-overlay');
+    expect(hooks.dataSlot('root')).toBe('dialog-overlay');
+    expect(sheet.slots).toEqual(['close', 'body']);
+  });
+
   it('UIC-HOOKS-1.5 renders no data-slot for a component that declares none', () => {
     expect(createHooks('pdf-viewer', ['page']).root()).toEqual({ className: 'ui-pdf-viewer' });
   });

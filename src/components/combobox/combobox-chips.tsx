@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { DataSlotNames } from '../../core/data-slot-names.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -100,6 +101,12 @@ export function useChipsLabel({ label, aria, isEnabled, inputRef }: ChipsLabelOp
   return { text: given ?? read, labelRef };
 }
 
+/** The chips are named as shadcn/ui's (UIC-COMBOBOX-3.8). */
+const chipSlotNames = {
+  'ui-tag-group__tag': 'combobox-chip',
+  'ui-tag-group__remove': 'combobox-chip-remove',
+};
+
 /**
  * A multiple combobox's chosen options as removable chips, each with its option's icon, in the
  * library's `TagGroup` before the input: the arrow keys move between chips, and the remove button, Delete or Backspace removes one.
@@ -120,21 +127,23 @@ export function ComboboxChips({ label, options, known, size, isEditable }: Combo
       ),
     );
   return (
-    <TagGroup
-      {...hooks.slot('chips')}
-      aria-label={strings.selectedValues(label)}
-      size={size}
-      items={chosen}
-      onRemove={isEditable ? onRemove : undefined}
-    >
-      {(option) => (
-        <Tag id={option.id} textValue={option.label}>
-          {option.icon ? (
-            <Icon {...toIconProps(option.icon)} className={hooks.slotClass('chip-icon')} />
-          ) : null}
-          {option.label}
-        </Tag>
-      )}
-    </TagGroup>
+    <DataSlotNames names={chipSlotNames}>
+      <TagGroup
+        {...hooks.slot('chips')}
+        aria-label={strings.selectedValues(label)}
+        size={size}
+        items={chosen}
+        onRemove={isEditable ? onRemove : undefined}
+      >
+        {(option) => (
+          <Tag id={option.id} textValue={option.label}>
+            {option.icon ? (
+              <Icon {...toIconProps(option.icon)} className={hooks.slotClass('chip-icon')} />
+            ) : null}
+            {option.label}
+          </Tag>
+        )}
+      </TagGroup>
+    </DataSlotNames>
   );
 }

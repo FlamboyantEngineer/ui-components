@@ -2,6 +2,7 @@
 
 import { type ReactNode, useContext, useMemo, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { dataAttributes, type HookProps } from '../../core/hooks.js';
 import type { Placement, RefProps } from '../../core/props.js';
@@ -19,7 +20,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { OverlayLayerScope, Portal, useLayerZIndex } from '../portal/portal.js';
-import { dialogHooks as hooks } from './dialog-hooks.js';
+import { dialogHooks } from './dialog-hooks.js';
 import { DialogShownContext, retainedStyle } from './dialog-retained.js';
 import { useDialogStackIndex } from './dialog-stack.js';
 
@@ -134,6 +135,7 @@ export function useDialogOpenState({
  * follows the dialog's open state, so every close goes through it.
  */
 function BlockingDialog({ state, rootProps, children, ...overlay }: BlockingDialogProps) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const zIndex = useLayerZIndex('modal');
   const stackIndex = useDialogStackIndex(state.isOpen);
   return (
@@ -157,6 +159,7 @@ function BlockingDialog({ state, rootProps, children, ...overlay }: BlockingDial
  * the panel's animations.
  */
 function FloatingDialog({ state, rootProps, children, isRetained }: FloatingDialogProps) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const zIndex = useLayerZIndex('modal');
   const panelRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(panelRef, state.isOpen);
@@ -228,6 +231,7 @@ function AnchoredDialog({
  * its body keeps its state for the next opening.
  */
 function RetainedDialog({ state, rootProps, children, ...dismissal }: BlockingDialogProps) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const zIndex = useLayerZIndex('modal');
   const overlayRef = useRef<HTMLDivElement>(null);
   const overlayRefs = useMergedRefs(overlayRef, rootProps.ref);

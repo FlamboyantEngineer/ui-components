@@ -1,11 +1,12 @@
 'use client';
 
 import { createContext, type ReactNode, useContext, useId, useLayoutEffect } from 'react';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Heading } from '../../primitives/index.js';
 import { Button, type ButtonProps } from '../button/button.js';
-import { dialogHooks as hooks } from './dialog-hooks.js';
+import { dialogHooks } from './dialog-hooks.js';
 
 export interface DialogPartProps<E extends HTMLElement> extends BaseProps, RefProps<E> {
   children?: ReactNode;
@@ -23,6 +24,7 @@ export const DialogPartContext = createContext<DialogPartState | null>(null);
 
 /** Groups the dialog's title, description and optional header actions. */
 export function DialogHeader({ className, children, ...props }: DialogPartProps<HTMLDivElement>) {
+  const hooks = useDataSlotHooks(dialogHooks);
   return (
     <div {...props} {...hooks.slot('header', undefined, className)}>
       {children}
@@ -36,6 +38,7 @@ export function DialogTitle({
   children,
   ...props
 }: DialogPartProps<HTMLHeadingElement>) {
+  const hooks = useDataSlotHooks(dialogHooks);
   return (
     <Heading
       {...props}
@@ -55,6 +58,7 @@ export function DialogDescription({
   children,
   ...props
 }: DialogPartProps<HTMLParagraphElement>) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const generatedId = useId();
   const descriptionId = id ?? generatedId;
   const setDescriptionId = useContext(DialogPartContext)?.setDescriptionId;
@@ -71,6 +75,7 @@ export function DialogDescription({
 
 /** Holds scrollable content and gives its headings the level below the dialog title. */
 export function DialogBody({ className, children, ...props }: DialogPartProps<HTMLDivElement>) {
+  const hooks = useDataSlotHooks(dialogHooks);
   return (
     <div {...props} {...hooks.slot('body', undefined, className)}>
       <HeadingLevelContext value={dialogTitleLevel}>{children}</HeadingLevelContext>
@@ -80,6 +85,7 @@ export function DialogBody({ className, children, ...props }: DialogPartProps<HT
 
 /** Groups caller-provided actions and status content at the end of the dialog. */
 export function DialogFooter({ className, children, ...props }: DialogPartProps<HTMLDivElement>) {
+  const hooks = useDataSlotHooks(dialogHooks);
   return (
     <div {...props} {...hooks.slot('footer', undefined, className)}>
       {children}
@@ -89,6 +95,7 @@ export function DialogFooter({ className, children, ...props }: DialogPartProps<
 
 /** A button that dismisses its dialog. */
 export function DialogClose({ className, isDisabled, ...props }: DialogCloseProps) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const state = useContext(DialogPartContext);
   return (
     <Button

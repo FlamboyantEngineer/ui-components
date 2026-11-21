@@ -1,9 +1,10 @@
 'use client';
 
 import { type ComponentPropsWithRef, type ReactNode, useContext } from 'react';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { CheckGlyph, ChevronLeftGlyph, ChevronRightGlyph } from '../../core/glyphs.js';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import { mergeClassNames } from '../../core/hooks.js';
 import type {
   BaseProps,
   Key,
@@ -29,6 +30,7 @@ import { Spinner } from '../progress-bar/progress-bar.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
 import { MenuSizeContext } from './menu-context.js';
+import { menuItemHooks, menuSectionHooks, menuSeparatorHooks } from './menu-hooks.js';
 
 /** Emphasis of a menu item: `danger` marks a destructive action. */
 export type MenuItemTone = Extract<Tone, 'neutral' | 'danger'>;
@@ -99,17 +101,6 @@ export interface MenuSectionProps
 }
 
 export type MenuSeparatorProps = RefProps<HTMLElement> & Omit<BaseProps, 'id'>;
-
-const itemHooks = createHooks(
-  'menu-item',
-  ['check', 'icon', 'spinner', 'label', 'description', 'shortcut', 'trailing', 'submenu-indicator'],
-  { root: 'dropdown-menu-item', shortcut: 'dropdown-menu-shortcut' },
-);
-const sectionHooks = createHooks('menu-section', ['header'], {
-  root: 'dropdown-menu-group',
-  header: 'dropdown-menu-label',
-});
-const separatorHooks = createHooks('menu-separator', [], { root: 'dropdown-menu-separator' });
 
 interface MenuItemContentProps extends Pick<
   MenuItemProps,
@@ -223,6 +214,7 @@ function MenuItemContent({
   isPending,
   children,
 }: MenuItemContentProps) {
+  const itemHooks = useDataSlotHooks(menuItemHooks);
   const size = useContext(MenuSizeContext);
   const { direction } = useLocale();
   const iconBox = icon ? (
@@ -284,6 +276,7 @@ export function MenuItem({
   href,
   ...rest
 }: MenuItemProps) {
+  const itemHooks = useDataSlotHooks(menuItemHooks);
   const own = { focusableDisabled: isDisabled && focusableWhenDisabled && !isPending, isSelected };
   const render = createRowRender(own);
   return (
@@ -328,6 +321,7 @@ export function MenuSection({
   onSelectionChange,
   ...rest
 }: MenuSectionProps) {
+  const sectionHooks = useDataSlotHooks(menuSectionHooks);
   return (
     <AriaMenuSection
       {...rest}
@@ -343,5 +337,12 @@ export function MenuSection({
 
 /** A rule between menu items or sections: a `Separator` with the menu's hook. */
 export function MenuSeparator({ className, ...rest }: MenuSeparatorProps) {
-  return <Separator {...rest} className={mergeClassNames(separatorHooks.className, className)} />;
+  const separatorHooks = useDataSlotHooks(menuSeparatorHooks);
+  return (
+    <Separator
+      data-slot={separatorHooks.dataSlot('root')}
+      {...rest}
+      className={mergeClassNames(separatorHooks.className, className)}
+    />
+  );
 }

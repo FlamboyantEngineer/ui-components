@@ -145,6 +145,29 @@ describe('expectHooksMatchSpec', () => {
     );
   });
 
+  it('UIC-HOOKS-1.6 UIC-HOOKS-4.1 checks the names a presentation gives in place of the declared', () => {
+    const named = render(
+      <div {...slottedHooks.root()} data-slot="panel">
+        <span {...slottedHooks.slot('title')} />
+        <span {...slottedHooks.slot('note')} data-slot="panel-note" />
+      </div>,
+    ).container;
+    const dataSlots = {
+      'ui-slotted': 'panel',
+      'ui-slotted__title': null,
+      'ui-slotted__note': 'panel-note',
+    };
+    expect(failureOf(() => expectHooksMatchSpec(named, slotted))).toContain(
+      'ui-slotted has data-slot="panel", expected slotted',
+    );
+    expect(failureOf(() => expectHooksMatchSpec(named, slotted, { dataSlots }))).toContain(
+      'ui-slotted__title has data-slot="slotted-title", which no spec declares',
+    );
+    expectHooksMatchSpec(named, slotted, {
+      dataSlots: { ...dataSlots, 'ui-slotted__title': 'slotted-title' },
+    });
+  });
+
   it('UIC-HOOKS-4.1 parses the spec hook tables once per worker, across module resets', async () => {
     const registry = specRegistry();
     expect(registry.get('BUTTON')?.hooks.length).toBeGreaterThan(0);

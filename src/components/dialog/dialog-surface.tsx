@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useDataSlotHooks } from '../../core/data-slot-names.js';
 import { AvailableLoadingBoundary, useHoldFocusOnLeave } from '../../core/loading-boundary.js';
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { stopConsumedEscape } from '../../utils/consumed-escape.js';
@@ -30,7 +31,7 @@ import type { DialogProps, DialogRenderProps } from './dialog.js';
 import { InitialFocus, useFocusReturn } from './dialog-focus.js';
 import { BuiltInFooter } from './dialog-footer.js';
 import { BuiltInHeader } from './dialog-header.js';
-import { dialogHooks as hooks } from './dialog-hooks.js';
+import { dialogHooks } from './dialog-hooks.js';
 import { DialogBody, DialogPartContext } from './dialog-parts.js';
 import { DialogShownContext } from './dialog-retained.js';
 import { claimPrimaryShortcut } from './dialog-shortcut.js';
@@ -223,6 +224,7 @@ export function DialogSurface({
   actionState,
   ...footer
 }: DialogSurfaceProps) {
+  const hooks = useDataSlotHooks(dialogHooks);
   const [descriptionId, setDescriptionId] = useState<string>();
   const dialogRef = useRef<HTMLElement>(null);
   const isShown = useContext(DialogShownContext);

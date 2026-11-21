@@ -14,6 +14,9 @@ import {
   type CommandPaletteProps,
 } from './command-palette.js';
 
+// A group's title has no name in shadcn/ui's command (UIC-COMMAND-PALETTE-3.3).
+const listNames = { 'ui-menu-section__header': null };
+
 const commands: MenuEntry[] = [
   { id: 'new', label: 'New file', icon: PlusGlyph, shortcut: 'Ctrl+N' },
   { id: 'open', label: 'Open recent', description: 'Report.pdf and 3 more' },
@@ -348,7 +351,7 @@ describe('CommandPalette', () => {
     await user.keyboard('li');
     const lima = screen.getByRole('menuitem', { name: 'Lima' });
     expect(lima.querySelector('mark.ui-text-match')).toHaveTextContent('Li');
-    expectHooksMatchSpec(document.body, 'COMMAND-PALETTE');
+    expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', { dataSlots: listNames });
     unmount();
     render(
       <CommandPalette defaultOpen defaultInputValue="ren">
@@ -367,7 +370,10 @@ describe('CommandPalette', () => {
     const { unmount } = render(<CommandPalette items={commands} defaultOpen />);
     await user.keyboard('zz');
     expect(document.querySelector('.ui-command-palette__empty')).toHaveTextContent('No results');
-    expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', { slots: ['empty'] });
+    expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', {
+      dataSlots: listNames,
+      slots: ['empty'],
+    });
     unmount();
     render(
       <CommandPalette
@@ -518,6 +524,7 @@ describe('CommandPalette', () => {
     expect(overlay).toHaveAttribute('data-layer', 'modal');
     expect(screen.getByRole('dialog')).toHaveAttribute('id', 'palette');
     expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', {
+      dataSlots: listNames,
       slots: ['panel', 'dialog', 'search', 'search-icon', 'search-input'],
     });
   });
@@ -582,6 +589,7 @@ describe('CommandPalette', () => {
         'Display',
       );
       expectHooksMatchSpec(document.body, 'COMMAND-PALETTE', {
+        dataSlots: listNames,
         slots: ['page', 'back', 'page-title'],
       });
       expect(search).toHaveValue('');

@@ -113,6 +113,13 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 Implementation: `src/components/command-palette/command-palette.tsx`
 Verification: `src/components/command-palette/command-palette.test.tsx`
 
+### UIC-COMMAND-PALETTE-3.3 - List part names
+
+The palette's command list shall carry the names of shadcn/ui's command (UIC-MENU-4.7): `command-list` on the menu, `command-item`, `command-shortcut`, `command-group` and `command-separator` on its parts, and no name on a group's title, which shadcn/ui's command does not name.
+
+Implementation: `src/components/command-palette/command-palette.tsx`
+Verification: `src/components/menu/menu-slot-names.test.tsx`
+
 ## Hooks
 
 | Hook                               | Kind      | Values                  | Description                                                          |
