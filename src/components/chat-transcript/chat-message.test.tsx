@@ -484,7 +484,9 @@ describe('ChatMessage markers, quote and slots', () => {
       </ChatMessage>,
     );
     const body = container.querySelector('.ui-chat-message__body');
-    const slots = [...(body?.children ?? [])].map((child) => child.className);
+    const slots = [...(body?.children ?? [])].map((child) =>
+      [...child.classList].find((name) => name.startsWith('ui-chat-message__')),
+    );
     expect(slots).toEqual([
       'ui-chat-message__content',
       'ui-chat-message__reactions',

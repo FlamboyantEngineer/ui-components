@@ -92,10 +92,16 @@ describe('ChatToolCall', () => {
       />,
     );
     const title = getToolCallTrigger(container).querySelector('.ui-disclosure__title');
-    const [glyph, summary] = Array.from(title?.children ?? []);
-    expect(glyph).toHaveClass('ui-chat-tool-call__status-glyph');
+    const [line] = Array.from(title?.children ?? []);
+    expect(line).toHaveClass('ui-trace__line');
+    const [icon, summary] = Array.from(line?.children ?? []);
+    expect(icon).toHaveClass('ui-trace__icon');
+    expect(icon?.firstElementChild).toHaveClass('ui-chat-tool-call__status-glyph');
     expect(summary).toHaveClass('ui-chat-tool-call__summary');
-    expect(Array.from(summary?.children ?? []).map((part) => part.classList[0])).toEqual([
+    const summaryParts = Array.from(summary?.children ?? []).map(
+      (part) => [...part.classList].find((name) => !name.startsWith('ui-trace')) ?? '',
+    );
+    expect(summaryParts).toEqual([
       'ui-chat-tool-call__label',
       'ui-chat-tool-call__status',
       'ui-chat-tool-call__duration',

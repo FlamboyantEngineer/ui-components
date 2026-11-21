@@ -8,6 +8,7 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { TOOLTIP_DELAY } from '../../utils/overlay-defaults.js';
 import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
+import { Message, MessageAvatar, MessageContent } from '../message/message.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 import { AnchoredTooltip } from '../tooltip/tooltip.js';
 import { useMessageIdentity } from './chat-message-identity.js';
@@ -270,27 +271,28 @@ export function ChatMessage({
   });
   const [body, own] = splitBodyProps(rest);
   const data = {
-    variant: display.variant,
-    origin,
-    status,
-    groupPosition,
-    delivery,
-    deliveryPresentation,
+    ...{ variant: display.variant, origin, status, groupPosition },
+    ...{ delivery, deliveryPresentation },
     ...{ deleted: isDeleted, hovered: isHovered, focusWithin: isFocusWithin },
     ...{ avatarHidden: display.avatarHidden, collapseFooterTime },
     streamingCaret: showsCaret({ streamingCaret: rest.streamingCaret, status, origin, isDeleted }),
   };
   return (
-    <article
+    <Message
       {...mergeProps(own, interactionProps, identity.transcript)}
       id={identity.domId}
       {...hooks.root({ className, data })}
-      aria-busy={status === 'streaming' || undefined}
+      align={origin === 'sent' ? 'end' : 'start'}
+      isStreaming={status === 'streaming'}
       aria-labelledby={identity.label ? identity.labelId : undefined}
     >
       <MessageLabel id={identity.labelId} label={identity.label} />
-      {display.avatar ? <ChatMessageAvatar author={display.avatar} /> : null}
-      <div ref={bodyRef} {...hooks.slot('body')}>
+      {display.avatar ? (
+        <MessageAvatar>
+          <ChatMessageAvatar author={display.avatar} />
+        </MessageAvatar>
+      ) : null}
+      <MessageContent ref={bodyRef} className={hooks.slotClass('body')}>
         <ChatMessageHeader
           authorName={display.showsName ? identity.authorName : undefined}
           time={display.headerTime}
@@ -298,6 +300,8 @@ export function ChatMessage({
         />
         <ChatMessageBody
           {...body}
+          origin={origin}
+          variant={display.variant}
           isDeleted={isDeleted}
           isCancelled={status === 'cancelled'}
           delivery={delivery}
@@ -306,13 +310,13 @@ export function ChatMessage({
           getNow={getNow}
         />
         {isEmptyNode(readers) ? null : <div {...hooks.slot('readers')}>{readers}</div>}
-      </div>
+      </MessageContent>
       <MessageTimeTooltip
         time={display.tooltipTime}
         getNow={getNow}
         isOpen={isHovered || isFocusWithin}
         anchor={bodyRef}
       />
-    </article>
+    </Message>
   );
 }

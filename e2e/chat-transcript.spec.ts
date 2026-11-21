@@ -267,15 +267,15 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
         viewport.evaluate((node) => {
           const box = node.getBoundingClientRect();
           const middle = box.top + box.height / 2;
-          const hit = [...node.querySelectorAll('article')].find((article) => {
-            const rect = article.getBoundingClientRect();
-            return rect.top <= middle && rect.bottom >= middle;
-          });
+          // The message across the middle, or the first below it when the middle falls in a gap.
+          const hit = [...node.querySelectorAll('article')].find(
+            (article) => article.getBoundingClientRect().bottom >= middle,
+          );
           return hit ? { id: hit.id, offset: hit.getBoundingClientRect().top - box.top } : null;
         });
       await expect(async () => expect(await visibleMessage()).not.toBeNull()).toPass();
       const before = await visibleMessage();
-      if (!before) throw new Error('A message must fill the middle of the viewport.');
+      if (!before) throw new Error('A message must sit at the middle of the viewport.');
       await section.getByRole('button', { name: 'Receive 100 messages' }).click();
       await expect(async () => {
         await expect(section.locator('[data-lab-mounted="virtualized"]')).toHaveText(
@@ -283,7 +283,9 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
         );
         expect(await long.getByRole('article').count()).toBeLessThan(80);
         if (isAway) {
-          expect(await offsetInView(long.locator(`#${before.id}`))).toBeCloseTo(before.offset, 0);
+          // The viewport scrolls in whole device pixels, so a fractional offset may move by under one.
+          const offset = await offsetInView(long.locator(`#${before.id}`));
+          expect(Math.abs(offset - before.offset)).toBeLessThanOrEqual(1);
           await expect(long.getByRole('button', { name: '100 new messages' })).toBeVisible();
         } else {
           expect(await distanceToBottom(viewport)).toBeLessThanOrEqual(1);

@@ -194,12 +194,11 @@ describe('ChatParts', () => {
       />,
     );
     const root = container.querySelector('.ui-chat-parts') as HTMLElement;
-    expect([...root.children].map((child) => child.classList[0])).toEqual([
-      'ui-chat-steps',
-      'ui-markdown',
-      'ui-chat-steps',
-      'ui-markdown',
-    ]);
+    expect(
+      [...root.children].map((child) =>
+        ['ui-chat-steps', 'ui-markdown'].find((name) => child.classList.contains(name)),
+      ),
+    ).toEqual(['ui-chat-steps', 'ui-markdown', 'ui-chat-steps', 'ui-markdown']);
     expect(screen.getByRole('button', { name: 'Edited a file, read a file' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Ran a command' })).toBeVisible();
   });

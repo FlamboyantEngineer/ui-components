@@ -136,6 +136,8 @@ describe('ChatTranscript', () => {
     expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
     scrollViewport(viewport, 50);
     const jump = screen.getByRole('button', { name: 'Jump to latest' });
+    expect(jump).toHaveAttribute('aria-label', 'Jump to latest');
+    expect(jump).toHaveTextContent(/^$/);
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['jump'] });
     await user.click(jump);
     expect(viewport.scrollTop).toBe(200);
@@ -220,6 +222,49 @@ describe('ChatMessage', () => {
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', {
       slots: ['avatar', 'body', 'header', 'author', 'time', 'content', 'actions'],
     });
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-2.1 renders through the Message and Bubble parts', () => {
+    const { container, rerender } = render(
+      <ChatMessage author={maria} time="2026-04-20T10:25:00" getNow={getNow}>
+        The samples arrived.
+      </ChatMessage>,
+    );
+    const message = screen.getByRole('article');
+    expect(message).toHaveClass('ui-message', 'ui-chat-message');
+    expect(message).toHaveAttribute('data-align', 'start');
+    const avatar = container.querySelector('.ui-chat-message__avatar');
+    expect(avatar?.parentElement).toHaveClass('ui-message__avatar');
+    expect(container.querySelector('.ui-chat-message__body')).toHaveClass('ui-message__content');
+    expect(container.querySelector('.ui-chat-message__header')).toHaveClass('ui-message__header');
+    const bubble = container.querySelector('.ui-chat-message__content');
+    expect(bubble).toHaveClass('ui-bubble');
+    expect(bubble).toHaveAttribute('data-variant', 'muted');
+    expect(bubble).toHaveAttribute('data-align', 'start');
+    expect(bubble?.firstElementChild).toHaveClass('ui-bubble__content');
+    expectHooksMatchSpec(container, 'MESSAGE', { slots: ['avatar', 'content', 'header'] });
+    expectHooksMatchSpec(container, 'BUBBLE', { slots: ['content'] });
+    rerender(
+      <ChatMessage origin="sent" time="2026-04-20T10:25:00" timePlacement="footer" getNow={getNow}>
+        On my way.
+      </ChatMessage>,
+    );
+    expect(message).toHaveAttribute('data-align', 'end');
+    expect(container.querySelector('.ui-chat-message__content')).toHaveAttribute(
+      'data-variant',
+      'secondary',
+    );
+    expect(container.querySelector('.ui-chat-message__footer')).toHaveClass('ui-message__footer');
+    rerender(<ChatMessage variant="plain">A plain reply.</ChatMessage>);
+    expect(container.querySelector('.ui-chat-message__content')).toHaveAttribute(
+      'data-variant',
+      'ghost',
+    );
+    rerender(<ChatMessage origin="system">Joined</ChatMessage>);
+    expect(container.querySelector('.ui-chat-message__content')).toHaveAttribute(
+      'data-variant',
+      'ghost',
+    );
   });
 
   it('UIC-CHAT-TRANSCRIPT-2.1 leaves out the header without an author or a time', () => {

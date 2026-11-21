@@ -40,3 +40,42 @@ for (const theme of ['light', 'dark']) {
     }
   }
 }
+
+for (const width of [720, 360]) {
+  test(`UIC-CHAT-3.4 sits the queue on the composer's top edge, a little narrower, at ${width}px`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const demo = page.locator(
+      `[data-lab-demo="${width === 720 ? 'look-running' : 'look-narrow'}"]`,
+    );
+    await demo.scrollIntoViewIfNeeded();
+    const queue = demo.locator('.ui-chat__queue');
+    const composer = demo.locator('.ui-chat__composer');
+    await expect(demo.locator('.ui-chat__queue-text')).toHaveCount(3);
+    const frame = await queue.boundingBox();
+    const box = await composer.boundingBox();
+    if (!frame || !box) throw new Error('The queue and the composer must be measurable');
+    // Inset from the composer on both sides, by the same few pixels.
+    const startInset = frame.x - box.x;
+    const endInset = box.x + box.width - (frame.x + frame.width);
+    expect(startInset).toBeGreaterThan(4);
+    expect(startInset).toBeLessThan(24);
+    expect(endInset).toBeCloseTo(startInset, 0);
+    // Flush on the composer's top edge, the composer's border showing under it.
+    expect(Math.abs(frame.y + frame.height - box.y)).toBeLessThanOrEqual(1);
+    const corners = await queue.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return [
+        style.borderStartStartRadius,
+        style.borderStartEndRadius,
+        style.borderEndStartRadius,
+        style.borderEndEndRadius,
+      ];
+    });
+    expect(corners[0]).not.toBe('0px');
+    expect(corners[1]).not.toBe('0px');
+    expect(corners.slice(2)).toEqual(['0px', '0px']);
+  });
+}

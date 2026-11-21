@@ -3,6 +3,7 @@
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { parseIsoDate, parseIsoDateTime, toCalendarDate } from '../../primitives/index.js';
+import { Marker, MarkerContent } from '../marker/marker.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
 
 export interface ChatDateSeparatorProps
@@ -24,7 +25,7 @@ function toLocalDay(value: string): string | null {
 }
 
 /**
- * Marks the day the following messages were written: `Today`, `Yesterday`, or the full date in
+ * A separator `Marker` that marks the day the following messages were written: `Today`, `Yesterday`, or the full date in
  * the reader's locale. It has no role, so it may sit between the articles of a feed, and its words
  * move on at midnight like any `RelativeTime`.
  */
@@ -32,15 +33,17 @@ export function ChatDateSeparator({ date, getNow, className, ...rest }: ChatDate
   const day = toLocalDay(date);
   if (!day) return null;
   return (
-    <div {...rest} {...hooks.root({ className, props: rest })}>
-      <RelativeTime
-        value={day}
-        getNow={getNow}
-        fallbackAfterDays={2}
-        dateStyle="full"
-        showTooltip={false}
-        className={hooks.slotClass('label')}
-      />
-    </div>
+    <Marker {...rest} {...hooks.root({ className, props: rest })} variant="separator">
+      <MarkerContent>
+        <RelativeTime
+          value={day}
+          getNow={getNow}
+          fallbackAfterDays={2}
+          dateStyle="full"
+          showTooltip={false}
+          className={hooks.slotClass('label')}
+        />
+      </MarkerContent>
+    </Marker>
   );
 }

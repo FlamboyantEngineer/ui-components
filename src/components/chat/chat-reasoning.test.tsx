@@ -22,7 +22,7 @@ describe('ChatReasoning', () => {
     const trigger = screen.getByRole('button', { name: 'Thinking…' });
     expect(trigger).toHaveClass('ui-chat-reasoning__trigger');
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(trigger.querySelector('.ui-chat-reasoning__indicator')).toHaveAttribute(
+    expect(trigger.querySelector('.ui-trace__collapsible-indicator')).toHaveAttribute(
       'data-glyph',
       'chevron-down',
     );
@@ -38,7 +38,6 @@ describe('ChatReasoning', () => {
     expectHooksMatchSpec(container, 'CHAT', {
       slots: [
         'ui-chat-reasoning__trigger',
-        'ui-chat-reasoning__indicator',
         'ui-chat-reasoning__label',
         'ui-chat-reasoning__spinner',
         'ui-chat-reasoning__panel',
@@ -76,7 +75,7 @@ describe('ChatReasoning', () => {
     expect(root).not.toHaveAttribute('data-expanded');
     const trigger = screen.getByRole('button', { name: 'Thought for 4 s' });
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(trigger.querySelector('.ui-chat-reasoning__indicator')).toHaveAttribute(
+    expect(trigger.querySelector('.ui-trace__collapsible-indicator')).toHaveAttribute(
       'data-glyph',
       'chevron-right',
     );

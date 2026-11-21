@@ -99,23 +99,30 @@
   margin: 0;
 }
 
+/* A round button centred over the log's bottom edge, just above the composer. */
 .ui-chat-transcript__jump {
   position: absolute;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
+  border-color: var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
   box-shadow: var(--ref-shadow);
 }
 
-.ui-chat-message {
-  display: flex;
+/*
+ * A message is a Message part, which message.css lays out (the avatar beside the content, mirrored
+ * for the reader's own) and whose content sits in a Bubble that bubble.css draws. The chat adds the
+ * width a message takes, its side and the quieter system notice.
+ */
+.ui-chat-message[data-origin] {
   align-items: flex-start;
-  gap: 8px;
+  flex-wrap: nowrap;
   max-width: 85%;
 }
 
 .ui-chat-message[data-origin='sent'] {
-  flex-direction: row-reverse;
   align-self: flex-end;
 }
 
@@ -142,18 +149,28 @@
  * One column no wider than the message, so wide content such as a long line of code scrolls or
  * wraps inside it rather than widening the bubble past the transcript.
  */
-.ui-chat-message__body {
+.ui-chat-message .ui-chat-message__body {
   display: grid;
+  flex: 0 1 auto;
   grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   min-width: 0;
 }
 
-.ui-chat-message__header {
-  display: flex;
-  align-items: baseline;
+/* A plain message or a notice is text on the page: its ghost bubble takes the whole width, for a
+   reply with wide content. */
+.ui-chat-message .ui-chat-message__content[data-variant='ghost'] {
+  inline-size: auto;
+  max-inline-size: 100%;
+  margin-inline: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+.ui-chat-message .ui-chat-message__header {
   gap: 6px;
-  font-size: var(--ref-font-size-sm);
+  padding-inline: 4px;
+  color: var(--ref-text);
 }
 
 .ui-chat-message[data-origin='sent'] .ui-chat-message__header {
@@ -166,6 +183,7 @@
 
 .ui-chat-message__time {
   color: var(--ref-muted);
+  font-weight: normal;
 }
 
 /* A time in a tooltip takes the tooltip's color. */
@@ -173,16 +191,14 @@
   color: inherit;
 }
 
+/* The bubble keeps the text's own line breaks; plain text and Markdown alike wrap inside it. */
 .ui-chat-message__content {
-  padding: 6px 10px;
-  border-radius: var(--ref-radius-lg);
-  background: var(--ref-surface);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
 .ui-chat-message[data-origin='sent'] .ui-chat-message__content {
-  background: var(--ref-selected);
+  justify-self: end;
 }
 
 /* Embedded on a panel's surface, a received bubble is raised off it, so it does not disappear. */
@@ -190,11 +206,6 @@
   .ui-chat-message[data-origin='received'][data-variant='bubble']
   .ui-chat-message__content {
   background: var(--ref-raised);
-}
-
-.ui-chat-message[data-origin='system'] .ui-chat-message__content {
-  padding: 0;
-  background: none;
 }
 
 .ui-chat-message[data-streaming-caret] .ui-chat-message__content::after {
@@ -265,13 +276,7 @@
   padding-inline: 0;
 }
 
-/* A plain message is text on the page; a plain reply takes the whole width. */
-.ui-chat-message[data-variant='plain'] .ui-chat-message__content {
-  padding: 0;
-  border-radius: 0;
-  background: none;
-}
-
+/* A plain message is text on the page (a ghost bubble); a plain reply takes the whole width. */
 .ui-chat-message[data-variant='plain'][data-origin='received'] {
   align-self: stretch;
   max-width: none;

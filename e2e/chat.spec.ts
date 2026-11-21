@@ -885,8 +885,9 @@ async function rateAndCopy(page: Page, reply: Locator) {
   await bad.evaluate((node) => node.scrollIntoView({ block: 'center' }));
   await reply.hover();
   await bad.click();
-  await page.getByRole('button', { name: 'Too long' }).click();
-  await page.getByRole('button', { name: 'Submit' }).click();
+  const feedback = page.getByRole('dialog');
+  await feedback.getByRole('button', { name: 'Too long' }).click();
+  await feedback.getByRole('button', { name: 'Submit' }).click();
   await expect(page.locator('[data-lab-output="assistant-log"]')).toContainText(
     'rated down Too long',
   );

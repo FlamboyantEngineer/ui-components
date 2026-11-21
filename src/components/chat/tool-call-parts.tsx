@@ -24,6 +24,13 @@ import { CopyButton } from '../copy-button/copy-button.js';
 import { DisclosurePanel, DisclosureTitle } from '../disclosure/disclosure.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
+import {
+  TraceDescription,
+  TraceIcon,
+  TraceLine,
+  type TraceLineStatus,
+  TraceTitle,
+} from '../trace/trace.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { formatToolValue } from './format-tool-call.js';
 import { toolCallHooks as hooks } from './tool-call-hooks.js';
@@ -85,6 +92,27 @@ export const toolCallKindGlyphs: Readonly<Record<ChatToolCallKind, GlyphComponen
   other: WrenchGlyph,
 };
 
+/** The trace line's progress for each status; a call that ended without failing is done. */
+const traceStatuses: Readonly<Record<ChatToolCallStatus, TraceLineStatus | undefined>> = {
+  pending: 'pending',
+  running: 'running',
+  'approval-requested': 'pending',
+  succeeded: undefined,
+  failed: 'error',
+  denied: undefined,
+  cancelled: undefined,
+};
+
+/** The status glyph: the tool's once the call succeeded, a spinner while it runs. */
+function ToolCallStatusGlyph({
+  identity,
+  status,
+}: Pick<ToolCallTitleProps, 'identity' | 'status'>) {
+  if (status === 'succeeded') return <ToolCallIdentityGlyph identity={identity} />;
+  if (status === 'running') return <Spinner className={hooks.slotClass('status-glyph')} />;
+  return <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('status-glyph')} />;
+}
+
 /**
  * The glyph a succeeded call shows: the host's glyph for the tool, else its kind's, else, for a call
  * of kind `other`, a letter in a box from its source or name, else the kind's wrench.
@@ -110,9 +138,9 @@ function ToolCallDuration({ milliseconds }: { milliseconds: number }) {
 }
 
 /**
- * The title heading, whose trigger holds the status glyph (the tool's once the call succeeded), then
- * the summary that wraps beside it: the label, the target, the status, the duration and the badge,
- * spaced so the trigger's name reads them as words.
+ * The title heading, whose trigger holds one trace line: the status glyph (the tool's once the call
+ * succeeded), then the summary that wraps beside it: the label, the target, the status, the
+ * duration and the badge, spaced so the trigger's name reads them as words.
  */
 export function ToolCallTitle({
   label,
@@ -126,36 +154,36 @@ export function ToolCallTitle({
   const strings = useUiStrings();
   return (
     <DisclosureTitle className={hooks.slotClass('heading')} triggerRef={triggerRef}>
-      {status === 'succeeded' ? (
-        <ToolCallIdentityGlyph identity={identity} />
-      ) : status === 'running' ? (
-        <Spinner className={hooks.slotClass('status-glyph')} />
-      ) : (
-        <Glyph icon={statusGlyphs[status]} className={hooks.slotClass('status-glyph')} />
-      )}
-      <span {...hooks.slot('summary')}>
-        <span {...hooks.slot('label')}>{label}</span>{' '}
-        {target ? (
-          <>
-            <span {...hooks.slot('target')}>{target}</span>{' '}
-          </>
-        ) : null}
-        <span {...hooks.slot('status')}>{strings.toolCallStatus(status)}</span>
-        {durationMs === undefined ? null : (
-          <>
-            {' '}
-            <ToolCallDuration milliseconds={durationMs} />
-          </>
-        )}
-        {isAutoApproved ? (
-          <>
-            {' '}
-            <Badge size="sm" className={hooks.slotClass('badge')}>
-              {strings.toolCallAutoApproved}
-            </Badge>
-          </>
-        ) : null}
-      </span>
+      <TraceLine status={traceStatuses[status]}>
+        <TraceIcon>
+          <ToolCallStatusGlyph identity={identity} status={status} />
+        </TraceIcon>
+        <span {...hooks.slot('summary')}>
+          <TraceTitle className={hooks.slotClass('label')}>{label}</TraceTitle>{' '}
+          {target ? (
+            <>
+              <TraceDescription className={hooks.slotClass('target')}>
+                {target}
+              </TraceDescription>{' '}
+            </>
+          ) : null}
+          <span {...hooks.slot('status')}>{strings.toolCallStatus(status)}</span>
+          {durationMs === undefined ? null : (
+            <>
+              {' '}
+              <ToolCallDuration milliseconds={durationMs} />
+            </>
+          )}
+          {isAutoApproved ? (
+            <>
+              {' '}
+              <Badge size="sm" className={hooks.slotClass('badge')}>
+                {strings.toolCallAutoApproved}
+              </Badge>
+            </>
+          ) : null}
+        </span>
+      </TraceLine>
     </DisclosureTitle>
   );
 }

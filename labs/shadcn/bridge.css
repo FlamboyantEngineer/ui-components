@@ -73,6 +73,7 @@
   --ref-radius-sm: calc(var(--radius) - 4px);
   --ref-radius: var(--radius);
   --ref-radius-lg: calc(var(--radius) + 4px);
+  --ref-radius-xl: calc(var(--radius) + 8px);
 
   /* Control heights: 24, 28, 32 and 36 pixels at the default font size. */
   --ref-control-height-xs: 1.5rem;
