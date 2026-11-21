@@ -71,6 +71,12 @@
 .ui-button:is([data-variant='primary'], [data-variant='accent'])[data-hovered] {
   filter: brightness(1.08);
 }
+.ui-button[data-variant='outline'] {
+  background: transparent;
+}
+.ui-button[data-variant='outline']:is([data-hovered], [data-pressed]) {
+  background: var(--ref-hover);
+}
 .ui-button[data-variant='tertiary'] {
   background: transparent;
   color: var(--ref-accent-ink);

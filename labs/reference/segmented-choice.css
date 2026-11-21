@@ -162,3 +162,32 @@
 .ui-segmented-choice__accessible-label {
   white-space: nowrap;
 }
+
+/* Outline: no shared frame; each segment is a bordered control of its own, a small gap apart. */
+.ui-segmented-choice[data-variant='outline'] {
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.ui-segmented-choice[data-variant='outline'] .ui-segmented-choice__segment,
+.ui-segmented-choice[data-variant='outline'][data-orientation='vertical']
+  .ui-segmented-choice__segment
+  + .ui-segmented-choice__segment {
+  height: var(--ref-control-height-md);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  overflow: hidden;
+}
+.ui-segmented-choice[data-variant='outline'][data-size='xs'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-xs);
+}
+.ui-segmented-choice[data-variant='outline'][data-size='sm'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-sm);
+}
+.ui-segmented-choice[data-variant='outline'][data-size='lg'] .ui-segmented-choice__segment {
+  height: var(--ref-control-height-lg);
+}
+.ui-segmented-choice[data-variant='outline'][data-invalid] .ui-segmented-choice__segment {
+  border-color: var(--ref-danger);
+}

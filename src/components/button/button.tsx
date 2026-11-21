@@ -33,6 +33,7 @@ import {
 export type ButtonVariant =
   | 'primary'
   | 'secondary'
+  | 'outline'
   | 'tertiary'
   | 'destructive'
   | 'ghost'

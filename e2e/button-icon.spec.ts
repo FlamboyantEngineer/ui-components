@@ -15,6 +15,7 @@ test.describe('Button icon-only content', () => {
       for (const variant of [
         'primary',
         'secondary',
+        'outline',
         'tertiary',
         'destructive',
         'ghost',

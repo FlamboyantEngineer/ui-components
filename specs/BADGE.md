@@ -13,7 +13,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.2 - Variants
 
-`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge accepts `BadgeCountVariant` (`subtle` by default or `solid`) and additionally publishes `data-count`, separating numeric geometry from appearance and semantic tone.
+`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `outline` (a bordered pill with no fill, its border and text in its tone; shadcn/ui's `outline`), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge accepts `BadgeCountVariant` (`subtle` by default or `solid`) and additionally publishes `data-count`, separating numeric geometry from appearance and semantic tone.
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -189,7 +189,7 @@ Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-li
 | `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                                       |
 | `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).                                    |
 | `ui-badge__accessible-label` | slot      |                                                   | Visually hidden `aria-label` or count text that assistive technology reads. |
-| `data-variant`               | attribute | `subtle`, `solid`, `status`, `dot`                | Appearance; `dot` for markers.                                              |
+| `data-variant`               | attribute | `subtle`, `solid`, `outline`, `status`, `dot`     | Appearance; `dot` for markers.                                              |
 | `data-count`                 | state     | `true`                                            | Numeric geometry, independent of variant and tone.                          |
 | `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                                                       |
 | `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                                                      |

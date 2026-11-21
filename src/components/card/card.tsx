@@ -2,7 +2,7 @@
 
 import { type ReactNode, useContext, useId, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
-import type { BaseProps, Density, NativeProps, RefProps } from '../../core/props.js';
+import type { BaseProps, ControlSize, Density, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
@@ -40,6 +40,9 @@ import { joinIds } from '../../utils/join-ids.js';
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
 
+/** The parts' insets and the title's size: `md` by default, `sm` for a smaller card. */
+export type CardSize = Extract<ControlSize, 'sm' | 'md'>;
+
 /** `default` keeps each part's own inset; the others give the card one interior padding. */
 
 export interface CardProps
@@ -52,6 +55,8 @@ export interface CardProps
   variant?: CardVariant | undefined;
   /** Interior padding. Defaults to `default`. */
   density?: Density | undefined;
+  /** The parts' insets and the title's size. Defaults to `md`. */
+  size?: CardSize | undefined;
   /** The heading. A titled card is a region named by its title. */
   title?: ReactNode;
   /** Supporting text under the title. */
@@ -189,6 +194,7 @@ function toRootData(
   return {
     variant: props.variant ?? 'default',
     density: props.density ?? 'default',
+    size: props.size ?? 'md',
     selected: props.isSelected,
     loading: props.isLoading,
     interactive: props.interactive || state.isActionable,

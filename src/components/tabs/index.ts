@@ -10,6 +10,7 @@ export type {
   TabsListOverflow,
   TabsListProps,
   TabsListRenderState,
+  TabsListVariant,
   TabsProps,
   TabsRenderState,
   TabsSize,

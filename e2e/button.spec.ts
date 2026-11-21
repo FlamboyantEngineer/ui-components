@@ -19,7 +19,7 @@ test.describe('Button lab', () => {
     const cells = matrix(page, 'button-main').locator(
       'table[data-lab-matrix="variant size"] td[data-lab-cell]',
     );
-    expect(await cells.count()).toBe(9 * 4);
+    expect(await cells.count()).toBe(10 * 4);
     for (const [size, height] of [
       ['xs', 20],
       ['sm', 24],

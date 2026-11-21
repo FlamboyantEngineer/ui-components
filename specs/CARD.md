@@ -89,6 +89,13 @@ Verification: `src/components/card/card.test.tsx`
 Implementation: `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`
 
+### UIC-CARD-2.6 - Size
+
+`size` shall publish `data-size`: `md` (the default) or `sm`, shadcn/ui's small card: the header, body and footer keep their own insets, smaller, and the title is smaller. It combines with every variant and density; a density other than `default` still sets the one interior padding. The reference sheet draws `sm` with 8 by 12 pixel insets and the medium title size.
+
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
+Verification: `src/components/card/card.test.tsx`
+
 ## UIC-CARD-3 - Whole-card action
 
 ### UIC-CARD-3.1 - Title action
@@ -237,6 +244,7 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 | `ui-card-grid-item__checkbox` | slot      |                                              | The selection checkbox (also `ui-checkbox`), first in its card's header row.                 |
 | `data-variant`                | attribute | `default`, `panel`                           | Surface.                                                                                     |
 | `data-density`                | attribute | `default`, `comfortable`, `compact`, `tight` | Interior padding.                                                                            |
+| `data-size`                   | attribute | `sm`, `md`                                   | The parts' insets and the title's size.                                                      |
 | `data-presentation`           | attribute | `full`, `compact`, `minimal`                 | An adaptive card's presentation.                                                             |
 | `data-collapsible`            | state     | `true`                                       | The card has an expand and collapse control.                                                 |
 | `data-moved`                  | state     | `true`                                       | A region the presentation moved behind More, hidden until More opens.                        |

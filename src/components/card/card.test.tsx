@@ -220,6 +220,18 @@ describe('Card', () => {
     }
   });
 
+  it('UIC-CARD-2.6 publishes the size, md when unset', () => {
+    const { container, rerender } = render(<Card title="Title">Body</Card>);
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'md');
+    rerender(
+      <Card title="Title" size="sm">
+        Body
+      </Card>,
+    );
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'sm');
+    expectHooksMatchSpec(container, 'CARD', { slots: ['header', 'body'] });
+  });
+
   it('UIC-CARD-2.3 publishes the selected state only while selected', () => {
     const { container, rerender } = render(<Card>Body</Card>);
     expect(container.firstElementChild).not.toHaveAttribute('data-selected');

@@ -3,7 +3,9 @@ export type {
   ListProps,
   ListRowContentProps,
   ListRowProps,
+  ListRowSize,
   ListRowTone,
+  ListRowVariant,
 } from './list-row.js';
 export { List, ListRow, ListRowContent } from './list-row.js';
 export type {

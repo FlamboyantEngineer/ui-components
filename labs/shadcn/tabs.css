@@ -62,3 +62,22 @@
   border-color: var(--input);
   background: color-mix(in oklab, var(--input) 30%, transparent);
 }
+
+/* The line variant: no track; the selected tab is marked by a line under it, in the text color. */
+.ui-tabs__list[data-variant='line']:not([data-orientation='vertical']) {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ui-tabs__list[data-variant='line']:not([data-orientation='vertical'])
+  .ui-tabs__tab[data-selected] {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-tabs__list[data-variant='line']:not([data-orientation='vertical']) .ui-tabs__indicator {
+  display: block;
+  background: var(--foreground);
+}

@@ -5,6 +5,7 @@ import type { ButtonVariant } from '../../src/components/button/button.js';
 export const buttonVariants: ButtonVariant[] = [
   'primary',
   'secondary',
+  'outline',
   'tertiary',
   'destructive',
   'ghost',
