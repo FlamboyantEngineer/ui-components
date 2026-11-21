@@ -1,0 +1,109 @@
+/*
+ * shadcn/ui stylesheet: navigation rail, after the sidebar of shadcn/ui's "nova" style. The rail
+ * sits on the sidebar color. Each section is padded 8 pixels, its title a 32 pixel row of 12 pixel
+ * medium text at 70 percent. Its items are 32 pixel rows of 14 pixel text with 8 pixels of padding
+ * and 16 pixel icons, filled with the sidebar accent on hover and when current, the current one in
+ * medium weight. A group's items hang from a hairline 14 pixels in, as 28 pixel rows 4 pixels apart.
+ */
+
+.ui-navigation-rail {
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+}
+
+.ui-navigation-rail__header,
+.ui-navigation-rail__footer {
+  padding: 8px;
+}
+
+.ui-navigation-rail__footer {
+  border-block-start: 0;
+}
+
+.ui-navigation-rail__body {
+  gap: 0;
+  padding: 0;
+}
+
+.ui-navigation-rail__section {
+  gap: 0;
+  padding: 8px;
+}
+
+.ui-navigation-rail__section-title {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: calc(var(--radius) * 0.8);
+  color: color-mix(in oklab, var(--sidebar-foreground) 70%, transparent);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1 / 0.75);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ui-navigation-rail__list {
+  gap: 0;
+}
+
+.ui-navigation-rail__link,
+.ui-navigation-rail__group-trigger {
+  height: 32px;
+  min-height: 32px;
+  padding: 8px;
+  border-radius: calc(var(--radius) * 0.8);
+  color: var(--sidebar-foreground);
+  font-size: var(--ref-font-size-md);
+  font-weight: normal;
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-navigation-rail__link:is([data-hovered], :hover),
+.ui-navigation-rail__group-trigger[data-hovered],
+.ui-navigation-rail__link[data-current] {
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+.ui-navigation-rail__link[data-current] {
+  outline: 0;
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-navigation-rail__item[data-current]
+  > .ui-navigation-rail__group
+  > .ui-navigation-rail__group-trigger {
+  color: var(--sidebar-foreground);
+}
+
+.ui-navigation-rail__link[data-focus-visible],
+.ui-navigation-rail__group-trigger[data-focus-visible] {
+  outline: 0;
+  box-shadow: 0 0 0 2px var(--sidebar-ring);
+}
+
+.ui-navigation-rail__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-navigation-rail__indicator {
+  width: 16px;
+  height: 16px;
+  color: inherit;
+}
+
+.ui-navigation-rail__group-panel .ui-navigation-rail__list {
+  gap: 4px;
+  margin: 0 14px;
+  padding: 2px 10px;
+  border-inline-start: 1px solid var(--sidebar-border);
+}
+
+.ui-navigation-rail__group-panel .ui-navigation-rail__link {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 8px;
+}
