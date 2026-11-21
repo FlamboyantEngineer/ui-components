@@ -100,3 +100,10 @@ Verification: `src/components/context-menu/context-menu.test.tsx`, `e2e/context-
 
 Implementation: `src/components/context-menu/index.ts`, `src/components/context-menu/context-menu.tsx`
 Verification: `src/components/context-menu/context-menu-parts.test.tsx`
+
+### UIC-CONTEXT-MENU-3.2 - Part names
+
+The parts of a context menu's menus, submenus included, shall carry `context-menu-*` names (`context-menu-content`, `context-menu-item`, `context-menu-shortcut`, `context-menu-group`, `context-menu-label`, `context-menu-separator`) instead of `dropdown-menu-*` (UIC-MENU-4.7).
+
+Implementation: `src/components/context-menu/context-menu.tsx`
+Verification: `src/components/menu/menu-slot-names.test.tsx`

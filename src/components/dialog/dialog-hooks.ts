@@ -1,3 +1,6 @@
+'use client';
+
+import { prefixDataSlots } from '../../core/data-slot-names.js';
 import { createHooks } from '../../core/hooks.js';
 
 /** The hook classes every module of the modal family writes (specs/DIALOG.md). */
@@ -33,3 +36,10 @@ export const dialogHooks = createHooks(
     footer: 'dialog-footer',
   },
 );
+
+/** The names each presentation gives the family's parts (specs/DIALOG.md UIC-DIALOG-23.2). */
+export const dialogSlotNames = {
+  dialog: prefixDataSlots([dialogHooks], { from: 'dialog', to: 'dialog' }),
+  alertDialog: prefixDataSlots([dialogHooks], { from: 'dialog', to: 'alert-dialog' }),
+  sheet: prefixDataSlots([dialogHooks], { from: 'dialog', to: 'sheet' }),
+};

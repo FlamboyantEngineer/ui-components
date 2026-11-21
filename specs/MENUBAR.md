@@ -83,6 +83,13 @@ When a `MenubarMenu` leaves the bar, the bar shall forget it as the open menu an
 Implementation: `src/components/menubar/menubar-state.ts`
 Verification: `src/components/menubar/menubar-removal.test.tsx`, `e2e/menubar.spec.ts`
 
+### UIC-MENUBAR-2.7 - Part names
+
+The parts of a menubar's menus, submenus included, shall carry `menubar-*` names (`menubar-content`, `menubar-item`, `menubar-shortcut`, `menubar-group`, `menubar-label`, `menubar-separator`) instead of `dropdown-menu-*` (UIC-MENU-4.7).
+
+Implementation: `src/components/menubar/menubar.tsx`
+Verification: `src/components/menu/menu-slot-names.test.tsx`
+
 ## Hooks
 
 | Hook                  | Kind      | Values                   | Description                                                               |

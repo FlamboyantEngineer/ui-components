@@ -152,6 +152,8 @@ export function ComboboxField({
         <Input
           ref={setRef}
           {...hooks.slot('input')}
+          // In a multiple combobox the input follows the chips, as shadcn/ui's chips input.
+          {...(chips === null ? {} : { 'data-slot': 'combobox-chip-input' })}
           placeholder={placeholder}
           aria-busy={isPending || undefined}
           aria-autocomplete={completion ? 'both' : undefined}
