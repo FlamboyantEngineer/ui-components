@@ -186,6 +186,8 @@
 @import url('shadcn/chat-transcript.css') layer(ui-shadcn);
 @import url('shadcn/checkbox.css') layer(ui-shadcn);
 @import url('shadcn/choice-group.css') layer(ui-shadcn);
+@import url('shadcn/combobox.css') layer(ui-shadcn);
+@import url('shadcn/command-palette.css') layer(ui-shadcn);
 @import url('shadcn/dialog.css') layer(ui-shadcn);
 @import url('shadcn/drawer.css') layer(ui-shadcn);
 @import url('shadcn/field.css') layer(ui-shadcn);
@@ -195,6 +197,7 @@
 @import url('shadcn/input-group.css') layer(ui-shadcn);
 @import url('shadcn/link.css') layer(ui-shadcn);
 @import url('shadcn/menu.css') layer(ui-shadcn);
+@import url('shadcn/menubar.css') layer(ui-shadcn);
 @import url('shadcn/popover.css') layer(ui-shadcn);
 @import url('shadcn/segmented-choice.css') layer(ui-shadcn);
 @import url('shadcn/select-field.css') layer(ui-shadcn);
@@ -202,4 +205,5 @@
 @import url('shadcn/tabs.css') layer(ui-shadcn);
 @import url('shadcn/text-field.css') layer(ui-shadcn);
 @import url('shadcn/textarea.css') layer(ui-shadcn);
+@import url('shadcn/toast.css') layer(ui-shadcn);
 @import url('shadcn/tooltip.css') layer(ui-shadcn);

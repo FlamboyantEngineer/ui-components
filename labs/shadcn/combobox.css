@@ -1,0 +1,123 @@
+/*
+ * shadcn/ui stylesheet: comboboxes, after the combobox of shadcn/ui's "nova" style. The field is an
+ * input group: a 32 pixel frame with the input border and 10 pixel corners, transparent (the input
+ * tint in the dark), taking the ring under focus and the destructive ring when invalid, with a
+ * 24 pixel ghost button for the list. The list is a popover's ringed panel with the medium shadow,
+ * at most 288 pixels high, 4 pixels of padding and 28 pixel rows with 6 pixel padding, 8 pixel
+ * gaps and the accent fill while highlighted. Group labels are 12 pixel muted text; the empty
+ * message is centred.
+ */
+
+.ui-combobox__field {
+  min-height: var(--ref-control-height-md);
+  padding-inline: 10px 3px;
+  border-color: var(--input);
+  border-radius: var(--ref-radius);
+  background: transparent;
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-combobox__field[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-combobox__field[data-invalid] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-combobox[data-disabled] .ui-combobox__field {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+  color: inherit;
+  opacity: 0.5;
+}
+
+.ui-combobox__input {
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-combobox :is(.ui-combobox__clear.ui-button[data-content='icon'], .ui-combobox__button) {
+  width: var(--ref-control-height-xs);
+  height: var(--ref-control-height-xs);
+}
+
+.ui-combobox__button {
+  border-radius: calc(var(--radius) - 3px);
+  color: var(--ref-muted);
+}
+
+.ui-combobox__button .ui-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-combobox__button[data-hovered] {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+:where(.dark, [data-theme='dark']) .ui-combobox__field {
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-combobox__field[data-invalid] {
+  border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-combobox__button[data-hovered] {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* The open list's press leaves the button clear. */
+.ui-combobox__button[data-pressed] {
+  background: transparent;
+}
+
+.ui-combobox__popover {
+  border: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-combobox__listbox {
+  max-height: 288px;
+}
+
+.ui-combobox__listbox,
+.ui-combobox__section {
+  gap: 0;
+}
+
+.ui-combobox__section-header {
+  padding: 6px 8px;
+  font-weight: 400;
+  line-height: calc(1 / 0.75);
+}
+
+.ui-combobox__option,
+.ui-combobox__create {
+  column-gap: 8px;
+  min-height: var(--ref-control-height-sm);
+  padding: 4px 6px;
+  border-radius: calc(var(--radius) * 0.8);
+}
+
+.ui-combobox__option[data-focused],
+.ui-combobox__create[data-focused] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.ui-combobox__empty {
+  justify-content: center;
+  padding: 8px;
+}

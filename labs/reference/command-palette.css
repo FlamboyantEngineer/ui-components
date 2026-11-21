@@ -6,6 +6,8 @@
   box-sizing: border-box;
   padding: 12vh 16px 16px;
   background: var(--ref-scrim);
+  /* A modal: it blurs the page behind its scrim, as a modal dialog does. */
+  backdrop-filter: blur(var(--ref-scrim-blur));
   /* The palette's own close fade, kept apart from the shared overlay durations. */
   --ref-command-palette-exit-duration: 250ms;
 }

@@ -1,0 +1,78 @@
+/*
+ * shadcn/ui stylesheet: command palettes, after the command dialog of shadcn/ui's "nova" style. The
+ * panel hangs a third of the way down the viewport: a 14 pixel radius ring without a shadow and 4
+ * pixels of padding. The search is a 32 pixel input group on the input color at 30%, its muted
+ * icon at half opacity 8 pixels in. Groups have 4 pixels of padding and 12 pixel medium muted
+ * headings; rows are 32 pixels high with 8 pixels of padding and of gap, 10 pixel corners and the
+ * muted fill while highlighted. The palette keeps its widths.
+ */
+
+.ui-command-palette {
+  padding-top: 33.333vh;
+}
+
+.ui-command-palette__panel {
+  max-height: min(480px, calc(66.667vh - 16px));
+  border: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-command-palette__dialog {
+  padding: 4px;
+}
+
+.ui-command-palette__search {
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--ref-control-height-md);
+  margin: 4px 4px 0;
+  padding: 0 0 0 8px;
+  border: 1px solid color-mix(in oklab, var(--input) 30%, transparent);
+  border-radius: var(--ref-radius);
+  background: color-mix(in oklab, var(--input) 30%, var(--popover));
+}
+
+.ui-command-palette__search-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+}
+
+.ui-command-palette__search-input,
+.ui-command-palette[data-size] .ui-command-palette__search-input {
+  height: 100%;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-command-palette__empty {
+  padding: 24px 8px;
+  color: inherit;
+}
+
+.ui-command-palette .ui-menu-section + .ui-menu-section {
+  margin-top: 8px;
+}
+
+.ui-command-palette .ui-menu-separator {
+  margin-inline: -8px;
+}
+
+.ui-command-palette .ui-menu-section__header {
+  padding: 6px 8px;
+}
+
+.ui-command-palette .ui-menu-item {
+  column-gap: 8px;
+  min-height: var(--ref-control-height-md);
+  padding: 6px 8px;
+  border-radius: var(--ref-radius);
+}
+
+.ui-command-palette .ui-menu-item:is([data-focused], [data-open]) {
+  background: var(--muted);
+  color: var(--foreground);
+}
