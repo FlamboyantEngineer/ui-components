@@ -265,6 +265,24 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Variants"
+      description="The default shares one frame; outline gives each segment its own border."
+    >
+      <StateMatrix
+        axes={{ variant: ['default', 'outline'], size: sizes }}
+        render={({ variant, size }) => (
+          <SegmentedChoice
+            aria-label={`View, ${variant}, ${size}`}
+            options={views}
+            defaultValue="week"
+            variant={variant}
+            size={size}
+            sizing="content"
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="States"
       description="Hover, press and keyboard focus show on interaction. Tab into a group and use the arrow keys."
     >

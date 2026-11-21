@@ -167,5 +167,6 @@ export type {
   TabsListOverflow,
   TabsListProps,
   TabsListRenderState,
+  TabsListVariant,
 } from './tab-list.js';
 export { TabsList } from './tab-list.js';

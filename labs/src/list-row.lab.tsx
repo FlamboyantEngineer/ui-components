@@ -143,6 +143,29 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Variants and sizes"
+      description="Plain, bordered and muted rows at each size, with a trailing control."
+    >
+      <StateMatrix
+        axes={{ variant: ['default', 'outline', 'muted'], size: ['xs', 'sm', 'md'] }}
+        render={({ variant, size }) => (
+          <div data-lab-column="260" style={{ width: 260 }}>
+            <List aria-label={`${variant} ${size}`}>
+              <ListRow
+                href={`#${variant}-${size}`}
+                title="Report.pdf"
+                meta="Updated yesterday"
+                icon={InfoGlyph}
+                variant={variant}
+                size={size}
+                trailing={<Button icon={MoreGlyph} label={`More, ${variant} ${size}`} size="sm" />}
+              />
+            </List>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Content"
       description="Title only, title and meta, an icon through Label, decorative leading media, and trailing controls beside the primary control."
     >

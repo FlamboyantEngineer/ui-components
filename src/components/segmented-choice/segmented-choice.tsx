@@ -10,6 +10,7 @@ import type { BadgeCountVariant } from '../badge/badge.js';
 import { FieldFormValue, useScopedDisabled } from '../field/field.js';
 import type { IconSource } from '../icon/icon.js';
 import {
+  type ChoiceSelection,
   type SegmentedChoiceSelectionMode,
   type SegmentedChoiceValue,
   useChoiceSelection,
@@ -23,6 +24,9 @@ export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choic
 
 /** `equal` divides the available width evenly; `content` sizes each segment to its label. */
 export type SegmentedChoiceSizing = 'equal' | 'content';
+
+/** `default` draws segments on one shared frame; `outline` gives each segment its own border. */
+export type SegmentedChoiceVariant = 'default' | 'outline';
 
 export interface SegmentedChoiceOption {
   value: string;
@@ -72,6 +76,8 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   isDisabled?: boolean | undefined;
   /** Lays the segments out in a row or a column. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
+  /** Segment chrome. Defaults to `default`. */
+  variant?: SegmentedChoiceVariant | undefined;
   /** Segment block size. Defaults to `md`. */
   size?: ControlSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
@@ -128,6 +134,15 @@ function renderGroupState(
   };
 }
 
+/** The selection props the building block takes from the choice selection. */
+function toGroupSelection({
+  selectedKeys,
+  onSelectionChange,
+  selectionMode,
+}: Pick<ChoiceSelection, 'selectedKeys' | 'onSelectionChange' | 'selectionMode'>) {
+  return { selectedKeys, onSelectionChange, selectionMode };
+}
+
 /**
  * One of a few mutually exclusive values, drawn as a run of segments, or with
  * `selectionMode="multiple"` a group of toggles that press independently. A selection indicator
@@ -143,6 +158,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   isClearable = false,
   isReadOnly = false,
   isInvalid = false,
+  variant = 'default',
   size = 'md',
   sizing = 'equal',
   iconOnly = false,
@@ -180,6 +196,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
         className,
         props: rest,
         data: {
+          variant,
           size,
           sizing,
           selectionMode: selection.selectionMode,
@@ -190,9 +207,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
           pending: selection.isPending,
         },
       })}
-      selectedKeys={selection.selectedKeys}
-      onSelectionChange={selection.onSelectionChange}
-      selectionMode={selection.selectionMode}
+      {...toGroupSelection(selection)}
       {...renderGroupState(
         {
           isSingle: selection.selectionMode === 'single',

@@ -48,6 +48,13 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs-composition.spec.ts
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs-composition.spec.ts`
 
+### UIC-TABS-1.7 - List variant
+
+`TabsList`'s `variant` shall publish `data-variant` on the list: `default` (the default) or `line`, shadcn/ui's tab list variants. The variant changes no behaviour. The reference sheet already draws its tabs as a row marked by a line under the selected tab, so it draws both variants that way; a shadcn/ui-style sheet draws `default` as tabs on a muted track and `line` as the underlined row.
+
+Implementation: `src/components/tabs/tab-list.tsx`
+Verification: `src/components/tabs/tabs.test.tsx`
+
 ## UIC-TABS-2 - Behaviour
 
 ### UIC-TABS-2.1 - Pointer and keyboard selection
@@ -226,6 +233,7 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | `data-key`               | attribute |                          | Opaque collection key (React Aria): not the `id`, not for styling.                       |
 | `data-collection`        | attribute |                          | React Aria's collection identifier on the list and tabs; not for styling.                |
 | `data-overflowing`       | state     | `true`                   | The list's tabs do not fit.                                                              |
+| `data-variant`           | attribute | `default`, `line`        | On the list: its chrome.                                                                 |
 | `data-selected`          | state     | `true`                   | The selected tab.                                                                        |
 | `data-disabled`          | state     | `true`                   | A disabled tab, or every tab on the root.                                                |
 | `data-hovered`           | state     | `true`                   | Pointer over a tab.                                                                      |

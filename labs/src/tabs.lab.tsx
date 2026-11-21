@@ -198,6 +198,27 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection title="List variants">
+      <StateMatrix
+        axes={{ variant: ['default', 'line'], size: sizes }}
+        render={({ variant, size }) => (
+          <Tabs size={size}>
+            <TabsList aria-label={`Fruit, ${variant}, ${size}`} variant={variant}>
+              {fruit.map((item) => (
+                <TabsTrigger key={item.id} id={item.id}>
+                  {item.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {fruit.map((item) => (
+              <TabsContent key={item.id} id={item.id}>
+                {item.text}
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
+      />
+    </LabSection>
     <LabSection
       title="Content and states"
       description="Hover, press and keyboard focus show on interaction. Arrow keys skip the disabled tab."

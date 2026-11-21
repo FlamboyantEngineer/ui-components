@@ -6,5 +6,6 @@ export type {
   SegmentedChoiceSelectionMode,
   SegmentedChoiceSizing,
   SegmentedChoiceValue,
+  SegmentedChoiceVariant,
 } from './segmented-choice.js';
 export { SegmentedChoice } from './segmented-choice.js';

@@ -2,7 +2,7 @@
 
 import type { MouseEvent, ReactNode, Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ContainerProps, Tone } from '../../core/props.js';
+import type { BaseProps, ContainerProps, ControlSize, Tone } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -49,6 +49,12 @@ export interface ListRowContentProps
 
 export type ListRowTone = Extract<Tone, 'neutral' | 'danger'>;
 
+/** `default` is a plain row, `outline` a bordered one, `muted` a row on a muted fill. */
+export type ListRowVariant = 'default' | 'outline' | 'muted';
+
+/** Row padding and text size. */
+export type ListRowSize = Extract<ControlSize, 'xs' | 'sm' | 'md'>;
+
 export interface ListRowProps
   extends
     Omit<ContainerProps<'li'>, 'title' | 'children'>,
@@ -72,6 +78,10 @@ export interface ListRowProps
   isDisabled?: boolean | undefined;
   /** Semantic emphasis, such as an overdue or failed item. Defaults to `neutral`. */
   tone?: ListRowTone | undefined;
+  /** Row chrome. Defaults to `default`. */
+  variant?: ListRowVariant | undefined;
+  /** Row padding and text size. Defaults to `md`. */
+  size?: ListRowSize | undefined;
 }
 
 /** What the row's primary control is. */
@@ -255,6 +265,8 @@ export function ListRow({
   isCurrent = false,
   isDisabled = false,
   tone = 'neutral',
+  variant = 'default',
+  size = 'md',
   className,
   onFocusCapture,
   ...rest
@@ -262,7 +274,7 @@ export function ListRow({
   const options = { href, target, rel, onPress, onAuxPress, isCurrent, isDisabled };
   const kind = resolveKind(options);
   const tabStop = useRowTabStop(isDisabled, kind);
-  const data = { kind, tone, current: isCurrent, disabled: isDisabled };
+  const data = { kind, tone, variant, size, current: isCurrent, disabled: isDisabled };
   return (
     <li
       {...rest}

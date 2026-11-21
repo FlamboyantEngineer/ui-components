@@ -20,7 +20,7 @@ interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> {
   isReadOnly: boolean;
 }
 
-interface ChoiceSelection {
+export interface ChoiceSelection {
   selectionMode: SegmentedChoiceSelectionMode;
   /** A change waits for the promise `onChange` returned. */
   isPending: boolean;

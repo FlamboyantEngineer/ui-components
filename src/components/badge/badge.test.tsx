@@ -7,7 +7,7 @@ import { Badge, type BadgeProps } from './badge.js';
 
 const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
-const variants = ['subtle', 'solid', 'status'] as const;
+const variants = ['subtle', 'solid', 'outline', 'status'] as const;
 
 // Count badges own their text: no children, no status variant and no string count.
 const countProps: BadgeProps = { count: 12, max: 9 };

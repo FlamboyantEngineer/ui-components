@@ -84,6 +84,17 @@
   font-size: var(--ref-font-size-sm);
 }
 
+/* Small: the parts keep their own insets, smaller, and the title steps down. */
+.ui-card[data-size='sm'] > :is(.ui-card__header, .ui-card__body) {
+  padding: 8px 12px;
+}
+.ui-card[data-size='sm'] > .ui-card__footer {
+  padding: 6px 12px;
+}
+.ui-card[data-size='sm'] .ui-card__title {
+  font-size: var(--ref-font-size-md);
+}
+
 .ui-card:not([data-density='default']) {
   gap: 8px;
   padding: 10px;

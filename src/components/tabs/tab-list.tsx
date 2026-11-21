@@ -44,6 +44,9 @@ export type { TabMove } from './tab-reorder.js';
 /** `scroll` lets an overflowing list scroll; `menu` collapses the tabs that do not fit into a menu. */
 export type TabsListOverflow = 'scroll' | 'menu';
 
+/** `default` is the list's own look; `line` asks for tabs marked only by a line under the selected one. */
+export type TabsListVariant = 'default' | 'line';
+
 /** The state a `TabsList` passes to `render` with its element's props. */
 export interface TabsListRenderState {
   orientation: Orientation;
@@ -59,6 +62,8 @@ export interface TabsListProps extends BaseProps, AriaLabellingProps, RefProps<H
    * keeps the selected tab and as many others as fit and lists the rest in a "more" menu.
    */
   overflow?: TabsListOverflow | undefined;
+  /** The list's chrome. Defaults to `default`. */
+  variant?: TabsListVariant | undefined;
   /**
    * Draws previous and next buttons beside a horizontal list that scrolls, at an edge hiding tabs.
    * The list takes the mouse wheel with or without them.
@@ -267,6 +272,7 @@ function useTabActions(
  */
 export function TabsList({
   overflow = 'scroll',
+  variant = 'default',
   scrollButtons = false,
   showEdgeFades = true,
   onRemove,
@@ -321,7 +327,7 @@ export function TabsList({
           keys || parts ? renderListKeys(rest.render, keys ?? {}, Boolean(parts)) : rest.render
         }
         ref={elementRef}
-        {...hooks.slot('list', { overflowing }, className)}
+        {...hooks.slot('list', { overflowing, variant }, className)}
       />
     </TabListParts>
   );

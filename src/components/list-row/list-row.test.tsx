@@ -607,6 +607,23 @@ describe('ListRow', () => {
     ]);
   });
 
+  it('UIC-LIST-ROW-2.10 publishes the variant and size, default and md when unset', () => {
+    const { container } = render(
+      <List aria-label="Tasks">
+        <ListRow title="Plain" />
+        <ListRow title="Bordered" variant="outline" size="sm" />
+        <ListRow title="Filled" variant="muted" size="xs" />
+      </List>,
+    );
+    const rows = [...container.querySelectorAll('li')];
+    expect(rows.map((row) => [row.dataset.variant, row.dataset.size])).toEqual([
+      ['default', 'md'],
+      ['outline', 'sm'],
+      ['muted', 'xs'],
+    ]);
+    expectHooksMatchSpec(container, 'LIST-ROW');
+  });
+
   it('UIC-LIST-ROW-2.8 appends the caller class and forwards id and data attributes to the row', () => {
     const Harness = ({ children }: { children: ReactNode }) => {
       const [label] = useState('Files');

@@ -44,6 +44,14 @@
   color: var(--ref-on-tone-fill);
 }
 
+.ui-badge[data-variant='outline'] {
+  background: transparent;
+}
+.ui-badge[data-variant='outline']:not([data-tone='neutral']) {
+  border-color: var(--ref-tone-fill);
+  color: var(--ref-tone);
+}
+
 .ui-badge[data-count][data-variant='subtle']:not([data-tone='neutral']) {
   background: color-mix(in srgb, var(--ref-tone-fill) var(--ref-tint-subtle), var(--ref-canvas));
 }

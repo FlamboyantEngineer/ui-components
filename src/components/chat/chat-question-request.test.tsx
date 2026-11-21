@@ -31,19 +31,13 @@ const threeName = `3 questions: ${databaseQuestion.question}`;
 /** Answers all three questions with an option, Other and its words, ticks and free text. */
 async function answerThree(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('radio', { name: 'Other' }));
-  await enter(user, await screen.findByRole('textbox', { name: 'Other answer' }), 'Redis');
+  await user.type(await screen.findByRole('textbox', { name: 'Other answer' }), 'Redis');
   await user.click(screen.getByRole('button', { name: 'Next' }));
   await user.click(screen.getByRole('checkbox', { name: 'Search' }));
   await user.click(screen.getByRole('checkbox', { name: 'Other' }));
-  await enter(user, await screen.findByRole('textbox', { name: 'Other answer' }), 'Offline');
+  await user.type(await screen.findByRole('textbox', { name: 'Other answer' }), 'Offline');
   await user.click(screen.getByRole('button', { name: 'Next' }));
-  await enter(user, screen.getByRole('textbox', { name: nameQuestion.question }), 'Notebook');
-}
-
-/** Pastes the words into a field, which keeps the long flows here well inside the time limit. */
-async function enter(user: ReturnType<typeof userEvent.setup>, field: HTMLElement, text: string) {
-  await user.click(field);
-  await user.paste(text);
+  await user.type(screen.getByRole('textbox', { name: nameQuestion.question }), 'Notebook');
 }
 
 const threeAnswers = [
@@ -142,52 +136,49 @@ describe('ChatQuestion requests', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('The agent stopped.');
   });
 
-  it('UIC-CHAT-32.8 keeps every answer and the step when the answers are refused', async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi
-      .fn<() => Promise<void>>()
-      .mockRejectedValueOnce(new Error('The agent is busy.'));
-    const { container } = render(
-      <ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />,
-    );
-    await answerThree(user);
-    await user.click(screen.getByRole('button', { name: 'Submit' }));
-    const error = await screen.findByRole('alert');
-    expect(error.parentElement).toHaveClass('ui-chat-question__error', 'ui-inline-error');
-    expect(error).toHaveTextContent('The agent is busy.');
-    expect(card(threeName)).not.toHaveAttribute('data-submitting');
-    expect(container.querySelector('.ui-chat-question__progress')).toHaveTextContent(
-      'Question 3 of 3',
-    );
-    expect(screen.getByRole('textbox', { name: nameQuestion.question })).toHaveValue('Notebook');
-    expectHooksMatchSpec(container, 'CHAT', { slots: ['ui-chat-question__error'] });
-    await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByRole('checkbox', { name: 'Search' })).toBeChecked();
-    expect(screen.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Offline');
-    await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByRole('radio', { name: 'Other' })).toBeChecked();
-    expect(screen.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Redis');
-  });
-
-  it('UIC-CHAT-32.8 sends the same answers again once refused answers are resubmitted', async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi
-      .fn<() => Promise<void>>()
-      .mockRejectedValueOnce(new Error('The agent is busy.'))
-      .mockResolvedValueOnce(undefined);
-    render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />);
-    await answerThree(user);
-    await user.click(screen.getByRole('button', { name: 'Submit' }));
-    await screen.findByRole('alert');
-    await user.click(screen.getByRole('button', { name: 'Submit' }));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(onSubmit).toHaveBeenCalledTimes(2);
-    expect(onSubmit).toHaveBeenNthCalledWith(1, threeAnswers);
-    expect(onSubmit).toHaveBeenNthCalledWith(2, threeAnswers);
-    await waitFor(() => expect(card(threeName)).not.toHaveAttribute('data-submitting'));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(onSubmit).toHaveBeenCalledTimes(2);
-  });
+  // Three answered steps, typing, two rounds of Back and a retry: about two seconds alone, so a
+  // loaded runner needs more than the default five.
+  it(
+    'UIC-CHAT-32.8 keeps every answer and the step when the answers are refused, and retries once',
+    { timeout: 15_000 },
+    async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi
+        .fn<() => Promise<void>>()
+        .mockRejectedValueOnce(new Error('The agent is busy.'))
+        .mockResolvedValueOnce(undefined);
+      const { container } = render(
+        <ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />,
+      );
+      await answerThree(user);
+      await user.click(screen.getByRole('button', { name: 'Submit' }));
+      const error = await screen.findByRole('alert');
+      expect(error.parentElement).toHaveClass('ui-chat-question__error', 'ui-inline-error');
+      expect(error).toHaveTextContent('The agent is busy.');
+      expect(card(threeName)).not.toHaveAttribute('data-submitting');
+      expect(container.querySelector('.ui-chat-question__progress')).toHaveTextContent(
+        'Question 3 of 3',
+      );
+      expect(screen.getByRole('textbox', { name: nameQuestion.question })).toHaveValue('Notebook');
+      expectHooksMatchSpec(container, 'CHAT', { slots: ['ui-chat-question__error'] });
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      expect(screen.getByRole('checkbox', { name: 'Search' })).toBeChecked();
+      expect(screen.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Offline');
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      expect(screen.getByRole('radio', { name: 'Other' })).toBeChecked();
+      expect(screen.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Redis');
+      await user.click(screen.getByRole('button', { name: 'Next' }));
+      await user.click(screen.getByRole('button', { name: 'Next' }));
+      await user.click(screen.getByRole('button', { name: 'Submit' }));
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(onSubmit).toHaveBeenCalledTimes(2);
+      expect(onSubmit).toHaveBeenNthCalledWith(1, threeAnswers);
+      expect(onSubmit).toHaveBeenNthCalledWith(2, threeAnswers);
+      await waitFor(() => expect(card(threeName)).not.toHaveAttribute('data-submitting'));
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(onSubmit).toHaveBeenCalledTimes(2);
+    },
+  );
 
   it('UIC-CHAT-32.8 says the answers were not sent when a failure has no message', async () => {
     const user = userEvent.setup();

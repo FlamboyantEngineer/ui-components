@@ -74,6 +74,13 @@ With `iconOnly="auto"`, and every option with an icon, the group shall show its 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/use-icon-fallback.ts`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/composition-workflows.spec.ts`
 
+### UIC-SEGMENTED-CHOICE-1.11 - Variant
+
+`variant` shall publish `data-variant` on the group: `default` (the default; the segments sit on one shared frame) or `outline` (each segment draws its own border, shadcn/ui's `outline` toggle). The reference sheet draws `outline` segments with a border and no shared track; the variant changes no behaviour.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
+
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 
 ### UIC-SEGMENTED-CHOICE-2.1 - Keyboard and accessibility
@@ -166,6 +173,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `ui-segmented-choice__label`            | slot      |                          | A segment's label text.                             |
 | `ui-segmented-choice__accessible-label` | slot      |                          | The complete localized name when a count is shown.  |
 | `ui-segmented-choice__count`            | slot      |                          | A segment's count after its label.                  |
+| `data-variant`                          | attribute | `default`, `outline`     | Segment chrome.                                     |
 | `data-size`                             | attribute | `xs`, `sm`, `md`, `lg`   | Segment block size.                                 |
 | `data-sizing`                           | attribute | `equal`, `content`       | How segments share the width.                       |
 | `data-orientation`                      | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |

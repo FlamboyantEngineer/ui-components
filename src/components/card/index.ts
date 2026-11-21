@@ -3,6 +3,7 @@ export type {
   CardPresentation,
   CardPresentationSteps,
   CardProps,
+  CardSize,
   CardVariant,
 } from './card.js';
 export { Card } from './card.js';
