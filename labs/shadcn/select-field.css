@@ -88,3 +88,50 @@
   border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }
+
+/*
+ * The list, after the select content of the same style: a popover's ringed panel with the medium
+ * shadow, 4 pixels of padding and 28 pixel rows with 6 pixel padding and corners of 80% of the
+ * radius, on the accent fill while highlighted. Group labels are 12 pixel muted text and a rule
+ * between groups runs to the panel's edges.
+ */
+.ui-select-field__popover {
+  border: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-select-field__listbox,
+.ui-select-field__section {
+  gap: 0;
+}
+
+.ui-select-field__section:not(:first-child) {
+  margin: 4px -4px 0;
+  padding: 4px 4px 0;
+}
+
+.ui-select-field__section-header {
+  padding: 4px 6px;
+  font-weight: 400;
+  line-height: calc(1 / 0.75);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ui-select-field__option {
+  box-sizing: border-box;
+  column-gap: 6px;
+  min-height: var(--ref-control-height-sm);
+  padding: 4px 6px;
+  border-radius: calc(var(--radius) * 0.8);
+}
+
+.ui-select-field__option[data-focused] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
