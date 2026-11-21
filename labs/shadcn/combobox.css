@@ -121,3 +121,20 @@
   justify-content: center;
   padding: 8px;
 }
+
+/* A selected option keeps the room for its check at its end, where the check sits 8 pixels in. */
+.ui-combobox__option:has(> .ui-combobox__option-indicator) {
+  position: relative;
+  padding-inline-end: 32px;
+}
+
+.ui-combobox__option-indicator {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 8px;
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: inherit;
+  transform: translateY(-50%);
+}
