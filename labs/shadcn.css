@@ -190,6 +190,7 @@
 @import url('shadcn/drawer.css') layer(ui-shadcn);
 @import url('shadcn/field.css') layer(ui-shadcn);
 @import url('shadcn/form.css') layer(ui-shadcn);
+@import url('shadcn/hover-card.css') layer(ui-shadcn);
 @import url('shadcn/input.css') layer(ui-shadcn);
 @import url('shadcn/input-group.css') layer(ui-shadcn);
 @import url('shadcn/link.css') layer(ui-shadcn);
