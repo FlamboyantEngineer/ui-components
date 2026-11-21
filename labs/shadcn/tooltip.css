@@ -1,11 +1,15 @@
 /*
- * shadcn/ui stylesheet: tooltips.
- * The inverted chip, without a shadow.
+ * shadcn/ui stylesheet: tooltips, after the tooltip of shadcn/ui's "nova" style.
+ * The inverted chip without a shadow: 12 pixel regular type, 6 by 12 pixels of padding.
  */
 
 .ui-tooltip:not([data-variant='info']) {
+  padding: 6px 12px;
   border-radius: calc(var(--ref-radius) - 2px);
   background: var(--foreground);
   color: var(--background);
+  font-size: var(--ref-font-size-xs);
+  font-weight: normal;
+  line-height: calc(1 / 0.75);
   box-shadow: none;
 }

@@ -1,0 +1,23 @@
+/*
+ * shadcn/ui stylesheet: hover cards, after the hover card of shadcn/ui's "nova" style.
+ * A 256 pixel rounded-lg card with a hairline ring, the medium shadow and 10 pixels of padding.
+ */
+
+.ui-hover-card {
+  width: 256px;
+  max-width: calc(100vw - 24px);
+  padding: 10px;
+  border: 0;
+  border-radius: var(--ref-radius);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-hover-card__arrow::before {
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  background: var(--popover);
+}
