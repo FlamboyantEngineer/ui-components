@@ -316,6 +316,24 @@ mountLab(
         <CardFooter>Updated Monday</CardFooter>
       </Card>
     </LabSection>
+    <LabSection title="Sizes" description="The default size and the small card, in each surface.">
+      <StateMatrix
+        axes={{ size: ['md', 'sm'], variant: variants }}
+        render={({ size, variant }) => (
+          <div style={{ width: 240 }}>
+            <Card
+              size={size}
+              variant={variant}
+              title={`${variant}, ${size}`}
+              description="West trail"
+              footer="Updated today"
+            >
+              Three cities, two rivers.
+            </Card>
+          </div>
+        )}
+      />
+    </LabSection>
     <LabSection
       title="Variants, densities and states"
       description="Every surface and density, resting, selected, interactive (hover it) and flush."

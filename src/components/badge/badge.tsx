@@ -14,8 +14,11 @@ import { type BadgeCollapse, useBadgeCollapse } from './badge-collapse.js';
 
 export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-/** `subtle` is a tinted pill, `solid` a filled token, `status` a tone dot before the label. */
-export type BadgeVariant = 'subtle' | 'solid' | 'status';
+/**
+ * `subtle` is a tinted pill, `solid` a filled token, `outline` a bordered pill with no fill,
+ * `status` a tone dot before the label.
+ */
+export type BadgeVariant = 'subtle' | 'solid' | 'outline' | 'status';
 
 export type BadgeCountVariant = Extract<BadgeVariant, 'subtle' | 'solid'>;
 

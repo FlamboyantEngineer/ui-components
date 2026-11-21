@@ -172,6 +172,28 @@ describe('Tabs', () => {
     expectHooksMatchSpec(container, 'TABS', { slots: ['indicator'] });
   });
 
+  it('UIC-TABS-1.7 publishes the list variant, default when unset', () => {
+    const { container, rerender } = render(
+      <Tabs>
+        <TabsList aria-label="Fruit">
+          <TabsTrigger id="apple">Apple</TabsTrigger>
+        </TabsList>
+        <TabsContent id="apple">Apples are crisp.</TabsContent>
+      </Tabs>,
+    );
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'default');
+    rerender(
+      <Tabs>
+        <TabsList aria-label="Fruit" variant="line">
+          <TabsTrigger id="apple">Apple</TabsTrigger>
+        </TabsList>
+        <TabsContent id="apple">Apples are crisp.</TabsContent>
+      </Tabs>,
+    );
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'line');
+    expectHooksMatchSpec(container, 'TABS');
+  });
+
   it('UIC-TABS-1.4 publishes size and orientation with defaults', () => {
     const { container, rerender } = render(<Fruit />);
     const root = container.querySelector('.ui-tabs') as HTMLElement;

@@ -77,6 +77,29 @@
   color: var(--ref-danger);
 }
 
+/* Variants: a bordered row, or a row on the muted fill; the trailing controls sit inside either. */
+.ui-list-row:is([data-variant='outline'], [data-variant='muted']) {
+  border-radius: var(--ref-radius);
+}
+.ui-list-row[data-variant='outline'] {
+  border: 1px solid var(--ref-border);
+}
+.ui-list-row[data-variant='muted'] {
+  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) var(--ref-tint-subtle));
+}
+
+/* Sizes: smaller rows keep the layout and tighten padding and text. */
+.ui-list-row[data-size='sm'] > .ui-list-row__primary {
+  min-height: 32px;
+  padding: 2px 8px;
+  font-size: var(--ref-font-size-sm);
+}
+.ui-list-row[data-size='xs'] > .ui-list-row__primary {
+  min-height: 24px;
+  padding: 0 6px;
+  font-size: var(--ref-font-size-xs);
+}
+
 .ui-list-row__trailing {
   display: flex;
   flex: none;

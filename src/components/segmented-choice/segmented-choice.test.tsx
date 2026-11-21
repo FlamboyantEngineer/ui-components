@@ -115,6 +115,15 @@ describe('SegmentedChoice', () => {
     }
   });
 
+  it('UIC-SEGMENTED-CHOICE-1.11 publishes the variant with its default', () => {
+    const { container, rerender } = render(<SegmentedChoice aria-label="View" options={views} />);
+    const group = screen.getByRole('radiogroup');
+    expect(group).toHaveAttribute('data-variant', 'default');
+    rerender(<SegmentedChoice aria-label="View" options={views} variant="outline" />);
+    expect(group).toHaveAttribute('data-variant', 'outline');
+    expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
+  });
+
   it('UIC-SEGMENTED-CHOICE-1.4 lays out vertically and moves focus with the vertical arrows', async () => {
     const { container } = render(
       <SegmentedChoice aria-label="View" options={views} orientation="vertical" />,

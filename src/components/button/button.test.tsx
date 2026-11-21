@@ -88,6 +88,7 @@ describe('Button', () => {
     for (const variant of [
       'primary',
       'secondary',
+      'outline',
       'tertiary',
       'destructive',
       'ghost',

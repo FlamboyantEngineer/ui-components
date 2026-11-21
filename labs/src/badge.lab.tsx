@@ -104,7 +104,7 @@ mountLab(
       description="Subtle pills, solid tokens and status dots in every tone and size."
     >
       <StateMatrix
-        axes={{ variant: ['subtle', 'solid', 'status'], tone: tones, size: sizes }}
+        axes={{ variant: ['subtle', 'solid', 'outline', 'status'], tone: tones, size: sizes }}
         render={({ variant, tone, size }) => (
           <Badge variant={variant} tone={tone} size={size}>
             {labels[tone]}
