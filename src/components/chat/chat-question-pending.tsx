@@ -1,11 +1,18 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { readOwn } from '../../utils/read-own.js';
 import { useRetainedState } from '../../utils/use-retained-state.js';
 import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
+import {
+  Questionnaire,
+  QuestionnaireActions,
+  type QuestionnaireAnswers,
+  QuestionnaireNext,
+  QuestionnairePrevious,
+  QuestionnaireSubmit,
+} from '../questionnaire/questionnaire.js';
 import { QuestionItem } from './chat-question-item.js';
 import {
   type ChatQuestionAnswer,
@@ -36,101 +43,44 @@ interface PendingQuestionsProps {
 }
 
 interface QuestionActionsProps {
-  /** The shown question's position from 0. */
-  step: number;
-  count: number;
+  /** Every question is on one step: no Back or Next. */
+  isSingle: boolean;
   /** Next is available: the shown question has an answer, or the card is read-only. */
   canStep: boolean;
   isComplete: boolean;
   running: QuestionRequestKind | null;
-  onStep: (step: number) => void;
-  onSubmit?: (() => void) | undefined;
+  canSubmit: boolean;
   onDismiss?: (() => void) | undefined;
 }
 
-/** Focuses a question's answer: the chosen radio, else its first radio, checkbox or text field. */
-function focusAnswer(element: HTMLElement | null) {
-  const target =
-    element?.querySelector<HTMLInputElement>('input[type="radio"]:checked') ??
-    element?.querySelector<HTMLInputElement>('input:not([type="hidden"])');
-  target?.focus();
-}
-
-/** A primary button that stays focusable while unavailable, with a hint saying why. */
-function PrimaryAction({
-  slot,
-  label,
-  hint,
-  isAvailable,
-  isDisabled,
-  isPending,
-  onPress,
-}: {
-  slot: 'next' | 'submit';
-  label: string;
-  /** Why the button is unavailable. */
-  hint: string;
-  isAvailable: boolean;
-  /** Unavailable for another reason, without the hint: another request runs. */
-  isDisabled: boolean;
-  isPending?: boolean | undefined;
-  onPress: () => void;
-}) {
-  return (
-    <Button
-      className={hooks.slotClass(slot)}
-      variant="primary"
-      isDisabled={!isAvailable || isDisabled}
-      isPending={isPending}
-      focusableWhenDisabled
-      tooltip={isAvailable ? undefined : hint}
-      onPress={onPress}
-    >
-      {label}
-    </Button>
-  );
-}
-
 /**
- * Back (after the first question), Next or, on the last question, Submit when the card can be
- * answered, then Dismiss when it can be dismissed. While a request runs, its button is pending and
- * the others are unavailable.
+ * The questionnaire's actions: Back (after the first question), Next or, on the last question,
+ * Submit when the card can be answered, then Dismiss when it can be dismissed. Next and Submit stay
+ * focusable while unavailable, with a hint saying why. While a request runs, its button is pending
+ * and the others are unavailable.
  */
 function QuestionActions(props: QuestionActionsProps) {
-  const { step, count, canStep, isComplete, running, onStep, onSubmit, onDismiss } = props;
+  const { isSingle, canStep, isComplete, running, canSubmit, onDismiss } = props;
   const strings = useUiStrings();
-  const isLast = step >= count - 1;
-  if (step === 0 && isLast && !onSubmit && !onDismiss) return null;
+  if (isSingle && !canSubmit && !onDismiss) return null;
   return (
-    <div {...hooks.slot('actions')}>
-      {step > 0 ? (
-        <Button
-          className={hooks.slotClass('back')}
-          isDisabled={running !== null}
-          onPress={() => onStep(step - 1)}
-        >
-          {strings.back}
-        </Button>
-      ) : null}
-      {isLast ? null : (
-        <PrimaryAction
-          slot="next"
-          label={strings.next}
-          hint={strings.questionAnswerToContinue}
-          isAvailable={canStep}
-          isDisabled={running !== null}
-          onPress={() => onStep(step + 1)}
-        />
-      )}
-      {isLast && onSubmit ? (
-        <PrimaryAction
-          slot="submit"
-          label={strings.questionSubmit}
-          hint={strings.questionAnswerAllToSubmit}
-          isAvailable={isComplete}
-          isDisabled={running === 'dismiss'}
+    <QuestionnaireActions className={hooks.slotClass('actions')}>
+      <QuestionnairePrevious className={hooks.slotClass('back')} isDisabled={running !== null}>
+        {strings.back}
+      </QuestionnairePrevious>
+      <QuestionnaireNext
+        className={hooks.slotClass('next')}
+        isDisabled={!canStep || running !== null}
+        focusableWhenDisabled
+        tooltip={canStep ? undefined : strings.questionAnswerToContinue}
+      />
+      {canSubmit ? (
+        <QuestionnaireSubmit
+          className={hooks.slotClass('submit')}
+          isDisabled={!isComplete || running === 'dismiss'}
           isPending={running === 'submit'}
-          onPress={onSubmit}
+          focusableWhenDisabled
+          tooltip={isComplete ? undefined : strings.questionAnswerAllToSubmit}
         />
       ) : null}
       {onDismiss ? (
@@ -144,16 +94,30 @@ function QuestionActions(props: QuestionActionsProps) {
           {strings.dismiss}
         </Button>
       ) : null}
-    </div>
+    </QuestionnaireActions>
   );
 }
 
 /**
- * A pending card: its questions as tabs with a counter, the shown question, the reader's drafts,
- * Back, Next, Submit and Dismiss, and why the last request failed. Any tab shows its question and
- * keeps focus; Back and Next move focus to the answer of the question they show; Enter in an answer
- * field steps on, or submits from the last question. Without `onSubmit`, or while a request runs,
- * the answers are read-only; a read-only card steps through its questions without answers.
+ * Which questions have an answer, by id, for the questionnaire: the drafts live outside its form,
+ * retained while the card is out of view.
+ */
+function toAnswered(questions: readonly ChatQuestionItem[], drafts: Drafts): QuestionnaireAnswers {
+  return Object.fromEntries(
+    questions.map((item) => [
+      item.id,
+      isQuestionAnswered(item, readOwn(drafts, item.id)) ? [item.id] : [],
+    ]),
+  );
+}
+
+/**
+ * A pending card, as a stepping `Questionnaire`: its questions as tabs with a counter, the shown
+ * question, the reader's drafts, Back, Next, Submit and Dismiss, and why the last request failed.
+ * Any tab shows its question and keeps focus; Back and Next move focus to the answer of the question
+ * they show; Enter in an answer field steps on, or submits from the last question, and on a question
+ * left unanswered shows why. Without `onSubmit`, or while a request runs, the answers are read-only;
+ * a read-only card steps through its questions without answers.
  */
 export function PendingQuestions(props: PendingQuestionsProps) {
   const { questions, onSubmit, onDismiss, running, failure, answeredMark } = props;
@@ -165,35 +129,23 @@ export function PendingQuestions(props: PendingQuestionsProps) {
     props.retainKey && `question-step:${props.retainKey}`,
     0,
   );
-  const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set());
-  const itemRef = useRef<HTMLDivElement>(null);
-  const hasStepped = useRef(false);
-  useLayoutEffect(() => {
-    if (!hasStepped.current) return;
-    hasStepped.current = false;
-    focusAnswer(itemRef.current);
-  }, [step]);
+  const keys = questions.map((item) => item.id);
   const current = questions[step];
   const canAnswer = onSubmit !== undefined && running === null;
-  const firstOpen = questions.findIndex(
-    (item) => !isQuestionAnswered(item, readOwn(drafts, item.id)),
-  );
+  const isComplete = questions.every((item) => isQuestionAnswered(item, readOwn(drafts, item.id)));
   const isStepAnswered = current ? isQuestionAnswered(current, readOwn(drafts, current.id)) : true;
-  const goTo = (index: number) => {
-    hasStepped.current = true;
-    setStep(index);
-  };
   const submit = () =>
     onSubmit?.(questions.map((item) => toAnswer(item, readOwn(drafts, item.id))));
-  const advance = () => {
-    if (!current || !canAnswer) return;
-    if (!isStepAnswered) setRevealed((ids) => new Set(ids).add(current.id));
-    else if (step < questions.length - 1) goTo(step + 1);
-    else if (firstOpen === -1) submit();
-    else goTo(firstOpen);
-  };
   return (
-    <>
+    <Questionnaire
+      className={hooks.slotClass('form')}
+      items={keys}
+      currentKey={current?.id}
+      onCurrentKeyChange={(key) => setStep(Math.max(keys.indexOf(key), 0))}
+      answers={toAnswered(questions, drafts)}
+      isReadOnly={!canAnswer}
+      onSubmit={submit}
+    >
       <QuestionTabs
         questions={questions}
         drafts={drafts}
@@ -201,30 +153,25 @@ export function PendingQuestions(props: PendingQuestionsProps) {
         answeredMark={answeredMark}
         onSelect={setStep}
       >
-        {current ? (
+        {questions.map((item) => (
           <QuestionItem
-            key={current.id}
-            ref={itemRef}
-            item={current}
-            draft={normalizeDraft(current, readOwn(drafts, current.id))}
-            onDraftChange={(draft) => setDrafts((all) => ({ ...all, [current.id]: draft }))}
-            isReadOnly={!canAnswer}
-            isRevealed={revealed.has(current.id)}
-            onEnter={advance}
+            key={item.id}
+            item={item}
+            draft={normalizeDraft(item, readOwn(drafts, item.id))}
+            onDraftChange={(draft) => setDrafts((all) => ({ ...all, [item.id]: draft }))}
+            isRequired={canAnswer}
           />
-        ) : null}
+        ))}
       </QuestionTabs>
       {failure ? <InlineError className={hooks.slotClass('error')}>{failure}</InlineError> : null}
       <QuestionActions
-        step={step}
-        count={questions.length}
+        isSingle={questions.length <= 1}
         canStep={isStepAnswered || !onSubmit}
-        isComplete={firstOpen === -1}
+        isComplete={isComplete}
         running={running}
-        onStep={goTo}
-        onSubmit={onSubmit && submit}
+        canSubmit={onSubmit !== undefined}
         onDismiss={onDismiss}
       />
-    </>
+    </Questionnaire>
   );
 }

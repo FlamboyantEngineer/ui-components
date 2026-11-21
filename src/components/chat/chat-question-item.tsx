@@ -1,6 +1,10 @@
 'use client';
 
-import { type Ref, useId } from 'react';
+import {
+  QuestionnaireItem,
+  QuestionnaireTitle,
+  useQuestionnaireItem,
+} from '../questionnaire/questionnaire.js';
 import { QuestionChoices } from './chat-question-choices.js';
 import { QuestionTextField } from './chat-question-fields.js';
 import {
@@ -13,56 +17,47 @@ interface QuestionItemProps {
   item: ChatQuestionItem;
   draft: QuestionDraft;
   onDraftChange: (draft: QuestionDraft) => void;
-  /** Shows the answer without letting the reader change it. */
-  isReadOnly: boolean;
-  /** Shows the validation of the question's fields now. */
-  isRevealed: boolean;
-  /** Called on Enter in an answer field. */
-  onEnter: () => void;
-  /** The question's element, where focus lands when the reader steps to it. */
-  ref?: Ref<HTMLDivElement> | undefined;
+  /** The reader must answer it before Next and Submit. */
+  isRequired: boolean;
+}
+
+/** The answer of a question: options as radios or checkboxes, or a field for the reader's words. */
+function QuestionAnswer({ item, draft, onDraftChange }: Omit<QuestionItemProps, 'isRequired'>) {
+  // Next or Enter on a question left unanswered marks it invalid, which shows its field's validation.
+  const { isInvalid } = useQuestionnaireItem('QuestionAnswer').item;
+  return item.selectionMode === 'none' ? (
+    <QuestionTextField
+      slot="text"
+      label={item.question}
+      draft={draft}
+      onDraftChange={onDraftChange}
+      isRevealed={isInvalid}
+    />
+  ) : (
+    <QuestionChoices
+      item={item}
+      draft={draft}
+      onDraftChange={onDraftChange}
+      isRevealed={isInvalid}
+    />
+  );
 }
 
 /**
- * One question: its text, and its answer: options as radios or checkboxes, or a field for the
- * reader's own words. Its header labels its tab.
+ * One question, a `QuestionnaireItem` named by its id: its text as the item's title, and its
+ * answer. Its header labels its tab.
  */
-export function QuestionItem({
-  item,
-  draft,
-  onDraftChange,
-  isReadOnly,
-  isRevealed,
-  onEnter,
-  ref,
-}: QuestionItemProps) {
-  const questionId = useId();
+export function QuestionItem({ item, draft, onDraftChange, isRequired }: QuestionItemProps) {
   return (
-    <div {...hooks.slot('item', { selectionMode: item.selectionMode })} ref={ref}>
-      <p {...hooks.slot('question')} id={questionId}>
+    <QuestionnaireItem
+      {...hooks.slot('item', { selectionMode: item.selectionMode })}
+      name={item.id}
+      isRequired={isRequired}
+    >
+      <QuestionnaireTitle className={hooks.slotClass('question')}>
         {item.question}
-      </p>
-      {item.selectionMode === 'none' ? (
-        <QuestionTextField
-          slot="text"
-          label={item.question}
-          draft={draft}
-          onDraftChange={onDraftChange}
-          isReadOnly={isReadOnly}
-          isRevealed={isRevealed}
-          onEnter={onEnter}
-        />
-      ) : (
-        <QuestionChoices
-          item={item}
-          draft={draft}
-          onDraftChange={onDraftChange}
-          isReadOnly={isReadOnly}
-          labelId={questionId}
-          isRevealed={isRevealed}
-          onEnter={onEnter}
-        />
-      )}
-    </div>
+      </QuestionnaireTitle>
+      <QuestionAnswer item={item} draft={draft} onDraftChange={onDraftChange} />
+    </QuestionnaireItem>
   );
 }

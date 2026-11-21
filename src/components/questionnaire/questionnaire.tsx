@@ -30,6 +30,13 @@ export interface QuestionnaireProps
   onCurrentKeyChange?: ((key: string) => void) | undefined;
   /** Receives the answers once every required question has one. */
   onSubmit?: ((answers: QuestionnaireAnswers) => void) | undefined;
+  /**
+   * The answers by question name (controlled), for answers kept outside the form: which questions
+   * are answered, and what `onSubmit` receives, are read from them instead of the controls.
+   */
+  answers?: QuestionnaireAnswers | undefined;
+  /** Shows the answers without letting the reader change them. */
+  isReadOnly?: boolean | undefined;
   /** The progress, the questions and the actions. */
   children?: ReactNode;
 }
@@ -76,6 +83,8 @@ export function Questionnaire({
   defaultCurrentKey,
   onCurrentKeyChange,
   onSubmit,
+  answers,
+  isReadOnly = false,
   className,
   children,
   ...rest
@@ -86,12 +95,14 @@ export function Questionnaire({
     defaultCurrentKey,
     onCurrentKeyChange,
     onSubmit,
+    answers,
+    isReadOnly,
   });
   const refs = useMergedRefs(questionnaire.formRef, ref);
   return (
     <form
       {...rest}
-      {...hooks.root({ className, data: { stepping: items !== undefined } })}
+      {...hooks.root({ className, data: { stepping: items !== undefined, readOnly: isReadOnly } })}
       ref={refs}
       noValidate
       onSubmit={questionnaire.onSubmit}
@@ -193,6 +204,17 @@ export function QuestionnaireItem({
       <QuestionnaireItemContext value={item}>{children}</QuestionnaireItemContext>
     </fieldset>
   );
+}
+
+/**
+ * The questionnaire and the question around an answer control composed inside a question, such as a
+ * field of the caller's own that goes on with Enter and shows its question's invalid state.
+ */
+export function useQuestionnaireItem(part: string) {
+  return {
+    questionnaire: readQuestionnaire(useContext(QuestionnaireContext), part),
+    item: readQuestionnaire(useContext(QuestionnaireItemContext), part),
+  };
 }
 
 /** The question, as its fieldset's legend. */

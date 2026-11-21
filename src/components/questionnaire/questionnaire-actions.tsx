@@ -4,7 +4,7 @@ import { type ReactNode, useContext } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button, type ButtonVariant } from '../button/button.js';
+import { Button, type ButtonProps, type ButtonVariant } from '../button/button.js';
 import {
   QuestionnaireContext,
   questionnaireHooks as hooks,
@@ -14,7 +14,11 @@ import {
 
 export interface QuestionnaireActionsProps extends ContainerProps<'div'>, BaseProps {}
 
-export interface QuestionnaireActionProps extends RefProps<HTMLButtonElement>, BaseProps {
+export interface QuestionnaireActionProps
+  extends
+    RefProps<HTMLButtonElement>,
+    BaseProps,
+    Pick<ButtonProps, 'isDisabled' | 'isPending' | 'tooltip' | 'focusableWhenDisabled'> {
   /** Replaces the button's label, which defaults to the provider's string. */
   children?: ReactNode;
 }

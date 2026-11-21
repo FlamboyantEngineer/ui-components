@@ -278,3 +278,67 @@ it('UIC-QUESTIONNAIRE-2.3 moves on with Enter in an input before the last questi
   await user.type(seat, '{Enter}');
   expect(onSubmit).toHaveBeenCalledWith({ name: ['Ada'], seat: [] });
 });
+
+/** A one-question form whose answer the caller keeps, with Next kept unavailable until it has one. */
+function KeptAnswer({
+  answers,
+  isReadOnly,
+  onSubmit,
+}: {
+  answers: Record<string, string[]>;
+  isReadOnly?: boolean;
+  onSubmit?: (answers: Record<string, string[]>) => void;
+}): ReactNode {
+  const hasAnswer = (answers['note'] ?? []).length > 0;
+  return (
+    <Questionnaire aria-label="Note" answers={answers} isReadOnly={isReadOnly} onSubmit={onSubmit}>
+      <QuestionnaireItem name="note" isRequired>
+        <QuestionnaireTitle>A note for the crew</QuestionnaireTitle>
+        <QuestionnaireInput defaultValue="Typed but not kept" />
+      </QuestionnaireItem>
+      <QuestionnaireActions>
+        <QuestionnaireSubmit
+          isDisabled={!hasAnswer}
+          focusableWhenDisabled
+          tooltip={hasAnswer ? undefined : 'Write a note first'}
+        />
+      </QuestionnaireActions>
+    </Questionnaire>
+  );
+}
+
+it('UIC-QUESTIONNAIRE-1.4 reads the answers the caller keeps instead of its controls', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const { rerender } = render(<KeptAnswer answers={{ note: [] }} onSubmit={onSubmit} />);
+  const item = question('A note for the crew');
+  await waitFor(() => expect(item).toHaveAttribute('data-status', 'unanswered'));
+  rerender(<KeptAnswer answers={{ note: ['Kept note'] }} onSubmit={onSubmit} />);
+  await waitFor(() => expect(item).toHaveAttribute('data-status', 'answered'));
+  await user.click(screen.getByRole('button', { name: 'Submit' }));
+  expect(onSubmit).toHaveBeenCalledWith({ note: ['Kept note'] });
+});
+
+it('UIC-QUESTIONNAIRE-1.5 UIC-QUESTIONNAIRE-2.1 shows the answers read-only and keeps an action unavailable with its hint', () => {
+  render(<KeptAnswer answers={{ note: [] }} isReadOnly />);
+  const form = screen.getByRole('form', { name: 'Note' });
+  expect(form).toHaveAttribute('data-read-only', 'true');
+  expect(screen.getByRole('textbox')).toHaveAttribute('readonly');
+  const submit = screen.getByRole('button', { name: 'Submit' });
+  expect(submit).toHaveAttribute('aria-disabled', 'true');
+  expect(submit).toHaveClass('ui-questionnaire__submit');
+  expectHooksMatchSpec(form, 'QUESTIONNAIRE');
+});
+
+it('UIC-QUESTIONNAIRE-2.2 keeps focus in the question when Enter stops at it', async () => {
+  const user = userEvent.setup();
+  render(<Trip />);
+  await user.click(screen.getByRole('radio', { name: /Ferry/ }));
+  await user.click(screen.getByRole('button', { name: 'Next' }));
+  await user.click(screen.getByRole('button', { name: 'Next' }));
+  const input = screen.getByRole('textbox', { name: 'A note for the crew' });
+  await waitFor(() => expect(input).toHaveFocus());
+  await user.keyboard('{Enter}');
+  expect(question('A note for the crew')).toHaveAttribute('data-invalid', 'true');
+  expect(input).toHaveFocus();
+});

@@ -70,13 +70,88 @@ function TripQuestions({ isStepping, label }: { isStepping: boolean; label: stri
   );
 }
 
+/**
+ * Answers kept outside the form, as drafts that outlive its controls: Next and Submit stay
+ * unavailable, with a hint, until the shown question has an answer; read-only shows them unchanged.
+ */
+function KeptQuestions({ isReadOnly, label }: { isReadOnly: boolean; label: string }) {
+  const [kept, setKept] = useState<QuestionnaireAnswers>({ crossing: ['ferry'], extras: [] });
+  const [current, setCurrent] = useState('crossing');
+  const [sent, setSent] = useState<QuestionnaireAnswers | null>(null);
+  const keep = (name: string) => (values: string[]) =>
+    setKept((answers) => ({ ...answers, [name]: values }));
+  const isAnswered = (kept[current] ?? []).length > 0;
+  return (
+    <div style={{ inlineSize: '24rem' }}>
+      <Questionnaire
+        aria-label={label}
+        items={['crossing', 'extras']}
+        currentKey={current}
+        onCurrentKeyChange={setCurrent}
+        answers={kept}
+        isReadOnly={isReadOnly}
+        onSubmit={setSent}
+      >
+        <QuestionnaireProgress />
+        <QuestionnaireItem name="crossing" isRequired={!isReadOnly}>
+          <QuestionnaireTitle>Which crossing suits you?</QuestionnaireTitle>
+          <QuestionnaireChoices value={kept['crossing']} onChange={keep('crossing')}>
+            <QuestionnaireChoice value="ferry">Ferry</QuestionnaireChoice>
+            <QuestionnaireChoice value="bridge">Bridge</QuestionnaireChoice>
+          </QuestionnaireChoices>
+        </QuestionnaireItem>
+        <QuestionnaireItem name="extras" isRequired={!isReadOnly}>
+          <QuestionnaireTitle>Anything to bring along?</QuestionnaireTitle>
+          <QuestionnaireChoices
+            selectionMode="multiple"
+            value={kept['extras']}
+            onChange={keep('extras')}
+          >
+            <QuestionnaireChoice value="bike">A bike</QuestionnaireChoice>
+            <QuestionnaireChoice value="lunch">A packed lunch</QuestionnaireChoice>
+          </QuestionnaireChoices>
+        </QuestionnaireItem>
+        <QuestionnaireActions>
+          <QuestionnairePrevious>Back</QuestionnairePrevious>
+          <QuestionnaireNext
+            isDisabled={!isAnswered && !isReadOnly}
+            focusableWhenDisabled
+            tooltip={isAnswered || isReadOnly ? undefined : 'Answer to continue'}
+          />
+          {isReadOnly ? null : (
+            <QuestionnaireSubmit
+              isDisabled={!isAnswered}
+              focusableWhenDisabled
+              tooltip={isAnswered ? undefined : 'Answer every question to submit'}
+            />
+          )}
+        </QuestionnaireActions>
+      </Questionnaire>
+      <output aria-label={`${label} answers`}>{sent ? JSON.stringify(sent) : ''}</output>
+    </div>
+  );
+}
+
 mountLab(
-  <LabSection title="Questionnaire layouts">
-    <StateMatrix
-      axes={{ layout: ['stepping', 'all at once'] }}
-      render={({ layout }) => (
-        <TripQuestions isStepping={layout === 'stepping'} label={`${layout} questionnaire`} />
-      )}
-    />
-  </LabSection>,
+  <>
+    <LabSection title="Questionnaire layouts">
+      <StateMatrix
+        axes={{ layout: ['stepping', 'all at once'] }}
+        render={({ layout }) => (
+          <TripQuestions isStepping={layout === 'stepping'} label={`${layout} questionnaire`} />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Kept answers"
+      description="The answers live outside the form, so they survive its controls unmounting; Next and Submit wait for an answer with a hint, and a read-only questionnaire only steps."
+    >
+      <StateMatrix
+        axes={{ mode: ['editable', 'read-only'] }}
+        render={({ mode }) => (
+          <KeptQuestions isReadOnly={mode === 'read-only'} label={`${mode} kept questionnaire`} />
+        )}
+      />
+    </LabSection>
+  </>,
 );

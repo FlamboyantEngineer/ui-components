@@ -1072,6 +1072,10 @@
   color: var(--ref-success);
 }
 
+.ui-chat-question .ui-chat-question__form {
+  display: contents;
+}
+
 .ui-chat-question__item {
   display: flex;
   flex-direction: column;
@@ -1080,7 +1084,13 @@
 
 .ui-chat-question__question {
   margin: 0;
+  padding: 0;
   font-weight: var(--ref-font-weight-strong);
+}
+
+/* A fieldset draws its legend apart from its flex gap, so the question keeps its own space. */
+.ui-chat-question__item > .ui-chat-question__question {
+  margin-block-end: 8px;
 }
 
 .ui-chat-question[data-status='dismissed'] .ui-chat-question__question {
@@ -1102,18 +1112,30 @@
   min-width: 0;
 }
 
-.ui-chat-question__option {
+/* Options read as plain radios and boxes, not the questionnaire's bordered rows. */
+.ui-chat-question .ui-chat-question__option {
   display: flex;
   flex-direction: column;
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
 .ui-chat-question__recommended {
   vertical-align: middle;
 }
 
-/* The description lines up with the label, past the radio or box before it. */
+/* Enter in an empty Other field marks the question invalid; the field carries the message, so the
+   choices keep their usual edge. */
+.ui-chat-question
+  .ui-chat-question__options
+  .ui-choice__button[data-invalid]:not([data-selected])
+  .ui-choice__indicator {
+  border-color: var(--ref-border-strong);
+}
+
+/* The choice lines its description up with the label, past the radio or box. */
 .ui-chat-question__description {
-  padding-inline-start: 28px;
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
 }

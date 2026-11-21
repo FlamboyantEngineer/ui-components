@@ -73,6 +73,7 @@ export const emptyDraft: QuestionDraft = { optionIds: [], isOther: false, otherT
 export type ChatQuestionAnsweredMark = 'icon' | 'style';
 
 export const chatQuestionHooks = createHooks('chat-question', [
+  'form',
   'tabs',
   'tab',
   'progress',
