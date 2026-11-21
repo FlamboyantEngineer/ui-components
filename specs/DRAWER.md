@@ -20,7 +20,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-1.3 - Size
 
-The overlay shall publish `size` in `data-size`: `sm`, `md` (the default) or `lg`, which the host stylesheet maps to the panel's width beside a side edge or its height against the top or bottom edge; the reference sheet uses 320, 400 and 560 pixels wide, kept 48 pixels short of the viewport, or 30, 50 and 80 percent of the viewport high. The stylesheet keeps the panel short of the whole viewport along the axis it slides on: React Aria's sheet only notices that it has left once it no longer touches the viewport's edge.
+The overlay shall publish `size` in `data-size`: `sm`, `md` (the default) or `lg`, which the host stylesheet maps to the panel's width beside a side edge or its height against the top or bottom edge; the reference sheet uses 320, 400 and 560 pixels wide, kept 48 pixels short of the viewport, or 30, 50 and 80 percent of the viewport high.
 
 Implementation: `src/components/drawer/drawer.tsx`, `labs/reference/drawer.css`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
@@ -59,7 +59,9 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 Swiping or scrolling the panel toward its edge until it has left the viewport shall close the drawer. `swipeDirection` chooses the direction (the drawer's edge by default, or `vertical` or `horizontal` for both ways along an axis), and the drawer publishes it in `data-swipe-direction` on the overlay, backdrop and panel.
 
-Implementation: `src/components/drawer/drawer.tsx`
+The drawer closes once its scroll settles with the panel wholly outside the viewport, even where React Aria's sheet, which watches the panel cross the viewport's edge, does not notice: when the panel still touches that edge once out, as one that fills the viewport along its swipe axis or one swiped away from the edge it rests on does, or when the sheet never saw it whole. For the same reason a drawer that is closing unmounts once its scroll settles, whether the panel slid out or a scroll of the reader's cut the slide short. The overlay covers the whole viewport on a page of fractional height scrolled to its end, so the panel shows whole there and `data-expanded` appears once it has fully entered.
+
+Implementation: `src/components/drawer/drawer.tsx`, `src/components/drawer/sheet-departure.ts`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-2.4 - Preventing dismissal
