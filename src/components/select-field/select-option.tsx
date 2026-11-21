@@ -95,9 +95,9 @@ export function SelectListItems({
     <Collection items={items} dependencies={toDisplayDependencies(display)}>
       {(item) =>
         isPickerSection(item) ? (
-          <ListBoxSection id={toCollectionKey(item.id)} className={hooks.slotClass('section')}>
+          <ListBoxSection id={toCollectionKey(item.id)} {...hooks.slot('section')}>
             {isEmptyNode(item.label) ? null : (
-              <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
+              <Header {...hooks.slot('section-header')}>{item.label}</Header>
             )}
             <Collection items={item.options} dependencies={toDisplayDependencies(display)}>
               {(option) => (

@@ -135,50 +135,50 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ## Hooks
 
-| Hook                        | Kind      | Values             | Description                                                                          |
-| --------------------------- | --------- | ------------------ | ------------------------------------------------------------------------------------ |
-| `ui-board`                  | root      |                    | The board (`role="group"`).                                                          |
-| `ui-board__viewport`        | slot      |                    | The board's horizontal scroll region (also `ui-scroll-region`), around its rows.     |
-| `ui-board__columns`         | slot      |                    | The row of column headers.                                                           |
-| `ui-board__column`          | slot      |                    | A column header.                                                                     |
-| `ui-board__column-handle`   | slot      |                    | A column's drag handle (also `ui-button`), while expanded.                           |
-| `ui-board__column-toggle`   | slot      |                    | A column's collapse toggle (also `ui-expand-toggle`).                                |
-| `ui-board__column-icon`     | slot      |                    | A column's decorative icon (also `ui-icon`), while expanded.                         |
-| `ui-board__column-title`    | slot      |                    | A column's title, visually hidden while collapsed.                                   |
-| `ui-board__column-count`    | slot      |                    | A column's card count, against its limit, visually hidden while collapsed.           |
-| `ui-board__column-actions`  | slot      |                    | The caller's controls at the end of a column header, while expanded.                 |
-| `ui-board__lane`            | slot      |                    | A lane (`role="group"`).                                                             |
-| `ui-board__lane-header`     | slot      |                    | A lane's header.                                                                     |
-| `ui-board__lane-toggle`     | slot      |                    | A lane's collapse toggle (also `ui-expand-toggle`).                                  |
-| `ui-board__lane-icon`       | slot      |                    | A lane's decorative icon (also `ui-icon`).                                           |
-| `ui-board__lane-title`      | slot      |                    | A lane's title.                                                                      |
-| `ui-board__lane-count`      | slot      |                    | A lane's card count.                                                                 |
-| `ui-board__cells`           | slot      |                    | The row of cells of a lane, or of a board without lanes.                             |
-| `ui-board__cell`            | slot      |                    | One column of one lane.                                                              |
-| `ui-board__list`            | slot      | `data-virtualized` | A cell's grid list frame, holding its overlay scrollbars while virtualized.          |
-| `ui-board__cards`           | slot      |                    | A cell's grid list (`role="grid"`).                                                  |
-| `ui-board__card`            | slot      |                    | A card (`role="row"`).                                                               |
-| `ui-board__card-handle`     | slot      |                    | A card's drag handle (also `ui-drag-handle`).                                        |
-| `ui-board__card-content`    | slot      |                    | The caller's card content.                                                           |
-| `ui-board__drop-indicator`  | slot      |                    | Where a dragged card would land, between cards.                                      |
-| `ui-board__empty`           | slot      |                    | The empty state of a cell without cards (also `ui-empty-state`).                     |
-| `ui-board__add`             | slot      |                    | A cell's add-card button (also `ui-button`).                                         |
-| `data-virtualized`          | state     | `true`             | Cells render only the cards in view.                                                 |
-| `data-reordering`           | state     | `true`             | A cell's grid list while the board takes moves.                                      |
-| `data-collapsed`            | state     | `true`             | A collapsed column (header, cells, cards and card content) or lane.                  |
-| `data-over-limit`           | state     | `true`             | A column (header and cells) holding more cards than its limit.                       |
-| `data-dragging`             | state     | `true`             | A column header or card being dragged.                                               |
-| `data-drop-target`          | state     | `true`             | A column header, cell, card or drop indicator under a drag.                          |
-| `data-position`             | state     | `before`, `after`  | Where a dragged column or card would land against the target.                        |
-| `data-key`                  | state     |                    | Card: opaque collection key (React Aria); column header: its key as text.            |
-| `data-key-identity`         | attribute |                    | On column headers and cards: JSON `[type, text]` retaining the key's primitive type. |
-| `data-empty`                | state     | `true`             | A cell without cards (React Aria).                                                   |
-| `data-focused`              | state     | `true`             | A cell or card has focus (React Aria).                                               |
-| `data-focus-visible`        | state     | `true`             | A cell or card has keyboard focus (React Aria).                                      |
-| `data-focus-visible-within` | state     | `true`             | Keyboard focus inside a card (React Aria).                                           |
-| `data-hovered`              | state     | `true`             | Pointer over a card (React Aria).                                                    |
-| `data-pressed`              | state     | `true`             | A card is pressed (React Aria).                                                      |
-| `data-allows-dragging`      | state     | `true`             | React Aria's drag support, on every card: use `data-reordering`.                     |
-| `data-layout`               | state     | `stack`            | A cell's layout (React Aria).                                                        |
-| `data-orientation`          | state     | `vertical`         | A cell's orientation (React Aria).                                                   |
-| `data-collection`           | state     |                    | React Aria's collection marker, on the cells' lists and cards.                       |
+| Hook                        | Kind      | Values            | Description                                                                                                        |
+| --------------------------- | --------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `ui-board`                  | root      |                   | The board (`role="group"`).                                                                                        |
+| `ui-board__viewport`        | slot      |                   | The board's horizontal scroll region (also `ui-scroll-region`), around its rows.                                   |
+| `ui-board__columns`         | slot      |                   | The row of column headers.                                                                                         |
+| `ui-board__column`          | slot      |                   | A column header.                                                                                                   |
+| `ui-board__column-handle`   | slot      |                   | A column's drag handle (also `ui-button`), while expanded.                                                         |
+| `ui-board__column-toggle`   | slot      |                   | A column's collapse toggle (also `ui-expand-toggle`).                                                              |
+| `ui-board__column-icon`     | slot      |                   | A column's decorative icon (also `ui-icon`), while expanded.                                                       |
+| `ui-board__column-title`    | slot      |                   | A column's title, visually hidden while collapsed.                                                                 |
+| `ui-board__column-count`    | slot      |                   | A column's card count, against its limit, visually hidden while collapsed.                                         |
+| `ui-board__column-actions`  | slot      |                   | The caller's controls at the end of a column header, while expanded.                                               |
+| `ui-board__lane`            | slot      |                   | A lane (`role="group"`).                                                                                           |
+| `ui-board__lane-header`     | slot      |                   | A lane's header.                                                                                                   |
+| `ui-board__lane-toggle`     | slot      |                   | A lane's collapse toggle (also `ui-expand-toggle`).                                                                |
+| `ui-board__lane-icon`       | slot      |                   | A lane's decorative icon (also `ui-icon`).                                                                         |
+| `ui-board__lane-title`      | slot      |                   | A lane's title.                                                                                                    |
+| `ui-board__lane-count`      | slot      |                   | A lane's card count.                                                                                               |
+| `ui-board__cells`           | slot      |                   | The row of cells of a lane, or of a board without lanes.                                                           |
+| `ui-board__cell`            | slot      |                   | One column of one lane.                                                                                            |
+| `ui-board__list`            | slot      |                   | A cell's grid list frame (it also publishes `data-virtualized`), holding its overlay scrollbars while virtualized. |
+| `ui-board__cards`           | slot      |                   | A cell's grid list (`role="grid"`).                                                                                |
+| `ui-board__card`            | slot      |                   | A card (`role="row"`).                                                                                             |
+| `ui-board__card-handle`     | slot      |                   | A card's drag handle (also `ui-drag-handle`).                                                                      |
+| `ui-board__card-content`    | slot      |                   | The caller's card content.                                                                                         |
+| `ui-board__drop-indicator`  | slot      |                   | Where a dragged card would land, between cards.                                                                    |
+| `ui-board__empty`           | slot      |                   | The empty state of a cell without cards (also `ui-empty-state`).                                                   |
+| `ui-board__add`             | slot      |                   | A cell's add-card button (also `ui-button`).                                                                       |
+| `data-virtualized`          | state     | `true`            | Cells render only the cards in view.                                                                               |
+| `data-reordering`           | state     | `true`            | A cell's grid list while the board takes moves.                                                                    |
+| `data-collapsed`            | state     | `true`            | A collapsed column (header, cells, cards and card content) or lane.                                                |
+| `data-over-limit`           | state     | `true`            | A column (header and cells) holding more cards than its limit.                                                     |
+| `data-dragging`             | state     | `true`            | A column header or card being dragged.                                                                             |
+| `data-drop-target`          | state     | `true`            | A column header, cell, card or drop indicator under a drag.                                                        |
+| `data-position`             | state     | `before`, `after` | Where a dragged column or card would land against the target.                                                      |
+| `data-key`                  | state     |                   | Card: opaque collection key (React Aria); column header: its key as text.                                          |
+| `data-key-identity`         | attribute |                   | On column headers and cards: JSON `[type, text]` retaining the key's primitive type.                               |
+| `data-empty`                | state     | `true`            | A cell without cards (React Aria).                                                                                 |
+| `data-focused`              | state     | `true`            | A cell or card has focus (React Aria).                                                                             |
+| `data-focus-visible`        | state     | `true`            | A cell or card has keyboard focus (React Aria).                                                                    |
+| `data-focus-visible-within` | state     | `true`            | Keyboard focus inside a card (React Aria).                                                                         |
+| `data-hovered`              | state     | `true`            | Pointer over a card (React Aria).                                                                                  |
+| `data-pressed`              | state     | `true`            | A card is pressed (React Aria).                                                                                    |
+| `data-allows-dragging`      | state     | `true`            | React Aria's drag support, on every card: use `data-reordering`.                                                   |
+| `data-layout`               | state     | `stack`           | A cell's layout (React Aria).                                                                                      |
+| `data-orientation`          | state     | `vertical`        | A cell's orientation (React Aria).                                                                                 |
+| `data-collection`           | state     |                   | React Aria's collection marker, on the cells' lists and cards.                                                     |

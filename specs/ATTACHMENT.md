@@ -131,22 +131,22 @@ Verification: `src/components/attachment/attachment-frame.test.tsx`, `e2e/attach
 
 | Hook                         | Kind      | Values                                    | Description                                                                            |
 | ---------------------------- | --------- | ----------------------------------------- | -------------------------------------------------------------------------------------- |
-| `ui-attachment`              | root      |                                           | An attachment's `<div>`.                                                               |
+| `ui-attachment`              | root      | `attachment`                              | An attachment's `<div>`.                                                               |
 | `ui-attachment__preview`     | slot      |                                           | The button holding an image's thumbnail (also `ui-button`).                            |
-| `ui-attachment__thumbnail`   | slot      |                                           | An image's thumbnail `<img>`.                                                          |
-| `ui-attachment__icon`        | slot      |                                           | A chip's type glyph (also `ui-icon`).                                                  |
-| `ui-attachment__name`        | slot      |                                           | A chip's file name.                                                                    |
-| `ui-attachment__size`        | slot      |                                           | A chip's file size.                                                                    |
+| `ui-attachment__thumbnail`   | slot      | `attachment-media`                        | An image's thumbnail `<img>`.                                                          |
+| `ui-attachment__icon`        | slot      | `attachment-media`                        | A chip's type glyph (also `ui-icon`).                                                  |
+| `ui-attachment__name`        | slot      | `attachment-title`                        | A chip's file name.                                                                    |
+| `ui-attachment__size`        | slot      | `attachment-description`                  | A chip's file size.                                                                    |
 | `ui-attachment__progress`    | slot      |                                           | The upload's progress (also `ui-progress-bar`).                                        |
 | `ui-attachment__error`       | slot      |                                           | The upload's error with Retry (also `ui-inline-error`).                                |
-| `ui-attachment__download`    | slot      |                                           | The download link (also `ui-link`).                                                    |
-| `ui-attachment__remove`      | slot      |                                           | The remove button (also `ui-button`).                                                  |
-| `ui-attachment__media`       | slot      |                                           | A composed attachment's glyph or image.                                                |
-| `ui-attachment__content`     | slot      |                                           | A composed attachment's title and description.                                         |
-| `ui-attachment__title`       | slot      |                                           | A composed attachment's file name.                                                     |
-| `ui-attachment__description` | slot      |                                           | A composed attachment's detail.                                                        |
-| `ui-attachment__actions`     | slot      |                                           | A composed attachment's commands.                                                      |
-| `ui-attachment__action`      | slot      |                                           | One command (also `ui-button`).                                                        |
+| `ui-attachment__download`    | slot      | `attachment-action`                       | The download link (also `ui-link`).                                                    |
+| `ui-attachment__remove`      | slot      | `attachment-action`                       | The remove button (also `ui-button`).                                                  |
+| `ui-attachment__media`       | slot      | `attachment-media`                        | A composed attachment's glyph or image.                                                |
+| `ui-attachment__content`     | slot      | `attachment-content`                      | A composed attachment's title and description.                                         |
+| `ui-attachment__title`       | slot      | `attachment-title`                        | A composed attachment's file name.                                                     |
+| `ui-attachment__description` | slot      | `attachment-description`                  | A composed attachment's detail.                                                        |
+| `ui-attachment__actions`     | slot      | `attachment-actions`                      | A composed attachment's commands.                                                      |
+| `ui-attachment__action`      | slot      | `attachment-action`                       | One command (also `ui-button`).                                                        |
 | `data-kind`                  | state     | `image`, `pdf`, `archive`, `text`, `file` | On an attachment: the kind of file.                                                    |
 | `data-status`                | state     | `uploading`, `complete`, `error`          | On an attachment: where its upload stands.                                             |
 | `data-display`               | state     | `thumbnail`, `chip`, `parts`              | On an attachment: an image's thumbnail, a chip with glyph and name, or composed parts. |
@@ -155,4 +155,4 @@ Verification: `src/components/attachment/attachment-frame.test.tsx`, `e2e/attach
 | `data-variant`               | attribute | `icon`, `image`                           | On media: a glyph or an image.                                                         |
 | `ui-attachment-list`         | root      |                                           | The list's `<ul>`.                                                                     |
 | `ui-attachment-list__item`   | slot      |                                           | One attachment's `<li>`.                                                               |
-| `ui-attachment-group`        | root      |                                           | A row of composed attachments.                                                         |
+| `ui-attachment-group`        | root      | `attachment-group`                        | A row of composed attachments.                                                         |

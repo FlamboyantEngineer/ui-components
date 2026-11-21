@@ -145,7 +145,7 @@ function BlockingDialog({ state, rootProps, children, ...overlay }: BlockingDial
       {...dataAttributes({ stackIndex })}
       style={{ position: 'fixed', inset: 0, zIndex }}
     >
-      <AriaModal className={hooks.slotClass('panel')}>{children}</AriaModal>
+      <AriaModal {...hooks.slot('panel')}>{children}</AriaModal>
     </ModalOverlay>
   );
 }
@@ -247,7 +247,7 @@ function RetainedDialog({ state, rootProps, children, ...dismissal }: BlockingDi
         style={{ position: 'fixed', inset: 0, zIndex, ...retainedStyle(phase.isMounted) }}
       >
         <FocusScope contain={state.isOpen}>
-          <div {...modalProps} ref={panelRef} className={hooks.slotClass('panel')}>
+          <div {...modalProps} ref={panelRef} {...hooks.slot('panel')}>
             <OverlayTriggerStateContext value={state}>
               <DialogShownContext value={phase.isMounted}>{children}</DialogShownContext>
             </OverlayTriggerStateContext>

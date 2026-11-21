@@ -278,7 +278,7 @@ Verification: `src/components/button/button-group.test.tsx`, `e2e/button-button-
 
 | Hook                       | Kind      | Values / Meaning                                                                             |
 | -------------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| `ui-button`                | root      |                                                                                              | The `<button>`, or `<a>` with `href`.                                     |
+| `ui-button`                | root      | `button`                                                                                     | The `<button>`, or `<a>` with `href`.                                     |
 | `ui-button__label`         | slot      |                                                                                              | The label, unless `content="parts"`.                                      |
 | `ui-button__start-icon`    | slot      |                                                                                              | Leading icon (also `ui-icon`).                                            |
 | `ui-button__end-icon`      | slot      |                                                                                              | Trailing icon (also `ui-icon`).                                           |
@@ -298,7 +298,7 @@ Verification: `src/components/button/button-group.test.tsx`, `e2e/button-button-
 | `data-focused`             | state     | `true`                                                                                       | Focused.                                                                  |
 | `data-focus-visible`       | state     | `true`                                                                                       | Keyboard focus.                                                           |
 | `ui-button__icon`          | slot      |                                                                                              | The decorative icon in icon-only mode.                                    |
-| `ui-button-group`          | root      |                                                                                              | The group (`<div role="group">`).                                         |
+| `ui-button-group`          | root      | `button-group`                                                                               | The group (`<div role="group">`).                                         |
 | `data-density`             | attribute | `default`, `compact`                                                                         | How far apart spaced buttons sit.                                         |
 | `data-attached`            | state     | `true`                                                                                       | The buttons are joined into one control.                                  |
 | `data-orientation`         | attribute | `horizontal`, `vertical`                                                                     | Row or column.                                                            |

@@ -13,11 +13,11 @@ Verification: `src/components/textarea/textarea.test.tsx`, `e2e/textarea.spec.ts
 
 ## Hooks
 
-| Hook                 | Kind  | Values | Description                       |
-| -------------------- | ----- | ------ | --------------------------------- |
-| `ui-textarea`        | root  |        | The textarea.                     |
-| `data-focused`       | state | `true` | The textarea has focus.           |
-| `data-focus-visible` | state | `true` | Keyboard focus is visible.        |
-| `data-hovered`       | state | `true` | The pointer is over the textarea. |
-| `data-disabled`      | state | `true` | The textarea is disabled.         |
-| `data-invalid`       | state | `true` | The textarea is marked invalid.   |
+| Hook                 | Kind  | Values     | Description                       |
+| -------------------- | ----- | ---------- | --------------------------------- |
+| `ui-textarea`        | root  | `textarea` | The textarea.                     |
+| `data-focused`       | state | `true`     | The textarea has focus.           |
+| `data-focus-visible` | state | `true`     | Keyboard focus is visible.        |
+| `data-hovered`       | state | `true`     | The pointer is over the textarea. |
+| `data-disabled`      | state | `true`     | The textarea is disabled.         |
+| `data-invalid`       | state | `true`     | The textarea is marked invalid.   |

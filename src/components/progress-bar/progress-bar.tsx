@@ -77,7 +77,7 @@ export interface ProgressValues {
   isIndeterminate: boolean;
 }
 
-const spinnerHooks = createHooks('spinner', ['ring', 'fill']);
+const spinnerHooks = createHooks('spinner', ['ring', 'fill'], { root: 'spinner' });
 
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
 export function ProgressBar({ valueLabel, ...props }: ProgressBarProps) {

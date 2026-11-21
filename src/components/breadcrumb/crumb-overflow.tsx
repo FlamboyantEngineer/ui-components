@@ -92,6 +92,7 @@ export function OverflowCrumb(props: OverflowCrumbProps) {
       id={id}
       ref={menuRef}
       className={mergeClassNames(hooks.slotClass('item'), hooks.slotClass('overflow'))}
+      data-slot={hooks.dataSlot('item')}
     >
       <DropdownMenu
         iconOnly

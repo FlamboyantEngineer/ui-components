@@ -192,11 +192,11 @@ Verification: `src/components/scroll-region/scroll-overview.test.tsx`, `e2e/scro
 
 | Hook                                  | Kind      | Values / Meaning                                                 |
 | ------------------------------------- | --------- | ---------------------------------------------------------------- |
-| `ui-scroll-region`                    | root      |                                                                  | The frame.                                                 |
-| `ui-scroll-region__viewport`          | slot      |                                                                  | The scrolling element.                                     |
+| `ui-scroll-region`                    | root      | `scroll-area`                                                    | The frame.                                                 |
+| `ui-scroll-region__viewport`          | slot      | `scroll-area-viewport`                                           | The scrolling element.                                     |
 | `ui-scroll-region__overview`          | slot      |                                                                  | Decorative overview layer.                                 |
-| `ui-scroll-region__track`             | slot      |                                                                  | Overlay track of one axis, placed by the stylesheet.       |
-| `ui-scroll-region__thumb`             | slot      |                                                                  | Overlay thumb.                                             |
+| `ui-scroll-region__track`             | slot      | `scroll-area-scrollbar`                                          | Overlay track of one axis, placed by the stylesheet.       |
+| `ui-scroll-region__thumb`             | slot      | `scroll-area-thumb`                                              | Overlay thumb.                                             |
 | `data-axis`                           | attribute | `x`, `y`, `both`, `none`                                         | Scrolling axes.                                            |
 | `data-overscroll`                     | attribute | `contain`, `auto`                                                | Scroll chaining.                                           |
 | `data-scrollbar`                      | attribute | `native`, `overlay`                                              | Scrollbar mode.                                            |

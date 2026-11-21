@@ -82,13 +82,13 @@ Verification: `src/components/banner/banner.test.tsx`
 
 | Hook                     | Kind      | Values                                            | Description                                    |
 | ------------------------ | --------- | ------------------------------------------------- | ---------------------------------------------- |
-| `ui-banner`              | root      |                                                   | The banner (`<div>`, or `<span>` when inline). |
+| `ui-banner`              | root      | `alert`                                           | The banner (`<div>`, or `<span>` when inline). |
 | `ui-banner__icon`        | slot      |                                                   | The decorative tone glyph (also `ui-icon`).    |
 | `ui-banner__spinner`     | slot      |                                                   | The decorative busy indicator while pending.   |
 | `ui-banner__content`     | slot      |                                                   | Holds the title and description.               |
-| `ui-banner__title`       | slot      |                                                   | The title.                                     |
-| `ui-banner__description` | slot      |                                                   | The description.                               |
-| `ui-banner__actions`     | slot      |                                                   | The caller's actions.                          |
+| `ui-banner__title`       | slot      | `alert-title`                                     | The title.                                     |
+| `ui-banner__description` | slot      | `alert-description`                               | The description.                               |
+| `ui-banner__actions`     | slot      | `alert-action`                                    | The caller's actions.                          |
 | `ui-banner__dismiss`     | slot      |                                                   | The dismiss button (also `ui-button`).         |
 | `data-tone`              | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone and urgency.                              |
 | `data-inline`            | state     | `true`                                            | Rendered as phrasing content.                  |

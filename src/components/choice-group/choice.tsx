@@ -37,7 +37,10 @@ export interface ChoiceProps extends RefProps<HTMLDivElement>, BaseProps, AriaLa
   /** Replaces the root div while preserving behavior and hooks. */
   render?: ElementRender<'div', ChoiceRenderState> | undefined;
 }
-const hooks = createHooks('choice', ['button', 'indicator', 'label', 'description']);
+const hooks = createHooks('choice', ['button', 'indicator', 'label', 'description'], {
+  root: 'radio-group-item',
+  indicator: 'radio-group-indicator',
+});
 
 /** One radio or checkbox according to its ChoiceGroup's selection mode. */
 export function Choice({ ref, children, description, className, ...rest }: ChoiceProps) {

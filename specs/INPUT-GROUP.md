@@ -38,11 +38,11 @@ Verification: `src/components/message-composer/use-prompt-submission.test.tsx`
 
 | Hook                      | Kind      | Values                                                   | Description                             |
 | ------------------------- | --------- | -------------------------------------------------------- | --------------------------------------- |
-| `ui-input-group`          | root      |                                                          | The group containing all parts.         |
-| `ui-input-group__addon`   | slot      |                                                          | Text or actions next to the control.    |
-| `ui-input-group__control` | slot      |                                                          | The input or textarea.                  |
-| `ui-input-group__button`  | slot      |                                                          | A Button in an addon.                   |
-| `ui-input-group__text`    | slot      |                                                          | Text in an addon.                       |
+| `ui-input-group`          | root      | `input-group`                                            | The group containing all parts.         |
+| `ui-input-group__addon`   | slot      | `input-group-addon`                                      | Text or actions next to the control.    |
+| `ui-input-group__control` | slot      | `input-group-control`                                    | The input or textarea.                  |
+| `ui-input-group__button`  | slot      | `input-group-button`                                     | A Button in an addon.                   |
+| `ui-input-group__text`    | slot      | `input-group-text`                                       | Text in an addon.                       |
 | `data-focus-within`       | state     | `true`                                                   | Focus is inside the group.              |
 | `data-focus-visible`      | state     | `true`                                                   | Keyboard focus is inside the group.     |
 | `data-hovered`            | state     | `true`                                                   | The pointer is over the group.          |

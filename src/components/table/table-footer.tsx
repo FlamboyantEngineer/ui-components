@@ -109,7 +109,7 @@ export function TableFooter<T extends TableRow>(props: TableFooterProps<T>) {
   const strings = useUiStrings();
   const { structure, trailingContent } = props;
   return (
-    <AriaTableFooter className={hooks.slotClass('footer')}>
+    <AriaTableFooter {...hooks.slot('footer')}>
       {props.showSummary && hasTableFooter(structure) ? <TableSummaryRow {...props} /> : null}
       {trailingContent !== undefined ? (
         <Row

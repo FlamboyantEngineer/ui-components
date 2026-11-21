@@ -179,12 +179,12 @@ Verification: `e2e/list-row.spec.ts`
 
 | Hook                             | Kind      | Values                     | Description                                                        |
 | -------------------------------- | --------- | -------------------------- | ------------------------------------------------------------------ |
-| `ui-list`                        | root      |                            | The `<ul>`.                                                        |
+| `ui-list`                        | root      | `item-group`               | The `<ul>`.                                                        |
 | `data-divided`                   | state     | `true`                     | Dividers between rows requested.                                   |
 | `data-pending`                   | state     | `true`                     | Rows are loading or updating.                                      |
-| `ui-list-row`                    | root      |                            | The `<li>`.                                                        |
+| `ui-list-row`                    | root      | `item`                     | The `<li>`.                                                        |
 | `ui-list-row__primary`           | slot      |                            | The link, button or read-only body holding the row text.           |
-| `ui-list-row__trailing`          | slot      |                            | Trailing controls, after the primary control.                      |
+| `ui-list-row__trailing`          | slot      | `item-actions`             | Trailing controls, after the primary control.                      |
 | `data-kind`                      | attribute | `link`, `action`, `static` | What the primary control is.                                       |
 | `data-tone`                      | attribute | `neutral`, `danger`        | Semantic emphasis.                                                 |
 | `data-current`                   | state     | `true`                     | The current row.                                                   |
@@ -194,10 +194,10 @@ Verification: `e2e/list-row.spec.ts`
 | `data-focused`                   | state     | `true`                     | An action row's button has focus (React Aria).                     |
 | `data-focus-visible`             | state     | `true`                     | An action row's button has keyboard focus (React Aria).            |
 | `ui-list-row-content`            | root      |                            | The row text: leading media or icon, title and meta.               |
-| `ui-list-row-content__leading`   | slot      |                            | Decorative leading media.                                          |
-| `ui-list-row-content__text`      | slot      |                            | The title and meta lines (the `Label` label with `icon`).          |
-| `ui-list-row-content__title`     | slot      |                            | The title line.                                                    |
-| `ui-list-row-content__meta`      | slot      |                            | The meta line.                                                     |
+| `ui-list-row-content__leading`   | slot      | `item-media`               | Decorative leading media.                                          |
+| `ui-list-row-content__text`      | slot      | `item-content`             | The title and meta lines (the `Label` label with `icon`).          |
+| `ui-list-row-content__title`     | slot      | `item-title`               | The title line.                                                    |
+| `ui-list-row-content__meta`      | slot      | `item-description`         | The meta line.                                                     |
 | `ui-list-view`                   | root      |                            | The grid list (`role="grid"`).                                     |
 | `ui-list-view__drop-indicator`   | slot      |                            | Where dragged rows would land, between rows.                       |
 | `ui-list-view__loader`           | slot      |                            | The loading row after the rows while more load.                    |

@@ -18,13 +18,13 @@ Verification: `src/components/message/message.test.tsx`, `e2e/message.spec.ts`
 
 ## Hooks
 
-| Hook                  | Kind      | Values         | Description                         |
-| --------------------- | --------- | -------------- | ----------------------------------- |
-| `ui-message`          | root      |                | One message article.                |
-| `ui-message__avatar`  | slot      |                | The author's picture or initials.   |
-| `ui-message__header`  | slot      |                | The author, time or other metadata. |
-| `ui-message__content` | slot      |                | The article's body.                 |
-| `ui-message__footer`  | slot      |                | Metadata or actions.                |
-| `data-align`          | attribute | `start`, `end` | Logical alignment.                  |
-| `data-streaming`      | state     | `true`         | The article is busy.                |
-| `ui-message-group`    | root      |                | Consecutive messages of one author. |
+| Hook                  | Kind      | Values            | Description                         |
+| --------------------- | --------- | ----------------- | ----------------------------------- |
+| `ui-message`          | root      | `message`         | One message article.                |
+| `ui-message__avatar`  | slot      | `message-avatar`  | The author's picture or initials.   |
+| `ui-message__header`  | slot      | `message-header`  | The author, time or other metadata. |
+| `ui-message__content` | slot      | `message-content` | The article's body.                 |
+| `ui-message__footer`  | slot      | `message-footer`  | Metadata or actions.                |
+| `data-align`          | attribute | `start`, `end`    | Logical alignment.                  |
+| `data-streaming`      | state     | `true`            | The article is busy.                |
+| `ui-message-group`    | root      | `message-group`   | Consecutive messages of one author. |

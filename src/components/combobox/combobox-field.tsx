@@ -73,7 +73,7 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
       label={strings.clear}
       variant="bare"
       size="sm"
-      className={hooks.slotClass('clear')}
+      {...hooks.slot('clear')}
       // Pressing keeps focus in the input, so an open list neither closes nor reverts the text
       // under the pointer, which would take the button away mid-press.
       preventFocusOnPress
@@ -151,7 +151,7 @@ export function ComboboxField({
         ) : null}
         <Input
           ref={setRef}
-          className={hooks.slotClass('input')}
+          {...hooks.slot('input')}
           placeholder={placeholder}
           aria-busy={isPending || undefined}
           aria-autocomplete={completion ? 'both' : undefined}

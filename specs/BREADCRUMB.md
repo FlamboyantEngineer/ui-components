@@ -101,14 +101,14 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 | Hook                       | Kind      | Values                 | Description                                                       |
 | -------------------------- | --------- | ---------------------- | ----------------------------------------------------------------- |
-| `ui-breadcrumb`            | root      |                        | The `<nav>` landmark.                                             |
-| `ui-breadcrumb__list`      | slot      |                        | The ordered list (`<ol>`).                                        |
-| `ui-breadcrumb__item`      | slot      |                        | One crumb (`<li>`).                                               |
-| `ui-breadcrumb__link`      | slot      |                        | A crumb's link (`<a>`), or text (`<span>`) for the current one.   |
+| `ui-breadcrumb`            | root      | `breadcrumb`           | The `<nav>` landmark.                                             |
+| `ui-breadcrumb__list`      | slot      | `breadcrumb-list`      | The ordered list (`<ol>`).                                        |
+| `ui-breadcrumb__item`      | slot      | `breadcrumb-item`      | One crumb (`<li>`).                                               |
+| `ui-breadcrumb__link`      | slot      | `breadcrumb-link`      | A crumb's link (`<a>`), or text (`<span>`) for the current one.   |
 | `ui-breadcrumb__label`     | slot      |                        | A crumb's label text (also `ui-truncation-tooltip`).              |
 | `ui-breadcrumb__menu`      | slot      |                        | A crumb's menu of nearby places (also `ui-dropdown-menu`).        |
-| `ui-breadcrumb__overflow`  | slot      |                        | The overflow crumb holding the menu of hidden crumbs (an `<li>`). |
-| `ui-breadcrumb__separator` | slot      |                        | The decorative separator after a crumb (also `ui-icon`).          |
+| `ui-breadcrumb__overflow`  | slot      | `breadcrumb-ellipsis`  | The overflow crumb holding the menu of hidden crumbs (an `<li>`). |
+| `ui-breadcrumb__separator` | slot      | `breadcrumb-separator` | The decorative separator after a crumb (also `ui-icon`).          |
 | `data-size`                | attribute | `xs`, `sm`, `md`, `lg` | Type scale.                                                       |
 | `data-overflow`            | attribute | `truncate`, `menu`     | What a trail that runs out of room does.                          |
 | `data-collapsed`           | state     | `true`                 | An overflow menu holds every middle crumb.                        |

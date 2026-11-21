@@ -105,7 +105,7 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 | Hook                       | Kind      | Values                                | Description                                                                       |
 | -------------------------- | --------- | ------------------------------------- | --------------------------------------------------------------------------------- |
-| `ui-separator`             | root      |                                       | The rule: `<hr>`, or `<div>` when vertical or labelled.                           |
+| `ui-separator`             | root      | `separator`                           | The rule: `<hr>`, or `<div>` when vertical or labelled.                           |
 | `ui-separator__start-line` | slot      |                                       | The line before a label.                                                          |
 | `ui-separator__label`      | slot      |                                       | The label drawn across the line.                                                  |
 | `ui-separator__end-line`   | slot      |                                       | The line after a label.                                                           |

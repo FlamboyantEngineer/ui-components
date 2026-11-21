@@ -212,7 +212,7 @@ export function DisclosurePanel({ className, children, ...rest }: DisclosurePane
   const { level, hasHeading } = useContext(DisclosurePartsContext);
   const parentLevel = useContext(HeadingLevelContext);
   return (
-    <AriaDisclosurePanel {...rest} className={mergeClassNames(hooks.slotClass('panel'), className)}>
+    <AriaDisclosurePanel {...rest} {...hooks.slot('panel', undefined, className)}>
       <HeadingLevelContext value={hasHeading ? level : parentLevel}>
         <DisclosureContentScope>{children}</DisclosureContentScope>
       </HeadingLevelContext>

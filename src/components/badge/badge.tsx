@@ -100,7 +100,9 @@ export interface BadgeDotProps extends BadgeCommonProps {
 
 export type BadgeProps = BadgeLabelProps | BadgeCountProps | BadgeDotProps;
 
-const hooks = createHooks('badge', ['dot', 'start-icon', 'label', 'end-icon', 'accessible-label']);
+const hooks = createHooks('badge', ['dot', 'start-icon', 'label', 'end-icon', 'accessible-label'], {
+  root: 'badge',
+});
 
 function isCountBadge(props: BadgeProps): props is BadgeCountProps {
   return typeof props.count === 'number';

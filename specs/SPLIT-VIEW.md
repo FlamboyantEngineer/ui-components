@@ -116,9 +116,9 @@ Verification: `src/components/split-view/split-view.test.tsx`
 
 | Hook                       | Kind      | Values                                                               | Description                                                |
 | -------------------------- | --------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ui-split-view`            | root      |                                                                      | The split's `<div>`.                                       |
-| `ui-split-view__pane`      | slot      |                                                                      | A pane of a resizable split.                               |
-| `ui-resize-handle`         | root      |                                                                      | The separator.                                             |
+| `ui-split-view`            | root      | `resizable-panel-group`                                              | The split's `<div>`.                                       |
+| `ui-split-view__pane`      | slot      | `resizable-panel`                                                    | A pane of a resizable split.                               |
+| `ui-resize-handle`         | root      | `resizable-handle`                                                   | The separator.                                             |
 | `ui-resize-handle__grip`   | slot      |                                                                      | Decorative grip inside the separator.                      |
 | `ui-resize-handle__shield` | slot      |                                                                      | Viewport cover while dragging, portaled on the top layer.  |
 | `data-orientation`         | attribute | `horizontal`, `vertical`                                             | Split direction on the split; bar direction on the handle. |

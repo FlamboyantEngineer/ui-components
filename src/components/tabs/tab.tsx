@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
+import { dataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, RefProps, SelectableState } from '../../core/props.js';
 import { SelectionIndicator, Tab as AriaTab } from '../../primitives/index.js';
 import { normalizeCount } from '../../utils/count.js';
@@ -180,7 +180,7 @@ function TabItem({
         renaming: rename !== null && key !== undefined && rename.editingKey === key,
       })}
       onContextMenu={menuTarget ? undefined : onContextMenu}
-      className={mergeClassNames(hooks.slotClass('tab'), className)}
+      {...hooks.slot('tab', undefined, className)}
       aria-describedby={describedBy}
       render={toTabRender(extra ? renderWithProps(render, extra) : render)}
     >

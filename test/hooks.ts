@@ -33,7 +33,10 @@ interface CheckContext {
 }
 
 /** Third-party markers that are not part of any component's contract. */
-const ignoredData = /^data-(rac|react-aria-[a-z-]+|slot|testid|lab-[a-z-]+)$/;
+const ignoredData = /^data-(rac|react-aria-[a-z-]+|testid|lab-[a-z-]+)$/;
+
+/** The shadcn/ui slot name attribute, declared in the Values column of root and slot rows. */
+const dataSlotAttribute = 'data-slot';
 
 // Vitest runs from the repository root.
 const specsDir = join(process.cwd(), 'specs');
@@ -45,6 +48,40 @@ const registryHolder = globalThis as { [registryKey]?: Map<string, SpecHooks> };
 
 function isClassHook(entry: SpecHook): boolean {
   return entry.kind === 'root' || entry.kind === 'slot';
+}
+
+/**
+ * The `data-slot` names an element may carry: those its slot classes declare, else those its root
+ * classes declare, so a composed part (`ui-dialog__close`, also `ui-button`) carries the part's name.
+ */
+function expectedDataSlots(hookClasses: string[], owners: Map<string, SpecHooks>): Set<string> {
+  const declared = (classes: string[]) =>
+    classes.flatMap((token) =>
+      (owners.get(token)?.hooks ?? [])
+        .filter((entry) => entry.hook === token && isClassHook(entry))
+        .flatMap((entry) => entry.values ?? []),
+    );
+  const fromSlots = declared(hookClasses.filter((token) => token.includes('__')));
+  return new Set(fromSlots.length > 0 ? fromSlots : declared(hookClasses));
+}
+
+function checkDataSlot(
+  element: Element,
+  hookClasses: string[],
+  context: CheckContext,
+  label: string,
+) {
+  if (context.callerAttributes.has(dataSlotAttribute)) return;
+  const expected = expectedDataSlots(hookClasses, context.owners);
+  const actual = element.getAttribute(dataSlotAttribute);
+  if (actual === null) {
+    if (expected.size > 0)
+      context.problems.push(`${label} lacks data-slot ${[...expected].join(' or ')}`);
+  } else if (!expected.has(actual)) {
+    const allowed =
+      expected.size > 0 ? `, expected ${[...expected].join(' or ')}` : ', which no spec declares';
+    context.problems.push(`${label} has data-slot="${actual}"${allowed}`);
+  }
 }
 
 /** The data attributes and properties the specs owning an element allow, with their values. */
@@ -88,8 +125,10 @@ function checkElement(element: Element, context: CheckContext): void {
   if (hookClasses.length === 0) return;
   const allowed = collectAllowedHooks(findOwners(hookClasses, context));
   const label = hookClasses.join(' ');
+  checkDataSlot(element, hookClasses, context, label);
   for (const attribute of element.attributes) {
     if (!attribute.name.startsWith('data-') || ignoredData.test(attribute.name)) continue;
+    if (attribute.name === dataSlotAttribute) continue;
     if (context.callerAttributes.has(attribute.name)) continue;
     const problem = checkAttribute(attribute, allowed, label);
     if (problem) context.problems.push(problem);
@@ -157,6 +196,7 @@ export function specRegistry(): Map<string, SpecHooks> {
  * - every `ui-*` class is declared by some spec;
  * - every `data-*` attribute and `--ui-*` property on a hooked element is declared by a spec that owns
  *   one of that element's classes, with an allowed value;
+ * - a hooked element carries the `data-slot` name its classes declare, and none when they declare none;
  * - the spec's root renders, and so do the required slots.
  */
 export function expectHooksMatchSpec(

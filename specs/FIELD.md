@@ -504,16 +504,16 @@ Verification: `test/field-controller.test.tsx`, `e2e/field-controller.spec.ts`
 
 | Hook                             | Kind      | Values                                                                  | Description                                                      |
 | -------------------------------- | --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `ui-field`                       | root      |                                                                         | The field's `<div>`.                                             |
-| `ui-field__label`                | slot      |                                                                         | The `<label>`; the `control-only` layout draws none.             |
+| `ui-field`                       | root      | `field`                                                                 | The field's `<div>`.                                             |
+| `ui-field__label`                | slot      | `field-label`                                                           | The `<label>`; the `control-only` layout draws none.             |
 | `ui-field__required`             | slot      |                                                                         | The asterisk of a required field, inside the label.              |
 | `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
 | `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
 | `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-button`).                              |
 | `ui-field__help-tooltip`         | slot      |                                                                         | The help the menu's Help shows (also `ui-tooltip`).              |
 | `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
-| `ui-field__description`          | slot      |                                                                         | The description.                                                 |
-| `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
+| `ui-field__description`          | slot      | `field-description`                                                     | The description.                                                 |
+| `ui-field__message`              | slot      | `field-error`                                                           | The validation message; empty while valid.                       |
 | `ui-field__message-tooltip`      | slot      |                                                                         | The tooltip showing the message with `messageDisplay="tooltip"`. |
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
 | `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
@@ -533,5 +533,5 @@ Verification: `test/field-controller.test.tsx`, `e2e/field-controller.spec.ts`
 | `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-button`).                             |
 | `ui-field-previous-value`        | root      |                                                                         | A previous-value marker.                                         |
 | `ui-field-previous-value__value` | slot      |                                                                         | The previous value, in a `<del>` element.                        |
-| `ui-fieldset`                    | root      |                                                                         | A fieldset's `<fieldset>`.                                       |
-| `ui-fieldset__legend`            | slot      |                                                                         | The fieldset's `<legend>`.                                       |
+| `ui-fieldset`                    | root      | `field-set`                                                             | A fieldset's `<fieldset>`.                                       |
+| `ui-fieldset__legend`            | slot      | `field-legend`                                                          | The fieldset's `<legend>`.                                       |

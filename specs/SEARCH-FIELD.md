@@ -75,9 +75,9 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 | ------------------------------ | --------- | ------------------------------- | ------------------------------------------------------------------- |
 | `ui-search-field`              | root      |                                 | The field (`<div>`) holding the box.                                |
 | `ui-search-field__label`       | slot      |                                 | The visible `<label>` of the `label-control` layout.                |
-| `ui-search-field__group`       | slot      |                                 | The box, in both layouts.                                           |
-| `ui-search-field__glyph`       | slot      |                                 | The search glyph (also `ui-glyph`).                                 |
-| `ui-search-field__input`       | slot      |                                 | The `<input type="search">`.                                        |
+| `ui-search-field__group`       | slot      | `input-group`                   | The box, in both layouts.                                           |
+| `ui-search-field__glyph`       | slot      | `input-group-addon`             | The search glyph (also `ui-glyph`).                                 |
+| `ui-search-field__input`       | slot      | `input-group-control`           | The `<input type="search">`.                                        |
 | `ui-search-field__spinner`     | slot      |                                 | The busy indicator.                                                 |
 | `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-button`, or `ui-button`).                |
 | `ui-search-field__description` | slot      |                                 | The description of the `label-control` layout.                      |

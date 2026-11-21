@@ -742,7 +742,7 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 
 | Hook                             | Kind      | Values                          | Description                                                                                               |
 | -------------------------------- | --------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `ui-table`                       | root      |                                 | The element holding the toolbar, the scroll area and the page navigation.                                 |
+| `ui-table`                       | root      | `table-container`               | The element holding the toolbar, the scroll area and the page navigation.                                 |
 | `ui-table__toolbar`              | slot      |                                 | The controls above the grid: the search field, columns and export menus.                                  |
 | `ui-table__filter`               | slot      |                                 | The search field of a filterable table.                                                                   |
 | `ui-table__filter-icon`          | slot      |                                 | The search field's leading glyph (also `ui-icon`).                                                        |
@@ -750,19 +750,19 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `ui-table__filter-clear`         | slot      |                                 | The search field's clear button.                                                                          |
 | `ui-table__columns-menu`         | slot      |                                 | The columns menu's trigger (also `ui-dropdown-menu`).                                                     |
 | `ui-table__scroll`               | slot      |                                 | React Aria's resizable container; the scroll area.                                                        |
-| `ui-table__grid`                 | slot      |                                 | The grid (`<table>`, or a `div` when virtualized).                                                        |
-| `ui-table__header`               | slot      |                                 | The header row group.                                                                                     |
+| `ui-table__grid`                 | slot      | `table`                         | The grid (`<table>`, or a `div` when virtualized).                                                        |
+| `ui-table__header`               | slot      | `table-header`                  | The header row group.                                                                                     |
 | `ui-table__column-group`         | slot      |                                 | A group header cell, or a gap over ungrouped columns.                                                     |
-| `ui-table__column`               | slot      |                                 | One column header.                                                                                        |
+| `ui-table__column`               | slot      | `table-head`                    | One column header.                                                                                        |
 | `ui-table__column-content`       | slot      |                                 | A data column header's label, sort glyph and filter; it takes dropped columns.                            |
 | `ui-table__column-label`         | slot      |                                 | A column header's content; it drags a reorderable column.                                                 |
 | `ui-table__sort-icon`            | slot      |                                 | A sortable header's sort glyph (also `ui-icon`).                                                          |
 | `ui-table__column-filter`        | slot      |                                 | A filterable header's filter button (also `ui-button`).                                                   |
 | `ui-table__column-filter-dialog` | slot      |                                 | A column filter's anchored dialog (also `ui-dialog`).                                                     |
 | `ui-table__resizer`              | slot      |                                 | A resizable column's resizer.                                                                             |
-| `ui-table__body`                 | slot      |                                 | The body row group.                                                                                       |
-| `ui-table__row`                  | slot      |                                 | One data row; it also carries the caller's `getRowAttributes`.                                            |
-| `ui-table__cell`                 | slot      |                                 | One data row cell.                                                                                        |
+| `ui-table__body`                 | slot      | `table-body`                    | The body row group.                                                                                       |
+| `ui-table__row`                  | slot      | `table-row`                     | One data row; it also carries the caller's `getRowAttributes`.                                            |
+| `ui-table__cell`                 | slot      | `table-cell`                    | One data row cell.                                                                                        |
 | `ui-table__expand`               | slot      |                                 | A row's expand button in the tree column (also `ui-icon` inside).                                         |
 | `ui-table__expand-spacer`        | slot      |                                 | Holds the expand button's place on a row without nested rows.                                             |
 | `ui-table__editor`               | slot      |                                 | The default cell editor's input.                                                                          |
@@ -782,7 +782,7 @@ Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.sp
 | `ui-table__state-row`            | slot      |                                 | The full-width notice row.                                                                                |
 | `ui-table__state-cell`           | slot      |                                 | The notice row's spanning cell.                                                                           |
 | `ui-table__loader`               | slot      |                                 | The loading row after the rows while more load.                                                           |
-| `ui-table__footer`               | slot      |                                 | The summary row group (React Aria's table footer).                                                        |
+| `ui-table__footer`               | slot      | `table-footer`                  | The summary row group (React Aria's table footer).                                                        |
 | `ui-table__footer-row`           | slot      |                                 | The summary row.                                                                                          |
 | `ui-table__footer-cell`          | slot      |                                 | One summary cell.                                                                                         |
 | `ui-table__action-row`           | slot      |                                 | The final nonselectable ordinary-content row.                                                             |

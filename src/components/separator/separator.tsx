@@ -63,7 +63,7 @@ interface DrawOptions extends Pick<SeparatorProps, 'render' | 'decorative'> {
   orientation: Orientation;
 }
 
-const hooks = createHooks('separator', ['start-line', 'label', 'end-line']);
+const hooks = createHooks('separator', ['start-line', 'label', 'end-line'], { root: 'separator' });
 
 /** `as` or an `<hr>`, which turns into a `<div>` when it cannot hold the rule. */
 function resolveElement(

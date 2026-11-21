@@ -20,10 +20,10 @@ Verification: `src/components/bubble/bubble.test.tsx`, `e2e/bubble.spec.ts`
 
 | Hook                   | Kind      | Values                                                                       | Description                    |
 | ---------------------- | --------- | ---------------------------------------------------------------------------- | ------------------------------ |
-| `ui-bubble`            | root      |                                                                              | The bubble surface.            |
-| `ui-bubble__content`   | slot      |                                                                              | The supplied content.          |
-| `ui-bubble__reactions` | slot      |                                                                              | Reactions overlapping an edge. |
+| `ui-bubble`            | root      | `bubble`                                                                     | The bubble surface.            |
+| `ui-bubble__content`   | slot      | `bubble-content`                                                             | The supplied content.          |
+| `ui-bubble__reactions` | slot      | `bubble-reactions`                                                           | Reactions overlapping an edge. |
 | `data-align`           | attribute | `start`, `end`                                                               | Logical alignment.             |
 | `data-variant`         | attribute | `default`, `secondary`, `muted`, `tinted`, `outline`, `ghost`, `destructive` | Surface treatment.             |
 | `data-side`            | attribute | `top`, `bottom`                                                              | The edge reactions overlap.    |
-| `ui-bubble-group`      | root      |                                                                              | Consecutive bubbles, stacked.  |
+| `ui-bubble-group`      | root      | `bubble-group`                                                               | Consecutive bubbles, stacked.  |

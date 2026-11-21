@@ -32,7 +32,7 @@ export interface ButtonGroupProps extends BaseProps, AriaLabellingProps, RefProp
   render?: ElementRender<'div', ButtonGroupRenderState> | undefined;
 }
 
-const hooks = createHooks('button-group');
+const hooks = createHooks('button-group', [], { root: 'button-group' });
 
 /**
  * A labelled cluster of related buttons (`role="group"`): spaced or attached,

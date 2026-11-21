@@ -101,35 +101,35 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`
 
 ## Hooks
 
-| Hook                                | Kind     | Values | Description                                                         |
-| ----------------------------------- | -------- | ------ | ------------------------------------------------------------------- |
-| `ui-navigation-rail`                | root     |        | The rail's `<nav>`.                                                 |
-| `ui-navigation-rail__header`        | slot     |        | The header content and the collapse button.                         |
-| `ui-navigation-rail__toggle`        | slot     |        | The collapse button (also `ui-button`).                             |
-| `ui-navigation-rail__body`          | slot     |        | The sections.                                                       |
-| `ui-navigation-rail__footer`        | slot     |        | The footer content.                                                 |
-| `ui-navigation-rail__resize-handle` | slot     |        | The handle at the inline end (also `ui-resize-handle`).             |
-| `ui-navigation-rail__section`       | slot     |        | A section's `<div>`.                                                |
-| `ui-navigation-rail__section-title` | slot     |        | A section's title, visually hidden while collapsed.                 |
-| `ui-navigation-rail__list`          | slot     |        | The `<ul>` of a section or a group.                                 |
-| `ui-navigation-rail__item`          | slot     |        | The `<li>` of an item or a group.                                   |
-| `ui-navigation-rail__link`          | slot     |        | An item's link (also `ui-link`).                                    |
-| `ui-navigation-rail__icon`          | slot     |        | An item's or group's icon (also `ui-icon`).                         |
-| `ui-navigation-rail__monogram`      | slot     |        | The initials of an item without an icon, while collapsed.           |
-| `ui-navigation-rail__label`         | slot     |        | An item's or group's label, visually hidden while collapsed.        |
-| `ui-navigation-rail__count`         | slot     |        | An item's count (also `ui-badge`).                                  |
-| `ui-navigation-rail__group`         | slot     |        | A group's disclosure `<div>` (React Aria `Disclosure`).             |
-| `ui-navigation-rail__group-trigger` | slot     |        | A group's button.                                                   |
-| `ui-navigation-rail__indicator`     | slot     |        | A group's indicator glyph (also `ui-glyph`).                        |
-| `ui-navigation-rail__group-panel`   | slot     |        | A group's panel (React Aria `DisclosurePanel`).                     |
-| `data-collapsed`                    | state    | `true` | On the rail: it shows icons only.                                   |
-| `data-resizable`                    | state    | `true` | On the rail: it has a resize handle while expanded.                 |
-| `data-resizing`                     | state    | `true` | On the rail: a drag of the handle is in progress.                   |
-| `data-current`                      | state    | `true` | On an item: it is the current page; on a group's item: it holds it. |
-| `data-expanded`                     | state    | `true` | On a group: its panel shows (React Aria).                           |
-| `data-focus-visible-within`         | state    | `true` | On a group or its panel: keyboard focus inside (React Aria).        |
-| `data-hovered`                      | state    | `true` | On a group's button, while the pointer is over it (React Aria).     |
-| `data-pressed`                      | state    | `true` | On a group's button, while pressed (React Aria).                    |
-| `data-focused`                      | state    | `true` | On a group's button, while focused (React Aria).                    |
-| `data-focus-visible`                | state    | `true` | On a group's button, while focused by keyboard (React Aria).        |
-| `--ui-navigation-rail-width`        | property |        | On a resizable rail: its expanded width, in pixels.                 |
+| Hook                                | Kind     | Values                | Description                                                         |
+| ----------------------------------- | -------- | --------------------- | ------------------------------------------------------------------- |
+| `ui-navigation-rail`                | root     | `sidebar`             | The rail's `<nav>`.                                                 |
+| `ui-navigation-rail__header`        | slot     | `sidebar-header`      | The header content and the collapse button.                         |
+| `ui-navigation-rail__toggle`        | slot     | `sidebar-trigger`     | The collapse button (also `ui-button`).                             |
+| `ui-navigation-rail__body`          | slot     | `sidebar-content`     | The sections.                                                       |
+| `ui-navigation-rail__footer`        | slot     | `sidebar-footer`      | The footer content.                                                 |
+| `ui-navigation-rail__resize-handle` | slot     | `sidebar-rail`        | The handle at the inline end (also `ui-resize-handle`).             |
+| `ui-navigation-rail__section`       | slot     | `sidebar-group`       | A section's `<div>`.                                                |
+| `ui-navigation-rail__section-title` | slot     | `sidebar-group-label` | A section's title, visually hidden while collapsed.                 |
+| `ui-navigation-rail__list`          | slot     | `sidebar-menu`        | The `<ul>` of a section or a group.                                 |
+| `ui-navigation-rail__item`          | slot     | `sidebar-menu-item`   | The `<li>` of an item or a group.                                   |
+| `ui-navigation-rail__link`          | slot     | `sidebar-menu-button` | An item's link (also `ui-link`).                                    |
+| `ui-navigation-rail__icon`          | slot     |                       | An item's or group's icon (also `ui-icon`).                         |
+| `ui-navigation-rail__monogram`      | slot     |                       | The initials of an item without an icon, while collapsed.           |
+| `ui-navigation-rail__label`         | slot     |                       | An item's or group's label, visually hidden while collapsed.        |
+| `ui-navigation-rail__count`         | slot     | `sidebar-menu-badge`  | An item's count (also `ui-badge`).                                  |
+| `ui-navigation-rail__group`         | slot     |                       | A group's disclosure `<div>` (React Aria `Disclosure`).             |
+| `ui-navigation-rail__group-trigger` | slot     |                       | A group's button.                                                   |
+| `ui-navigation-rail__indicator`     | slot     |                       | A group's indicator glyph (also `ui-glyph`).                        |
+| `ui-navigation-rail__group-panel`   | slot     | `sidebar-menu-sub`    | A group's panel (React Aria `DisclosurePanel`).                     |
+| `data-collapsed`                    | state    | `true`                | On the rail: it shows icons only.                                   |
+| `data-resizable`                    | state    | `true`                | On the rail: it has a resize handle while expanded.                 |
+| `data-resizing`                     | state    | `true`                | On the rail: a drag of the handle is in progress.                   |
+| `data-current`                      | state    | `true`                | On an item: it is the current page; on a group's item: it holds it. |
+| `data-expanded`                     | state    | `true`                | On a group: its panel shows (React Aria).                           |
+| `data-focus-visible-within`         | state    | `true`                | On a group or its panel: keyboard focus inside (React Aria).        |
+| `data-hovered`                      | state    | `true`                | On a group's button, while the pointer is over it (React Aria).     |
+| `data-pressed`                      | state    | `true`                | On a group's button, while pressed (React Aria).                    |
+| `data-focused`                      | state    | `true`                | On a group's button, while focused (React Aria).                    |
+| `data-focus-visible`                | state    | `true`                | On a group's button, while focused by keyboard (React Aria).        |
+| `--ui-navigation-rail-width`        | property |                       | On a resizable rail: its expanded width, in pixels.                 |

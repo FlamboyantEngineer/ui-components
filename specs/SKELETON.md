@@ -77,7 +77,7 @@ Verification: `src/components/skeleton/skeleton.test.tsx`, `e2e/skeleton.spec.ts
 
 | Hook                     | Kind      | Values                        | Description                                                           |
 | ------------------------ | --------- | ----------------------------- | --------------------------------------------------------------------- |
-| `ui-skeleton`            | root      |                               | A placeholder block, or the loading region around content.            |
+| `ui-skeleton`            | root      | `skeleton`                    | A placeholder block, or the loading region around content.            |
 | `ui-skeleton__content`   | slot      |                               | The wrapped content, inert and hidden while loading.                  |
 | `ui-skeleton-text`       | root      |                               | A text placeholder.                                                   |
 | `ui-skeleton-text__line` | slot      |                               | One line of a text placeholder (also `ui-skeleton`).                  |

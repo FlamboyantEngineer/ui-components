@@ -179,9 +179,9 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 | Hook                  | Kind      | Values                         | Description                                              |
 | --------------------- | --------- | ------------------------------ | -------------------------------------------------------- |
-| `ui-avatar`           | root      |                                | The avatar (`<span>`).                                   |
-| `ui-avatar__image`    | slot      |                                | The picture (`<img>`), while it loads or has loaded.     |
-| `ui-avatar__initials` | slot      |                                | The initials, without a picture or after it failed.      |
+| `ui-avatar`           | root      | `avatar`                       | The avatar (`<span>`).                                   |
+| `ui-avatar__image`    | slot      | `avatar-image`                 | The picture (`<img>`), while it loads or has loaded.     |
+| `ui-avatar__initials` | slot      | `avatar-fallback`              | The initials, without a picture or after it failed.      |
 | `ui-avatar__glyph`    | slot      |                                | The group glyph's `<svg>` (also `ui-glyph`).             |
 | `data-size`           | attribute | `xs`, `sm`, `md`, `lg`, `fill` | Circle size.                                             |
 | `data-variant`        | attribute | `filled`, `outlined`           | Filled circle or ring.                                   |
@@ -192,12 +192,12 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 | `ui-avatar__surface` | slot | | The clipped picture or initials; the status dot sits outside it. |
 | `ui-avatar__indicator` | slot | | The decorative status badge, when there is a status. |
-| `ui-avatar__badge` | slot | | The caller's corner badge, hidden and inert, when there is a `badge`. |
+| `ui-avatar__badge` | slot | `avatar-badge` | The caller's corner badge, hidden and inert, when there is a `badge`. |
 | `data-placement` | attribute | `top-start`, `top-end`, `bottom-start`, `bottom-end` | On `ui-avatar__badge`: the corner it takes. |
 | `data-status` | attribute | | The `status`: `active`, `away`, `busy` or `idle`. |
 | `data-hovered` | state | `true` | While the pointer is over a pressable avatar (React Aria). |
 | `data-pressed` | state | `true` | While a pressable avatar is pressed (React Aria). |
 | `data-focused` | state | `true` | While a pressable avatar has focus (React Aria). |
 | `data-focus-visible` | state | `true` | While it has keyboard focus (React Aria). |
-| `ui-avatar__fallback` | slot | | The caller's fallback content. |
+| `ui-avatar__fallback` | slot | `avatar-fallback` | The caller's fallback content. |
 | `data-state` | state | `loading`, `loaded` | On the image. |

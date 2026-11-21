@@ -59,8 +59,8 @@ Verification: `src/components/checkbox/checkbox.test.tsx`
 
 | Hook                 | Kind      | Values                 | Description                                |
 | -------------------- | --------- | ---------------------- | ------------------------------------------ |
-| `ui-checkbox`        | root      |                        | The `<label>` around the input.            |
-| `ui-checkbox__box`   | slot      |                        | The drawn box.                             |
+| `ui-checkbox`        | root      | `checkbox`             | The `<label>` around the input.            |
+| `ui-checkbox__box`   | slot      | `checkbox-indicator`   | The drawn box.                             |
 | `ui-checkbox__glyph` | slot      |                        | The tick or dash glyph inside the box.     |
 | `ui-checkbox__label` | slot      |                        | The visible label text.                    |
 | `data-size`          | attribute | `xs`, `sm`, `md`, `lg` | Row size.                                  |

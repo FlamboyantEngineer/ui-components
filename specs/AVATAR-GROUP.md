@@ -137,9 +137,9 @@ Verification: `src/components/avatar-group/avatar-group.test.tsx`, `e2e/avatar-g
 
 | Hook                        | Kind      | Values                 | Description                                                 |
 | --------------------------- | --------- | ---------------------- | ----------------------------------------------------------- |
-| `ui-avatar-group`           | root      |                        | The group (`<span>`).                                       |
+| `ui-avatar-group`           | root      | `avatar-group`         | The group (`<span>`).                                       |
 | `ui-avatar-group__avatar`   | slot      |                        | Each visible person's avatar (also `ui-avatar`).            |
-| `ui-avatar-group__overflow` | slot      |                        | The `+N` count.                                             |
+| `ui-avatar-group__overflow` | slot      | `avatar-group-count`   | The `+N` count.                                             |
 | `ui-avatar-group__trigger`  | slot      |                        | The `<button>` around the stack with `action="list"`.       |
 | `ui-avatar-group__popover`  | slot      |                        | The popover listing everyone (also `ui-popover`).           |
 | `ui-avatar-group__list`     | slot      |                        | The `<ul>` of everyone.                                     |

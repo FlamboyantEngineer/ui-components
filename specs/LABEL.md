@@ -50,7 +50,7 @@ Verification: `src/components/label/label.test.tsx`, `e2e/label.spec.ts`
 
 | Hook               | Kind      | Values           | Description                                                    |
 | ------------------ | --------- | ---------------- | -------------------------------------------------------------- |
-| `ui-label`         | root      |                  | The `<span>` holding icon and label.                           |
+| `ui-label`         | root      | `label`          | The `<span>` holding icon and label.                           |
 | `ui-label__icon`   | slot      |                  | The leading `Icon` (also `ui-icon`).                           |
 | `ui-label__label`  | slot      |                  | The label text; with `truncate`, also `ui-truncation-tooltip`. |
 | `data-size`        | attribute | `sm`, `md`, `lg` | Icon box and gap size.                                         |

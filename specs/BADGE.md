@@ -183,7 +183,7 @@ Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-li
 
 | Hook                         | Kind      | Values / Meaning                                  |
 | ---------------------------- | --------- | ------------------------------------------------- |
-| `ui-badge`                   | root      |                                                   | The `<span>`.                                                               |
+| `ui-badge`                   | root      | `badge`                                           | The `<span>`.                                                               |
 | `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                                             |
 | `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).                                   |
 | `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                                       |

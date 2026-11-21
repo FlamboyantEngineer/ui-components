@@ -70,11 +70,7 @@ function TitleContent({
 }: Pick<ManagedCardHeaderProps, 'title' | 'action'>): ReactNode {
   if (!action.isActionable) return title;
   return (
-    <CardActionTitle
-      options={action.options}
-      actionRef={action.ref}
-      className={hooks.slotClass('action')}
-    >
+    <CardActionTitle options={action.options} actionRef={action.ref} {...hooks.slot('action')}>
       {title}
     </CardActionTitle>
   );

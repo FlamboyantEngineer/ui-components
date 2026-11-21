@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import type { PressEventProps } from '../../core/events.js';
 import type { GlyphComponent } from '../../core/glyphs.js';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Orientation, RefProps, Size } from '../../core/props.js';
 import { Button } from '../button/button.js';
 import type { AttachmentStatus } from './attachment-model.js';
@@ -51,7 +51,7 @@ export interface AttachmentActionProps
   icon: GlyphComponent;
 }
 
-const groupHooks = createHooks('attachment-group');
+const groupHooks = createHooks('attachment-group', [], { root: 'attachment-group' });
 
 /** The root of a composed attachment. */
 export function AttachmentFrame({
@@ -102,11 +102,6 @@ export function AttachmentActions({ className, ...rest }: AttachmentActionsProps
 /** One small ghost icon-only command, such as Remove or Download. */
 export function AttachmentAction({ className, ...rest }: AttachmentActionProps) {
   return (
-    <Button
-      {...rest}
-      className={mergeClassNames(hooks.slotClass('action'), className)}
-      size="sm"
-      variant="ghost"
-    />
+    <Button {...rest} {...hooks.slot('action', undefined, className)} size="sm" variant="ghost" />
   );
 }

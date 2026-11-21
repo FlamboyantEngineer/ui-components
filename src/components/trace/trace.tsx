@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
-import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { DisclosureStateContext } from '../../primitives/index.js';
@@ -37,16 +37,29 @@ export type TraceCollapsibleTriggerProps = CollapsibleTriggerProps;
 
 export type TraceCollapsibleContentProps = CollapsibleContentProps;
 
-const hooks = createHooks('trace', [
-  'line',
-  'icon',
-  'title',
-  'description',
-  'collapsible',
-  'collapsible-trigger',
-  'collapsible-indicator',
-  'collapsible-content',
-]);
+const hooks = createHooks(
+  'trace',
+  [
+    'line',
+    'icon',
+    'title',
+    'description',
+    'collapsible',
+    'collapsible-trigger',
+    'collapsible-indicator',
+    'collapsible-content',
+  ],
+  {
+    root: 'trace',
+    line: 'trace-line',
+    icon: 'trace-icon',
+    title: 'trace-title',
+    description: 'trace-description',
+    collapsible: 'trace-collapsible',
+    'collapsible-trigger': 'trace-collapsible-trigger',
+    'collapsible-content': 'trace-collapsible-content',
+  },
+);
 
 /** The record of what an agent did, one line per step, in order. */
 export function Trace({ className, ...props }: TraceProps) {
@@ -75,12 +88,7 @@ export function TraceDescription({ className, ...props }: TraceDescriptionProps)
 
 /** A step whose details show and hide, such as the agent's reasoning or a command's output. */
 export function TraceCollapsible({ className, ...props }: TraceCollapsibleProps) {
-  return (
-    <Collapsible
-      {...props}
-      className={mergeClassNames(hooks.slotClass('collapsible'), className)}
-    />
-  );
+  return <Collapsible {...props} {...hooks.slot('collapsible', undefined, className)} />;
 }
 
 /** The button that shows and hides a step's details: its line, then a chevron that turns open. */
@@ -92,10 +100,7 @@ export function TraceCollapsibleTrigger({
   const isExpanded = useContext(DisclosureStateContext)?.isExpanded ?? false;
   const indicator = useExpandGlyph(isExpanded);
   return (
-    <CollapsibleTrigger
-      {...props}
-      className={mergeClassNames(hooks.slotClass('collapsible-trigger'), className)}
-    >
+    <CollapsibleTrigger {...props} {...hooks.slot('collapsible-trigger', undefined, className)}>
       {children}
       <Glyph icon={indicator} className={hooks.slotClass('collapsible-indicator')} />
     </CollapsibleTrigger>
@@ -105,9 +110,6 @@ export function TraceCollapsibleTrigger({
 /** A step's details, which stay mounted while hidden. */
 export function TraceCollapsibleContent({ className, ...props }: TraceCollapsibleContentProps) {
   return (
-    <CollapsibleContent
-      {...props}
-      className={mergeClassNames(hooks.slotClass('collapsible-content'), className)}
-    />
+    <CollapsibleContent {...props} {...hooks.slot('collapsible-content', undefined, className)} />
   );
 }

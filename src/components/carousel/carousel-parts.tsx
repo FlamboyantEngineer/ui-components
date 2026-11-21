@@ -71,7 +71,7 @@ export function CarouselControls({
         icon={isRtl ? ChevronRightGlyph : ChevronLeftGlyph}
         label={strings.previousSlide}
         size="sm"
-        className={hooks.slotClass('previous')}
+        {...hooks.slot('previous')}
         aria-controls={viewportId}
         isDisabled={!canGoPrevious}
         focusableWhenDisabled
@@ -81,7 +81,7 @@ export function CarouselControls({
         icon={isRtl ? ChevronLeftGlyph : ChevronRightGlyph}
         label={strings.nextSlide}
         size="sm"
-        className={hooks.slotClass('next')}
+        {...hooks.slot('next')}
         aria-controls={viewportId}
         isDisabled={!canGoNext}
         focusableWhenDisabled

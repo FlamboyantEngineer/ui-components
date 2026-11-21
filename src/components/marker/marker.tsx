@@ -13,7 +13,11 @@ export interface MarkerIconProps extends ContainerProps<'span'>, BaseProps {}
 
 export interface MarkerContentProps extends ContainerProps<'span'>, BaseProps {}
 
-const hooks = createHooks('marker', ['icon', 'content']);
+const hooks = createHooks('marker', ['icon', 'content'], {
+  root: 'marker',
+  icon: 'marker-icon',
+  content: 'marker-content',
+});
 
 /**
  * A line that marks a place in a conversation, such as a day, the first unread message or a

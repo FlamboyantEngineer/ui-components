@@ -13,7 +13,7 @@ import {
   useId,
   useRef,
 } from 'react';
-import { measuredProperty, mergeClassNames } from '../../core/hooks.js';
+import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
@@ -125,7 +125,7 @@ export function CodeBlockCopyButton({ label, className, ...rest }: CodeBlockCopy
   return (
     <CopyButton
       {...rest}
-      className={mergeClassNames(hooks.slotClass('copy'), className)}
+      {...hooks.slot('copy', undefined, className)}
       label={label ?? strings.codeBlockCopy}
       size="sm"
     />

@@ -24,13 +24,13 @@ Verification: `src/components/trace/trace.test.tsx`, `e2e/trace.spec.ts`
 
 | Hook                              | Kind      | Values                        | Description                       |
 | --------------------------------- | --------- | ----------------------------- | --------------------------------- |
-| `ui-trace`                        | root      |                               | The steps, in order.              |
-| `ui-trace__line`                  | slot      |                               | One step's icon, title and more.  |
-| `ui-trace__icon`                  | slot      |                               | Decorative glyph or spinner.      |
-| `ui-trace__title`                 | slot      |                               | What the step did.                |
-| `ui-trace__description`           | slot      |                               | A detail, such as a duration.     |
-| `ui-trace__collapsible`           | slot      |                               | A step with details.              |
-| `ui-trace__collapsible-trigger`   | slot      |                               | The button showing the details.   |
+| `ui-trace`                        | root      | `trace`                       | The steps, in order.              |
+| `ui-trace__line`                  | slot      | `trace-line`                  | One step's icon, title and more.  |
+| `ui-trace__icon`                  | slot      | `trace-icon`                  | Decorative glyph or spinner.      |
+| `ui-trace__title`                 | slot      | `trace-title`                 | What the step did.                |
+| `ui-trace__description`           | slot      | `trace-description`           | A detail, such as a duration.     |
+| `ui-trace__collapsible`           | slot      | `trace-collapsible`           | A step with details.              |
+| `ui-trace__collapsible-trigger`   | slot      | `trace-collapsible-trigger`   | The button showing the details.   |
 | `ui-trace__collapsible-indicator` | slot      |                               | The trigger's decorative chevron. |
-| `ui-trace__collapsible-content`   | slot      |                               | The step's details.               |
+| `ui-trace__collapsible-content`   | slot      | `trace-collapsible-content`   | The step's details.               |
 | `data-status`                     | attribute | `running`, `pending`, `error` | The line's progress.              |

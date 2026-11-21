@@ -293,11 +293,11 @@ Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.
 
 | Hook                       | Kind      | Values                                    | Description                                                  |
 | -------------------------- | --------- | ----------------------------------------- | ------------------------------------------------------------ |
-| `ui-progress-bar`          | root      |                                           | The progress bar (`role="progressbar"`).                     |
-| `ui-progress-bar__label`   | slot      |                                           | The visible label, when `label` is set.                      |
-| `ui-progress-bar__value`   | slot      |                                           | The visible value text, when determinate and shown.          |
-| `ui-progress-bar__track`   | slot      |                                           | The track.                                                   |
-| `ui-progress-bar__fill`    | slot      |                                           | The fill; inline `width` is the percentage when determinate. |
+| `ui-progress-bar`          | root      | `progress`                                | The progress bar (`role="progressbar"`).                     |
+| `ui-progress-bar__label`   | slot      | `progress-label`                          | The visible label, when `label` is set.                      |
+| `ui-progress-bar__value`   | slot      | `progress-value`                          | The visible value text, when determinate and shown.          |
+| `ui-progress-bar__track`   | slot      | `progress-track`                          | The track.                                                   |
+| `ui-progress-bar__fill`    | slot      | `progress-indicator`                      | The fill; inline `width` is the percentage when determinate. |
 | `ui-progress-bar__ring`    | slot      |                                           | The decorative `<svg>` ring.                                 |
 | `ui-progress-bar__segment` | slot      |                                           | One unit of a segmented bar.                                 |
 | `data-state`               | attribute | `complete`, `current`, `pending`          | A segment's drawn state.                                     |
@@ -309,7 +309,7 @@ Verification: `src/components/progress-bar/meter.test.tsx`, `e2e/progress-meter.
 | `ui-meter__fill`           | slot      |                                           | The meter's fill; inline `width` is the percentage.          |
 | `ui-meter__ring`           | slot      |                                           | The circular meter's decorative `<svg>` ring.                |
 | `ui-meter__description`    | slot      |                                           | The meter's description, when `description` is set.          |
-| `ui-spinner`               | root      |                                           | The decorative busy glyph (`<span>`).                        |
+| `ui-spinner`               | root      | `spinner`                                 | The decorative busy glyph (`<span>`).                        |
 | `ui-spinner__ring`         | slot      |                                           | The spinner's decorative `<svg>` ring.                       |
 | `ui-spinner__fill`         | slot      |                                           | The spinner's quarter arc.                                   |
 | `data-size`                | attribute | `sm`, `md`, `lg`                          | Track thickness, ring size, or the spinner's box size.       |

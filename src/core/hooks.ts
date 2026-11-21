@@ -24,6 +24,12 @@ export interface RootHookOptions {
   props?: object | undefined;
 }
 
+/**
+ * shadcn/ui slot names (`data-slot`) for a component's root and slots, declared once beside the slot
+ * list. Parts without a counterpart are left out and render no `data-slot`.
+ */
+type DataSlotNames<Slot extends string> = Partial<Record<'root' | Slot, string>>;
+
 export interface ComponentHooks<Slot extends string> {
   /** The component name, e.g. `button`. */
   readonly name: string;
@@ -35,9 +41,28 @@ export interface ComponentHooks<Slot extends string> {
   slot(slot: Slot, data?: DataValues, className?: string): HookProps;
   /** The slot class, e.g. `ui-button__icon`. */
   slotClass(slot: Slot): string;
+  /** The declared shadcn/ui slot name of the root or a slot, e.g. `dialog-close`. */
+  dataSlot(part: 'root' | Slot): string | undefined;
 }
 
 const kebabName = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const dataSlotAttribute = 'data-slot';
+
+// The declared data-slot name of every hook class, so a component given another's slot class as
+// its className (`ui-dialog__close` on a Button) carries that part's name rather than its own.
+const dataSlotByClass = new Map<string, string>();
+
+/**
+ * The declared shadcn/ui `data-slot` name of the first hook class in `className`, slot classes
+ * first: for an element that is given a part's class without spreading the part's hooks.
+ */
+export function composedDataSlot(className: string | undefined): string | undefined {
+  if (!className) return undefined;
+  const tokens = className.split(/\s+/);
+  const slotToken = tokens.find((token) => token.includes('__') && dataSlotByClass.has(token));
+  const token = slotToken ?? tokens.find((token) => dataSlotByClass.has(token));
+  return token === undefined ? undefined : dataSlotByClass.get(token);
+}
 const dataAttributeName = /^data-[a-z0-9]+(?:[-:_.][a-z0-9]+)*$/i;
 
 function toKebabCase(key: string): string {
@@ -127,9 +152,12 @@ export function splitDataAttributes<P extends object>(
 
 /**
  * Creates the hooks for one component. Slot names are declared up front so a typo is a type error.
+ * `dataSlots` gives the shadcn/ui `data-slot` names the root and slots carry. On the root, a
+ * caller's own `data-slot` wins, then the name of a part class in the caller's `className`, so a
+ * part that renders another component (`ui-dialog__close` on a Button) carries the part's name.
  *
  * ```ts
- * const hooks = createHooks('button', ['icon', 'label']);
+ * const hooks = createHooks('button', ['icon', 'label'], { root: 'button' });
  * <button {...hooks.root({ className, props, data: { variant, size } })}>
  *   <span {...hooks.slot('label')}>{children}</span>
  * </button>
@@ -138,29 +166,49 @@ export function splitDataAttributes<P extends object>(
 export function createHooks<const Slot extends string = never>(
   name: string,
   slots: readonly Slot[] = [],
+  dataSlots: DataSlotNames<Slot> = {},
 ): ComponentHooks<Slot> {
   if (!kebabName.test(name)) throw new Error(`Invalid component hook name "${name}"`);
   for (const slot of slots) {
     if (!kebabName.test(slot)) throw new Error(`Invalid slot hook name "${name}__${slot}"`);
   }
+  for (const [part, slotName] of Object.entries(dataSlots)) {
+    if (slotName !== undefined && !kebabName.test(slotName)) {
+      throw new Error(`Invalid data-slot name "${slotName}" for ${name} ${part}`);
+    }
+  }
   const rootClass = `ui-${name}`;
   const slotClass = (slot: Slot) => `${rootClass}__${slot}`;
+  const dataSlot = (part: 'root' | Slot): string | undefined => dataSlots[part];
+  if (dataSlots.root !== undefined) dataSlotByClass.set(rootClass, dataSlots.root);
+  for (const slot of slots) {
+    const slotName = dataSlots[slot];
+    if (slotName !== undefined) dataSlotByClass.set(slotClass(slot), slotName);
+  }
   return {
     name,
     className: rootClass,
     root({ className, data, props } = {}) {
       const attributes: DataAttributes = props ? pickDataAttributes(props) : {};
+      // A caller's data-slot, or a part class in its className, names a composed part; the
+      // declared name names the component.
+      const slotName =
+        attributes[dataSlotAttribute] ?? composedDataSlot(className) ?? dataSlots.root;
+      if (slotName !== undefined) attributes[dataSlotAttribute] = slotName;
       // Explicit empty values also clear caller attributes spread before these hooks.
       if (data) writeDataAttributes(attributes, data, true);
       return { ...attributes, className: mergeClassNames(rootClass, className) };
     },
     slot(slot, data, className) {
       const attributes: DataAttributes = {};
+      const slotName = dataSlots[slot];
+      if (slotName !== undefined) attributes[dataSlotAttribute] = slotName;
       // As on the root, explicit empty values clear caller attributes spread before these hooks.
       if (data) writeDataAttributes(attributes, data, true);
       return { ...attributes, className: mergeClassNames(slotClass(slot), className) };
     },
     slotClass,
+    dataSlot,
   };
 }
 

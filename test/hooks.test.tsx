@@ -48,6 +48,39 @@ function Sample({
   );
 }
 
+const slotted = parseHookTable(
+  'SLOTTED',
+  `# Slotted
+
+## Hooks
+
+| Hook | Kind | Values | Description |
+| --- | --- | --- | --- |
+| \`ui-slotted\` | root | \`slotted\` | Root. |
+| \`ui-slotted__title\` | slot | \`slotted-title\` | Title. |
+| \`ui-slotted__close\` | slot | \`slotted-close\` | Close button (also \`ui-button\`). |
+| \`ui-slotted__note\` | slot | | Note. |
+`,
+);
+
+const slottedHooks = createHooks('slotted', ['title', 'close', 'note'], {
+  root: 'slotted',
+  title: 'slotted-title',
+  close: 'slotted-close',
+});
+
+function Slotted({ title = 'slotted-title' }: { title?: string }) {
+  return (
+    <div {...slottedHooks.root()}>
+      <h2 {...slottedHooks.slot('title')} data-slot={title}>
+        Title
+      </h2>
+      <span {...slottedHooks.slot('note')}>Note</span>
+      <span {...slottedHooks.slot('close')} className="ui-slotted__close ui-button" />
+    </div>
+  );
+}
+
 function failureOf(run: () => void): string {
   try {
     run();
@@ -90,6 +123,25 @@ describe('expectHooksMatchSpec', () => {
     const empty = render(<p />).container;
     expect(failureOf(() => expectHooksMatchSpec(empty, spec))).toContain(
       'none of the roots ui-sample rendered',
+    );
+  });
+
+  it("UIC-HOOKS-1.5 UIC-HOOKS-4.1 checks data-slot names, preferring a composed part's own", () => {
+    expectHooksMatchSpec(render(<Slotted />).container, slotted, { slots: 'all' });
+    const failure = failureOf(() =>
+      expectHooksMatchSpec(render(<Slotted title="card-title" />).container, slotted),
+    );
+    expect(failure).toContain('has data-slot="card-title", expected slotted-title');
+  });
+
+  it('UIC-HOOKS-1.5 UIC-HOOKS-4.1 fails on a missing or undeclared data-slot', () => {
+    const missing = render(<div className="ui-slotted" />).container;
+    expect(failureOf(() => expectHooksMatchSpec(missing, slotted))).toContain(
+      'ui-slotted lacks data-slot slotted',
+    );
+    const stray = render(<div className="ui-sample" data-slot="x" />).container;
+    expect(failureOf(() => expectHooksMatchSpec(stray, spec))).toContain(
+      'has data-slot="x", which no spec declares',
     );
   });
 
