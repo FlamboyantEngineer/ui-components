@@ -1,11 +1,7 @@
 /*
  * shadcn/ui stylesheet: dialogs.
- * A light scrim that blurs the page, a ringed panel without a heavy shadow.
+ * A light scrim (the blur is the reference sheet's), a ringed panel without a heavy shadow.
  */
-
-.ui-dialog:not([data-non-modal], [data-layer='dropdown']) {
-  backdrop-filter: blur(4px);
-}
 
 .ui-dialog[data-tone='neutral'] .ui-dialog__panel,
 .ui-dialog:not([data-tone]) .ui-dialog__panel {

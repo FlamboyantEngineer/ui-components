@@ -52,6 +52,8 @@
   --ref-scrim: rgb(31 35 40 / 0.45);
   /* Over a surface that is already dimmed, such as a drawer stacked on another. */
   --ref-scrim-weak: rgb(31 35 40 / 0.2);
+  /* The blur a modal's scrim gives the page behind it. */
+  --ref-scrim-blur: 4px;
 
   /* Accent and tones. Fills keep their contrast under --ref-on-fill in both themes; the plain tone
      is for text, borders and marks on the canvas. */

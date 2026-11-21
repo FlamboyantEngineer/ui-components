@@ -12,10 +12,20 @@
   background: var(--ref-scrim);
 }
 
-/* A modal opened over another dims the page less, since the one beneath is already dimmed. */
+/* A modal blurs the page behind its scrim; a non-modal dialog and a dropdown leave it sharp. */
+
+.ui-dialog:not([data-non-modal], [data-layer='dropdown']) {
+  backdrop-filter: blur(var(--ref-scrim-blur));
+}
+
+/*
+ * A modal opened over another dims the page less and blurs it no further, since the one beneath has
+ * already done both.
+ */
 
 .ui-dialog[data-stack-index]:not([data-stack-index='0']) {
   background: var(--ref-scrim-weak);
+  backdrop-filter: none;
 }
 
 .ui-dialog[data-entering] {
