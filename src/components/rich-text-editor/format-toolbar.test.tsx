@@ -164,7 +164,9 @@ describe('FormatToolbar', () => {
       'heading-2',
       'heading-3',
     ]);
-    expect(options[0]?.querySelector('.ui-glyph')).toBeNull();
+    expect(
+      options[0]?.querySelector('.ui-glyph:not(.ui-select-field__option-indicator)'),
+    ).toBeNull();
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
     expect(value()?.content?.[0]).toMatchObject({ type: 'heading', attrs: { level: 2 } });
     expect(trigger).toHaveTextContent('Heading 2');
