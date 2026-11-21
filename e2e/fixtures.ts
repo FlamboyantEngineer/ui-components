@@ -7,7 +7,7 @@ import {
 } from './axe-incomplete.js';
 
 export interface OpenLabOptions {
-  /** `none`, `reference` (default) or a stylesheet URL. */
+  /** `none`, `reference` (default), `shadcn` or a stylesheet URL. */
   stylesheet?: string;
   theme?: string;
   themeAttribute?: string;

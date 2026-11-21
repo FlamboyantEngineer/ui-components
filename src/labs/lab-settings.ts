@@ -3,9 +3,12 @@
 
 import type { UiStorage } from '../core/storage.js';
 
-/** The stylesheet a lab page loads: none, the library's reference sheet, or any URL. */
+/**
+ * The stylesheet a lab page loads: none, the library's reference sheet, its shadcn/ui sheet, or any
+ * URL.
+ */
 export type LabStylesheet =
-  { kind: 'none' } | { kind: 'reference' } | { kind: 'custom'; url: string };
+  { kind: 'none' } | { kind: 'reference' } | { kind: 'shadcn' } | { kind: 'custom'; url: string };
 
 export interface LabSettings {
   stylesheet: LabStylesheet;
@@ -30,6 +33,20 @@ const darkSchemeQuery = '(prefers-color-scheme: dark)';
 /** Where the reference option loads its stylesheet from, relative to the page. */
 const DEFAULT_REFERENCE_STYLESHEET = 'build/reference.css';
 
+/** Where the shadcn/ui option loads its stylesheet from, relative to the page. */
+const DEFAULT_SHADCN_STYLESHEET = 'build/shadcn.css';
+
+/** The URLs the named stylesheet options load. */
+interface LabStylesheetUrls {
+  reference: string;
+  shadcn: string;
+}
+
+const defaultStylesheetUrls: LabStylesheetUrls = {
+  reference: DEFAULT_REFERENCE_STYLESHEET,
+  shadcn: DEFAULT_SHADCN_STYLESHEET,
+};
+
 const stylesheetLinkId = 'ui-lab-stylesheet';
 
 const storageKeys = {
@@ -51,6 +68,7 @@ function parseStylesheet(value: string | null | undefined): LabStylesheet | null
   const trimmed = value.trim();
   if (trimmed === 'none') return { kind: 'none' };
   if (trimmed === 'reference') return { kind: 'reference' };
+  if (trimmed === 'shadcn') return { kind: 'shadcn' };
   return { kind: 'custom', url: trimmed };
 }
 
@@ -111,7 +129,7 @@ export function settingsSearch(settings: LabSettings, search = ''): string {
   return text ? `?${text}` : '';
 }
 
-function applyStylesheet(stylesheet: LabStylesheet, reference: string, doc: Document): void {
+function applyStylesheet(stylesheet: LabStylesheet, urls: LabStylesheetUrls, doc: Document): void {
   const root = doc.documentElement;
   const setState = (state: StylesheetState) => {
     root.dataset.labStylesheetState = state;
@@ -123,7 +141,7 @@ function applyStylesheet(stylesheet: LabStylesheet, reference: string, doc: Docu
     link?.remove();
     setState('none');
   } else {
-    const href = stylesheet.kind === 'reference' ? reference : stylesheet.url;
+    const href = stylesheet.kind === 'custom' ? stylesheet.url : urls[stylesheet.kind];
     let resolved: string;
     try {
       resolved = new URL(href, doc.baseURI).href;
@@ -174,11 +192,11 @@ export function watchColorScheme(onChange: () => void, view: Window = window): (
  */
 export function applySettings(
   settings: LabSettings,
-  reference: string = DEFAULT_REFERENCE_STYLESHEET,
+  urls: Partial<LabStylesheetUrls> = {},
   doc: Document = document,
 ): void {
   const root = doc.documentElement;
-  applyStylesheet(settings.stylesheet, reference, doc);
+  applyStylesheet(settings.stylesheet, stylesheetUrls(urls), doc);
   const attribute = isValidThemeAttribute(settings.themeAttribute)
     ? settings.themeAttribute
     : DEFAULT_THEME_ATTRIBUTE;
@@ -203,14 +221,34 @@ export interface LabSettingsOptions {
   storage: UiStorage | null;
   /** The reference option's stylesheet URL. Defaults to `build/reference.css`. */
   referenceStylesheet?: string | undefined;
+  /** The shadcn/ui option's stylesheet URL. Defaults to `build/shadcn.css`. */
+  shadcnStylesheet?: string | undefined;
+}
+
+/** The option URLs `options` names, with the defaults for those it leaves out. */
+function stylesheetUrls({
+  reference,
+  shadcn,
+}: {
+  reference?: string | undefined;
+  shadcn?: string | undefined;
+}): LabStylesheetUrls {
+  return {
+    reference: reference ?? defaultStylesheetUrls.reference,
+    shadcn: shadcn ?? defaultStylesheetUrls.shadcn,
+  };
 }
 
 /**
  * Reads the settings from the page's query string and `storage`, and applies them. A lab page runs
  * it from a classic script in its head, so the first paint already has the stylesheet and theme.
  */
-export function bootLabSettings({ storage, referenceStylesheet }: LabSettingsOptions): LabSettings {
+export function bootLabSettings({
+  storage,
+  referenceStylesheet,
+  shadcnStylesheet,
+}: LabSettingsOptions): LabSettings {
   const settings = readSettings(location.search, storage);
-  applySettings(settings, referenceStylesheet);
+  applySettings(settings, { reference: referenceStylesheet, shadcn: shadcnStylesheet });
   return settings;
 }

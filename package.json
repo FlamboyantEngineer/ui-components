@@ -58,6 +58,7 @@
       "default": "./dist/components/*/index.js"
     },
     "./reference.css": "./labs/build/reference.css",
+    "./shadcn.css": "./labs/build/shadcn.css",
     "./fonts.css": "./labs/build/fonts.css",
     "./package.json": "./package.json",
     "./chat/activity": {
@@ -166,6 +167,7 @@
     "src",
     "!src/**/*.test.*",
     "labs/build/reference.css",
+    "labs/build/shadcn.css",
     "labs/build/fonts.css",
     "labs/build/vendor/fonts",
     "bin/serve-labs.mjs",
@@ -192,7 +194,7 @@
     "test:labs": "playwright test",
     "check:references": "node tooling/bin.mjs check-references",
     "check:specs": "node tooling/bin.mjs check-specs",
-    "check:labs": "node scripts/check-labs.mjs && node scripts/check-reference-tokens.mjs",
+    "check:labs": "node scripts/check-labs.mjs && node scripts/check-reference-tokens.mjs && node scripts/check-shadcn-stylesheet.mjs",
     "check:package": "node scripts/check-package.mjs",
     "check:bundle-size": "node scripts/check-bundle-size.mjs",
     "check:public-types": "node scripts/check-public-types.mjs",

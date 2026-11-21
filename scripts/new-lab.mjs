@@ -2,7 +2,7 @@
 // Scaffolds a lab and regenerates labs/index.html.
 //   npm run new:lab -- <name> --title "Button" --tier Primitives --group Actions --description "…"
 //   npm run new:lab -- --sync     rewrite every lab page from its metadata, regenerate the index
-//                                 and the reference stylesheet's import list
+//                                 and the reference and shadcn/ui stylesheets' import lists
 
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,6 +16,7 @@ import {
   renderIndex,
   renderLabPage,
   renderReferenceIndex,
+  renderShadcnIndex,
 } from './lib/labs.mjs';
 
 const args = process.argv.slice(2);
@@ -29,7 +30,10 @@ function sync() {
   }
   writeFileSync(join(labsDir, 'index.html'), renderIndex(collectLabs()));
   writeFileSync(join(labsDir, 'reference.css'), renderReferenceIndex());
-  console.log(`Synced ${labs.length} lab pages, labs/index.html and labs/reference.css.`);
+  writeFileSync(join(labsDir, 'shadcn.css'), renderShadcnIndex());
+  console.log(
+    `Synced ${labs.length} lab pages, labs/index.html, labs/reference.css and labs/shadcn.css.`,
+  );
 }
 
 if (args.includes('--sync')) {
