@@ -31,13 +31,19 @@ const threeName = `3 questions: ${databaseQuestion.question}`;
 /** Answers all three questions with an option, Other and its words, ticks and free text. */
 async function answerThree(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('radio', { name: 'Other' }));
-  await user.type(await screen.findByRole('textbox', { name: 'Other answer' }), 'Redis');
+  await enter(user, await screen.findByRole('textbox', { name: 'Other answer' }), 'Redis');
   await user.click(screen.getByRole('button', { name: 'Next' }));
   await user.click(screen.getByRole('checkbox', { name: 'Search' }));
   await user.click(screen.getByRole('checkbox', { name: 'Other' }));
-  await user.type(await screen.findByRole('textbox', { name: 'Other answer' }), 'Offline');
+  await enter(user, await screen.findByRole('textbox', { name: 'Other answer' }), 'Offline');
   await user.click(screen.getByRole('button', { name: 'Next' }));
-  await user.type(screen.getByRole('textbox', { name: nameQuestion.question }), 'Notebook');
+  await enter(user, screen.getByRole('textbox', { name: nameQuestion.question }), 'Notebook');
+}
+
+/** Pastes the words into a field, which keeps the long flows here well inside the time limit. */
+async function enter(user: ReturnType<typeof userEvent.setup>, field: HTMLElement, text: string) {
+  await user.click(field);
+  await user.paste(text);
 }
 
 const threeAnswers = [
@@ -136,12 +142,11 @@ describe('ChatQuestion requests', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('The agent stopped.');
   });
 
-  it('UIC-CHAT-32.8 keeps every answer and the step when the answers are refused, and retries once', async () => {
+  it('UIC-CHAT-32.8 keeps every answer and the step when the answers are refused', async () => {
     const user = userEvent.setup();
     const onSubmit = vi
       .fn<() => Promise<void>>()
-      .mockRejectedValueOnce(new Error('The agent is busy.'))
-      .mockResolvedValueOnce(undefined);
+      .mockRejectedValueOnce(new Error('The agent is busy.'));
     const { container } = render(
       <ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />,
     );
@@ -162,8 +167,18 @@ describe('ChatQuestion requests', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('radio', { name: 'Other' })).toBeChecked();
     expect(screen.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Redis');
-    await user.click(screen.getByRole('button', { name: 'Next' }));
-    await user.click(screen.getByRole('button', { name: 'Next' }));
+  });
+
+  it('UIC-CHAT-32.8 sends the same answers again once refused answers are resubmitted', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValueOnce(new Error('The agent is busy.'))
+      .mockResolvedValueOnce(undefined);
+    render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />);
+    await answerThree(user);
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await screen.findByRole('alert');
     await user.click(screen.getByRole('button', { name: 'Submit' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onSubmit).toHaveBeenCalledTimes(2);
