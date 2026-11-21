@@ -1,0 +1,40 @@
+/*
+ * shadcn/ui stylesheet: menubars, after the menubar of shadcn/ui's "nova" style: a bar framed by a
+ * border with 10 pixel corners and 3 pixels of padding, 32 pixels high at the default size, its
+ * triggers 2 pixels apart in 14 pixel medium type with 6 pixel corners, on the muted fill while
+ * hovered, focused or open. The menus are the library menus.
+ */
+
+.ui-menubar {
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--ref-radius);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-menubar__trigger {
+  height: calc(var(--ref-control-height-md) - 8px);
+  padding: 2px 6px;
+  border-radius: calc(var(--radius) * 0.6);
+}
+
+.ui-menubar[data-size='xs'] .ui-menubar__trigger {
+  height: calc(var(--ref-control-height-xs) - 8px);
+  padding: 0 4px;
+}
+
+.ui-menubar[data-size='sm'] .ui-menubar__trigger {
+  height: calc(var(--ref-control-height-sm) - 8px);
+  padding: 0 6px;
+}
+
+.ui-menubar[data-size='lg'] .ui-menubar__trigger {
+  height: calc(var(--ref-control-height-lg) - 8px);
+  padding: 2px 8px;
+}
+
+.ui-menubar__trigger:is([data-hovered], [data-focused], [data-open], [data-pressed]) {
+  background: var(--muted);
+}

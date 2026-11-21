@@ -1,22 +1,74 @@
 /*
- * shadcn/ui stylesheet: menus.
- * A popover's rounded-lg panel with a hairline ring; items take the accent fill.
+ * shadcn/ui stylesheet: menus, after the dropdown menu of shadcn/ui's "nova" style, which its
+ * context menu and menubar menus share. A popover's rounded-lg panel with a hairline ring and the
+ * medium shadow, 4 pixels of padding, at least 128 pixels wide (144 for a context menu). Rows are
+ * 28 pixels high, with 6 pixels of padding and of gap, a 16 pixel icon, 14 pixel text and the
+ * accent fill under focus; a destructive row tints that fill instead. Section labels are 12 pixel
+ * medium muted text; separators run to the panel's edges. A checkable row keeps its check at its
+ * end, 8 pixels in. Shortcuts are 12 pixel muted text spaced wide, taking the accent text under
+ * focus.
  */
 
 .ui-menu-popover {
-  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  min-width: min(128px, calc(100vw - 18px));
+  border: 0;
   border-radius: var(--ref-radius);
   background: var(--popover);
   color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+}
+
+.ui-menu-popover[data-layer='context-menu'] {
+  min-width: 144px;
+}
+
+.ui-menu {
+  gap: 0;
+  min-width: min(128px, calc(100vw - 18px));
+  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+.ui-menu-popover .ui-menu {
+  min-width: 0;
+}
+
+.ui-menu-section {
+  gap: 0;
+}
+
+.ui-menu-section__header {
+  padding: 4px 6px;
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1 / 0.75);
 }
 
 .ui-menu-item {
-  border-radius: calc(var(--ref-radius) - 2px);
+  column-gap: 6px;
+  min-height: var(--ref-control-height-sm);
+  padding: 4px 6px;
+  border-radius: calc(var(--radius) * 0.8);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-menu[data-size='sm'] .ui-menu-item {
+  min-height: var(--ref-control-height-xs);
+  padding: 2px 6px;
+}
+
+.ui-menu[data-size='lg'] .ui-menu-item {
+  min-height: var(--ref-control-height-md);
+  padding: 6px 8px;
 }
 
 .ui-menu-item:is([data-focused], [data-open]) {
   background: var(--accent);
   color: var(--accent-foreground);
+}
+
+.ui-menu-item[data-pressed] {
+  background: var(--accent);
 }
 
 .ui-menu-item[data-focus-visible] {
@@ -26,4 +78,45 @@
 .ui-menu-item[data-tone='danger']:is([data-focused], [data-open]) {
   background: color-mix(in oklab, var(--destructive) 10%, transparent);
   color: var(--ref-danger);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-menu-item[data-tone='danger']:is([data-focused], [data-open]) {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+/* A checkable row keeps the room for its check at its end, where the check sits 8 pixels in. */
+.ui-menu-item:has(> .ui-menu-item__check) {
+  position: relative;
+  padding-inline-end: 32px;
+}
+
+.ui-menu-item__check {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 8px;
+  color: inherit;
+  transform: translateY(-50%);
+}
+
+.ui-menu-item__shortcut {
+  margin-inline-start: auto;
+  font-size: var(--ref-font-size-xs);
+  line-height: calc(1 / 0.75);
+  letter-spacing: 0.1em;
+}
+
+.ui-menu-item__shortcut .ui-shortcut__key {
+  line-height: calc(1 / 0.75);
+}
+
+.ui-menu-item__submenu-indicator {
+  width: 16px;
+  height: 16px;
+  margin-inline-start: auto;
+  color: inherit;
+}
+
+.ui-menu-separator {
+  margin: 4px -4px;
 }

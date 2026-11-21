@@ -1,16 +1,41 @@
 /*
- * shadcn/ui stylesheet: popovers.
- * rounded-lg with a hairline ring and a medium shadow.
+ * shadcn/ui stylesheet: popovers, after the popover of shadcn/ui's "nova" style.
+ * A rounded-lg panel at most 288 pixels wide with a hairline ring and the medium shadow, 10 pixels
+ * of padding and 10 between its header and body; the header stacks a medium title 2 pixels above
+ * its description.
  */
 
 .ui-popover {
-  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+  max-width: min(288px, calc(100vw - 24px));
+  border: 0;
   border-radius: var(--ref-radius);
   background: var(--popover);
   color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+  line-height: calc(1.25 / 0.875);
 }
 
 .ui-popover__arrow::before {
   border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
   background: var(--popover);
+}
+
+.ui-popover__header {
+  row-gap: 2px;
+}
+
+.ui-popover__dialog > .ui-popover__header {
+  padding: 10px 10px 0;
+}
+
+.ui-popover__title {
+  font-weight: var(--ref-font-weight-medium);
+  line-height: inherit;
+}
+
+.ui-popover__body,
+.ui-popover__dialog > .ui-popover__body:first-child {
+  padding: 10px;
 }

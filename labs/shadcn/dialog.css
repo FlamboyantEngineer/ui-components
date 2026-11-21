@@ -1,20 +1,163 @@
 /*
- * shadcn/ui stylesheet: dialogs.
- * A light scrim (the blur is the reference sheet's), a ringed panel without a heavy shadow.
+ * shadcn/ui stylesheet: dialogs, alert dialogs and sheets, after shadcn/ui's "nova" style.
+ * A light scrim (the blur is the reference sheet's). A dialog is a 14 pixel radius panel with a
+ * hairline ring and no shadow, 16 pixels of padding and 16 between its header, body and footer;
+ * the footer is a muted band under a border. The title is 16 pixel medium type, 8 pixels above the
+ * description (6 in an alert dialog, whose title keeps its line height); the close button is a 28
+ * pixel square in the corner. A small dialog is 384 pixels wide. The cancel button is drawn as the
+ * outline button. A sheet is a 384 pixel side panel with the large shadow and a border on its inner
+ * edge; its footer stacks full-width buttons, the primary one first.
  */
 
-.ui-dialog[data-tone='neutral'] .ui-dialog__panel,
-.ui-dialog:not([data-tone]) .ui-dialog__panel {
-  border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
-}
-
 .ui-dialog__panel {
+  position: relative;
+  border: 0;
   background: var(--popover);
   color: var(--popover-foreground);
-  box-shadow: none;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
+  line-height: calc(1.25 / 0.875);
+}
+
+/* An alert dialog keeps the page's line height. */
+.ui-dialog__panel:has(> .ui-dialog__dialog[role='alertdialog']) {
+  line-height: 1.5;
+}
+
+.ui-dialog[data-size='sm'] .ui-dialog__panel {
+  width: min(384px, 100%);
+}
+
+.ui-dialog__header {
+  padding: 16px 16px 0;
 }
 
 .ui-dialog__title {
   font-size: var(--ref-font-size-lg);
   font-weight: var(--ref-font-weight-medium);
+  line-height: 1;
+}
+
+.ui-dialog__description {
+  margin-top: 8px;
+}
+
+.ui-dialog__dialog[role='alertdialog'] .ui-dialog__title {
+  line-height: 1.5;
+}
+
+.ui-dialog__dialog[role='alertdialog'] .ui-dialog__description {
+  margin-top: 6px;
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-dialog__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: var(--ref-control-height-sm);
+  height: var(--ref-control-height-sm);
+  margin: 0;
+  border-radius: min(calc(var(--radius) * 0.8), 12px);
+}
+
+.ui-dialog__body {
+  padding: 16px;
+}
+
+.ui-dialog__header + .ui-dialog__footer {
+  margin-top: 16px;
+}
+
+.ui-dialog__footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--ref-radius-lg) var(--ref-radius-lg);
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* Footer buttons keep their own width; the cancel button is shadcn/ui's outline button. */
+:is(.ui-dialog__cancel, .ui-dialog__secondary, .ui-dialog__primary) {
+  min-width: 0;
+}
+
+.ui-dialog__footer .ui-dialog__cancel[data-variant='secondary'] {
+  border-color: var(--border);
+  background: var(--background);
+}
+
+.ui-dialog__footer .ui-dialog__cancel[data-variant='secondary']:is([data-hovered], [data-pressed]) {
+  background: var(--muted);
+}
+
+/* Sheets */
+.ui-dialog[data-side] .ui-dialog__panel {
+  box-shadow: var(--ref-shadcn-shadow-lg);
+}
+
+.ui-dialog:is([data-side='left'], [data-side='right']) .ui-dialog__panel {
+  width: min(384px, 75%);
+}
+
+.ui-dialog[data-side='right'] .ui-dialog__panel {
+  border-left: 1px solid var(--border);
+}
+
+.ui-dialog[data-side='left'] .ui-dialog__panel {
+  border-right: 1px solid var(--border);
+}
+
+.ui-dialog[data-side='top'] .ui-dialog__panel {
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-dialog[data-side='bottom'] .ui-dialog__panel {
+  border-top: 1px solid var(--border);
+}
+
+.ui-dialog[data-side] .ui-dialog__header {
+  padding: 16px;
+}
+
+.ui-dialog[data-side] .ui-dialog__title {
+  line-height: 1.5;
+}
+
+.ui-dialog[data-side] .ui-dialog__description {
+  margin-top: 2px;
+}
+
+.ui-dialog[data-side] .ui-dialog__close {
+  top: 12px;
+  right: 12px;
+}
+
+.ui-dialog[data-side] .ui-dialog__body {
+  padding: 16px 16px 0;
+}
+
+.ui-dialog[data-side] .ui-dialog__footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: auto;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.ui-dialog[data-side] .ui-dialog__actions {
+  flex-direction: column-reverse;
+  margin-inline-start: 0;
+}
+
+:where(.dark, [data-theme='dark']) .ui-dialog__footer .ui-dialog__cancel[data-variant='secondary'] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-dialog__footer
+  .ui-dialog__cancel[data-variant='secondary']:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
 }

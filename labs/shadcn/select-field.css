@@ -3,7 +3,8 @@
  * trigger and native select of shadcn/ui's "nova" style: a transparent fill (the input color at 30%
  * in the dark, 50% under the pointer), 10 pixels of padding before the value, 14 pixel type, the
  * ring color and a 3 pixel ring on focus, the destructive color and its tint when invalid, and
- * half opacity when disabled. The trigger keeps its width from the widest option.
+ * half opacity when disabled. The trigger keeps its width from the widest option. The native select
+ * hides the platform's arrow and shows its own chevron.
  */
 
 .ui-select-field__trigger,
@@ -22,7 +23,27 @@
 }
 
 .ui-select-field__native {
-  padding: 0 6px 0 10px;
+  padding: 0 32px 0 10px;
+  appearance: none;
+}
+
+/*
+ * The native select's own chevron replaces the platform's arrow: 16 pixels, 10 inside the select's
+ * end, in the muted color and dimmed with a disabled select. Its margins pull it over the select and
+ * give the room back, so whatever follows in the frame keeps its place.
+ */
+.ui-select-field__native-icon {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-inline: -30px 10px;
+  color: var(--ref-muted);
+  pointer-events: none;
+}
+
+.ui-select-field__native:disabled + .ui-select-field__native-icon {
+  opacity: 0.5;
 }
 
 .ui-select-field__trigger[data-hovered],
@@ -66,4 +87,51 @@
   ) {
   border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
+}
+
+/*
+ * The list, after the select content of the same style: a popover's ringed panel with the medium
+ * shadow, 4 pixels of padding and 28 pixel rows with 6 pixel padding and corners of 80% of the
+ * radius, on the accent fill while highlighted. Group labels are 12 pixel muted text and a rule
+ * between groups runs to the panel's edges.
+ */
+.ui-select-field__popover {
+  border: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    var(--ref-shadow);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-select-field__listbox,
+.ui-select-field__section {
+  gap: 0;
+}
+
+.ui-select-field__section:not(:first-child) {
+  margin: 4px -4px 0;
+  padding: 4px 4px 0;
+}
+
+.ui-select-field__section-header {
+  padding: 4px 6px;
+  font-weight: 400;
+  line-height: calc(1 / 0.75);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ui-select-field__option {
+  box-sizing: border-box;
+  column-gap: 6px;
+  min-height: var(--ref-control-height-sm);
+  padding: 4px 6px;
+  border-radius: calc(var(--radius) * 0.8);
+}
+
+.ui-select-field__option[data-focused] {
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
