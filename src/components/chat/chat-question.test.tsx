@@ -45,7 +45,7 @@ describe('ChatQuestion', () => {
     expect(root).not.toHaveAttribute('tabindex');
     const item = root.querySelector('.ui-chat-question__item');
     expect(item).toHaveAttribute('data-selection-mode', 'single');
-    expect(item?.querySelector('p.ui-chat-question__question')).toHaveTextContent(
+    expect(item?.querySelector('legend.ui-chat-question__question')).toHaveTextContent(
       databaseQuestion.question,
     );
     expect(screen.getByRole('tab', { name: 'Database' })).toHaveAttribute('aria-selected', 'true');
@@ -91,8 +91,11 @@ describe('ChatQuestion', () => {
   it('UIC-CHAT-31.4 draws a multiple-choice question as a checkbox group toggled with Space', async () => {
     const user = userEvent.setup();
     const { container } = renderPending([{ ...featuresQuestion, allowsOther: false }]);
-    const group = screen.getByRole('group', { name: featuresQuestion.question });
-    expect(group).toHaveClass('ui-chat-question__options');
+    // The question's fieldset and its checkbox group are both named by the question.
+    const group = screen
+      .getAllByRole('group', { name: featuresQuestion.question })
+      .find((candidate) => candidate.classList.contains('ui-chat-question__options'));
+    expect(group).toHaveClass('ui-questionnaire__choices');
     expect(container.querySelector('.ui-chat-question__item')).toHaveAttribute(
       'data-selection-mode',
       'multiple',

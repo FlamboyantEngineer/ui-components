@@ -86,7 +86,7 @@ export function QuestionnaireChoices({
   children,
   ...rest
 }: QuestionnaireChoicesProps) {
-  const { noteChange } = readQuestionnaire(
+  const { noteChange, isReadOnly } = readQuestionnaire(
     useContext(QuestionnaireContext),
     'QuestionnaireChoices',
   );
@@ -100,7 +100,7 @@ export function QuestionnaireChoices({
   const settings = {
     selectionMode,
     size: 'md',
-    isReadOnly: false,
+    isReadOnly,
     isDisabled: item.isDisabled,
     isInvalid: item.isInvalid,
     isRequired: item.isRequired,
@@ -113,6 +113,7 @@ export function QuestionnaireChoices({
     'aria-labelledby': item.titleId,
     isDisabled: item.isDisabled,
     isInvalid: item.isInvalid,
+    isReadOnly,
   };
   return (
     <ChoiceContext value={settings}>
@@ -176,6 +177,7 @@ export function QuestionnaireInput({
       {...hooks.slot('input', undefined, className)}
       type={type}
       name={item.name}
+      readOnly={questionnaire.isReadOnly}
       value={value}
       defaultValue={defaultValue}
       aria-labelledby={rest['aria-label'] ? labelledBy : (labelledBy ?? item.titleId)}

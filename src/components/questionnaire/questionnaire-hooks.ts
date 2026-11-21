@@ -29,6 +29,8 @@ export const questionnaireHooks = createHooks('questionnaire', [
 export interface QuestionnaireState {
   /** The questions show one at a time, in the order of `items`. */
   isStepping: boolean;
+  /** The answers show without letting the reader change them. */
+  isReadOnly: boolean;
   /** The question shown while stepping. */
   currentKey: string | null;
   /** The shown question's position from 0, and how many there are. */

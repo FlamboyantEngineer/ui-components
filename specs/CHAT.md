@@ -1204,21 +1204,21 @@ Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-quest
 
 ### UIC-CHAT-31.2 - Question
 
-A pending card shall show its question in `ui-chat-question__item`, which publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's text in a paragraph (`ui-chat-question__question`) and then its answer. The question's `header` labels its tab ([UIC-CHAT-33.1](#uic-chat-331---tabs)).
+A pending card shall render through the [Questionnaire](QUESTIONNAIRE.md) parts: a stepping `Questionnaire` (`ui-chat-question__form`) over the questions' ids, whose current question follows the card's step, which reads the answered questions from the card's drafts (UIC-QUESTIONNAIRE-1.4) and is read-only while the card is (UIC-QUESTIONNAIRE-1.5). Each question is a `QuestionnaireItem` (`ui-chat-question__item`, a `<fieldset>` named by the question, required while the reader can answer) that publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's text in its `QuestionnaireTitle` (`ui-chat-question__question`, a `<legend>`) and then its answer; every question is mounted in the shown panel and only the shown one is visible. The question's `header` labels its tab ([UIC-CHAT-33.1](#uic-chat-331---tabs)).
 
 Implementation: `src/components/chat/chat-question-item.tsx`, `labs/reference/chat.css`
 Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-question.spec.ts`
 
 ### UIC-CHAT-31.3 - Single choice
 
-A `single` question shall draw its options as a React Aria radio group (`ui-chat-question__options`, role `radiogroup`, named by the question's text), one `Radio` per option, in order, each in a `ui-chat-question__option` wrapper that publishes `data-selected` while chosen. The group follows the radio group pattern of the WAI-ARIA Authoring Practices: Tab enters it once, on the chosen radio or else the first; the arrow keys move to the next or previous radio, wrapping at the ends, and choose it; Space chooses the focused radio.
+A `single` question shall draw its options as `QuestionnaireChoices` (`ui-chat-question__options`, role `radiogroup`, named by the question's text), one `QuestionnaireChoice` radio per option, in order, each a `ui-chat-question__option` that publishes `data-selected` while chosen. The group follows the radio group pattern of the WAI-ARIA Authoring Practices: Tab enters it once, on the chosen radio or else the first; the arrow keys move to the next or previous radio, wrapping at the ends, and choose it; Space chooses the focused radio.
 
 Implementation: `src/components/chat/chat-question-choices.tsx`, `src/components/chat/chat-question-fields.tsx`
 Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-question.spec.ts`
 
 ### UIC-CHAT-31.4 - Multiple choice
 
-A `multiple` question shall draw its options as a React Aria checkbox group (`ui-chat-question__options`, role `group`, named by the question's text), one `Checkbox` per option, in order, each in a `ui-chat-question__option` wrapper that publishes `data-selected` while ticked. Each box is a Tab stop and Space toggles it.
+A `multiple` question shall draw its options as `QuestionnaireChoices` (`ui-chat-question__options`, role `group`, named by the question's text), one `QuestionnaireChoice` checkbox per option, in order, each a `ui-chat-question__option` that publishes `data-selected` while ticked. Each box is a Tab stop and Space toggles it.
 
 Implementation: `src/components/chat/chat-question-choices.tsx`, `src/components/chat/chat-question-fields.tsx`
 Verification: `src/components/chat/chat-question.test.tsx`, `e2e/chat-chat-question.spec.ts`
@@ -1811,11 +1811,12 @@ Verification: `e2e/assistant-chat.spec.ts`
 | `data-format`                               | attribute | `markdown`, `plain`                                                                      | On a text part: how it renders.                                                    |
 | `data-kind`                                 | attribute | `mention`, `command`, `reference`, `trigger`                                             | On a token: what it stands for.                                                    |
 | `ui-chat-question`                          | root      |                                                                                          | The card (`role="group"`).                                                         |
+| `ui-chat-question__form`                    | slot      |                                                                                          | The pending card's questionnaire (also `ui-questionnaire`).                        |
 | `ui-chat-question__tabs`                    | slot      |                                                                                          | The questions' tabs, the counter and the panel (also `ui-tabs`).                   |
 | `ui-chat-question__tab`                     | slot      |                                                                                          | One question's tab (also `ui-tabs__tab`).                                          |
 | `ui-chat-question__progress`                | slot      |                                                                                          | The counter after the tabs.                                                        |
 | `ui-chat-question__panel`                   | slot      |                                                                                          | The shown question's panel (also `ui-tabs__panel`).                                |
-| `ui-chat-question__item`                    | slot      |                                                                                          | The shown question.                                                                |
+| `ui-chat-question__item`                    | slot      |                                                                                          | One question (also `ui-questionnaire__item`).                                      |
 | `ui-chat-question__question`                | slot      |                                                                                          | The question's text.                                                               |
 | `ui-chat-question__answer`                  | slot      |                                                                                          | The options, the Other field and the preview.                                      |
 | `ui-chat-question__options`                 | slot      |                                                                                          | The radio group or checkbox group.                                                 |

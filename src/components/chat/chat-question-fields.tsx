@@ -1,11 +1,11 @@
 'use client';
 
-import { type KeyboardEvent, useId } from 'react';
+import { type KeyboardEvent, useContext } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Badge } from '../badge/badge.js';
-import { Checkbox } from '../checkbox/checkbox.js';
-import { Choice } from '../choice-group/choice-group.js';
+import { QuestionnaireChoice } from '../questionnaire/questionnaire.js';
+import { QuestionnaireContext, readQuestionnaire } from '../questionnaire/questionnaire-hooks.js';
 import { TextField } from '../text-field/text-field.js';
 import {
   chatQuestionHooks as hooks,
@@ -20,45 +20,42 @@ interface QuestionTextFieldProps {
   label: string;
   draft: QuestionDraft;
   onDraftChange: (draft: QuestionDraft) => void;
-  /** Shows the words without letting the reader change them, and asks for none. */
-  isReadOnly: boolean;
   /** Shows the field's validation now rather than once focus leaves it. */
   isRevealed: boolean;
-  /** Called on Enter, to go on to the next question or submit. */
-  onEnter: () => void;
   autoFocus?: boolean | undefined;
 }
 
 interface ChoiceOptionProps {
   option: ChatQuestionOption;
-  /** `single` draws a radio, `multiple` a checkbox. */
-  selectionMode: 'single' | 'multiple';
   isSelected: boolean;
   /** The option is the "Other" choice. */
   isOther?: boolean | undefined;
 }
 
-/** Enter without a modifier, outside an input method's composition. */
-function isPlainEnter(event: KeyboardEvent) {
+/** Enter outside an input method's composition: `plain` without a modifier, else `modified`. */
+function readEnter(event: KeyboardEvent): 'plain' | 'modified' | null {
+  if (event.key !== 'Enter' || isComposingKey(event.nativeEvent)) return null;
   const hasModifier = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey;
-  return event.key === 'Enter' && !hasModifier && !isComposingKey(event.nativeEvent);
+  return hasModifier ? 'modified' : 'plain';
 }
 
 /**
- * A required single-line field for the reader's own words. Its committed value follows its value,
- * so it is never dirty: no restore button, and Escape stays with the conversation around it.
+ * A required single-line field for the reader's own words, read-only with its questionnaire. Its
+ * committed value follows its value, so it is never dirty: no restore button, and Escape stays with
+ * the conversation around it. Enter goes on to the next question, or submits from the last, while
+ * the reader can answer.
  */
 export function QuestionTextField({
   slot,
   label,
   draft,
   onDraftChange,
-  isReadOnly,
   isRevealed,
-  onEnter,
   autoFocus,
 }: QuestionTextFieldProps) {
   const strings = useUiStrings();
+  const questionnaire = readQuestionnaire(useContext(QuestionnaireContext), 'QuestionTextField');
+  const { isReadOnly } = questionnaire;
   return (
     <TextField
       className={hooks.slotClass(slot)}
@@ -73,24 +70,36 @@ export function QuestionTextField({
       validationMode={isRevealed ? 'immediate' : 'blur'}
       autoFocus={autoFocus}
       onKeyDown={(event) => {
-        if (!isPlainEnter(event)) return;
+        const enter = readEnter(event);
+        if (enter === null) return;
+        // No Enter submits the form natively: only a plain one goes on, through the questionnaire.
         event.preventDefault();
-        onEnter();
+        if (enter === 'plain' && !isReadOnly) questionnaire.advance();
       }}
     />
   );
 }
 
 /**
- * One option: its radio or checkbox, named by the label and the "Recommended" badge, and described
- * by the option's description.
+ * One option, a `QuestionnaireChoice`: its radio or checkbox, named by the label and the
+ * "Recommended" badge, and described by the option's description.
  */
-export function ChoiceOption({ option, selectionMode, isSelected, isOther }: ChoiceOptionProps) {
+export function ChoiceOption({ option, isSelected, isOther }: ChoiceOptionProps) {
   const strings = useUiStrings();
-  const descriptionId = useId();
-  const describedBy = option.description ? descriptionId : undefined;
-  const label = (
-    <>
+  return (
+    <QuestionnaireChoice
+      {...hooks.slot('option', {
+        selected: isSelected,
+        recommended: option.isRecommended,
+        other: isOther,
+      })}
+      value={option.id}
+      description={
+        option.description ? (
+          <span className={hooks.slotClass('description')}>{option.description}</span>
+        ) : undefined
+      }
+    >
       {option.label}
       {option.isRecommended ? (
         <>
@@ -100,30 +109,6 @@ export function ChoiceOption({ option, selectionMode, isSelected, isOther }: Cho
           </Badge>
         </>
       ) : null}
-    </>
-  );
-  return (
-    <div
-      {...hooks.slot('option', {
-        selected: isSelected,
-        recommended: option.isRecommended,
-        other: isOther,
-      })}
-    >
-      {selectionMode === 'single' ? (
-        <Choice value={option.id} aria-describedby={describedBy}>
-          {label}
-        </Choice>
-      ) : (
-        <Checkbox value={option.id} aria-describedby={describedBy}>
-          {label}
-        </Checkbox>
-      )}
-      {option.description ? (
-        <span {...hooks.slot('description')} id={descriptionId}>
-          {option.description}
-        </span>
-      ) : null}
-    </div>
+    </QuestionnaireChoice>
   );
 }

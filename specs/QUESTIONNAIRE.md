@@ -25,18 +25,32 @@ Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questi
 Implementation: `src/components/questionnaire/questionnaire-answers.tsx`, `labs/reference/questionnaire.css`
 Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questionnaire.spec.ts`
 
+### UIC-QUESTIONNAIRE-1.4 - Answers kept outside the form
+
+With `answers` (controlled), the answers by question name, the questionnaire shall read which questions are answered from them instead of from its controls, for answers a caller keeps outside the form, such as drafts that outlive its controls: a question is answered while its list holds a non-empty value, and `onSubmit` receives those lists for the questions in the form. Without `answers` it reads the controls.
+
+Implementation: `src/components/questionnaire/use-questionnaire.ts`, `src/components/questionnaire/questionnaire.tsx`
+Verification: `src/components/questionnaire/questionnaire.test.tsx`
+
+### UIC-QUESTIONNAIRE-1.5 - Read-only
+
+With `isReadOnly` the form shall publish `data-read-only` and show its answers without letting the reader change them: the choices are read-only and an input is `readOnly`. The actions still step through the questions.
+
+Implementation: `src/components/questionnaire/questionnaire.tsx`, `src/components/questionnaire/questionnaire-answers.tsx`
+Verification: `src/components/questionnaire/questionnaire.test.tsx`
+
 ## UIC-QUESTIONNAIRE-2 - Actions
 
 ### UIC-QUESTIONNAIRE-2.1 - Previous, Skip and Next
 
-`QuestionnaireActions` shall render a `ui-questionnaire__actions` row for the action buttons, each a [Button](BUTTON.md) labelled by its children or the provider's string, that renders only where it applies. `QuestionnairePrevious` (`ui-questionnaire__previous`, a secondary button, `previous`) steps back while stepping past the first question. `QuestionnaireSkip` (`ui-questionnaire__skip`, a ghost button, `skip`) shows while stepping before the last question when the current one is not required; it marks it `skipped` and steps on. `QuestionnaireNext` (`ui-questionnaire__next`, a primary button, `next`) steps on while stepping before the last question.
+`QuestionnaireActions` shall render a `ui-questionnaire__actions` row for the action buttons, each a [Button](BUTTON.md) labelled by its children or the provider's string, that renders only where it applies. `QuestionnairePrevious` (`ui-questionnaire__previous`, a secondary button, `previous`) steps back while stepping past the first question. `QuestionnaireSkip` (`ui-questionnaire__skip`, a ghost button, `skip`) shows while stepping before the last question when the current one is not required; it marks it `skipped` and steps on. `QuestionnaireNext` (`ui-questionnaire__next`, a primary button, `next`) steps on while stepping before the last question. Each action takes `isDisabled`, `isPending`, `tooltip` and `focusableWhenDisabled` for its button, so a caller can keep Next or Submit unavailable, with a hint saying why, until a question has an answer.
 
 Implementation: `src/components/questionnaire/questionnaire-actions.tsx`, `labs/reference/questionnaire.css`
 Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questionnaire.spec.ts`
 
 ### UIC-QUESTIONNAIRE-2.2 - Required questions
 
-Next shall not leave a required question without an answer: it marks it invalid (`data-invalid` on the item), keeps it shown and focuses its answer. `QuestionnaireError` renders, only while its question is invalid, a `ui-questionnaire__error` `<p>` with its children or the provider's `questionAnswerToContinue` string, which then describes the question after its description, and an input in it publishes `aria-invalid`. The question stops being invalid as soon as it has an answer.
+Next shall not leave a required question without an answer: it marks it invalid (`data-invalid` on the item), keeps it shown and focuses its answer, unless focus is already in the question, which keeps it where it is. `QuestionnaireError` renders, only while its question is invalid, a `ui-questionnaire__error` `<p>` with its children or the provider's `questionAnswerToContinue` string, which then describes the question after its description, and an input in it publishes `aria-invalid`. The question stops being invalid as soon as it has an answer.
 
 Implementation: `src/components/questionnaire/questionnaire.tsx`, `src/components/questionnaire/use-questionnaire.ts`, `labs/reference/questionnaire.css`
 Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questionnaire.spec.ts`
@@ -67,6 +81,7 @@ Verification: `src/components/questionnaire/questionnaire.test.tsx`, `e2e/questi
 | `ui-questionnaire__next`        | slot      |                                     | On to the next question.             |
 | `ui-questionnaire__submit`      | slot      |                                     | Submits the answers.                 |
 | `data-stepping`                 | state     | `true`                              | Questions show one at a time.        |
+| `data-read-only`                | state     | `true`                              | The answers cannot be changed.       |
 | `data-status`                   | state     | `unanswered`, `answered`, `skipped` | A question's answer.                 |
 | `data-current`                  | state     | `true`                              | The question shown while stepping.   |
 | `data-required`                 | state     | `true`                              | The question needs an answer.        |

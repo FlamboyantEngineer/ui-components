@@ -14,6 +14,9 @@ interface QuestionnaireOptions {
   defaultCurrentKey: string | undefined;
   onCurrentKeyChange: ((key: string) => void) | undefined;
   onSubmit: ((answers: QuestionnaireAnswers) => void) | undefined;
+  /** The answers kept outside the form (controlled), read instead of its controls. */
+  answers: QuestionnaireAnswers | undefined;
+  isReadOnly: boolean;
 }
 
 /** What the form's questions hold now: which are answered and which are required. */
@@ -30,20 +33,27 @@ function readItems(form: HTMLFormElement | null) {
   );
 }
 
-/** The non-empty values each question submits, by name. */
-function readAnswers(form: HTMLFormElement | null): QuestionnaireAnswers {
-  const data = form ? new FormData(form) : null;
+/** The non-empty values each question submits, by name: from `given` when the caller keeps them. */
+function readAnswers(
+  form: HTMLFormElement | null,
+  given: QuestionnaireAnswers | undefined,
+): QuestionnaireAnswers {
+  const data = form && !given ? new FormData(form) : null;
   const answers: QuestionnaireAnswers = {};
   for (const item of readItems(form)) {
-    answers[item.name] = (data?.getAll(item.name) ?? [])
+    const values: unknown[] = given ? (given[item.name] ?? []) : (data?.getAll(item.name) ?? []);
+    answers[item.name] = values
       .filter((value): value is string => typeof value === 'string')
       .filter((value) => value.trim() !== '');
   }
   return answers;
 }
 
-function readSnapshot(form: HTMLFormElement | null): Snapshot {
-  const answers = readAnswers(form);
+function readSnapshot(
+  form: HTMLFormElement | null,
+  given: QuestionnaireAnswers | undefined,
+): Snapshot {
+  const answers = readAnswers(form, given);
   return {
     answered: new Set(Object.keys(answers).filter((name) => (answers[name] ?? []).length > 0)),
     required: new Set(
@@ -58,9 +68,13 @@ function isSameSet(a: ReadonlySet<string>, b: ReadonlySet<string>) {
   return a.size === b.size && [...a].every((name) => b.has(name));
 }
 
-/** Moves focus to a question's answer: its chosen radio, else its first control, else itself. */
+/**
+ * Moves focus to a question's answer: its chosen radio, else its first control, else itself. Focus
+ * already in the question stays where it is, such as in the field the reader pressed Enter in.
+ */
 function focusItem(form: HTMLFormElement | null, name: string | null) {
   const item = readItems(form).find((candidate) => candidate.name === name);
+  if (item?.contains(item.ownerDocument.activeElement)) return;
   const control =
     item?.querySelector<HTMLInputElement>('input[type="radio"]:checked:not(:disabled)') ??
     item?.querySelector<HTMLInputElement>('input:not([type="hidden"]):not(:disabled)');
@@ -68,14 +82,14 @@ function focusItem(form: HTMLFormElement | null, name: string | null) {
 }
 
 /** Re-reads the questions after every render and on every change, keeping the last equal read. */
-function useSnapshot() {
+function useSnapshot(given: QuestionnaireAnswers | undefined) {
   const formRef = useRef<HTMLFormElement>(null);
   const [snapshot, setSnapshot] = useState(emptySnapshot);
   // Bumped on each change to the answers: the next commit re-reads them.
   const [, setChanges] = useState(0);
   const noteChange = () => setChanges((count) => count + 1);
   const refresh = () => {
-    const next = readSnapshot(formRef.current);
+    const next = readSnapshot(formRef.current, given);
     setSnapshot((shown) =>
       isSameSet(shown.answered, next.answered) && isSameSet(shown.required, next.required)
         ? shown
@@ -97,7 +111,7 @@ function useSnapshot() {
  */
 export function useQuestionnaire(options: QuestionnaireOptions) {
   const items = options.items ?? null;
-  const { formRef, snapshot, refresh, noteChange } = useSnapshot();
+  const { formRef, snapshot, refresh, noteChange } = useSnapshot(options.answers);
   const [skipped, setSkipped] = useState<ReadonlySet<string>>(() => new Set());
   const [marked, setMarked] = useState<ReadonlySet<string>>(() => new Set());
   const [current, setCurrent] = useControllableState<string | undefined>(
@@ -138,13 +152,14 @@ export function useQuestionnaire(options: QuestionnaireOptions) {
     const read = refresh();
     const unanswered = missing(read, [...read.required]);
     const first = readItems(formRef.current).find((item) => unanswered.includes(item.name));
-    if (!first) return options.onSubmit?.(readAnswers(formRef.current));
+    if (!first) return options.onSubmit?.(readAnswers(formRef.current, options.answers));
     mark(unanswered);
     if (items?.includes(first.name)) goTo(items.indexOf(first.name));
     focusItem(formRef.current, first.name);
   };
   const state: QuestionnaireState = {
     isStepping: items !== null,
+    isReadOnly: options.isReadOnly,
     currentKey,
     position,
     count,
