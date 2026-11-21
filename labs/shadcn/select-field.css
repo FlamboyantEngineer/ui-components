@@ -3,7 +3,8 @@
  * trigger and native select of shadcn/ui's "nova" style: a transparent fill (the input color at 30%
  * in the dark, 50% under the pointer), 10 pixels of padding before the value, 14 pixel type, the
  * ring color and a 3 pixel ring on focus, the destructive color and its tint when invalid, and
- * half opacity when disabled. The trigger keeps its width from the widest option.
+ * half opacity when disabled. The trigger keeps its width from the widest option. The native select
+ * hides the platform's arrow and shows its own chevron.
  */
 
 .ui-select-field__trigger,
@@ -22,7 +23,27 @@
 }
 
 .ui-select-field__native {
-  padding: 0 6px 0 10px;
+  padding: 0 32px 0 10px;
+  appearance: none;
+}
+
+/*
+ * The native select's own chevron replaces the platform's arrow: 16 pixels, 10 inside the select's
+ * end, in the muted color and dimmed with a disabled select. Its margins pull it over the select and
+ * give the room back, so whatever follows in the frame keeps its place.
+ */
+.ui-select-field__native-icon {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-inline: -30px 10px;
+  color: var(--ref-muted);
+  pointer-events: none;
+}
+
+.ui-select-field__native:disabled + .ui-select-field__native-icon {
+  opacity: 0.5;
 }
 
 .ui-select-field__trigger[data-hovered],
