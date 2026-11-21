@@ -41,7 +41,9 @@ export interface PreviewTriggerProps
   trigger?: PreviewTriggerType | undefined;
 }
 
-const hooks = createHooks('preview-trigger', ['popover', 'content']);
+const hooks = createHooks('preview-trigger', ['popover', 'content'], {
+  root: 'hover-card-trigger',
+});
 
 /** The `PreviewTrigger` that opened a preview, which its actions dismiss. */
 export interface PreviewOwner {

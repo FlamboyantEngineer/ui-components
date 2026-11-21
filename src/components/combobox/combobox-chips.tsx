@@ -121,7 +121,7 @@ export function ComboboxChips({ label, options, known, size, isEditable }: Combo
     );
   return (
     <TagGroup
-      className={hooks.slotClass('chips')}
+      {...hooks.slot('chips')}
       aria-label={strings.selectedValues(label)}
       size={size}
       items={chosen}

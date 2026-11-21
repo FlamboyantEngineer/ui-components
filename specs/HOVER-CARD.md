@@ -111,13 +111,13 @@ Verification: `src/components/hover-card/preview-trigger.test.tsx`
 
 | Hook                          | Kind  | Values / Meaning                  |
 | ----------------------------- | ----- | --------------------------------- |
-| `ui-hover-card`               | root  |                                   | The card (React Aria `Popover`), portalled.                |
+| `ui-hover-card`               | root  | `hover-card-content`              | The card (React Aria `Popover`), portalled.                |
 | `ui-hover-card__arrow`        | slot  |                                   | The arrow pointing at the trigger.                         |
 | `data-placement`              | state | `top`, `bottom`, `left`, `right`  | The resolved side, on the card and the arrow (React Aria). |
 | `data-trigger`                | state | `PreviewTrigger`                  | What opened the card (React Aria).                         |
 | `data-entering`               | state | `true`                            | While the card opens (React Aria).                         |
 | `data-exiting`                | state | `true`                            | While the card closes (React Aria).                        |
-| `ui-preview-trigger`          | root  |                                   | The trigger button around the caller's content.            |
+| `ui-preview-trigger`          | root  | `hover-card-trigger`              | The trigger button around the caller's content.            |
 | `ui-preview-trigger__content` | slot  | Named dialog content              |
 | `ui-preview-trigger__popover` | slot  |                                   | The open card's popover (also `ui-hover-card` on hover).   |
 | `data-hovered`                | state | `true`                            | Pointer over the trigger (React Aria).                     |

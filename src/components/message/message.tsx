@@ -20,8 +20,14 @@ export interface MessageContentProps extends ContainerProps<'div'>, BaseProps {}
 
 export interface MessageFooterProps extends ContainerProps<'div'>, BaseProps {}
 
-const hooks = createHooks('message', ['avatar', 'header', 'content', 'footer']);
-const groupHooks = createHooks('message-group');
+const hooks = createHooks('message', ['avatar', 'header', 'content', 'footer'], {
+  root: 'message',
+  avatar: 'message-avatar',
+  header: 'message-header',
+  content: 'message-content',
+  footer: 'message-footer',
+});
+const groupHooks = createHooks('message-group', [], { root: 'message-group' });
 
 /** Consecutive messages of one author, such as one turn of a conversation. */
 export function MessageGroup({ className, ...props }: MessageGroupProps) {

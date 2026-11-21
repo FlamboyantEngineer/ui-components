@@ -156,26 +156,26 @@ Verification: `src/components/text-field/text-field-parts.test.tsx`, `e2e/text-f
 
 ## Hooks
 
-| Hook                         | Kind  | Values | Description                                                           |
-| ---------------------------- | ----- | ------ | --------------------------------------------------------------------- |
-| `ui-text-field`              | root  |        | The field's root (also `ui-field`).                                   |
-| `ui-text-field__box`         | slot  |        | The React Aria text field element around the control.                 |
-| `ui-text-field__group`       | slot  |        | The frame around adornments, the input and reveal.                    |
-| `ui-text-field__start`       | slot  |        | The start adornment.                                                  |
-| `ui-text-field__input`       | slot  |        | The `<input>` or `<textarea>`.                                        |
-| `ui-text-field__end`         | slot  |        | The end adornment.                                                    |
-| `ui-text-field__reveal`      | slot  |        | The reveal button (also `ui-button`).                                 |
-| `ui-text-field__count`       | slot  |        | The character count, inside the field's description.                  |
-| `ui-text-field__completions` | slot  |        | The completion list's popover (also `ui-completion-list`).            |
-| `data-framed`                | state | `true` | On the group: it holds adornments or a reveal button.                 |
-| `data-multiline`             | state | `true` | On the root: the field edits several lines.                           |
-| `data-autosize`              | state | `true` | On the root: the text area grows with its text.                       |
-| `data-display-value`         | state | `true` | On the root: the control shows the display value, not the value.      |
-| `data-invalid`               | state | `true` | On the box, the group and the control: invalid (React Aria).          |
-| `data-required`              | state | `true` | On the box: a value is required (React Aria).                         |
-| `data-readonly`              | state | `true` | On the box: read-only (React Aria).                                   |
-| `data-disabled`              | state | `true` | On the box, the group and the control: disabled (React Aria).         |
-| `data-hovered`               | state | `true` | On the group and the control: under the pointer (React Aria).         |
-| `data-focus-within`          | state | `true` | On the group: focus is inside it (React Aria).                        |
-| `data-focused`               | state | `true` | On the control: focused (React Aria).                                 |
-| `data-focus-visible`         | state | `true` | On the group and the control: focused from the keyboard (React Aria). |
+| Hook                         | Kind  | Values                | Description                                                           |
+| ---------------------------- | ----- | --------------------- | --------------------------------------------------------------------- |
+| `ui-text-field`              | root  |                       | The field's root (also `ui-field`).                                   |
+| `ui-text-field__box`         | slot  |                       | The React Aria text field element around the control.                 |
+| `ui-text-field__group`       | slot  | `input-group`         | The frame around adornments, the input and reveal.                    |
+| `ui-text-field__start`       | slot  | `input-group-addon`   | The start adornment.                                                  |
+| `ui-text-field__input`       | slot  | `input-group-control` | The `<input>` or `<textarea>`.                                        |
+| `ui-text-field__end`         | slot  | `input-group-addon`   | The end adornment.                                                    |
+| `ui-text-field__reveal`      | slot  |                       | The reveal button (also `ui-button`).                                 |
+| `ui-text-field__count`       | slot  |                       | The character count, inside the field's description.                  |
+| `ui-text-field__completions` | slot  |                       | The completion list's popover (also `ui-completion-list`).            |
+| `data-framed`                | state | `true`                | On the group: it holds adornments or a reveal button.                 |
+| `data-multiline`             | state | `true`                | On the root: the field edits several lines.                           |
+| `data-autosize`              | state | `true`                | On the root: the text area grows with its text.                       |
+| `data-display-value`         | state | `true`                | On the root: the control shows the display value, not the value.      |
+| `data-invalid`               | state | `true`                | On the box, the group and the control: invalid (React Aria).          |
+| `data-required`              | state | `true`                | On the box: a value is required (React Aria).                         |
+| `data-readonly`              | state | `true`                | On the box: read-only (React Aria).                                   |
+| `data-disabled`              | state | `true`                | On the box, the group and the control: disabled (React Aria).         |
+| `data-hovered`               | state | `true`                | On the group and the control: under the pointer (React Aria).         |
+| `data-focus-within`          | state | `true`                | On the group: focus is inside it (React Aria).                        |
+| `data-focused`               | state | `true`                | On the control: focused (React Aria).                                 |
+| `data-focus-visible`         | state | `true`                | On the group and the control: focused from the keyboard (React Aria). |

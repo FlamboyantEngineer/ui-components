@@ -226,7 +226,7 @@ export function TableHeader<T>(props: TableHeaderProps<T>) {
   return (
     <AriaTableHeader
       ref={headerRef}
-      className={hooks.slotClass('header')}
+      {...hooks.slot('header')}
       render={hasGroups ? createGroupedHeader(props) : undefined}
     >
       {structure.hasSelection ? (

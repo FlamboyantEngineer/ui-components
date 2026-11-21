@@ -135,13 +135,9 @@ export function SelectList(props: SelectListProps) {
             onInputChange={props.onFilterTextChange}
             filter={props.filtersLocally ? filter : undefined}
           >
-            <SearchField
-              className={hooks.slotClass('search')}
-              aria-label={strings.search}
-              autoFocus
-            >
+            <SearchField {...hooks.slot('search')} aria-label={strings.search} autoFocus>
               <Input
-                className={hooks.slotClass('search-input')}
+                {...hooks.slot('search-input')}
                 onFocus={moveCaretToEnd}
                 onKeyDownCapture={(event) => {
                   if (

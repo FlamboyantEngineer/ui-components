@@ -34,15 +34,15 @@ Verification: `src/components/message-scroller/message-scroller.test.tsx`, `e2e/
 
 ## Hooks
 
-| Hook                            | Kind      | Values         | Description                        |
-| ------------------------------- | --------- | -------------- | ---------------------------------- |
-| `ui-message-scroller`           | root      |                | Frame for the thread.              |
-| `ui-message-scroller__viewport` | slot      |                | Named native scroll viewport.      |
-| `ui-message-scroller__content`  | slot      |                | Message log.                       |
-| `ui-message-scroller__item`     | slot      |                | Direct message row.                |
-| `ui-message-scroller__spacer`   | slot      |                | Measured tail space for anchoring. |
-| `ui-message-scroller__button`   | slot      |                | Jump control when available.       |
-| `data-message-id`               | attribute |                | Stable item identifier.            |
-| `data-scroll-anchor`            | attribute | `true`         | A marked anchor on an item.        |
-| `data-streaming`                | state     | `true`         | The item is streaming.             |
-| `data-direction`                | attribute | `start`, `end` | Edge the button jumps toward.      |
+| Hook                            | Kind      | Values                      | Description                        |
+| ------------------------------- | --------- | --------------------------- | ---------------------------------- |
+| `ui-message-scroller`           | root      | `message-scroller`          | Frame for the thread.              |
+| `ui-message-scroller__viewport` | slot      | `message-scroller-viewport` | Named native scroll viewport.      |
+| `ui-message-scroller__content`  | slot      | `message-scroller-content`  | Message log.                       |
+| `ui-message-scroller__item`     | slot      | `message-scroller-item`     | Direct message row.                |
+| `ui-message-scroller__spacer`   | slot      |                             | Measured tail space for anchoring. |
+| `ui-message-scroller__button`   | slot      | `message-scroller-button`   | Jump control when available.       |
+| `data-message-id`               | attribute |                             | Stable item identifier.            |
+| `data-scroll-anchor`            | attribute | `true`                      | A marked anchor on an item.        |
+| `data-streaming`                | state     | `true`                      | The item is streaming.             |
+| `data-direction`                | attribute | `start`, `end`              | Edge the button jumps toward.      |

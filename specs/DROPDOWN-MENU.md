@@ -85,11 +85,11 @@ Verification: `src/components/dropdown-menu/dropdown-menu-content.test.tsx`, `e2
 
 ## Hooks
 
-| Hook                       | Kind  | Values | Description                                                           |
-| -------------------------- | ----- | ------ | --------------------------------------------------------------------- |
-| `ui-dropdown-menu`         | root  |        | The trigger, also `ui-button` or `ui-button`; a split button's group. |
-| `ui-dropdown-menu__caret`  | slot  |        | The caret glyph, inside the button's end icon (also `ui-glyph`).      |
-| `ui-dropdown-menu__action` | slot  |        | A split button's action (also `ui-button`).                           |
-| `ui-dropdown-menu__toggle` | slot  |        | A split button's chevron that opens the menu (also `ui-button`).      |
-| `data-open`                | state | `true` | The menu is open.                                                     |
-| `data-split`               | state | `true` | The root is a split button's group.                                   |
+| Hook                       | Kind  | Values                  | Description                                                           |
+| -------------------------- | ----- | ----------------------- | --------------------------------------------------------------------- |
+| `ui-dropdown-menu`         | root  | `dropdown-menu-trigger` | The trigger, also `ui-button` or `ui-button`; a split button's group. |
+| `ui-dropdown-menu__caret`  | slot  |                         | The caret glyph, inside the button's end icon (also `ui-glyph`).      |
+| `ui-dropdown-menu__action` | slot  |                         | A split button's action (also `ui-button`).                           |
+| `ui-dropdown-menu__toggle` | slot  |                         | A split button's chevron that opens the menu (also `ui-button`).      |
+| `data-open`                | state | `true`                  | The menu is open.                                                     |
+| `data-split`               | state | `true`                  | The root is a split button's group.                                   |

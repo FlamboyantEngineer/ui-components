@@ -86,17 +86,17 @@ function TableLoader({
 export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
   const { status, nodes, model, onLoadMore, isLoading, loadingMessage } = props;
   if (model.structure.columns.length === 0) {
-    return <AriaTableBody className={hooks.slotClass('body')} />;
+    return <AriaTableBody {...hooks.slot('body')} />;
   }
   if (status) {
     return (
-      <AriaTableBody className={hooks.slotClass('body')}>
+      <AriaTableBody {...hooks.slot('body')}>
         <TableStateRow status={status} props={props} />
       </AriaTableBody>
     );
   }
   return (
-    <AriaTableBody className={hooks.slotClass('body')}>
+    <AriaTableBody {...hooks.slot('body')}>
       <Collection items={nodes} dependencies={[model]}>
         {(node) => renderBodyNode(node, model)}
       </Collection>

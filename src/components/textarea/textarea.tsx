@@ -10,7 +10,7 @@ export interface TextareaProps
     RefProps<HTMLTextAreaElement>,
     Omit<ContainerProps<'textarea'>, 'children' | 'ref'> {}
 
-const hooks = createHooks('textarea');
+const hooks = createHooks('textarea', [], { root: 'textarea' });
 
 /** A native multiline input with interaction and styling hooks. Supply an accessible name. */
 export function Textarea({ className, ...props }: TextareaProps) {

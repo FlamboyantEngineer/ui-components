@@ -159,8 +159,8 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 | Hook                                    | Kind      | Values                   | Description                                         |
 | --------------------------------------- | --------- | ------------------------ | --------------------------------------------------- |
-| `ui-segmented-choice`                   | root      |                          | The group (`<div>`, a `radiogroup` or `toolbar`).   |
-| `ui-segmented-choice__segment`          | slot      |                          | One segment (`<button>`, role `radio` when single). |
+| `ui-segmented-choice`                   | root      | `toggle-group`           | The group (`<div>`, a `radiogroup` or `toolbar`).   |
+| `ui-segmented-choice__segment`          | slot      | `toggle-group-item`      | One segment (`<button>`, role `radio` when single). |
 | `ui-segmented-choice__indicator`        | slot      |                          | The selection indicator inside a selected segment.  |
 | `ui-segmented-choice__icon`             | slot      |                          | A segment's leading icon (also `ui-icon`).          |
 | `ui-segmented-choice__label`            | slot      |                          | A segment's label text.                             |

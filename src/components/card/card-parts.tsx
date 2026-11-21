@@ -2,7 +2,7 @@
 
 import { createContext, type ReactNode, type RefCallback, useContext } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { mergeClassNames } from '../../core/hooks.js';
+import { composedDataSlot, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { type HeadingLevel, useHeadingLevel } from '../section-header/section-header.js';
@@ -76,6 +76,7 @@ export function CardTitle({ ref, children, className, ...rest }: CardTitleProps)
       id={parts?.title.id}
       ref={titleRef}
       className={mergeClassNames(parts?.title.className, className) || undefined}
+      data-slot={composedDataSlot(parts?.title.className)}
     >
       {children}
     </Heading>
@@ -97,6 +98,7 @@ export function CardTitleAction({ children, className, ...rest }: CardTitleActio
       options={action.options}
       actionRef={action.ref}
       className={mergeClassNames(action.className, className)}
+      data-slot={composedDataSlot(action.className)}
     >
       {children}
     </CardActionTitle>

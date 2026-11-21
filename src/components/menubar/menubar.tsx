@@ -30,7 +30,7 @@ export interface MenubarMenuProps
   label: ReactNode;
 }
 
-const hooks = createHooks('menubar', ['trigger']);
+const hooks = createHooks('menubar', ['trigger'], { root: 'menubar', trigger: 'menubar-trigger' });
 
 /**
  * A menubar (`role="menubar"`): a row or column of top-level items that each open a menu, like an

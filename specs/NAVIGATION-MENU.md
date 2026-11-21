@@ -80,24 +80,24 @@ Verification: `e2e/navigation-menu.spec.ts`
 
 ## Hooks
 
-| Hook                                | Kind      | Values | Description                                                         |
-| ----------------------------------- | --------- | ------ | ------------------------------------------------------------------- |
-| `ui-navigation-menu`                | root      |        | The `<nav>` landmark.                                               |
-| `ui-navigation-menu__list`          | slot      |        | The `<ul>` of top-level items.                                      |
-| `ui-navigation-menu__item`          | slot      |        | An `<li>`: an item with a panel, or a top-level link.               |
-| `ui-navigation-menu__trigger`       | slot      |        | The button that opens and closes an item's panel.                   |
-| `ui-navigation-menu__indicator`     | slot      |        | The trigger's chevron.                                              |
-| `ui-navigation-menu__panel`         | slot      |        | An item's panel of links and content.                               |
-| `ui-navigation-menu__link`          | slot      |        | A link, top-level or in a panel.                                    |
-| `data-open`                         | attribute |        | On the root while a panel is open; on the item whose panel is open. |
-| `data-disabled`                     | attribute |        | On a disabled item and its trigger.                                 |
-| `data-current`                      | attribute |        | On the current page's link and its top-level item.                  |
-| `data-hovered`                      | state     |        | The trigger is hovered.                                             |
-| `data-pressed`                      | state     |        | The trigger is pressed.                                             |
-| `data-focused`                      | state     |        | The trigger has focus.                                              |
-| `data-focus-visible`                | state     |        | The trigger has keyboard focus.                                     |
-| `data-expanded`                     | state     |        | The trigger's panel is open.                                        |
-| `data-focus-visible-within`         | state     |        | Keyboard focus is inside the panel.                                 |
-| `data-focus-within`                 | state     |        | Focus is inside the panel.                                          |
-| `--ui-navigation-menu-panel-width`  | property  |        | The open panel's border-box width, in pixels.                       |
-| `--ui-navigation-menu-panel-height` | property  |        | The open panel's border-box height, in pixels.                      |
+| Hook                                | Kind      | Values                      | Description                                                         |
+| ----------------------------------- | --------- | --------------------------- | ------------------------------------------------------------------- |
+| `ui-navigation-menu`                | root      | `navigation-menu`           | The `<nav>` landmark.                                               |
+| `ui-navigation-menu__list`          | slot      | `navigation-menu-list`      | The `<ul>` of top-level items.                                      |
+| `ui-navigation-menu__item`          | slot      | `navigation-menu-item`      | An `<li>`: an item with a panel, or a top-level link.               |
+| `ui-navigation-menu__trigger`       | slot      | `navigation-menu-trigger`   | The button that opens and closes an item's panel.                   |
+| `ui-navigation-menu__indicator`     | slot      | `navigation-menu-indicator` | The trigger's chevron.                                              |
+| `ui-navigation-menu__panel`         | slot      | `navigation-menu-content`   | An item's panel of links and content.                               |
+| `ui-navigation-menu__link`          | slot      | `navigation-menu-link`      | A link, top-level or in a panel.                                    |
+| `data-open`                         | attribute |                             | On the root while a panel is open; on the item whose panel is open. |
+| `data-disabled`                     | attribute |                             | On a disabled item and its trigger.                                 |
+| `data-current`                      | attribute |                             | On the current page's link and its top-level item.                  |
+| `data-hovered`                      | state     |                             | The trigger is hovered.                                             |
+| `data-pressed`                      | state     |                             | The trigger is pressed.                                             |
+| `data-focused`                      | state     |                             | The trigger has focus.                                              |
+| `data-focus-visible`                | state     |                             | The trigger has keyboard focus.                                     |
+| `data-expanded`                     | state     |                             | The trigger's panel is open.                                        |
+| `data-focus-visible-within`         | state     |                             | Keyboard focus is inside the panel.                                 |
+| `data-focus-within`                 | state     |                             | Focus is inside the panel.                                          |
+| `--ui-navigation-menu-panel-width`  | property  |                             | The open panel's border-box width, in pixels.                       |
+| `--ui-navigation-menu-panel-height` | property  |                             | The open panel's border-box height, in pixels.                      |

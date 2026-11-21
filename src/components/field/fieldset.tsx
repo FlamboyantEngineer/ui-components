@@ -14,7 +14,7 @@ export interface FieldsetProps extends Omit<NativeProps<'fieldset'>, 'disabled'>
   children?: ReactNode;
 }
 
-const hooks = createHooks('fieldset', ['legend']);
+const hooks = createHooks('fieldset', ['legend'], { root: 'field-set', legend: 'field-legend' });
 
 /**
  * Groups fields under a legend on a native `<fieldset>`. Disabling it disables every field inside:

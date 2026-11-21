@@ -76,6 +76,7 @@ describe('Avatar corner badge', () => {
       'aria-hidden',
       'class',
       'data-placement',
+      'data-slot',
       'inert',
     ]);
   });

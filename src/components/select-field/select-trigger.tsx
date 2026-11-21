@@ -67,7 +67,7 @@ export function SelectTrigger({
           {previous.label}
         </FieldPreviousValue>
       ) : null}
-      <AriaButton ref={ref} className={hooks.slotClass('trigger')}>
+      <AriaButton ref={ref} {...hooks.slot('trigger')}>
         <span
           {...hooks.slot('value', {
             placeholder: !chosen && !summary,

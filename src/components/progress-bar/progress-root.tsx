@@ -164,7 +164,7 @@ export function ProgressText({
 }: ProgressTextProps) {
   return (
     <>
-      {!isEmptyNode(label) ? <Label className={textHooks.slotClass('label')}>{label}</Label> : null}
+      {!isEmptyNode(label) ? <Label {...textHooks.slot('label')}>{label}</Label> : null}
       {showValueLabel && !values.isIndeterminate ? (
         <span {...textHooks.slot('value')}>{values.valueText}</span>
       ) : null}

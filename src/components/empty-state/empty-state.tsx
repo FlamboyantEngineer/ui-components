@@ -38,7 +38,7 @@ const loadingRegion = { role: 'status', 'aria-live': 'polite', 'aria-atomic': tr
 function EmptyStateLead({ icon, isLoading }: { icon: IconSource; isLoading: boolean }) {
   if (isLoading) return <Spinner size="sm" className={hooks.slotClass('spinner')} />;
   if (!icon) return null;
-  return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
+  return <Icon {...toIconProps(icon)} {...hooks.slot('icon')} />;
 }
 
 /**

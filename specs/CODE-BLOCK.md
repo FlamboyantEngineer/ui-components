@@ -109,18 +109,18 @@ Verification: `src/components/code-block/code-block-parts.test.tsx`, `e2e/code-b
 
 | Hook                                 | Kind      | Values                                                           | Description                                                              |
 | ------------------------------------ | --------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `ui-code-block`                      | root      |                                                                  | The group around the header and the code.                                |
-| `ui-code-block__header`              | slot      |                                                                  | The row of the title and the actions.                                    |
-| `ui-code-block__title`               | slot      |                                                                  | The title, language or default name that names the block.                |
-| `ui-code-block__actions`             | slot      |                                                                  | Holds the Apply action and the Copy button.                              |
+| `ui-code-block`                      | root      | `code-block`                                                     | The group around the header and the code.                                |
+| `ui-code-block__header`              | slot      | `code-block-header`                                              | The row of the title and the actions.                                    |
+| `ui-code-block__title`               | slot      | `code-block-title`                                               | The title, language or default name that names the block.                |
+| `ui-code-block__actions`             | slot      | `code-block-actions`                                             | Holds the Apply action and the Copy button.                              |
 | `ui-code-block__apply`               | slot      |                                                                  | The Apply button (also `ui-button`).                                     |
-| `ui-code-block__copy`                | slot      |                                                                  | The Copy button (also `ui-copy-button`).                                 |
-| `ui-code-block__code`                | slot      |                                                                  | The `<pre>` holding the code; scrolls sideways.                          |
+| `ui-code-block__copy`                | slot      | `code-block-copy-button`                                         | The Copy button (also `ui-copy-button`).                                 |
+| `ui-code-block__code`                | slot      | `code-block-code`                                                | The `<pre>` holding the code; scrolls sideways.                          |
 | `ui-code-block__token`               | slot      |                                                                  | A typed token of highlighted code.                                       |
-| `ui-code-block__line`                | slot      |                                                                  | A line of a terminal block, or of numbered code.                         |
+| `ui-code-block__line`                | slot      | `code-block-line`                                                | A line of a terminal block, or of numbered code.                         |
 | `ui-code-block__line-number`         | slot      |                                                                  | A line's empty number, hidden from assistive technology.                 |
 | `ui-code-block__prompt`              | slot      |                                                                  | A command line's prompt, hidden from assistive technology.               |
-| `ui-code-block__footer`              | slot      |                                                                  | What follows composed code, such as a caption.                           |
+| `ui-code-block__footer`              | slot      | `code-block-footer`                                              | What follows composed code, such as a caption.                           |
 | `data-variant`                       | attribute | `code`, `terminal`, `default`, `added`, `removed`, `highlighted` | The kind of block; on a composed line, how it stands out.                |
 | `data-language`                      | attribute |                                                                  | The block's language.                                                    |
 | `data-token`                         | attribute |                                                                  | On a token: its type, from the caller's tokenizer.                       |

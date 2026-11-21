@@ -64,7 +64,10 @@ export interface KeyHintsProps
   appearance?: ShortcutAppearance | undefined;
 }
 
-const hooks = createHooks('shortcut', ['keys', 'chord', 'key', 'text']);
+const hooks = createHooks('shortcut', ['keys', 'chord', 'key', 'text'], {
+  root: 'kbd-group',
+  key: 'kbd',
+});
 const hintHooks = createHooks('key-hints', ['hint', 'action']);
 
 /** One chord's keys, as keycaps or text, with the platform separator between them. */

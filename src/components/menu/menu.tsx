@@ -101,13 +101,11 @@ export interface SubmenuTriggerProps {
   children: ReactElement[];
 }
 
-const hooks = createHooks('menu', [
-  'search',
-  'search-input',
-  'empty',
-  'load-more',
-  'load-more-spinner',
-]);
+const hooks = createHooks(
+  'menu',
+  ['search', 'search-input', 'empty', 'load-more', 'load-more-spinner'],
+  { root: 'dropdown-menu-content' },
+);
 
 const MenuActionContext = createContext<MenuProps['onAction']>(undefined);
 

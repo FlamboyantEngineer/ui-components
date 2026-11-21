@@ -141,7 +141,7 @@ function CommandPaletteDialog({
       ref={dialogRef}
       id={id}
       aria-label={label ?? strings.commandPalette}
-      className={hooks.slotClass('dialog')}
+      {...hooks.slot('dialog')}
       render={(props) => <section {...props} onKeyDownCapture={onKeyDownCapture} />}
     >
       {/* Its own place to work while the page beneath loads. */}
@@ -152,9 +152,9 @@ function CommandPaletteDialog({
           onInputChange={setQuery}
           filter={pages.usesOwnFilter && filter !== null ? (filter ?? contains) : undefined}
         >
-          <SearchField className={hooks.slotClass('search')} aria-label={hint} autoFocus>
+          <SearchField {...hooks.slot('search')} aria-label={hint} autoFocus>
             <Glyph icon={SearchGlyph} className={hooks.slotClass('search-icon')} />
-            <Input ref={inputRef} className={hooks.slotClass('search-input')} placeholder={hint} />
+            <Input ref={inputRef} {...hooks.slot('search-input')} placeholder={hint} />
           </SearchField>
           <MenuContext value={menuContext}>
             <Menu
@@ -263,7 +263,7 @@ export function CommandPalette({
       isDismissable
       style={{ position: 'fixed', inset: 0, zIndex }}
     >
-      <AriaModal className={hooks.slotClass('panel')}>
+      <AriaModal {...hooks.slot('panel')}>
         <CommandPaletteDialog
           key={opening}
           {...dialogProps}

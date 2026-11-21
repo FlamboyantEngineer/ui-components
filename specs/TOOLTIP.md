@@ -162,7 +162,7 @@ Verification: `src/components/tooltip/truncation-tooltip.test.tsx`, `e2e/tooltip
 
 | Hook                            | Kind      | Values / Meaning                           |
 | ------------------------------- | --------- | ------------------------------------------ |
-| `ui-tooltip`                    | root      |                                            | The panel (`role="tooltip"`), portalled.                                                |
+| `ui-tooltip`                    | root      | `tooltip-content`                          | The panel (`role="tooltip"`), portalled.                                                |
 | `ui-tooltip__arrow`             | slot      |                                            | The arrow, positioned against the trigger.                                              |
 | `ui-tooltip__content`           | slot      |                                            | The hint content.                                                                       |
 | `data-variant`                  | attribute | `default`, `info`                          | Hint for a control or explanatory note.                                                 |

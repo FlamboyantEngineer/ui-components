@@ -100,18 +100,16 @@ export interface MenuSectionProps
 
 export type MenuSeparatorProps = RefProps<HTMLElement> & Omit<BaseProps, 'id'>;
 
-const itemHooks = createHooks('menu-item', [
-  'check',
-  'icon',
-  'spinner',
-  'label',
-  'description',
-  'shortcut',
-  'trailing',
-  'submenu-indicator',
-]);
-const sectionHooks = createHooks('menu-section', ['header']);
-const separatorHooks = createHooks('menu-separator');
+const itemHooks = createHooks(
+  'menu-item',
+  ['check', 'icon', 'spinner', 'label', 'description', 'shortcut', 'trailing', 'submenu-indicator'],
+  { root: 'dropdown-menu-item', shortcut: 'dropdown-menu-shortcut' },
+);
+const sectionHooks = createHooks('menu-section', ['header'], {
+  root: 'dropdown-menu-group',
+  header: 'dropdown-menu-label',
+});
+const separatorHooks = createHooks('menu-separator', [], { root: 'dropdown-menu-separator' });
 
 interface MenuItemContentProps extends Pick<
   MenuItemProps,
@@ -249,7 +247,7 @@ function MenuItemContent({
         // The chord is part of the row's text, so it must not also become its description.
         <KeyboardContext value={null}>
           {' '}
-          <Shortcut chord={shortcut} className={itemHooks.slotClass('shortcut')} />
+          <Shortcut chord={shortcut} {...itemHooks.slot('shortcut')} />
         </KeyboardContext>
       ) : null}
       {isEmptyNode(trailing) ? null : (
@@ -337,7 +335,7 @@ export function MenuSection({
       {...sectionHooks.root({ className, props: rest })}
       {...toCollectionSelectionProps({ selectedKeys, defaultSelectedKeys, onSelectionChange })}
     >
-      {title ? <Header className={sectionHooks.slotClass('header')}>{title}</Header> : null}
+      {title ? <Header {...sectionHooks.slot('header')}>{title}</Header> : null}
       {keyCollectionChildren(children)}
     </AriaMenuSection>
   );

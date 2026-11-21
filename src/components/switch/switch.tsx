@@ -44,7 +44,10 @@ export interface SwitchProps extends BaseProps, RefProps<HTMLLabelElement>, Aria
   children?: ReactNode;
 }
 
-const hooks = createHooks('switch', ['track', 'thumb', 'label']);
+const hooks = createHooks('switch', ['track', 'thumb', 'label'], {
+  root: 'switch',
+  thumb: 'switch-thumb',
+});
 
 /**
  * An on-off switch on React Aria's `Switch`, with no field around it: a native input with role

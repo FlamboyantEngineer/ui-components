@@ -156,7 +156,7 @@ export function SelectContent({
         containerPadding={containerPadding}
         style={style}
       >
-        <ListBox className={hooks.slotClass('listbox')}>{keyCollectionChildren(children)}</ListBox>
+        <ListBox {...hooks.slot('listbox')}>{keyCollectionChildren(children)}</ListBox>
       </Popover>
     </>
   );
@@ -199,9 +199,7 @@ export function SelectGroup({ id, title, children, className, ...rest }: SelectG
       id={toCollectionItemKey(id)}
       {...hooks.slot('section', {}, className)}
     >
-      {isEmptyNode(title) ? null : (
-        <Header className={hooks.slotClass('section-header')}>{title}</Header>
-      )}
+      {isEmptyNode(title) ? null : <Header {...hooks.slot('section-header')}>{title}</Header>}
       {keyCollectionChildren(children)}
     </ListBoxSection>
   );

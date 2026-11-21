@@ -44,7 +44,7 @@ Every component directory is the `Implementation:` of some requirement, and so i
 
   | Hook                | Kind      | Values                          | Description                 |
   | ------------------- | --------- | ------------------------------- | --------------------------- |
-  | `ui-button`         | root      |                                 | The `<button>` element.     |
+  | `ui-button`         | root      | `button`                        | The `<button>` element.     |
   | `ui-button__icon`   | slot      |                                 | Leading or trailing glyph.  |
   | `data-variant`      | attribute | `primary`, `secondary`, `ghost` | Emphasis.                   |
   | `data-pressed`      | state     | `true`                          | While pressed (React Aria). |
@@ -54,7 +54,7 @@ Every component directory is the `Implementation:` of some requirement, and so i
   - `root`: a `ui-<component>` class. `slot`: a `ui-<component>__<slot>` class whose root is in the same table.
   - `attribute`: a `data-*` option the caller chooses (variant, size, orientation). `state`: a `data-*` state the component or React Aria sets.
   - `property`: a measured `--ui-*` custom property set inline.
-  - `Values` lists the allowed values in backticks; empty means free text (an ID, a count).
+  - `Values` lists the allowed values in backticks; empty means free text (an ID, a count). On a `root` or `slot` row it holds the part's shadcn/ui `data-slot` name, when it has one (HOOK-CONTRACT.md UIC-HOOKS-1.5).
 
 `npm run check:specs` enforces this format, including the group headings and numbering, the existence of every listed path, that the listed tests name each ID, that every component directory is implemented by some spec, and that the reference stylesheet partials (`labs/reference/`) style every root and slot hook. The test helper `expectHooksMatchSpec` in `test/hooks.ts` fails a test when rendered markup carries a hook its spec does not declare.
 

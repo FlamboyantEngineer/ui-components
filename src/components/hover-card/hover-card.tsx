@@ -41,7 +41,7 @@ export interface HoverCardProps extends RefProps<HTMLElement>, BaseProps, Overla
   children: ReactNode;
 }
 
-const hooks = createHooks('hover-card', ['arrow']);
+const hooks = createHooks('hover-card', ['arrow'], { root: 'hover-card-content' });
 
 /**
  * Hands the trigger's props to the focusable only while the trigger is enabled. It renders the same

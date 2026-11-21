@@ -2,7 +2,6 @@
 
 import { createContext, type ReactNode, useContext, useId, useLayoutEffect } from 'react';
 import { dialogTitleLevel, HeadingLevelContext } from '../../core/heading-level.js';
-import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Heading } from '../../primitives/index.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -94,7 +93,7 @@ export function DialogClose({ className, isDisabled, ...props }: DialogCloseProp
   return (
     <Button
       {...props}
-      className={mergeClassNames(hooks.slotClass('close'), className)}
+      {...hooks.slot('close', undefined, className)}
       isDisabled={isDisabled || state?.isDismissDisabled}
       onPress={state?.close}
     />

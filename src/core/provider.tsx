@@ -22,7 +22,7 @@ import { useIsClient } from '../utils/use-is-client.js';
 import { useLatest } from '../utils/use-latest.js';
 import { useShallowStable } from '../utils/use-shallow-stable.js';
 import type { GlyphComponent, GlyphMap, GlyphName } from './glyph-types.js';
-import { mergeClassNames } from './hooks.js';
+import { composedDataSlot, mergeClassNames } from './hooks.js';
 import { en } from './locales/index.js';
 import { DEFAULT_LOCALE, formatMessage, type MessageValues } from './message-format.js';
 import { OverlayPresenceScope } from './overlay-presence.js';
@@ -368,6 +368,7 @@ export function Glyph({ icon: Component, className }: GlyphProps) {
   return (
     <Component
       className={mergeClassNames('ui-glyph', className)}
+      data-slot={composedDataSlot(className)}
       data-glyph={Component.glyphName}
       aria-hidden="true"
       focusable="false"

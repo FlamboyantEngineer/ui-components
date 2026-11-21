@@ -32,6 +32,13 @@ When a caller swaps the element a component renders through a `render` prop ([CO
 Implementation: `src/utils/render-element.ts`
 Verification: `src/utils/render-element.test.tsx`
 
+### UIC-HOOKS-1.5 - shadcn/ui slot names
+
+A component that matches a shadcn/ui component shall also mark its root and each part that has a shadcn/ui counterpart with that part's `data-slot` name (`data-slot="dialog-close"` beside `ui-dialog__close`), so selectors written for shadcn/ui markup apply to ours. The names are declared once, in the component's `createHooks` call, and listed in the Values column of the root and slot rows of its spec's hook table. Parts without a counterpart, and components without one, carry no `data-slot`. On a component's root, a caller's `data-slot` wins over the declared name, as in shadcn/ui, and so does the declared name of a part class in the caller's `className`: a part that renders another component (`ui-dialog__close` on a Button) carries the part's name (`dialog-close`) rather than the component's (`button`). React Aria's own `slot` prop is separate and unchanged.
+
+Implementation: `src/core/hooks.ts`, `test/hooks.ts`
+Verification: `src/core/hooks.test.ts`, `test/hooks.test.tsx`
+
 ## UIC-HOOKS-2 - Data attributes
 
 ### UIC-HOOKS-2.1 - Options

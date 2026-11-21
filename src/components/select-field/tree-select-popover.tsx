@@ -148,7 +148,7 @@ function TreeSelectDialog<T extends TreeItemData>({
       )}
     >
       <SearchField
-        className={hooks.slotClass('search')}
+        {...hooks.slot('search')}
         label={strings.filterLabel(label)}
         placeholder={strings.filterLabel(label)}
         size="sm"

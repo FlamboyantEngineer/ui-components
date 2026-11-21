@@ -25,8 +25,12 @@ export interface BubbleReactionsProps extends ContainerProps<'div'>, BaseProps {
   align?: BubbleAlign | undefined;
 }
 
-const hooks = createHooks('bubble', ['content', 'reactions']);
-const groupHooks = createHooks('bubble-group');
+const hooks = createHooks('bubble', ['content', 'reactions'], {
+  root: 'bubble',
+  content: 'bubble-content',
+  reactions: 'bubble-reactions',
+});
+const groupHooks = createHooks('bubble-group', [], { root: 'bubble-group' });
 
 /** Consecutive bubbles of one message, stacked in reading order. */
 export function BubbleGroup({ className, ...props }: BubbleGroupProps) {

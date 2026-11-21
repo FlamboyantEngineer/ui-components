@@ -68,7 +68,11 @@ interface CellKeyContext {
   erase(index: number): void;
 }
 
-export const pinInputHooks = createHooks('pin-input', ['group', 'cell']);
+export const pinInputHooks = createHooks('pin-input', ['group', 'cell'], {
+  root: 'input-otp',
+  group: 'input-otp-group',
+  cell: 'input-otp-slot',
+});
 
 const hooks = pinInputHooks;
 

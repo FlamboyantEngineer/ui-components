@@ -40,15 +40,16 @@ export interface BannerProps
   autoFocus?: boolean | undefined;
 }
 
-const hooks = createHooks('banner', [
-  'icon',
-  'spinner',
-  'content',
-  'title',
-  'description',
-  'actions',
-  'dismiss',
-]);
+const hooks = createHooks(
+  'banner',
+  ['icon', 'spinner', 'content', 'title', 'description', 'actions', 'dismiss'],
+  {
+    root: 'alert',
+    title: 'alert-title',
+    description: 'alert-description',
+    actions: 'alert-action',
+  },
+);
 
 type BannerSlot = Parameters<typeof hooks.slot>[0];
 

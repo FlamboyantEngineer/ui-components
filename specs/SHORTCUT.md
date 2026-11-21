@@ -161,10 +161,10 @@ Verification: `src/components/shortcut/shortcut-scope.test.tsx`
 
 | Hook                   | Kind      | Values                    | Description                                                   |
 | ---------------------- | --------- | ------------------------- | ------------------------------------------------------------- |
-| `ui-shortcut`          | root      |                           | The chord's `<kbd>` (React Aria `Keyboard`).                  |
+| `ui-shortcut`          | root      | `kbd-group`               | The chord's `<kbd>` (React Aria `Keyboard`).                  |
 | `ui-shortcut__keys`    | slot      |                           | The keycaps and separators, hidden from assistive technology. |
 | `ui-shortcut__chord`   | slot      |                           | One chord's keycaps in a sequence.                            |
-| `ui-shortcut__key`     | slot      |                           | One keycap `<kbd>`.                                           |
+| `ui-shortcut__key`     | slot      | `kbd`                     | One keycap `<kbd>`.                                           |
 | `ui-shortcut__text`    | slot      |                           | The readable text, visually hidden. Absent when `decorative`. |
 | `data-platform`        | attribute | `mac`, `windows`, `linux` | The notation drawn.                                           |
 | `data-appearance`      | attribute | `keycaps`, `text`         | Whether the keys draw as keycaps or as quiet text.            |

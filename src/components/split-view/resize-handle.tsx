@@ -97,7 +97,7 @@ type ResizeInteractionOptions = ResizeKeyboardInput &
     getUnitsPerPixel: () => number;
   };
 
-const hooks = createHooks('resize-handle', ['grip', 'shield']);
+const hooks = createHooks('resize-handle', ['grip', 'shield'], { root: 'resizable-handle' });
 
 const oneUnitPerPixel = () => 1;
 

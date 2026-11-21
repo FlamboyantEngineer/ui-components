@@ -33,7 +33,7 @@ export interface LabelProps
   live?: 'polite' | 'assertive' | undefined;
 }
 
-const hooks = createHooks('label', ['icon', 'label']);
+const hooks = createHooks('label', ['icon', 'label'], { root: 'label' });
 
 /**
  * Text with an optional decorative leading icon, or an icon alone, inheriting the host's typography.
