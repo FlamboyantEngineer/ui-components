@@ -1,10 +1,10 @@
 /*
  * shadcn/ui stylesheet: buttons, after the button of shadcn/ui's "nova" style.
- * Its variants on ours: secondary, our default, is its grey fill; tertiary its outline; primary its
- * dark fill; destructive a tinted fill; link a button-sized box whose text underlines. Its sizes
- * are 24, 28, 32 and 36 pixels; an icon beside the label takes a little of the padding on its side,
- * and icons are 12 pixels at xs, 14 at sm and 16 above. A press nudges the button down. This
- * layer wins over every reference rule, so each rule names the variant or state it redraws.
+ * Its variants on ours: secondary, our default, is its grey fill; tertiary and outline its outline;
+ * primary its dark fill; destructive a tinted fill; link a button-sized box whose text underlines.
+ * Its sizes are 24, 28, 32 and 36 pixels; an icon beside the label takes a little of the padding on
+ * its side, and icons are 12 pixels at xs, 14 at sm and 16 above. A press nudges the button down.
+ * This layer wins over every reference rule, so each rule names the variant or state it redraws.
  */
 
 .ui-button {
@@ -71,23 +71,31 @@
   border-width: 0;
 }
 
-.ui-button[aria-pressed][data-variant='tertiary'] {
+.ui-button[aria-pressed]:is([data-variant='tertiary'], [data-variant='outline']) {
   border-color: var(--input);
   background: transparent;
 }
 
-.ui-button[aria-pressed]:is([data-variant='ghost'], [data-variant='tertiary'])[data-selected] {
+.ui-button[aria-pressed]:is(
+    [data-variant='ghost'],
+    [data-variant='tertiary'],
+    [data-variant='outline']
+  )[data-selected] {
   background: var(--muted);
   color: var(--foreground);
 }
 
-.ui-button[aria-pressed][data-variant='tertiary'][data-selected] {
+.ui-button[aria-pressed]:is([data-variant='tertiary'], [data-variant='outline'])[data-selected] {
   border-color: var(--input);
 }
 
 /* In the dark, a toggle's hover takes the full muted fill. */
 :where(.dark, [data-theme='dark'])
-  .ui-button[aria-pressed]:is([data-variant='ghost'], [data-variant='tertiary'])[data-hovered] {
+  .ui-button[aria-pressed]:is(
+    [data-variant='ghost'],
+    [data-variant='tertiary'],
+    [data-variant='outline']
+  )[data-hovered] {
   background: var(--muted);
 }
 
@@ -113,6 +121,7 @@
 .ui-button:is(
     [data-variant='secondary'],
     [data-variant='tertiary'],
+    [data-variant='outline'],
     [data-variant='ghost']
   )[data-selected] {
   border-color: transparent;
@@ -135,13 +144,17 @@
   border-color: transparent;
 }
 
-.ui-button[data-variant='tertiary'] {
+.ui-button:is([data-variant='tertiary'], [data-variant='outline']) {
   border-color: var(--border);
   background: var(--background);
   color: var(--foreground);
 }
 
-.ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+.ui-button:is([data-variant='tertiary'], [data-variant='outline']):is(
+    [data-hovered],
+    [data-pressed],
+    [aria-expanded='true']
+  ) {
   background: var(--muted);
 }
 
@@ -212,13 +225,18 @@
   border-color: var(--ref-focus);
 }
 
-:where(.dark, [data-theme='dark']) .ui-button[data-variant='tertiary'] {
+:where(.dark, [data-theme='dark'])
+  .ui-button:is([data-variant='tertiary'], [data-variant='outline']) {
   border-color: var(--input);
   background: color-mix(in oklab, var(--input) 30%, transparent);
 }
 
 :where(.dark, [data-theme='dark'])
-  .ui-button[data-variant='tertiary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+  .ui-button:is([data-variant='tertiary'], [data-variant='outline']):is(
+    [data-hovered],
+    [data-pressed],
+    [aria-expanded='true']
+  ) {
   background: color-mix(in oklab, var(--input) 50%, transparent);
 }
 
@@ -238,7 +256,9 @@
 
 /* In the dark, the outline keeps its input border under focus and the destructive ring deepens. */
 :where(.dark, [data-theme='dark'])
-  .ui-button[data-variant='tertiary'][data-focus-visible]:not([aria-pressed]) {
+  .ui-button:is([data-variant='tertiary'], [data-variant='outline'])[data-focus-visible]:not(
+    [aria-pressed]
+  ) {
   border-color: var(--input);
 }
 

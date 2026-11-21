@@ -1,9 +1,9 @@
 /*
  * shadcn/ui stylesheet: badges, after the badge of shadcn/ui's "nova" style.
  * Borderless pills, 20 pixels high at the default size with 12 pixel type and icons. Solid neutral
- * is shadcn/ui's default (the primary fill), a count its number badge, subtle neutral its secondary grey, subtle danger its
- * destructive tint, and the other tones a light tint of their color. Bare, dot and status badges
- * keep the reference look.
+ * is shadcn/ui's default (the primary fill) and a count its number badge; subtle neutral is its
+ * secondary grey, subtle danger its destructive tint and outline its bordered pill; the other tones
+ * take a light tint of their color. Bare, dot and status badges keep the reference look.
  */
 
 .ui-badge:not([data-variant='dot']) {
@@ -61,4 +61,10 @@
 :where(.dark, [data-theme='dark'])
   .ui-badge[data-variant='subtle'][data-tone='danger']:not([data-bare]) {
   background: color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-badge[data-variant='outline']:not([data-bare]) {
+  border-color: var(--border);
+  background: transparent;
+  color: var(--foreground);
 }
