@@ -56,8 +56,18 @@ it('UIC-CODE-BLOCK-6.1 takes the caller’s name, label and variant', () => {
   );
   const block = screen.getByRole('group', { name: 'Install' });
   expect(block).toHaveAttribute('data-variant', 'terminal');
+  expect(block).toHaveAttribute('data-size', 'default');
   expect(block).not.toHaveAttribute('aria-labelledby');
   expect(within(block).getByRole('button', { name: 'Copy command' })).toBeInTheDocument();
+});
+
+it('UIC-CODE-BLOCK-1.7 publishes the size of a composed block', () => {
+  render(
+    <CodeBlock size="sm" aria-label="Snippet">
+      <CodeBlockContent>x</CodeBlockContent>
+    </CodeBlock>,
+  );
+  expect(screen.getByRole('group', { name: 'Snippet' })).toHaveAttribute('data-size', 'sm');
 });
 
 it('UIC-CODE-BLOCK-6.2 marks added, removed and highlighted lines and numbers them', () => {

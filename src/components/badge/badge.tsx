@@ -16,9 +16,10 @@ export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 /**
  * `subtle` is a tinted pill, `solid` a filled token, `outline` a bordered pill with no fill,
- * `status` a tone dot before the label.
+ * `ghost` a pill with neither fill nor border, `link` its label as link text, `status` a tone dot
+ * before the label.
  */
-export type BadgeVariant = 'subtle' | 'solid' | 'outline' | 'status';
+export type BadgeVariant = 'subtle' | 'solid' | 'outline' | 'ghost' | 'link' | 'status';
 
 export type BadgeCountVariant = Extract<BadgeVariant, 'subtle' | 'solid'>;
 

@@ -453,6 +453,20 @@ function HintedScrollingMenu() {
   );
 }
 
+const insetEntries: MenuEntry[] = [
+  { id: 'back', label: 'Back' },
+  {
+    type: 'section',
+    id: 'panels',
+    title: 'Panels',
+    inset: true,
+    items: [
+      { id: 'ruler', label: 'Ruler', inset: true },
+      { id: 'grid', label: 'Grid', inset: true },
+    ],
+  },
+];
+
 mountLab(
   <>
     <LabSection
@@ -505,6 +519,15 @@ mountLab(
         render={({ size }) => (
           <Menu aria-label="Mixed icons" size={size} items={mixedIconEntries} />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Inset rows by size"
+      description="Inset items and an inset section title start their text where an icon row's text starts, in a menu without icons."
+    >
+      <StateMatrix
+        axes={{ size: sizes }}
+        render={({ size }) => <Menu aria-label="Inset rows" size={size} items={insetEntries} />}
       />
     </LabSection>
     <LabSection

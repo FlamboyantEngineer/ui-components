@@ -78,6 +78,26 @@
   grid-column: 2 / -1;
 }
 
+/*
+ * Responsive: the field fills its container and stacks while narrower than 28rem; from there the
+ * label takes a column beside the control, and the description and message start under the control.
+ */
+.ui-field[data-label-layout='responsive'] {
+  width: 100%;
+  container: ui-field / inline-size;
+}
+
+@container ui-field (width >= 28rem) {
+  .ui-field[data-label-layout='responsive'] > .ui-field__label {
+    flex: 0 0 calc(40% - 6px);
+    margin-bottom: 0;
+  }
+
+  .ui-field[data-label-layout='responsive'] > :is(.ui-field__description, .ui-field__message) {
+    margin-inline-start: 40%;
+  }
+}
+
 .ui-field__required {
   margin-inline-start: 2px;
   color: var(--ref-danger);

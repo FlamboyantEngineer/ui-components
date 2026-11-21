@@ -60,6 +60,13 @@ Verification: `src/components/pin-input/pin-input.test.tsx`
 Implementation: `src/components/pin-input/pin-input.tsx`, `src/components/pin-input/pin-value.ts`
 Verification: `src/components/pin-input/pin-input.test.tsx`
 
+### UIC-PIN-INPUT-1.9 - Separators
+
+`separators` lists cell counts after which a decorative `ui-pin-input__separator` shall sit between the cells, such as `[3]` for a code read as two groups of three (shadcn/ui's input OTP separator). A separator is hidden from assistive technology and changes nothing about the cells, their keys or the value; counts of 0 or of the whole length draw nothing. The reference sheet draws a short dash.
+
+Implementation: `src/components/pin-input/pin-input-cells.tsx`, `labs/reference/pin-input.css`
+Verification: `src/components/pin-input/pin-input.test.tsx`
+
 ## UIC-PIN-INPUT-2 - Entering a code
 
 ### UIC-PIN-INPUT-2.1 - Typing
@@ -120,17 +127,18 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec
 
 ## Hooks
 
-| Hook                  | Kind  | Values            | Description                                                         |
-| --------------------- | ----- | ----------------- | ------------------------------------------------------------------- |
-| `ui-pin-input`        | root  | `input-otp`       | The field's root (also `ui-field`).                                 |
-| `ui-pin-input__group` | slot  | `input-otp-group` | The group of cells (role `group`).                                  |
-| `ui-pin-input__cell`  | slot  | `input-otp-slot`  | One cell's `<input>`.                                               |
-| `data-complete`       | state | `true`            | On the root: every cell holds a character.                          |
-| `data-filled`         | state | `true`            | On a cell: it holds a character.                                    |
-| `data-invalid`        | state | `true`            | On the group and the cells: invalid (React Aria).                   |
-| `data-disabled`       | state | `true`            | On the group and the cells: disabled (React Aria).                  |
-| `data-readonly`       | state | `true`            | On the group: read-only (React Aria).                               |
-| `data-hovered`        | state | `true`            | On the group and the cells: under the pointer (React Aria).         |
-| `data-focus-within`   | state | `true`            | On the group: focus is inside it (React Aria).                      |
-| `data-focused`        | state | `true`            | On a cell: focused (React Aria).                                    |
-| `data-focus-visible`  | state | `true`            | On the group and the cells: focused from the keyboard (React Aria). |
+| Hook                      | Kind  | Values                | Description                                                         |
+| ------------------------- | ----- | --------------------- | ------------------------------------------------------------------- |
+| `ui-pin-input`            | root  | `input-otp`           | The field's root (also `ui-field`).                                 |
+| `ui-pin-input__group`     | slot  | `input-otp-group`     | The group of cells (role `group`).                                  |
+| `ui-pin-input__cell`      | slot  | `input-otp-slot`      | One cell's `<input>`.                                               |
+| `ui-pin-input__separator` | slot  | `input-otp-separator` | A decorative dash between cells.                                    |
+| `data-complete`           | state | `true`                | On the root: every cell holds a character.                          |
+| `data-filled`             | state | `true`                | On a cell: it holds a character.                                    |
+| `data-invalid`            | state | `true`                | On the group and the cells: invalid (React Aria).                   |
+| `data-disabled`           | state | `true`                | On the group and the cells: disabled (React Aria).                  |
+| `data-readonly`           | state | `true`                | On the group: read-only (React Aria).                               |
+| `data-hovered`            | state | `true`                | On the group and the cells: under the pointer (React Aria).         |
+| `data-focus-within`       | state | `true`                | On the group: focus is inside it (React Aria).                      |
+| `data-focused`            | state | `true`                | On a cell: focused (React Aria).                                    |
+| `data-focus-visible`      | state | `true`                | On the group and the cells: focused from the keyboard (React Aria). |

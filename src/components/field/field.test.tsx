@@ -51,6 +51,7 @@ describe('Field', () => {
       'control-label': ['control', 'label', 'message'],
       'label-colon-control': ['label', 'control', 'message'],
       'control-only': ['control', 'message'],
+      responsive: ['label', 'control', 'message'],
     };
     for (const layout of Object.keys(order) as FieldLabelLayout[]) {
       const { container, unmount } = render(<TextField labelLayout={layout} />);

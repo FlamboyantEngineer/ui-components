@@ -6,6 +6,11 @@ export type {
   ButtonVariant,
 } from './button.js';
 export { Button } from './button.js';
-export type { ButtonGroupProps, ButtonGroupRenderState } from './button-group.js';
-export { ButtonGroup } from './button-group.js';
+export type {
+  ButtonGroupProps,
+  ButtonGroupRenderState,
+  ButtonGroupSeparatorProps,
+  ButtonGroupTextProps,
+} from './button-group.js';
+export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './button-group.js';
 export { runPendingAction } from './pending-action.js';

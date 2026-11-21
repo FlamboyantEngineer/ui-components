@@ -31,6 +31,11 @@ export interface PinInputProps extends FieldInputProps<string>, PinInputTextInpu
   type?: PinInputType | undefined;
   /** Hides the characters, as a password input does. */
   mask?: boolean | undefined;
+  /**
+   * Cell counts after which a decorative separator sits between the cells, such as `[3]` for a code
+   * read as two groups of three. Defaults to none.
+   */
+  separators?: readonly number[] | undefined;
   /** Called with the code each time an edit renders a full code of valid characters. */
   onComplete?: ((value: string) => void) | undefined;
 }
@@ -59,6 +64,8 @@ function checkPinCode(
   return null;
 }
 
+const noSeparators: readonly number[] = [];
+
 /**
  * A field for a short code, such as a PIN or a one-time code: one single-character input per
  * character, in a group named by the label. Typing advances, Backspace erases and moves back, the
@@ -72,6 +79,7 @@ export function PinInput({
   placeholder,
   autoComplete = 'off',
   enterKeyHint,
+  separators = noSeparators,
   onComplete,
   ...props
 }: PinInputProps) {
@@ -95,7 +103,7 @@ export function PinInput({
         <PinInputCells
           control={control}
           state={state}
-          cells={{ length, type, mask, placeholder, autoComplete, enterKeyHint }}
+          cells={{ length, type, mask, placeholder, autoComplete, enterKeyHint, separators }}
           name={rest.name}
           onComplete={onComplete}
         />

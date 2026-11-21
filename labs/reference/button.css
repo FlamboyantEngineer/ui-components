@@ -298,3 +298,28 @@
   flex: 1 1 0;
   min-width: 0;
 }
+
+/* Group parts: a rule across the group, and a framed text box that joins like a button. */
+.ui-button-group[data-orientation] > .ui-button-group__separator {
+  align-self: stretch;
+  margin: 0;
+}
+
+.ui-button-group[data-attached][data-orientation] > .ui-button-group__separator + * {
+  margin: 0;
+}
+
+.ui-button-group__text {
+  display: inline-flex;
+  align-self: stretch;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: var(--ref-control-height);
+  padding-inline: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) var(--ref-tint-subtle));
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+}

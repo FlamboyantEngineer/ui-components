@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UndoGlyph } from '../../core/glyphs.js';
 import { Button } from './button.js';
-import { ButtonGroup } from './button-group.js';
+import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './button-group.js';
 
 describe('ButtonGroup', () => {
   it('UIC-BUTTON-22.1 groups its buttons under a name and keeps each tab stop', async () => {
@@ -85,5 +85,21 @@ describe('ButtonGroup', () => {
     expectHooksMatchSpec(document.body, 'BUTTON', {
       callerAttributes: ['data-owner', 'data-swapped', 'data-within'],
     });
+  });
+
+  it('UIC-BUTTON-22.5 draws a separator and text parts beside the buttons', () => {
+    render(
+      <ButtonGroup aria-label="Amount" attached>
+        <ButtonGroupText className="unit">USD</ButtonGroupText>
+        <ButtonGroupSeparator />
+        <Button>Apply</Button>
+      </ButtonGroup>,
+    );
+    const separator = screen.getByRole('separator');
+    expect(separator).toHaveClass('ui-separator', 'ui-button-group__separator');
+    expect(separator).toHaveAttribute('data-slot', 'button-group-separator');
+    expect(separator).toHaveAttribute('aria-orientation', 'vertical');
+    expect(screen.getByText('USD')).toHaveClass('ui-button-group__text', 'unit');
+    expectHooksMatchSpec(document.body, 'BUTTON', { slots: ['separator', 'text'] });
   });
 });

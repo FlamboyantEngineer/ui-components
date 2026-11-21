@@ -13,7 +13,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.2 - Variants
 
-`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `outline` (a bordered pill with no fill, its border and text in its tone; shadcn/ui's `outline`), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge accepts `BadgeCountVariant` (`subtle` by default or `solid`) and additionally publishes `data-count`, separating numeric geometry from appearance and semantic tone.
+`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `outline` (a bordered pill with no fill, its border and text in its tone; shadcn/ui's `outline`), `ghost` (its label in its tone, with neither fill nor border; shadcn/ui's `ghost`), `link` (its label as link text, underlined while a link holding it is hovered; shadcn/ui's `link`), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge accepts `BadgeCountVariant` (`subtle` by default or `solid`) and additionally publishes `data-count`, separating numeric geometry from appearance and semantic tone.
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -181,26 +181,26 @@ Verification: `src/components/badge/status-light.test.tsx`, `e2e/badge-status-li
 
 ## Hooks
 
-| Hook                         | Kind      | Values / Meaning                                  |
-| ---------------------------- | --------- | ------------------------------------------------- |
-| `ui-badge`                   | root      | `badge`                                           | The `<span>`.                                                               |
-| `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                                             |
-| `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).                                   |
-| `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                                       |
-| `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).                                    |
-| `ui-badge__accessible-label` | slot      |                                                   | Visually hidden `aria-label` or count text that assistive technology reads. |
-| `data-variant`               | attribute | `subtle`, `solid`, `outline`, `status`, `dot`     | Appearance; `dot` for markers.                                              |
-| `data-count`                 | state     | `true`                                            | Numeric geometry, independent of variant and tone.                          |
-| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                                                       |
-| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                                                      |
-| `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner.                         |
-| `data-bare`                  | state     | `true`                                            | No pill.                                                                    |
-| `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                                              |
-| `data-collapsed`             | state     | `true`                                            | A label badge too narrow for a letter and an ellipsis, drawn as a dot.      |
-| `ui-status-light`            | root      |                                                   | The `<span>`.                                                               |
-| `ui-status-light__dot`       | slot      |                                                   | The decorative dot.                                                         |
-| `ui-status-light__label`     | slot      |                                                   | The visible label, when there is one.                                       |
-| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | The status's tone.                                                          |
-| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Dot and text size.                                                          |
-| `data-status`                | attribute | `active`, `away`, `busy`, `idle`                  | A presence state, when `status` is set.                                     |
-| `data-pending`               | state     | `true`                                            | The status is still in progress.                                            |
+| Hook                         | Kind      | Values / Meaning                                               |
+| ---------------------------- | --------- | -------------------------------------------------------------- |
+| `ui-badge`                   | root      | `badge`                                                        | The `<span>`.                                                               |
+| `ui-badge__dot`              | slot      |                                                                | The tone dot of a status badge.                                             |
+| `ui-badge__start-icon`       | slot      |                                                                | The icon before a label (also `ui-icon`).                                   |
+| `ui-badge__label`            | slot      |                                                                | The visible label or formatted count.                                       |
+| `ui-badge__end-icon`         | slot      |                                                                | The icon after a label (also `ui-icon`).                                    |
+| `ui-badge__accessible-label` | slot      |                                                                | Visually hidden `aria-label` or count text that assistive technology reads. |
+| `data-variant`               | attribute | `subtle`, `solid`, `outline`, `ghost`, `link`, `status`, `dot` | Appearance; `dot` for markers.                                              |
+| `data-count`                 | state     | `true`                                                         | Numeric geometry, independent of variant and tone.                          |
+| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger`              | Tone.                                                                       |
+| `data-size`                  | attribute | `sm`, `md`, `lg`                                               | Scale.                                                                      |
+| `data-placement`             | attribute | `inline`, `overlay`                                            | Count and dot badges: inline or pinned to a corner.                         |
+| `data-bare`                  | state     | `true`                                                         | No pill.                                                                    |
+| `data-muted-dot`             | state     | `true`                                                         | A status badge's softened dot.                                              |
+| `data-collapsed`             | state     | `true`                                                         | A label badge too narrow for a letter and an ellipsis, drawn as a dot.      |
+| `ui-status-light`            | root      |                                                                | The `<span>`.                                                               |
+| `ui-status-light__dot`       | slot      |                                                                | The decorative dot.                                                         |
+| `ui-status-light__label`     | slot      |                                                                | The visible label, when there is one.                                       |
+| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger`              | The status's tone.                                                          |
+| `data-size`                  | attribute | `sm`, `md`, `lg`                                               | Dot and text size.                                                          |
+| `data-status`                | attribute | `active`, `away`, `busy`, `idle`                               | A presence state, when `status` is set.                                     |
+| `data-pending`               | state     | `true`                                                         | The status is still in progress.                                            |
