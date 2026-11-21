@@ -112,9 +112,12 @@ test.describe('Drawer lab', () => {
     await expect(page.locator('.ui-drawer')).toHaveCount(0);
     await expect(trigger).toBeFocused();
 
-    await openCell(page, 'dismissal=outside presses refused', 'Draft');
+    const { dialog: draft } = await openCell(page, 'dismissal=outside presses refused', 'Draft');
     await page.mouse.click(100, viewport.height - 100);
-    await expect(page.getByRole('dialog', { name: 'Draft' })).toBeVisible();
+    await expect(draft).toBeVisible();
+    // The press blurs the drawer and its focus scope takes focus back a frame later; Escape waits
+    // for it, since a key pressed on the page body reaches no drawer.
+    await expect.poll(() => hasFocusWithin(draft)).toBe(true);
     await page.keyboard.press('Escape');
     await expect(page.locator('.ui-drawer')).toHaveCount(0);
   });

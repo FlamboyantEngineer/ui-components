@@ -62,6 +62,16 @@ for (const theme of ['light', 'dark']) {
       await page.setViewportSize({ width, height });
       await dialog.getByRole('button', { name: 'Contacts' }).click();
       const note = dialog.getByRole('textbox', { name: 'Contacts note' });
+      // The panel grows to its height in a transition; a field focused before it ends is scrolled
+      // to where it stood then, and the growing panel moves it on out of view.
+      const panel = dialog.locator('.ui-disclosure__panel', {
+        has: page.getByRole('textbox', { name: 'Contacts note' }),
+      });
+      await expect
+        .poll(() =>
+          panel.evaluate((node) => node.style.getPropertyValue('--disclosure-panel-height')),
+        )
+        .toBe('auto');
       await note.focus();
       await expect(note).toBeInViewport();
       await expectFrameInPlace(page);

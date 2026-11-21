@@ -2,12 +2,17 @@
 
 .ui-drawer__backdrop {
   background: var(--ref-scrim);
+  backdrop-filter: blur(var(--ref-scrim-blur));
 }
 
-/* A drawer opened over another dims the page less, since the one beneath is already dimmed. */
+/*
+ * A drawer opened over another dims the page less and blurs it no further, since the one beneath has
+ * already done both.
+ */
 
 .ui-drawer:not([data-stack-index='0']) .ui-drawer__backdrop {
   background: var(--ref-scrim-weak);
+  backdrop-filter: none;
 }
 
 .ui-drawer__backdrop[data-entering] {
