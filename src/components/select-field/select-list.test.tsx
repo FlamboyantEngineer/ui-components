@@ -96,10 +96,22 @@ describe('SelectField list', () => {
     });
   });
 
-  it('UIC-SELECT-FIELD-3.3 replaces a single choice, closes and returns focus to the trigger', async () => {
+  it('UIC-SELECT-FIELD-3.3 checks the chosen option, then replaces it, closes and returns focus to the trigger', async () => {
     const user = userEvent.setup();
     render(<SelectField label="Fruit" options={fruit} defaultValue="apple" />);
     await user.click(trigger('Apple Fruit'));
+    const listbox = screen.getByRole('listbox');
+    const indicator = (name: string) =>
+      within(listbox)
+        .getByRole('option', { name })
+        .querySelector('.ui-select-field__option-indicator');
+    expect(indicator('Apple Crisp')).toBe(
+      within(listbox).getByRole('option', { name: 'Apple Crisp' }).lastElementChild,
+    );
+    expect(indicator('Apple Crisp')).toHaveAttribute('aria-hidden', 'true');
+    expect(indicator('Apple Crisp')).toHaveAttribute('data-slot', 'select-item-indicator');
+    expect(indicator('Pear')).toBeNull();
+    expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['option-indicator'] });
     await user.keyboard('{ArrowDown}{Enter}');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger('Pear Fruit')).toHaveFocus());

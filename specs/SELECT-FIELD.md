@@ -87,7 +87,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 ### UIC-SELECT-FIELD-3.3 - Single choice
 
-In a single select, picking an option shall replace the choice, commit it, close the list and return focus to the trigger.
+In a single select, picking an option shall replace the choice, commit it, close the list and return focus to the trigger. The chosen option draws a decorative check after its content (`ui-select-field__option-indicator`, hidden from assistive technology) while it is selected, as a composed `SelectItem` does; the reference sheet hides it and marks the choice by the row's own selected state.
 
 Implementation: `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -472,6 +472,7 @@ Verification: `src/components/select-field/select.test.tsx`, `e2e/composed-picke
 | `ui-select-field__section-header`     | slot      | `select-label`                             | A group's heading.                                                                                                         |
 | `ui-select-field__option`             | slot      | `select-item`                              | One `role="option"` row.                                                                                                   |
 | `ui-select-field__option-check`       | slot      |                                            | A multiple select's selection indicator.                                                                                   |
+| `ui-select-field__option-indicator`   | slot      | `select-item-indicator`                    | A single select's check after the chosen option's content (also `ui-glyph`).                                               |
 | `ui-select-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                                                                         |
 | `ui-select-field__option-label`       | slot      |                                            | An option's label.                                                                                                         |
 | `ui-select-field__option-description` | slot      |                                            | An option's description.                                                                                                   |

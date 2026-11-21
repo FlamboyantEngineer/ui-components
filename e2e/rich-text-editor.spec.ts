@@ -603,7 +603,7 @@ test.describe('Rich Text Editor lab', () => {
     }
     expect((await style('Heading 1')).weight).toBeGreaterThan(text.weight);
     await expect(preview('Code block')).toHaveCSS('font-family', /mono/i);
-    await expect(list.locator('.ui-glyph')).toHaveCount(0);
+    await expect(list.locator('.ui-glyph:not(.ui-select-field__option-indicator)')).toHaveCount(0);
     const heights = await list
       .getByRole('option')
       .evaluateAll((options) => options.map((option) => option.getBoundingClientRect().height));
