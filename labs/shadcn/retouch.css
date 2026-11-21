@@ -459,3 +459,11 @@
   background: var(--background);
   box-shadow: var(--ref-shadcn-shadow-sm);
 }
+
+/* Chat question: Enter in an empty Other field marks the question invalid; the field carries the
+   message, so the choices keep their input border. */
+.ui-chat-question__options
+  .ui-choice__button[data-invalid]:not([data-selected])
+  .ui-choice__indicator {
+  border-color: var(--input);
+}

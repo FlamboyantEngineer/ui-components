@@ -1125,6 +1125,15 @@
   vertical-align: middle;
 }
 
+/* Enter in an empty Other field marks the question invalid; the field carries the message, so the
+   choices keep their usual edge. */
+.ui-chat-question
+  .ui-chat-question__options
+  .ui-choice__button[data-invalid]:not([data-selected])
+  .ui-choice__indicator {
+  border-color: var(--ref-border-strong);
+}
+
 /* The choice lines its description up with the label, past the radio or box. */
 .ui-chat-question__description {
   color: var(--ref-muted);
