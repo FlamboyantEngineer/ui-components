@@ -274,35 +274,44 @@ Verification: `src/components/button/button-group.test.tsx`, `e2e/button-button-
 Implementation: `src/components/button/button-group.tsx`
 Verification: `src/components/button/button-group.test.tsx`, `e2e/button-button-group.spec.ts`
 
+### UIC-BUTTON-22.5 - Separator and text parts
+
+`ButtonGroupSeparator` shall render a `Separator` carrying `ui-button-group__separator` and data-slot `button-group-separator`, vertical unless `orientation` says otherwise, and `ButtonGroupText` a `<span>` carrying `ui-button-group__text` for text beside the buttons, such as a unit or a prefix; shadcn/ui's button group separator and text. Both append the caller's `className` and forward native props. The reference sheet stretches the separator across the group and draws the text as a framed muted box of a button's height that joins an attached group like a button.
+
+Implementation: `src/components/button/button-group.tsx`, `labs/reference/button.css`
+Verification: `src/components/button/button-group.test.tsx`
+
 ## Hooks
 
-| Hook                       | Kind      | Values / Meaning                                                                                        |
-| -------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
-| `ui-button`                | root      | `button`                                                                                                | The `<button>`, or `<a>` with `href`.                                     |
-| `ui-button__label`         | slot      |                                                                                                         | The label, unless `content="parts"`.                                      |
-| `ui-button__start-icon`    | slot      |                                                                                                         | Leading icon (also `ui-icon`).                                            |
-| `ui-button__end-icon`      | slot      |                                                                                                         | Trailing icon (also `ui-icon`).                                           |
-| `ui-button__spinner`       | slot      |                                                                                                         | Busy indicator while pending.                                             |
-| `ui-button__new-tab-label` | slot      |                                                                                                         | Visually hidden "opens in a new tab" text of a link that opens a new tab. |
-| `data-variant`             | attribute | `primary`, `secondary`, `outline`, `tertiary`, `destructive`, `ghost`, `accent`, `chip`, `link`, `bare` | Emphasis and chrome.                                                      |
-| `data-size`                | attribute | `xs`, `sm`, `md`, `lg`                                                                                  | Block size.                                                               |
-| `data-content`             | attribute | `label`, `parts`, `sentence`, `icon`                                                                    | The content layout.                                                       |
-| `data-align`               | attribute | `center`, `start`                                                                                       | Content alignment.                                                        |
-| `data-full-width`          | state     | `true`                                                                                                  | Fills the container's width.                                              |
-| `data-underline`           | attribute | `none`, `hover`, `always`                                                                               | On a `link` variant: when its text is underlined.                         |
-| `data-selected`            | state     | `true`                                                                                                  | The current choice.                                                       |
-| `data-disabled`            | state     | `true`                                                                                                  | Disabled (also when focusable).                                           |
-| `data-pending`             | state     | `true`                                                                                                  | Pending; presses are refused.                                             |
-| `data-hovered`             | state     | `true`                                                                                                  | Pointer over the button.                                                  |
-| `data-pressed`             | state     | `true`                                                                                                  | Being pressed.                                                            |
-| `data-focused`             | state     | `true`                                                                                                  | Focused.                                                                  |
-| `data-focus-visible`       | state     | `true`                                                                                                  | Keyboard focus.                                                           |
-| `ui-button__icon`          | slot      |                                                                                                         | The decorative icon in icon-only mode.                                    |
-| `ui-button-group`          | root      | `button-group`                                                                                          | The group (`<div role="group">`).                                         |
-| `data-density`             | attribute | `default`, `compact`                                                                                    | How far apart spaced buttons sit.                                         |
-| `data-attached`            | state     | `true`                                                                                                  | The buttons are joined into one control.                                  |
-| `data-orientation`         | attribute | `horizontal`, `vertical`                                                                                | Row or column.                                                            |
-| `data-justified`           | state     | `true`                                                                                                  | The buttons share the group's length equally.                             |
-| `data-hovered`             | state     | `true`                                                                                                  | The pointer is over the group (React Aria).                               |
-| `data-focus-within`        | state     | `true`                                                                                                  | Focus is inside the group (React Aria).                                   |
-| `data-focus-visible`       | state     | `true`                                                                                                  | Keyboard focus is inside the group (React Aria).                          |
+| Hook                         | Kind      | Values / Meaning                                                                                        |
+| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
+| `ui-button`                  | root      | `button`                                                                                                | The `<button>`, or `<a>` with `href`.                                     |
+| `ui-button__label`           | slot      |                                                                                                         | The label, unless `content="parts"`.                                      |
+| `ui-button__start-icon`      | slot      |                                                                                                         | Leading icon (also `ui-icon`).                                            |
+| `ui-button__end-icon`        | slot      |                                                                                                         | Trailing icon (also `ui-icon`).                                           |
+| `ui-button__spinner`         | slot      |                                                                                                         | Busy indicator while pending.                                             |
+| `ui-button__new-tab-label`   | slot      |                                                                                                         | Visually hidden "opens in a new tab" text of a link that opens a new tab. |
+| `data-variant`               | attribute | `primary`, `secondary`, `outline`, `tertiary`, `destructive`, `ghost`, `accent`, `chip`, `link`, `bare` | Emphasis and chrome.                                                      |
+| `data-size`                  | attribute | `xs`, `sm`, `md`, `lg`                                                                                  | Block size.                                                               |
+| `data-content`               | attribute | `label`, `parts`, `sentence`, `icon`                                                                    | The content layout.                                                       |
+| `data-align`                 | attribute | `center`, `start`                                                                                       | Content alignment.                                                        |
+| `data-full-width`            | state     | `true`                                                                                                  | Fills the container's width.                                              |
+| `data-underline`             | attribute | `none`, `hover`, `always`                                                                               | On a `link` variant: when its text is underlined.                         |
+| `data-selected`              | state     | `true`                                                                                                  | The current choice.                                                       |
+| `data-disabled`              | state     | `true`                                                                                                  | Disabled (also when focusable).                                           |
+| `data-pending`               | state     | `true`                                                                                                  | Pending; presses are refused.                                             |
+| `data-hovered`               | state     | `true`                                                                                                  | Pointer over the button.                                                  |
+| `data-pressed`               | state     | `true`                                                                                                  | Being pressed.                                                            |
+| `data-focused`               | state     | `true`                                                                                                  | Focused.                                                                  |
+| `data-focus-visible`         | state     | `true`                                                                                                  | Keyboard focus.                                                           |
+| `ui-button__icon`            | slot      |                                                                                                         | The decorative icon in icon-only mode.                                    |
+| `ui-button-group`            | root      | `button-group`                                                                                          | The group (`<div role="group">`).                                         |
+| `ui-button-group__separator` | slot      | `button-group-separator`                                                                                | A rule between buttons (also `ui-separator`).                             |
+| `ui-button-group__text`      | slot      | `button-group-text`                                                                                     | Text beside the buttons.                                                  |
+| `data-density`               | attribute | `default`, `compact`                                                                                    | How far apart spaced buttons sit.                                         |
+| `data-attached`              | state     | `true`                                                                                                  | The buttons are joined into one control.                                  |
+| `data-orientation`           | attribute | `horizontal`, `vertical`                                                                                | Row or column.                                                            |
+| `data-justified`             | state     | `true`                                                                                                  | The buttons share the group's length equally.                             |
+| `data-hovered`               | state     | `true`                                                                                                  | The pointer is over the group (React Aria).                               |
+| `data-focus-within`          | state     | `true`                                                                                                  | Focus is inside the group (React Aria).                                   |
+| `data-focus-visible`         | state     | `true`                                                                                                  | Keyboard focus is inside the group (React Aria).                          |

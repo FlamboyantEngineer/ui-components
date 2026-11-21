@@ -1,5 +1,9 @@
 import { Button } from '../../src/components/button/button.js';
-import { ButtonGroup } from '../../src/components/button/index.js';
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+} from '../../src/components/button/index.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { RedoGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
@@ -101,6 +105,22 @@ export function ButtonGroupCases() {
             <Button>Month</Button>
           </ButtonGroup>
         </div>
+      </LabSection>
+      <LabSection
+        title="Separator and text"
+        description="A text part and a separator beside the buttons, spaced and attached."
+      >
+        <StateMatrix
+          axes={{ attached: ['spaced', 'attached'] }}
+          render={({ attached }) => (
+            <ButtonGroup aria-label={`Amount, ${attached}`} attached={attached === 'attached'}>
+              <ButtonGroupText>Total</ButtonGroupText>
+              <Button variant="outline">Copy</Button>
+              <ButtonGroupSeparator />
+              <Button variant="outline">Share</Button>
+            </ButtonGroup>
+          )}
+        />
       </LabSection>
       <LabSection
         title="Swapped root"

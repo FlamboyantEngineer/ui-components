@@ -6,7 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.js';
 import { InfoGlyph } from '../../core/glyphs.js';
 import { type UiLinkRenderer, UiProvider } from '../../core/provider.js';
-import { List, type ListHandle, ListRow, ListRowContent } from './list-row.js';
+import { List, type ListHandle, ListRow, ListRowContent, ListSeparator } from './list-row.js';
 
 const primaries = (container: HTMLElement) => [
   ...container.querySelectorAll<HTMLElement>('.ui-list-row__primary'),
@@ -621,6 +621,53 @@ describe('ListRow', () => {
       ['outline', 'sm'],
       ['muted', 'xs'],
     ]);
+    expectHooksMatchSpec(container, 'LIST-ROW');
+  });
+
+  it('UIC-LIST-ROW-2.11 draws header and footer lines outside the link, and none when empty', () => {
+    const { container } = render(
+      <List aria-label="Files">
+        <ListRow href="/report" title="Report.pdf" header="Shared" footer="Edited today" />
+        <ListRow title="Notes.txt" header="" footer={null} />
+      </List>,
+    );
+    const [first, second] = container.querySelectorAll('li');
+    const parts = [...(first?.children ?? [])].map((part) => part.className);
+    expect(parts).toEqual(['ui-list-row__header', 'ui-list-row__primary', 'ui-list-row__footer']);
+    expect(screen.getByRole('link', { name: 'Report.pdf' })).not.toHaveTextContent('Shared');
+    expect(second?.querySelector('.ui-list-row__header, .ui-list-row__footer')).toBeNull();
+    expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['header', 'footer'] });
+  });
+
+  it('UIC-LIST-ROW-2.12 publishes the leading media kind, default when unset', () => {
+    const { container } = render(
+      <List aria-label="People">
+        <ListRow title="Ada" leading={<span>A</span>} />
+        <ListRow title="Grace" leading={<span>G</span>} leadingVariant="icon" />
+        <ListRow title="Mary" leading={<img alt="" src="data:," />} leadingVariant="image" />
+      </List>,
+    );
+    const leading = [...container.querySelectorAll<HTMLElement>('.ui-list-row-content__leading')];
+    expect(leading.map((part) => part.dataset.variant)).toEqual(['default', 'icon', 'image']);
+    expectHooksMatchSpec(container, 'LIST-ROW');
+  });
+
+  it('UIC-LIST-ROW-1.8 draws a hidden separator between rows that the row keys skip', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <List aria-label="Fruit">
+        <ListRow title="Apple" onPress={() => {}} />
+        <ListSeparator className="rule" />
+        <ListRow title="Pear" onPress={() => {}} />
+      </List>,
+    );
+    const separator = container.querySelector('.ui-list__separator');
+    expect(separator).toHaveClass('rule');
+    expect(separator).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    await user.tab();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('button', { name: 'Pear' })).toHaveFocus();
     expectHooksMatchSpec(container, 'LIST-ROW');
   });
 

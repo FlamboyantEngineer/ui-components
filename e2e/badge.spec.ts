@@ -7,8 +7,8 @@ test.describe('Badge lab', () => {
   }) => {
     await lab.open('badge');
     const cells = page.locator('table[data-lab-matrix="variant tone size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(4 * 5 * 3);
-    for (const variant of ['subtle', 'solid', 'outline', 'status']) {
+    expect(await cells.count()).toBe(6 * 5 * 3);
+    for (const variant of ['subtle', 'solid', 'outline', 'ghost', 'link', 'status']) {
       for (const [size, height] of [
         ['sm', 18],
         ['md', 22],

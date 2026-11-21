@@ -155,6 +155,35 @@
   padding-inline-start: 28px;
 }
 
+/* Inset rows and titles start their text where an icon row's text starts. */
+.ui-menu-item[data-inset] > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 24px;
+}
+
+.ui-menu[data-size='sm']
+  .ui-menu-item[data-inset]
+  > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 18px;
+}
+
+.ui-menu[data-size='lg']
+  .ui-menu-item[data-inset]
+  > :is(.ui-menu-item__label, .ui-menu-item__description) {
+  padding-inline-start: 28px;
+}
+
+.ui-menu-section__header[data-inset] {
+  padding-inline-start: 32px;
+}
+
+.ui-menu[data-size='sm'] .ui-menu-section__header[data-inset] {
+  padding-inline-start: 24px;
+}
+
+.ui-menu[data-size='lg'] .ui-menu-section__header[data-inset] {
+  padding-inline-start: 38px;
+}
+
 .ui-menu-item__shortcut {
   color: var(--ref-muted);
 }

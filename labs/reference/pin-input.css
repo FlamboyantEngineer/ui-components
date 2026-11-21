@@ -21,6 +21,14 @@
   text-align: center;
 }
 
+/* A short dash between groups of cells. */
+.ui-pin-input__separator {
+  align-self: center;
+  width: 10px;
+  height: 2px;
+  background: var(--ref-muted);
+}
+
 .ui-pin-input__cell::placeholder {
   color: var(--ref-muted);
 }

@@ -6,6 +6,7 @@ import {
   ListRow,
   ListRowContent,
   type ListRowProps,
+  ListSeparator,
 } from '../../src/components/list-row/list-row.js';
 import { MetaLine } from '../../src/components/meta-line/meta-line.js';
 import { CloseGlyph, InfoGlyph, MoreGlyph } from '../../src/core/glyphs.js';
@@ -24,6 +25,12 @@ import { ListViewDataCases } from './list-view-data-cases.js';
 const kinds = ['link', 'action', 'static'] as const;
 const states = ['default', 'current', 'disabled', 'danger'] as const;
 const contents = ['title', 'meta', 'icon', 'leading', 'trailing'] as const;
+const sizes = ['xs', 'sm', 'md'] as const;
+
+/** A neutral two-tone landscape, wider than tall, so the image media shows its square crop. */
+const thumbnail = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40"><rect width="64" height="40" fill="#8fb8a8"/><circle cx="46" cy="12" r="6" fill="#f2d27a"/><path d="M0 40 22 16l14 14 8-6 20 16z" fill="#4f7d6b"/></svg>',
+)}`;
 
 function kindProps(kind: (typeof kinds)[number], id: string): Partial<ListRowProps> {
   if (kind === 'link') return { href: `#${id}` };
@@ -185,6 +192,39 @@ mountLab(
                     <Button icon={MoreGlyph} label="More about Ada Lovelace" size="sm" />
                   ) : undefined
                 }
+              />
+            </List>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Parts and media kinds"
+      description="Header and footer lines around the row, a separator between rows, and icon and image leading media at each size."
+    >
+      <StateMatrix
+        axes={{ size: sizes }}
+        render={({ size }) => (
+          <div data-lab-column="320" style={{ width: 320 }}>
+            <List aria-label={`Parts ${size}`}>
+              <ListRow
+                size={size}
+                href={`#parts-${size}`}
+                header="Shared folder"
+                title="Quarterly notes"
+                meta="Edited today"
+                footer="2 comments"
+                leading={<InfoGlyph />}
+                leadingVariant="icon"
+              />
+              <ListSeparator />
+              <ListRow
+                size={size}
+                onPress={() => {}}
+                title="Garden photo"
+                meta="Uploaded yesterday"
+                leading={<img alt="" src={thumbnail} />}
+                leadingVariant="image"
               />
             </List>
           </div>
