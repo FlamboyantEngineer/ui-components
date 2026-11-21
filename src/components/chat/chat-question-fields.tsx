@@ -1,6 +1,6 @@
 'use client';
 
-import type { KeyboardEvent } from 'react';
+import { type KeyboardEvent, useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { Badge } from '../badge/badge.js';
@@ -11,6 +11,7 @@ import {
   type ChatQuestionOption,
   type QuestionDraft,
 } from './chat-question-model.js';
+import { renderOptionDescription } from './chat-question-text.js';
 
 interface QuestionTextFieldProps {
   /** The slot the field fills: the free-text answer or the words for Other. */
@@ -81,10 +82,14 @@ export function QuestionTextField({
 
 /**
  * One option, a `QuestionnaireChoice`: its radio or checkbox, named by the label and the
- * "Recommended" badge, and described by the option's description.
+ * "Recommended" badge, and described by the option's description, drawn as Markdown.
  */
 export function ChoiceOption({ option, isSelected, isOther }: ChoiceOptionProps) {
   const strings = useUiStrings();
+  const description = useMemo(
+    () => (option.description ? renderOptionDescription(option.description) : null),
+    [option.description],
+  );
   return (
     <QuestionnaireChoice
       {...hooks.slot('option', {
@@ -94,8 +99,8 @@ export function ChoiceOption({ option, isSelected, isOther }: ChoiceOptionProps)
       })}
       value={option.id}
       description={
-        option.description ? (
-          <span className={hooks.slotClass('description')}>{option.description}</span>
+        description ? (
+          <span className={hooks.slotClass('description')}>{description}</span>
         ) : undefined
       }
     >

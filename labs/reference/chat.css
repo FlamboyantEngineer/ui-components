@@ -1093,6 +1093,11 @@
   margin-block-end: 8px;
 }
 
+/* The blocks after the title read as part of the question, at the text's own colour. */
+.ui-chat-question__item > .ui-chat-question__body {
+  color: inherit;
+}
+
 .ui-chat-question[data-status='dismissed'] .ui-chat-question__question {
   font-weight: var(--ref-font-weight-medium);
 }

@@ -14,7 +14,7 @@ export interface ChatQuestionOption {
   id: string;
   /** The option's name: it names its radio or checkbox. */
   label: string;
-  /** A line under the label that describes the option. */
+  /** A line under the label that describes the option, as Markdown. */
   description?: string | undefined;
   /** Marks the option the agent recommends with a "Recommended" badge. */
   isRecommended?: boolean | undefined;
@@ -26,7 +26,10 @@ export interface ChatQuestionOption {
 export interface ChatQuestionItem {
   /** Identifies the question in the answers. */
   id: string;
-  /** The question, as the agent asks it. */
+  /**
+   * The question, as the agent asks it, in Markdown: its opening paragraph names the question and
+   * the blocks after it, such as lists, say more.
+   */
   question: string;
   /** A short label for the question, drawn as a chip. */
   header?: string | undefined;
@@ -80,6 +83,7 @@ export const chatQuestionHooks = createHooks('chat-question', [
   'panel',
   'item',
   'question',
+  'body',
   'answer',
   'options',
   'option',
