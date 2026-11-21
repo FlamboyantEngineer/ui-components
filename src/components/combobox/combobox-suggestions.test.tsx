@@ -44,6 +44,21 @@ describe('Combobox suggestions', () => {
     expect(figs.querySelector('.ui-combobox__option-description')).toBeNull();
   });
 
+  it('UIC-COMBOBOX-2.1 checks the selected option after its content', async () => {
+    const user = userEvent.setup();
+    render(<Combobox aria-label="Fruit" defaultItems={fruit} defaultValue="banana" />);
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    const listbox = await screen.findByRole('listbox');
+    const banana = within(listbox).getByRole('option', { name: 'Banana' });
+    const indicator = banana.lastElementChild;
+    expect(indicator).toHaveClass('ui-combobox__option-indicator');
+    expect(indicator).toHaveAttribute('aria-hidden', 'true');
+    expect(indicator).toHaveAttribute('data-slot', 'combobox-item-indicator');
+    const apple = within(listbox).getByRole('option', { name: 'Apple Crisp' });
+    expect(apple.querySelector('.ui-combobox__option-indicator')).toBeNull();
+  });
+
   it('UIC-COMBOBOX-2.1 draws options with icon, label and description, grouped in sections', async () => {
     const user = userEvent.setup();
     render(<Combobox aria-label="Fruit" defaultItems={fruit} />);

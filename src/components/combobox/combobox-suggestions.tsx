@@ -94,6 +94,7 @@ function OptionRow({
       option={option}
       hooks={hooks}
       highlightMatches={display.highlightMatches}
+      hasIndicator
       renderOption={
         renderOption
           ? (state) => renderOption({ ...option, id: fromCollectionKey(option.id) }, state)
