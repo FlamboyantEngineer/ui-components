@@ -170,6 +170,29 @@ describe('Tooltip', () => {
     expect(tooltip()).toHaveTextContent('Slow hint');
   });
 
+  it('UIC-TOOLTIP-1.1 stays open through a scroll the page makes as it opens, and closes on a reader scroll', async () => {
+    render(
+      <Tooltip content="Export hint">
+        <Button>Export</Button>
+      </Tooltip>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Export' });
+    await tabTo(trigger);
+    // A reveal or focus scroll still running when the hint opened, delivered after it.
+    act(() => {
+      document.dispatchEvent(new Event('scroll'));
+    });
+    await advance(0);
+    expect(tooltip()).toHaveTextContent('Export hint');
+    expect(trigger).toHaveAccessibleDescription('Export hint');
+    act(() => {
+      document.dispatchEvent(new WheelEvent('wheel', { bubbles: true }));
+      document.dispatchEvent(new Event('scroll'));
+    });
+    await advance(1000);
+    expect(tooltip()).toBeNull();
+  });
+
   it('UIC-TOOLTIP-1.2 keeps one tooltip open and warms up neighbours', async () => {
     render(
       <>
