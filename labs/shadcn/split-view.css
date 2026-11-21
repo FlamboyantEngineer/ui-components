@@ -1,0 +1,66 @@
+/*
+ * shadcn/ui stylesheet: split view, after the resizable panels of shadcn/ui's "nova" style. The
+ * group draws no frame of its own. A handle is a 1 pixel line in the border color whose grip is a
+ * rounded 4 by 24 pixel bar in the same color; an invisible band 5 pixels wide keeps it easy to
+ * catch, and the focused handle takes a 1 pixel ring.
+ */
+
+.ui-split-view[data-resizable] {
+  border: 0;
+}
+
+.ui-resize-handle {
+  position: relative;
+  border: 0;
+  background: var(--border);
+}
+
+.ui-resize-handle[data-orientation='vertical'],
+.ui-resize-handle[data-orientation='vertical'][data-size] {
+  width: 1px;
+  border-inline: 0;
+}
+
+.ui-resize-handle[data-orientation='horizontal'],
+.ui-resize-handle[data-orientation='horizontal'][data-size] {
+  height: 1px;
+  border-block: 0;
+}
+
+.ui-resize-handle::after {
+  position: absolute;
+  content: '';
+}
+
+.ui-resize-handle[data-orientation='vertical']::after {
+  inset-block: 0;
+  inset-inline: -2px;
+}
+
+.ui-resize-handle[data-orientation='horizontal']::after {
+  inset-inline: 0;
+  inset-block: -2px;
+}
+
+.ui-resize-handle .ui-resize-handle__grip,
+.ui-resize-handle:is(:hover, :focus-visible, [data-resizing]) .ui-resize-handle__grip {
+  z-index: 1;
+  flex: none;
+  border-radius: var(--ref-radius);
+  background: var(--border);
+}
+
+.ui-resize-handle[data-orientation='vertical'] .ui-resize-handle__grip {
+  width: 4px;
+  height: 24px;
+}
+
+.ui-resize-handle[data-orientation='horizontal'] .ui-resize-handle__grip {
+  width: 24px;
+  height: 4px;
+}
+
+.ui-resize-handle:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 1px var(--ring);
+}

@@ -1,0 +1,34 @@
+/*
+ * shadcn/ui stylesheet: scroll region, after the scroll area of shadcn/ui's "nova" style. The
+ * native scrollbar is the thin one, its thumb in the border color on a clear track; a drawn
+ * overlay track is 10 pixels wide with a fully rounded thumb in the same color. The focused
+ * viewport takes the ring color.
+ */
+
+.ui-scroll-region__viewport {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+.ui-scroll-region__viewport:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: -1px;
+  box-shadow: inset 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+.ui-scroll-region__track[data-orientation='vertical'] {
+  inset-inline-end: 0;
+  width: 10px;
+}
+
+.ui-scroll-region__track[data-orientation='horizontal'] {
+  height: 10px;
+}
+
+.ui-scroll-region__thumb {
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: var(--border);
+  background-clip: padding-box;
+  opacity: 1;
+}
