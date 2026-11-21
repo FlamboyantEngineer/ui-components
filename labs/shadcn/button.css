@@ -1,11 +1,15 @@
 /*
- * shadcn/ui stylesheet: buttons.
- * shadcn/ui's variants on ours. Secondary, the default, is its grey fill; tertiary its outline;
- * primary its dark fill; destructive a tinted fill. A press nudges the button down. This layer
- * wins over every reference rule, so each rule names the variant or state it redraws.
+ * shadcn/ui stylesheet: buttons, after the button of shadcn/ui's "nova" style.
+ * Its variants on ours: secondary, our default, is its grey fill; tertiary its outline; primary its
+ * dark fill; destructive a tinted fill; link a button-sized box whose text underlines. Its sizes
+ * are 24, 28, 32 and 36 pixels; an icon beside the label takes a little of the padding on its side,
+ * and icons are 12 pixels at xs, 14 at sm and 16 above. A press nudges the button down. This
+ * layer wins over every reference rule, so each rule names the variant or state it redraws.
  */
 
 .ui-button {
+  --ref-button-icon: var(--ref-icon-size-lg);
+  line-height: calc(1.25 / 0.875);
   background-clip: padding-box;
   transition:
     background-color var(--ref-duration-fast),
@@ -14,21 +18,86 @@
 }
 
 .ui-button[data-size='xs'] {
+  --ref-button-icon: var(--ref-icon-size-sm);
+  gap: 4px;
   padding: 0 8px;
-  border-radius: calc(var(--ref-radius) - 2px);
+  border-radius: min(calc(var(--radius) * 0.8), 10px);
+  line-height: calc(1 / 0.75);
 }
 
 .ui-button[data-size='sm'] {
+  --ref-button-icon: var(--ref-icon-size-md);
+  gap: 4px;
   padding: 0 10px;
-  border-radius: calc(var(--ref-radius) - 2px);
+  border-radius: min(calc(var(--radius) * 0.8), 12px);
+  line-height: 1.5;
 }
 
 .ui-button[data-size='lg'] {
+  --ref-button-icon: var(--ref-icon-size-lg);
   padding: 0 10px;
 }
 
+/* An icon beside the label: 6 pixels on its side at xs and sm, 8 above. */
+.ui-button:has(> .ui-button__start-icon):not([data-variant='bare']) {
+  padding-inline-start: 8px;
+}
+
+.ui-button:has(> .ui-button__end-icon):not([data-variant='bare']) {
+  padding-inline-end: 8px;
+}
+
+.ui-button:is([data-size='xs'], [data-size='sm']):has(> .ui-button__start-icon):not(
+    [data-variant='bare']
+  ) {
+  padding-inline-start: 6px;
+}
+
+.ui-button:is([data-size='xs'], [data-size='sm']):has(> .ui-button__end-icon):not(
+    [data-variant='bare']
+  ) {
+  padding-inline-end: 6px;
+}
+
+/*
+ * A toggle (a button with a pressed state) is shadcn/ui's toggle: a 4 pixel gap, ghost without a
+ * border, outline on a transparent fill with its input border kept, and the muted fill when on.
+ */
+.ui-button[aria-pressed] {
+  gap: 4px;
+}
+
+.ui-button[aria-pressed][data-variant='ghost'] {
+  border-width: 0;
+}
+
+.ui-button[aria-pressed][data-variant='tertiary'] {
+  border-color: var(--input);
+  background: transparent;
+}
+
+.ui-button[aria-pressed]:is([data-variant='ghost'], [data-variant='tertiary'])[data-selected] {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.ui-button[aria-pressed][data-variant='tertiary'][data-selected] {
+  border-color: var(--input);
+}
+
+/* In the dark, a toggle's hover takes the full muted fill. */
+:where(.dark, [data-theme='dark'])
+  .ui-button[aria-pressed]:is([data-variant='ghost'], [data-variant='tertiary'])[data-hovered] {
+  background: var(--muted);
+}
+
+/* An icon-only button keeps the 16 pixel icon at sm. */
+.ui-button[data-content='icon'][data-size='sm'] {
+  --ref-button-icon: var(--ref-icon-size-lg);
+}
+
 .ui-button[data-pressed]:not([aria-haspopup]) {
-  transform: translateY(1px);
+  translate: 0 1px;
 }
 
 .ui-button[data-variant='secondary'] {
@@ -37,7 +106,7 @@
   color: var(--secondary-foreground);
 }
 
-.ui-button[data-variant='secondary']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
+.ui-button[data-variant='secondary']:is([data-hovered], [data-pressed]) {
   background: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
 }
 
@@ -98,8 +167,35 @@
 }
 
 .ui-button[data-variant='link'] {
+  height: var(--ref-control-height-md);
+  padding: 0 10px;
+  border: 1px solid transparent;
   color: var(--primary);
+  font-weight: var(--ref-font-weight-medium);
   text-underline-offset: 4px;
+}
+
+.ui-button[data-variant='link'][data-size='xs'] {
+  height: var(--ref-control-height-xs);
+  padding: 0 8px;
+}
+
+.ui-button[data-variant='link'][data-size='sm'] {
+  height: var(--ref-control-height-sm);
+  padding: 0 10px;
+}
+
+.ui-button[data-variant='link'][data-size='lg'] {
+  height: var(--ref-control-height-lg);
+}
+
+/* A sentence grows from its size's height; an icon-only button is a square without padding. */
+.ui-button[data-variant='link'][data-content='sentence'] {
+  height: auto;
+}
+
+.ui-button[data-content='icon'][data-size] {
+  padding: 0;
 }
 
 .ui-button[data-variant='chip'] {
@@ -114,11 +210,6 @@
 /* Focus turns any variant's border to the ring color, inside the ring the bridge draws. */
 .ui-button[data-focus-visible]:not([data-variant='destructive']) {
   border-color: var(--ref-focus);
-}
-
-/* An attached group shares outline borders; the grey fills meet with a hairline between them. */
-.ui-button-group[data-attached] > .ui-button[data-variant='secondary']:not(:first-child) {
-  border-inline-start-color: var(--border);
 }
 
 :where(.dark, [data-theme='dark']) .ui-button[data-variant='tertiary'] {
@@ -143,4 +234,14 @@
 :where(.dark, [data-theme='dark'])
   .ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
   background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+/* In the dark, the outline keeps its input border under focus and the destructive ring deepens. */
+:where(.dark, [data-theme='dark'])
+  .ui-button[data-variant='tertiary'][data-focus-visible]:not([aria-pressed]) {
+  border-color: var(--input);
+}
+
+:where(.dark, [data-theme='dark']) .ui-button[data-variant='destructive'][data-focus-visible] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }

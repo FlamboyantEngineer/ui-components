@@ -1,8 +1,34 @@
 /*
- * shadcn/ui stylesheet: badges.
- * Borderless pills. Solid neutral is the primary fill, subtle neutral the secondary grey, and the
- * tones a light tint of their color. Bare, dot and status badges keep the reference look.
+ * shadcn/ui stylesheet: badges, after the badge of shadcn/ui's "nova" style.
+ * Borderless pills, 20 pixels high at the default size with 12 pixel type and icons. Solid neutral
+ * is shadcn/ui's default (the primary fill), a count its number badge, subtle neutral its secondary grey, subtle danger its
+ * destructive tint, and the other tones a light tint of their color. Bare, dot and status badges
+ * keep the reference look.
  */
+
+.ui-badge:not([data-variant='dot']) {
+  border-radius: calc(var(--radius) * 2.6);
+}
+
+.ui-badge[data-size='md']:not([data-variant='dot']) {
+  min-height: 20px;
+  padding: 0 8px;
+  font-size: var(--ref-font-size-xs);
+  line-height: calc(1 / 0.75);
+}
+
+.ui-badge[data-size='md'] :is(.ui-badge__start-icon, .ui-badge__end-icon) {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-badge[data-size='md']:has(> .ui-badge__start-icon):not([data-variant='status']) {
+  padding-inline-start: 6px;
+}
+
+.ui-badge[data-size='md']:has(> .ui-badge__end-icon) {
+  padding-inline-end: 6px;
+}
 
 .ui-badge:is([data-variant='subtle'], [data-variant='solid']):not([data-bare]) {
   border-color: transparent;
@@ -26,4 +52,13 @@
 .ui-badge[data-variant='solid']:not([data-tone='neutral'], [data-bare]) {
   background: var(--ref-tone-fill);
   color: var(--ref-on-tone-fill);
+}
+
+.ui-badge[data-variant='subtle'][data-tone='danger']:not([data-bare]) {
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-badge[data-variant='subtle'][data-tone='danger']:not([data-bare]) {
+  background: color-mix(in oklab, var(--destructive) 20%, transparent);
 }

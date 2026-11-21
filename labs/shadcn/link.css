@@ -1,0 +1,12 @@
+/*
+ * shadcn/ui stylesheet: links, after the text links of shadcn/ui's "nova" style: medium weight in
+ * the primary color, with the underline 4 pixels below the text.
+ */
+
+.ui-link {
+  text-underline-offset: 4px;
+}
+
+.ui-link:not([data-variant='secondary'], [data-disabled]) {
+  font-weight: var(--ref-font-weight-medium);
+}

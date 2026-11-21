@@ -188,8 +188,10 @@
 @import url('shadcn/choice-group.css') layer(ui-shadcn);
 @import url('shadcn/dialog.css') layer(ui-shadcn);
 @import url('shadcn/drawer.css') layer(ui-shadcn);
+@import url('shadcn/link.css') layer(ui-shadcn);
 @import url('shadcn/menu.css') layer(ui-shadcn);
 @import url('shadcn/popover.css') layer(ui-shadcn);
+@import url('shadcn/segmented-choice.css') layer(ui-shadcn);
 @import url('shadcn/switch.css') layer(ui-shadcn);
 @import url('shadcn/tabs.css') layer(ui-shadcn);
 @import url('shadcn/tooltip.css') layer(ui-shadcn);
