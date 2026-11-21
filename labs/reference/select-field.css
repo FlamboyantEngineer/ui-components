@@ -229,6 +229,11 @@
   opacity: var(--ref-disabled-opacity);
 }
 
+/* The reference sheet marks a single choice by the row's selected state, so its check stays hidden. */
+.ui-select-field__option-indicator {
+  display: none;
+}
+
 .ui-select-field__option-check {
   display: inline-grid;
   flex: none;

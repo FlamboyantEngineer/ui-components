@@ -218,6 +218,11 @@
   outline: none;
 }
 
+/* The reference sheet marks a choice by the row's selected state, so its check stays hidden. */
+.ui-combobox__option-indicator {
+  display: none;
+}
+
 .ui-combobox__option[data-focused] {
   background: var(--ref-hover);
 }

@@ -1,9 +1,10 @@
 'use client';
 
 import { type CSSProperties, type ReactNode, useState } from 'react';
+import { CheckGlyph } from '../../core/glyphs.js';
 import type { ComponentHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps, SelectableState } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
 import { ListBoxItem, PopoverContext, useSlottedContext } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
@@ -23,7 +24,12 @@ type PickerSearchStatus = Pick<
 
 /** The slots of a picker's option rows. */
 type PickerOptionSlot =
-  'option' | 'option-icon' | 'option-label' | 'option-description' | 'option-shortcut';
+  | 'option'
+  | 'option-icon'
+  | 'option-label'
+  | 'option-description'
+  | 'option-shortcut'
+  | 'option-indicator';
 
 interface PickerOptionRowProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
   /** The row's collection key. */
@@ -39,6 +45,8 @@ interface PickerOptionRowProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivEl
   renderLead?: ((state: SelectableState) => ReactNode) | undefined;
   /** Draws the option's content instead of its icon, label and description. */
   renderOption?: ((state: SelectableState) => ReactNode) | undefined;
+  /** Draws a decorative check after the content while the option is selected. */
+  hasIndicator?: boolean | undefined;
 }
 
 /**
@@ -107,6 +115,7 @@ export function PickerOptionRow({
   highlightMatches,
   renderLead,
   renderOption,
+  hasIndicator = false,
   className,
   ref,
   ...rest
@@ -144,6 +153,9 @@ export function PickerOptionRow({
                 highlightMatches={highlightMatches}
               />
             )}
+            {hasIndicator && state.isSelected ? (
+              <Glyph icon={CheckGlyph} className={hooks.slotClass('option-indicator')} />
+            ) : null}
             {isEmptyNode(option.tooltip) ? null : (
               <PickerOptionTooltip anchor={row} content={option.tooltip} state={state} />
             )}
