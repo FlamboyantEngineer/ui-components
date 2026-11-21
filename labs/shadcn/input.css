@@ -1,0 +1,46 @@
+/*
+ * shadcn/ui stylesheet: inputs, after the input of shadcn/ui's "nova" style: a transparent fill
+ * (the input color at 30% in the dark) inside the input border, 10 pixels of padding and 14 pixel
+ * type; focus turns the border to the ring color inside a 3 pixel ring, invalid to the destructive
+ * color inside its tint, and disabled dims the whole control over a light input fill.
+ */
+
+.ui-input {
+  padding-inline: 10px;
+  background: transparent;
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-input[data-focus-visible] {
+  border-color: var(--ref-focus);
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-input[data-invalid] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-input[data-disabled] {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+  color: inherit;
+  opacity: 0.5;
+}
+
+:where(.dark, [data-theme='dark']) .ui-input {
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-input[data-invalid] {
+  border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-input[data-disabled] {
+  background: color-mix(in oklab, var(--input) 80%, transparent);
+}

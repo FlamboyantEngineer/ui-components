@@ -1,11 +1,14 @@
 /*
- * shadcn/ui stylesheet: switches.
- * A 32 by 18 pixel track with a 16 pixel thumb at the default size, no border.
+ * shadcn/ui stylesheet: switches, after the switch of shadcn/ui's "nova" style.
+ * A 32 by 18.4 pixel track with a 16 pixel thumb at the default size and 24 by 14 with 12 at xs,
+ * its "sm"; a transparent border that takes the ring color under focus and the destructive color
+ * when invalid, each with a 3 pixel ring. The thumb is the background, or the foreground off in the dark;
+ * its label is medium.
  */
 
 .ui-switch {
   --ref-switch-track-width: 32px;
-  --ref-switch-track-height: 18px;
+  --ref-switch-track-height: 18.4px;
   --ref-switch-thumb: 16px;
 }
 
@@ -27,9 +30,16 @@
   --ref-switch-thumb: 18px;
 }
 
+.ui-switch__label {
+  font-weight: var(--ref-font-weight-medium);
+}
+
 .ui-switch__track {
   border-color: transparent;
   background: var(--input);
+  transition:
+    background-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
 }
 
 .ui-switch__thumb {
@@ -41,17 +51,19 @@
   background: var(--primary);
 }
 
-.ui-switch[data-selected] .ui-switch__thumb {
-  background: var(--primary-foreground);
-}
-
 .ui-switch[data-hovered] .ui-switch__track {
   border-color: transparent;
 }
 
 .ui-switch[data-focus-visible] .ui-switch__track {
   border-color: var(--ref-focus);
-  outline-offset: 0;
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-switch[data-invalid] .ui-switch__track {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
 }
 
 :where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__track {
@@ -60,4 +72,13 @@
 
 :where(.dark, [data-theme='dark']) .ui-switch:not([data-selected]) .ui-switch__thumb {
   background: var(--foreground);
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch[data-selected] .ui-switch__thumb {
+  background: var(--primary-foreground);
+}
+
+:where(.dark, [data-theme='dark']) .ui-switch[data-invalid] .ui-switch__track {
+  border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }
