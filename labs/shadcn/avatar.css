@@ -1,0 +1,40 @@
+/*
+ * shadcn/ui stylesheet: avatars, after the avatar of shadcn/ui's "nova" style. Initials sit on the
+ * muted fill in regular 14 pixel text (12 at the small sizes), and a hairline in the border color,
+ * blended into the picture or the fill, rings every filled avatar. Sizes stay 24, 32 and 40 pixels.
+ * Outlined avatars keep their colored ring.
+ */
+
+.ui-avatar {
+  font-weight: 400;
+}
+
+.ui-avatar:is([data-size='md'], [data-size='lg']) {
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-avatar:is([data-size='xs'], [data-size='sm']) {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-avatar:not([data-variant='outlined']) .ui-avatar__initials {
+  background: var(--muted);
+  color: var(--ref-muted);
+  letter-spacing: normal;
+}
+
+.ui-avatar:not([data-variant='outlined'], [data-kind='group'])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: inherit;
+  mix-blend-mode: darken;
+  pointer-events: none;
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-avatar:not([data-variant='outlined'], [data-kind='group'])::after {
+  mix-blend-mode: lighten;
+}

@@ -1,0 +1,47 @@
+/*
+ * shadcn/ui stylesheet: banners, after the alert of shadcn/ui's "nova" style. A card-colored box
+ * with a hairline border, the base radius and 8 by 10 pixels of padding, whatever its tone: its 16
+ * pixel glyph in the text color beside the first line, a medium title 2 pixels above a muted
+ * description, 14 pixel text on a 20 pixel line. A danger banner turns its text, glyph and
+ * description to the destructive color. Inline banners keep the reference look.
+ */
+
+.ui-banner:not([data-inline]) {
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-color: var(--border);
+  border-radius: var(--ref-radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-banner:not([data-inline]) .ui-banner__icon {
+  margin-block-start: 2px;
+  color: inherit;
+}
+
+.ui-banner__title {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-banner:not([data-inline]) .ui-banner__description {
+  color: var(--ref-muted);
+}
+
+.ui-banner[data-tone='danger']:not([data-inline]) {
+  color: var(--ref-danger);
+}
+
+.ui-banner[data-tone='danger']:not([data-inline]) .ui-banner__description {
+  color: color-mix(in oklab, var(--ref-danger) 90%, var(--card));
+}
+
+.ui-banner:not([data-inline]) .ui-banner__dismiss {
+  margin-block: -2px;
+}
+
+/* A leaving banner fades a little; its description takes the full text color to keep its contrast. */
+.ui-banner[data-exiting]:not([data-inline]) .ui-banner__description {
+  color: inherit;
+}

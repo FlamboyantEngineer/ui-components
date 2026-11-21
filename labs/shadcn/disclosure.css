@@ -1,0 +1,64 @@
+/*
+ * shadcn/ui stylesheet: disclosures and accordions, after the accordion of shadcn/ui's "nova"
+ * style. Items are divided by hairlines with none around the group; a trigger is 14 pixel medium
+ * text with 10 pixels above and below and none at the sides, its title underlined under the pointer
+ * rather than filled, its 16 pixel chevron muted, and the ring color with a 3 pixel ring on focus.
+ * The panel's 14 pixel text starts under the title and leaves 10 pixels below.
+ */
+
+.ui-disclosure-group {
+  border-block: 0;
+}
+
+.ui-disclosure__heading {
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-disclosure__trigger {
+  padding: 10px 0;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius);
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-disclosure__trigger:is([data-hovered], [data-pressed]) {
+  background: none;
+}
+
+.ui-disclosure__trigger[data-hovered] .ui-disclosure__title {
+  text-decoration: underline;
+}
+
+.ui-disclosure__trigger[data-focus-visible] {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-disclosure__trigger[data-disabled] {
+  color: inherit;
+  opacity: 0.5;
+}
+
+.ui-disclosure__indicator {
+  color: var(--ref-muted);
+}
+
+.ui-disclosure__panel,
+.ui-disclosure[data-indicator-position='end'] > .ui-disclosure__panel {
+  padding-inline: 0;
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-disclosure__panel::before {
+  height: 0;
+}
+
+.ui-disclosure__panel::after {
+  height: 10px;
+}
