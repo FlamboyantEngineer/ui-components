@@ -1,0 +1,48 @@
+/*
+ * shadcn/ui stylesheet: pagination, after the pagination of shadcn/ui's "nova" style. Pages and
+ * the previous and next buttons are 32 pixel square ghost buttons in 14 pixel text, 2 pixels apart;
+ * the current page is drawn as the outline button; the ellipsis fills a 32 pixel square in the text
+ * color.
+ */
+
+.ui-pagination__page.ui-button,
+.ui-pagination__previous.ui-button,
+.ui-pagination__next.ui-button {
+  gap: 0;
+  min-width: var(--ref-control-height-md);
+  height: var(--ref-control-height-md);
+  padding: 0;
+  border-radius: var(--ref-radius);
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-pagination__page.ui-button {
+  padding: 0 6px;
+}
+
+.ui-pagination__page.ui-button[data-current] {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.ui-pagination__page.ui-button[data-current]:is([data-hovered], [data-pressed]) {
+  background: var(--muted);
+}
+
+:where(.dark, [data-theme='dark']) .ui-pagination__page.ui-button[data-current] {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-pagination__page.ui-button[data-current]:is([data-hovered], [data-pressed]) {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+}
+
+.ui-pagination__ellipsis {
+  min-width: var(--ref-control-height-md);
+  height: var(--ref-control-height-md);
+  color: var(--foreground);
+}

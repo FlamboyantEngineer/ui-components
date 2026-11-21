@@ -1,0 +1,41 @@
+/*
+ * shadcn/ui stylesheet: breadcrumbs, after the breadcrumb of shadcn/ui's "nova" style. A trail of
+ * muted links 6 pixels from their 14 pixel chevrons, each link taking the text color under the
+ * pointer, and the current page in the text color at the regular weight; 14 pixel text on a 20
+ * pixel line at the default size.
+ */
+
+.ui-breadcrumb[data-size='md'] {
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-breadcrumb__list,
+.ui-breadcrumb__item {
+  gap: 6px;
+}
+
+.ui-breadcrumb__link {
+  color: var(--ref-muted);
+  transition: color var(--ref-duration-fast);
+}
+
+.ui-breadcrumb__link[data-hovered] {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.ui-breadcrumb__link[data-current] {
+  color: var(--foreground);
+  font-weight: 400;
+}
+
+.ui-breadcrumb__separator {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.ui-breadcrumb__separator .ui-glyph {
+  width: 14px;
+  height: 14px;
+}

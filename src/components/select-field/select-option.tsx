@@ -43,6 +43,7 @@ function OptionRow({
       option={option}
       hooks={hooks}
       isDisabled={option.isDisabled || blockedKeys.has(option.id)}
+      hasIndicator={!isMultiple}
       renderLead={
         isMultiple
           ? (state) => (

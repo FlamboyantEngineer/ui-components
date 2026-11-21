@@ -1,7 +1,18 @@
 /*
- * shadcn/ui stylesheet: tabs.
- * A row of tabs is a muted pill list, the selected tab a raised chip inside it.
+ * shadcn/ui stylesheet: tabs, after the tabs of shadcn/ui's "nova" style. A row of tabs is a 32
+ * pixel muted pill list with 3 pixels of padding, its tabs 25 pixel chips of 14 pixel medium text
+ * with 6 pixels of padding, the selected one raised on the page color; the panel follows 8 pixels
+ * below, unpadded. The line variant keeps the list's box without its fill and marks the selected
+ * tab with a 2 pixel line at the list's foot.
  */
+
+.ui-tabs:not([data-orientation='vertical']) {
+  gap: 8px;
+}
+
+.ui-tabs__panel {
+  padding: 0;
+}
 
 .ui-tabs:not([data-orientation='vertical']) > .ui-tabs__bar,
 .ui-tabs__list:not([data-orientation='vertical']) {
@@ -10,29 +21,42 @@
 
 .ui-tabs__list:not([data-orientation='vertical']) {
   align-self: flex-start;
-  gap: 2px;
+  box-sizing: border-box;
+  gap: 0;
   max-width: 100%;
+  height: var(--ref-control-height-md);
   padding: 3px;
   border-radius: var(--ref-radius);
   background: var(--muted);
 }
 
 .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
-  height: calc(var(--ref-control-height-md) - 6px);
-  padding: 0 8px;
+  justify-content: center;
+  height: calc(var(--ref-control-height-md) - 7px);
+  padding: 2px 6px;
   border: 1px solid transparent;
   border-radius: calc(var(--ref-radius) - 2px);
   color: color-mix(in oklab, var(--foreground) 60%, transparent);
   font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-tabs[data-size='sm'] .ui-tabs__list:not([data-orientation='vertical']) {
+  height: var(--ref-control-height-sm);
 }
 
 .ui-tabs[data-size='sm'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
-  height: calc(var(--ref-control-height-sm) - 6px);
+  height: calc(var(--ref-control-height-sm) - 7px);
+  padding-block: 0;
+}
+
+.ui-tabs[data-size='lg'] .ui-tabs__list:not([data-orientation='vertical']) {
+  height: var(--ref-control-height-lg);
 }
 
 .ui-tabs[data-size='lg'] .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab {
-  height: calc(var(--ref-control-height-lg) - 6px);
-  padding: 0 10px;
+  height: calc(var(--ref-control-height-lg) - 7px);
+  padding-inline: 8px;
 }
 
 .ui-tabs__list:not([data-orientation='vertical']) .ui-tabs__tab[data-hovered] {
@@ -65,7 +89,7 @@
 
 /* The line variant: no track; the selected tab is marked by a line under it, in the text color. */
 .ui-tabs__list[data-variant='line']:not([data-orientation='vertical']) {
-  padding: 0;
+  gap: 4px;
   border-radius: 0;
   background: transparent;
 }
@@ -79,5 +103,6 @@
 
 .ui-tabs__list[data-variant='line']:not([data-orientation='vertical']) .ui-tabs__indicator {
   display: block;
+  bottom: -5px;
   background: var(--foreground);
 }
