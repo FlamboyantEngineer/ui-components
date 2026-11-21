@@ -18,6 +18,7 @@ import { useLayerZIndex } from '../portal/portal.js';
 import { useInCallerTrigger } from './caller-trigger.js';
 import { TooltipEscape } from './tooltip-escape.js';
 import { tooltipHooks as hooks } from './tooltip-hooks.js';
+import { TooltipScrollGuard } from './tooltip-scroll-guard.js';
 
 export type TooltipVariant = 'default' | 'info';
 
@@ -85,16 +86,18 @@ export function TooltipContent({
 }: TooltipContentProps) {
   const zIndex = useLayerZIndex('tooltip');
   return (
-    <AriaTooltip
-      {...rest}
-      placement={placement}
-      offset={TOOLTIP_OFFSET}
-      {...hooks.root({ className, data: { variant, layer: 'tooltip' } })}
-      style={{ zIndex }}
-    >
-      <OverlayArrow className={hooks.slotClass('arrow')} />
-      <span {...hooks.slot('content')}>{children}</span>
-    </AriaTooltip>
+    <TooltipScrollGuard>
+      <AriaTooltip
+        {...rest}
+        placement={placement}
+        offset={TOOLTIP_OFFSET}
+        {...hooks.root({ className, data: { variant, layer: 'tooltip' } })}
+        style={{ zIndex }}
+      >
+        <OverlayArrow className={hooks.slotClass('arrow')} />
+        <span {...hooks.slot('content')}>{children}</span>
+      </AriaTooltip>
+    </TooltipScrollGuard>
   );
 }
 

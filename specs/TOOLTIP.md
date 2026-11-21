@@ -10,7 +10,9 @@
 
 `TooltipTrigger` shall also accept a focusable element (including a native button or link) followed by its `TooltipContent`, with the same timing, outside ownership, focus and description behavior. It owns the open state and adds no wrapper. The `TooltipContent` owns the panel's placement, variant and attributes. A caller's ref reaches the panel when open.
 
-Implementation: `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/caller-trigger.ts`
+An open hint closes on a scroll of its trigger's scroll containers only when the reader made it: until the reader turns a wheel, moves a touch, presses a pointer or a key after the hint opened, a scroll is the page's own (a reveal or focus scroll still running, or its queued event) and leaves the hint and the trigger's description in place, as for popovers and menus.
+
+Implementation: `src/components/tooltip/tooltip.tsx`, `src/components/tooltip/tooltip-scroll-guard.tsx`, `src/components/tooltip/caller-trigger.ts`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.2 - Opening
@@ -128,7 +130,7 @@ Verification: `src/components/tooltip/truncation-tooltip.test.tsx`, `e2e/tooltip
 
 ### UIC-TOOLTIP-3.4 - Dismissal
 
-The tooltip shall close when the pointer leaves the text, when the text is pressed (and stay closed until the pointer enters again), on blur, on scroll and on Escape. Escape is never consumed: it closes the tooltip and goes on, so a dialog or menu around the text closes on the same press. An Escape that belongs to an input method's composition (`isComposing`, or the legacy key code 229), or that something already handled, leaves the tooltip open.
+The tooltip shall close when the pointer leaves the text, when the text is pressed (and stay closed until the pointer enters again), on blur, on a scroll the reader makes ([UIC-TOOLTIP-1.1](#uic-tooltip-11---trigger-and-panel)) and on Escape. Escape is never consumed: it closes the tooltip and goes on, so a dialog or menu around the text closes on the same press. An Escape that belongs to an input method's composition (`isComposing`, or the legacy key code 229), or that something already handled, leaves the tooltip open.
 
 Implementation: `src/components/tooltip/truncation-tooltip.tsx`
 Verification: `src/components/tooltip/truncation-tooltip.test.tsx`, `e2e/tooltip-truncation-tooltip.spec.ts`
