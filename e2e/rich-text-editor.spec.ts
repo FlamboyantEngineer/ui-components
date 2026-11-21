@@ -175,6 +175,8 @@ test.describe('Rich Text Editor lab', () => {
     await expect(box.locator('a')).toHaveAttribute('href', 'https://example.com/day');
     await expect(box.locator('a')).toHaveText('day');
     await expect(box).toBeFocused();
+    // The link popover restores the editor's selection when its exit ends; wait for that first.
+    await expect(address).toHaveCount(0);
     // Put the caret inside the link whether the applied link left it selected or collapsed at its
     // end, where an exclusive link mark no longer applies.
     await page.keyboard.press('End');

@@ -135,3 +135,25 @@
   background: var(--accent);
   color: var(--accent-foreground);
 }
+
+/* A selected option keeps the room for its check at its end, where the check sits 8 pixels in. */
+.ui-select-field__option:has(> .ui-select-field__option-indicator) {
+  position: relative;
+  padding-inline-end: 32px;
+}
+
+.ui-select-field__option-indicator {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 8px;
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: inherit;
+  transform: translateY(-50%);
+}
+
+/* The selected option takes no fill: its check, 8 pixels inside the row's end, marks it. */
+.ui-select-field__option[data-selected]:not([data-focused]) {
+  background: transparent;
+}
