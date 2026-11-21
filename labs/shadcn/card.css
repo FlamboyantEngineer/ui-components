@@ -1,7 +1,47 @@
 /*
- * shadcn/ui stylesheet: cards.
- * rounded-xl, a hairline ring and no rule under the header; the footer is a muted band.
+ * shadcn/ui stylesheet: cards, after the card of shadcn/ui's "nova" style: rounded-xl, a hairline
+ * ring and no rule under the header. At the default density the parts sit 16 pixels apart (12 in a
+ * small card) with as much above the first and at the sides; a medium title 4 pixels above the
+ * description, and the footer a muted band of 14 pixel text with that padding all round, flush
+ * with the card's foot. Media at the top run to the card's edge.
  */
+
+.ui-card[data-density='default'] {
+  gap: 16px;
+  padding-block: 16px;
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-card[data-density='default'][data-size='sm'] {
+  gap: 12px;
+  padding-block: 12px;
+}
+
+.ui-card[data-density='default']:has(> .ui-card__footer) {
+  padding-block-end: 0;
+}
+
+.ui-card[data-density='default']:has(> .ui-card__media:first-child) {
+  padding-block-start: 0;
+}
+
+.ui-card[data-density='default'] > :is(.ui-card__header, .ui-card__body) {
+  padding: 0 16px;
+}
+
+.ui-card[data-density='default'][data-size='sm'] > :is(.ui-card__header, .ui-card__body) {
+  padding: 0 12px;
+}
+
+.ui-card[data-density='default'] > .ui-card__footer {
+  padding: 16px;
+  color: var(--card-foreground);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-card[data-density='default'][data-size='sm'] > .ui-card__footer {
+  padding: 12px;
+}
 
 .ui-card:not([data-selected], [data-variant='panel']) {
   border-color: color-mix(in oklab, var(--foreground) 10%, transparent);
@@ -23,6 +63,7 @@
 .ui-card__title {
   font-size: var(--ref-font-size-lg);
   font-weight: var(--ref-font-weight-medium);
+  line-height: 1.375;
 }
 
 .ui-card__footer {

@@ -1,0 +1,43 @@
+/*
+ * shadcn/ui stylesheet: empty states, after the empty of shadcn/ui's "nova" style. Upright 14
+ * pixel text in 24 pixels of padding: the glyph in a 32 pixel muted square with the base radius, a
+ * medium title 8 pixels above the muted description on a relaxed line, and the actions 16 pixels
+ * below. The small size keeps the reference's inline look.
+ */
+
+.ui-empty-state:not([data-size='sm']) {
+  gap: 8px;
+  padding: 24px;
+  font-style: normal;
+}
+
+.ui-empty-state__title {
+  color: var(--foreground);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
+  letter-spacing: -0.025em;
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-empty-state:not([data-size='sm']) .ui-empty-state__description {
+  font-size: var(--ref-font-size-md);
+  line-height: 1.625;
+}
+
+.ui-empty-state:not([data-size='sm']) .ui-empty-state__icon,
+.ui-empty-state__media[data-variant='icon'] {
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  margin-block-end: 8px;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--ref-radius);
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.ui-empty-state:not([data-size='sm']) .ui-empty-state__actions {
+  gap: 10px;
+  margin-block-start: 8px;
+}
