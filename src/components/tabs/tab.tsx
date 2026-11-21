@@ -32,9 +32,9 @@ import { useTabMenuTarget } from './tab-menu.js';
 import { TabCount, TabRemoveMark } from './tab-parts.js';
 import { type TabDropPosition, type TabReorder, useTabDrag } from './tab-reorder.js';
 
-export interface TabProps
+export interface TabsTriggerProps
   extends Omit<BaseProps, 'id'>, AriaLabellingProps, RefProps<HTMLDivElement> {
-  /** Pairs the tab with the `TabPanel` of the same `id`. */
+  /** Pairs the tab with the `TabsContent` of the same `id`. */
   id?: Key | undefined;
   /** Refuses selection and focus. */
   isDisabled?: boolean | undefined;
@@ -71,12 +71,12 @@ interface TabDrag {
   dropPosition: TabDropPosition | null;
 }
 
-interface TabItemProps extends TabProps {
+interface TabItemProps extends TabsTriggerProps {
   actions: TabActions;
   drag?: TabDrag | undefined;
 }
 
-type TabRender = NonNullable<TabProps['render']>;
+type TabRender = NonNullable<TabsTriggerProps['render']>;
 type TabElementProps = JSX.IntrinsicElements['div'] | JSX.IntrinsicElements['a'];
 
 /** Whether a tab refuses focus: on its own, through the list's `disabledKeys`, or with the list. */
@@ -123,7 +123,7 @@ function useTabActionProps(
     key: Key | undefined;
     isDisabled: boolean;
     drag: TabDrag | undefined;
-    onContextMenu: TabProps['onContextMenu'];
+    onContextMenu: TabsTriggerProps['onContextMenu'];
   },
 ) {
   const menuTarget = useTabMenuTarget(actions.menu, { tabKey: key, isDisabled, onContextMenu });
@@ -227,7 +227,7 @@ function MovableTab({ reorder, ...props }: TabItemProps & { reorder: TabReorder;
  * (`UiProvider` `navigate`) when selected. In a list that takes them it draws a close mark, renames
  * in place, drags and opens a menu of its actions.
  */
-export function Tab({ id, ...props }: TabProps): ReactElement {
+export function TabsTrigger({ id, ...props }: TabsTriggerProps): ReactElement {
   const actions = useContext(TabActionsContext);
   const { reorder } = actions;
   // The list's actions, its panels and its selection all work on the collection key.

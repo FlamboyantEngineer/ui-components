@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
-import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  type TooltipVariant,
+} from '../../src/components/tooltip/tooltip.js';
 import { RedoGlyph, RefreshGlyph, UndoGlyph } from '../../src/core/glyphs.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { AnchoredTooltipCases } from './tooltip-anchored-cases.js';
@@ -61,6 +66,15 @@ function EscapeOwnerHint() {
 mountLab(
   <>
     <TooltipTruncationCases />
+    <LabSection title="Composed hint">
+      <div data-lab-demo="composed-hint">
+        <Button>Previous control</Button>
+        <TooltipTrigger trigger="focus">
+          <Button>Export</Button>
+          <TooltipContent variant="info">Downloads a CSV file</TooltipContent>
+        </TooltipTrigger>
+      </div>
+    </LabSection>
     <LabSection
       title="Escape ownership"
       description="Closing a hint leaves the same Escape available to its owning surface."

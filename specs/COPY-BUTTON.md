@@ -36,13 +36,13 @@ Verification: `src/components/copy-button/copy-button.test.tsx`, `e2e/copy-butto
 
 ## Hooks
 
-| Hook                     | Kind      | Values                                                                                  | Description                                                      |
-| ------------------------ | --------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `ui-copy-button`         | root      |                                                                                         | The `<span>` holding the button and its live region.             |
-| `ui-copy-button__button` | slot      |                                                                                         | The button (also `ui-button`).                                   |
-| `ui-copy-button__status` | slot      |                                                                                         | The visually hidden live region that announces the outcome.      |
-| `data-variant`           | attribute | `primary`, `secondary`, `tertiary`, `danger`, `ghost`, `accent`, `chip`, `link`, `bare` | The button's variant, `ghost` by default.                        |
-| `data-size`              | attribute | `xs`, `sm`, `md`, `lg`                                                                  | The button's size, `md` by default.                              |
-| `data-disabled`          | state     | `true`                                                                                  | The button is disabled.                                          |
-| `data-copied`            | state     | `true`                                                                                  | The last copy reached the clipboard and its feedback is showing. |
-| `data-failed`            | state     | `true`                                                                                  | The last copy was refused and its feedback is showing.           |
+| Hook                     | Kind      | Values                                                                                       | Description                                                      |
+| ------------------------ | --------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `ui-copy-button`         | root      |                                                                                              | The `<span>` holding the button and its live region.             |
+| `ui-copy-button__button` | slot      |                                                                                              | The button (also `ui-button`).                                   |
+| `ui-copy-button__status` | slot      |                                                                                              | The visually hidden live region that announces the outcome.      |
+| `data-variant`           | attribute | `primary`, `secondary`, `tertiary`, `destructive`, `ghost`, `accent`, `chip`, `link`, `bare` | The button's variant, `ghost` by default.                        |
+| `data-size`              | attribute | `xs`, `sm`, `md`, `lg`                                                                       | The button's size, `md` by default.                              |
+| `data-disabled`          | state     | `true`                                                                                       | The button is disabled.                                          |
+| `data-copied`            | state     | `true`                                                                                       | The last copy reached the clipboard and its feedback is showing. |
+| `data-failed`            | state     | `true`                                                                                       | The last copy was refused and its feedback is showing.           |

@@ -1,17 +1,18 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, RefProps, Size } from '../../core/props.js';
+import type { BaseProps, NativeProps, RefProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Icon, type IconSource, toIconProps } from '../icon/icon.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
+import { EmptyDescription, type EmptySize, EmptyTitle } from './empty-parts.js';
+import { emptyStateHooks as hooks } from './empty-state-hooks.js';
 
 /** `empty`: loaded with nothing to show. `loading`: being fetched. `error`: could not load. */
 export type EmptyStateVariant = 'empty' | 'loading' | 'error';
 
-export type EmptyStateSize = Extract<Size, 'sm' | 'md'>;
+export type EmptyStateSize = EmptySize;
 
 export interface EmptyStateProps
   extends BaseProps, RefProps<HTMLElement>, Pick<NativeProps<'section'>, 'hidden'> {
@@ -30,8 +31,6 @@ export interface EmptyStateProps
   /** Calls to action under the description, such as a button that adds the first item. */
   actions?: ReactNode;
 }
-
-const hooks = createHooks('empty-state', ['spinner', 'icon', 'title', 'description', 'actions']);
 
 const loadingRegion = { role: 'status', 'aria-live': 'polite', 'aria-atomic': true } as const;
 
@@ -58,7 +57,6 @@ export function EmptyState({
   ...rest
 }: EmptyStateProps) {
   const isLoading = variant === 'loading';
-  const Heading = `h${headingLevel}` as const;
 
   return (
     <section
@@ -67,8 +65,8 @@ export function EmptyState({
       {...(isLoading ? loadingRegion : {})}
     >
       <EmptyStateLead icon={icon} isLoading={isLoading} />
-      {isEmptyNode(title) ? null : <Heading {...hooks.slot('title')}>{title}</Heading>}
-      <p {...hooks.slot('description')}>{description}</p>
+      {isEmptyNode(title) ? null : <EmptyTitle headingLevel={headingLevel}>{title}</EmptyTitle>}
+      <EmptyDescription>{description}</EmptyDescription>
       {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
     </section>
   );

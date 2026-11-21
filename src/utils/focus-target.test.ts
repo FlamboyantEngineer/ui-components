@@ -24,7 +24,7 @@ describe('focus targets', () => {
     expect(isFocusableElement({ focus() {} })).toBe(false);
   });
 
-  it('UIC-MODAL-3.4 follows focus into a same-origin frame', () => {
+  it('UIC-DIALOG-3.4 follows focus into a same-origin frame', () => {
     const outside = document.body.appendChild(document.createElement('button'));
     const { frame, button } = createFrame();
     outside.focus();

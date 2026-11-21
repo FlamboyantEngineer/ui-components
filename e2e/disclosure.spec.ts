@@ -261,3 +261,14 @@ test.describe('Disclosure lab', () => {
     await lab.expectAccessible('[data-lab-demo="rendered-roots"]');
   });
 });
+
+test('UIC-DISCLOSURE-5.1 opens a composed collapsible without an extra heading', async ({
+  lab,
+  page,
+}) => {
+  await lab.open('disclosure');
+  const trigger = page.getByRole('button', { name: 'Show trail details' });
+  await expect(page.getByRole('heading', { name: 'Show trail details' })).toHaveCount(0);
+  await trigger.press('Enter');
+  await expect(page.getByText('The loop follows the river for two miles.')).toBeVisible();
+});

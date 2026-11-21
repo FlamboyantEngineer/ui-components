@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { Dialog } from '../dialog/dialog.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Modal } from '../modal/modal.js';
 import { CommandPalette } from './command-palette.js';
 
 const commands: MenuEntry[] = [{ id: 'new', label: 'New file' }];
@@ -56,9 +56,9 @@ describe('CommandPalette chord owner', () => {
     render(
       <>
         <CommandPalette items={commands} onOpenChange={onOpenChange} />
-        <Modal title="Settings" isOpen>
+        <Dialog title="Settings" isOpen>
           <input aria-label="Name" />
-        </Modal>
+        </Dialog>
       </>,
     );
     const name = await screen.findByRole('textbox', { name: 'Name' });

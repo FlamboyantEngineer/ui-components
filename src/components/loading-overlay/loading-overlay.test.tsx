@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { LoadingCard, LoadingOverlay, LoadingRegion } from './loading-overlay.js';
 
 const card = () => document.querySelector<HTMLElement>('.ui-loading-card');
@@ -326,9 +326,9 @@ describe('LoadingOverlay presence', () => {
       );
     }
     render(
-      <Modal title="Edit" defaultOpen>
+      <Dialog title="Edit" defaultOpen>
         <Saving />
-      </Modal>,
+      </Dialog>,
     );
     await userEvent.click(await screen.findByRole('button', { name: 'Save' }));
     const status = await screen.findByRole('status');

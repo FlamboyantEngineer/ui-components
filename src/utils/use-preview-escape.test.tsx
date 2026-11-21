@@ -4,8 +4,8 @@ import type { KeyboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../test/composition.js';
 import { Button } from '../components/button/button.js';
+import { Dialog } from '../components/dialog/dialog.js';
 import { HoverCard, HoverCardTrigger } from '../components/hover-card/hover-card.js';
-import { Modal } from '../components/modal/modal.js';
 import { Popover, PopoverTrigger } from '../components/popover/popover.js';
 
 function Preview({ name = 'Preview' }: { name?: string }) {
@@ -92,20 +92,20 @@ describe('preview Escape outside its trigger and card', () => {
   });
 
   for (const refuses of [false, true]) {
-    it(`UIC-HOVER-CARD-1.3 UIC-MODAL-2.1 leaves Escape to an owning modal (refuses=${String(refuses)})`, async () => {
+    it(`UIC-HOVER-CARD-1.3 UIC-DIALOG-2.1 leaves Escape to an owning modal (refuses=${String(refuses)})`, async () => {
       const user = userEvent.setup();
       const onOpenChange = vi.fn();
       render(
         <>
           <Preview />
-          <Modal
+          <Dialog
             defaultOpen
             title="Settings"
             isKeyboardDismissDisabled={refuses}
             onOpenChange={onOpenChange}
           >
             <Button>Setting</Button>
-          </Modal>
+          </Dialog>
         </>,
       );
       const modal = screen.getByRole('dialog', { name: 'Settings' });

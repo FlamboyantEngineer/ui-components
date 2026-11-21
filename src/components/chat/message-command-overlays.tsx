@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { AlertDialog } from '../dialog/dialog.js';
 import { EmojiPicker } from '../emoji-picker/emoji-picker.js';
-import { Modal } from '../modal/modal.js';
 import { Popover, PopoverPanel } from '../popover/popover.js';
 import { FeedbackForm } from './feedback-form.js';
 import { actionHooks } from './message-actions-bar.js';
@@ -71,8 +71,7 @@ export function MessageCommandOverlays({ state }: { state: MessageCommands }) {
         </PopoverPanel>
       ) : null}
       {commands.onDelete ? (
-        <Modal
-          role="alertdialog"
+        <AlertDialog
           isOpen={open?.overlay === 'delete'}
           onOpenChange={close}
           tone="danger"

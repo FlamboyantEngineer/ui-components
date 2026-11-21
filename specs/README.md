@@ -21,7 +21,7 @@ Every component directory is the `Implementation:` of some requirement, and so i
 
 ## File format
 
-- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `MODAL.md`).
+- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `DIALOG.md`).
 - The first line is a `# Title` heading.
 - Requirements are grouped under `## UIC-<AREA>-<n> - <Group title>` headings. Each requirement is a `### UIC-<AREA>-<n>.<m> - <Title>` heading followed by its statement, then two lines:
 
@@ -30,7 +30,7 @@ Every component directory is the `Implementation:` of some requirement, and so i
   Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
   ```
 
-  - `<AREA>` is the spec's name in upper case (`BUTTON`, `MODAL`, `HOOKS`, `PROVIDER`).
+  - `<AREA>` is the spec's name in upper case (`BUTTON`, `DIALOG`, `HOOKS`, `PROVIDER`).
   - `Implementation:` lists the files that implement the requirement, each in backticks.
   - `Verification:` lists the tests that verify it, each in backticks. At least one of those tests names the requirement ID in a test title or comment.
   - Within a group, requirements are numbered from 1 without gaps and appear in number order, and groups appear in ascending order (gaps between group numbers are allowed). A requirement sits under its own group's heading.

@@ -6,7 +6,7 @@ function cell(page: Page, status: string, removable: string, kind: string) {
 }
 
 async function settledViewer(page: Page) {
-  const overlay = page.locator('.ui-modal.ui-media-viewer');
+  const overlay = page.locator('.ui-dialog.ui-media-viewer');
   await expect(overlay).toBeVisible();
   await expect(overlay).not.toHaveAttribute('data-entering');
 }
@@ -83,7 +83,7 @@ test.describe('Chat Attachment lab', () => {
     await settledViewer(page);
     const dialog = page.getByRole('dialog', { name: 'Tower.svg' });
     await expect(dialog.locator('.ui-media-viewer__counter')).toHaveText('2 of 4');
-    await lab.expectAccessible('.ui-modal');
+    await lab.expectAccessible('.ui-dialog');
     await page.keyboard.press('ArrowRight');
     await expect(page.getByRole('dialog', { name: 'Meadow.svg' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -237,4 +237,36 @@ test.describe('Chat Attachment lab', () => {
       expect(Math.abs(box.width - 160 * ratio), name).toBeLessThanOrEqual(2);
     }
   });
+});
+
+test('UIC-ATTACHMENT-3.1 sets composed media beside or above the content at each size', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('attachment');
+  const sides = async (name: string) => {
+    const attachment = page.getByRole('group', { name });
+    const media = await attachment.locator('.ui-attachment__media').boundingBox();
+    const content = await attachment.locator('.ui-attachment__content').boundingBox();
+    if (!media || !content) throw new Error(`Expected a laid-out ${name}`);
+    return { media, content };
+  };
+  const beside = await sides('horizontal md complete attachment');
+  expect(beside.media.x + beside.media.width).toBeLessThanOrEqual(beside.content.x);
+  const above = await sides('vertical md complete attachment');
+  expect(above.media.y + above.media.height).toBeLessThanOrEqual(above.content.y);
+  const small = await sides('horizontal xs complete attachment');
+  expect(small.media.width).toBeLessThan(beside.media.width);
+  const failed = page.getByRole('group', { name: 'horizontal md error attachment' });
+  await expect(failed).toHaveAttribute('data-status', 'error');
+  await lab.expectAccessible('[data-lab-section="Composed from parts"]');
+});
+
+test('UIC-ATTACHMENT-3.2 scrolls a row of composed attachments sideways', async ({ page, lab }) => {
+  await lab.open('attachment');
+  const row = page.getByRole('list', { name: 'Composed files' });
+  await expect(row.getByRole('listitem')).toHaveCount(3);
+  expect(await row.evaluate((group) => group.scrollWidth > group.clientWidth)).toBe(true);
+  await row.getByRole('button', { name: 'Remove coast-route.pdf' }).click();
+  await expect(page.locator('[data-lab-output="Removed"]')).toHaveText('coast-route.pdf');
 });

@@ -178,10 +178,10 @@ mountLab(
       </LabSection>
       <LabSection
         title="Spinner color"
-        description="The spinner draws in its context's text color: body text, and pending primary, secondary and danger buttons."
+        description="The spinner draws in its context's text color: body text, and pending primary, secondary and destructive buttons."
       >
         <StateMatrix
-          axes={{ context: ['body text', 'primary', 'secondary', 'danger'] }}
+          axes={{ context: ['body text', 'primary', 'secondary', 'destructive'] }}
           render={({ context }) =>
             context === 'body text' ? (
               <span aria-busy="true">

@@ -7,8 +7,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Dialog, Modal, ModalOverlay } from '../../primitives/index.js';
 import { Button } from '../button/button.js';
+import { Dialog as LibraryModal } from '../dialog/dialog.js';
 import { Menu, MenuPopover, MenuTrigger } from '../menu/menu.js';
-import { Modal as LibraryModal } from '../modal/modal.js';
 import { AnchoredTooltip, Tooltip } from '../tooltip/tooltip.js';
 import { defaultLayerZIndex, isLayerAbove, type OverlayLayer, overlayLayers } from './layers.js';
 import { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
@@ -95,6 +95,7 @@ describe('Portal', () => {
   it('UIC-PORTAL-1.2 UIC-PORTAL-1.3 renders React Aria and library overlays into the host', async () => {
     const user = userEvent.setup();
     const anchor = appendToBody(document.createElement('span'));
+    // Not dismissable, so the press on the menu trigger behind them is not taken as a dismissal.
     render(
       <PortalHost id="overlay-host">
         <MenuTrigger>
@@ -107,13 +108,13 @@ describe('Portal', () => {
           <Button>Hinted</Button>
         </Tooltip>
         <AnchoredTooltip isOpen anchor={anchor} content="Anchored" />
-        <LibraryModal title="Blocking" defaultOpen>
+        <LibraryModal title="Blocking" defaultOpen isDismissable={false}>
           Body
         </LibraryModal>
         <LibraryModal title="Floating" defaultOpen isNonModal>
           Body
         </LibraryModal>
-        <LibraryModal title="Retained" defaultOpen keepMounted>
+        <LibraryModal title="Retained" defaultOpen keepMounted isDismissable={false}>
           Body
         </LibraryModal>
       </PortalHost>,

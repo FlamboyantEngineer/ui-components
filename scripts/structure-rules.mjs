@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { moduleImports, parseModule } from '../tooling/lib/imports.mjs';
 import { relativePosix, walk } from '../tooling/lib/script.mjs';
+import { ROOTLESS } from './lib/root-refs.mjs';
 
 // Components that render no element of their own: they provide context, portal or relay content.
 const NO_ELEMENT = /(?:Provider|Host|Outlet|Content|Trigger)$/;
@@ -118,7 +119,7 @@ function checkBaseProps(root, indexFiles, problems) {
     if (!moduleSymbol) continue;
     for (const exported of checker.getExportsOfModule(moduleSymbol)) {
       const name = exported.getName();
-      if (!/^[A-Z]/.test(name) || NO_ELEMENT.test(name)) continue;
+      if (!/^[A-Z]/.test(name) || NO_ELEMENT.test(name) || ROOTLESS.has(name)) continue;
       const symbol =
         exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
       const declaration = symbol.flags & ts.SymbolFlags.Function ? symbol.valueDeclaration : null;

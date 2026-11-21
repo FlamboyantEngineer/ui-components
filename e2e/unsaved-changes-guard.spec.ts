@@ -19,7 +19,7 @@ test.describe('Unsaved Changes Guard lab', () => {
     const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('.ui-unsaved-changes-guard__list')).toHaveText('Recipe notes');
-    await expect(dialog.locator('.ui-modal__actions button')).toHaveText([
+    await expect(dialog.locator('.ui-dialog__actions button')).toHaveText([
       'Stay',
       'Discard',
       'Save',
@@ -37,7 +37,7 @@ test.describe('Unsaved Changes Guard lab', () => {
       'Your changes are not saved. Leave and discard them?',
     );
     await expect(dialog.locator('.ui-unsaved-changes-guard__list')).toHaveCount(0);
-    await expect(dialog.locator('.ui-modal__actions button')).toHaveText(['Stay', 'Discard']);
+    await expect(dialog.locator('.ui-dialog__actions button')).toHaveText(['Stay', 'Discard']);
     await expect(page.locator('.ui-unsaved-changes-guard')).toHaveAttribute('data-tone', 'danger');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -107,7 +107,7 @@ test.describe('Unsaved Changes Guard lab', () => {
     await form.locator('.ui-switch__label').click();
     await form.getByRole('link', { name: 'Help' }).click();
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(page.locator('.ui-modal__primary')).toHaveAttribute('data-pending', 'true');
+    await expect(page.locator('.ui-dialog__primary')).toHaveAttribute('data-pending', 'true');
     await expect(form.locator('[data-lab-page]')).toHaveText('Profile');
     await page.clock.runFor(600);
     await expect(form.locator('[data-lab-page]')).toHaveText('Help');
@@ -144,13 +144,13 @@ test.describe('Unsaved Changes Guard lab', () => {
     const demo = page.locator('[data-lab-demo="changing"]');
     await demo.getByRole('button', { name: 'Leave, then go offline' }).click();
     const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
-    await expect(dialog.locator('.ui-modal__actions button')).toHaveText([
+    await expect(dialog.locator('.ui-dialog__actions button')).toHaveText([
       'Stay',
       'Discard',
       'Save',
     ]);
     await page.clock.runFor(1000);
-    await expect(dialog.locator('.ui-modal__actions button')).toHaveText(['Stay', 'Discard']);
+    await expect(dialog.locator('.ui-dialog__actions button')).toHaveText(['Stay', 'Discard']);
     await expect(dialog).toHaveAccessibleDescription(
       'Your changes are not saved. Leave and discard them?',
     );

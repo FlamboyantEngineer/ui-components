@@ -138,6 +138,15 @@ Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`
 Verification: `src/components/choice-group/choice-group-multiple.test.tsx`
 
+## UIC-CHOICE-GROUP-5 - Radio parts
+
+### UIC-CHOICE-GROUP-5.1 - Named composition
+
+`RadioGroup` specializes the field for a single selection. Its `RadioGroupItem` children use the same radio, indicator, rich label and description as a single-mode `Choice`. The group preserves arrow navigation, field commits and form submission.
+
+Implementation: `src/components/choice-group/radio-group.tsx`
+Verification: `src/components/choice-group/radio-group.test.tsx`
+
 ## Hooks
 
 | Hook                          | Kind      | Values                   | Description                                                            |

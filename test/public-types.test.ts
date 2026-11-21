@@ -14,12 +14,12 @@ import type { CardProps } from '../src/components/card/card.js';
 import type { CheckboxProps } from '../src/components/checkbox/checkbox.js';
 import type { ComboboxProps } from '../src/components/combobox/combobox.js';
 import type { DescriptionListProps } from '../src/components/description-list/description-list.js';
+import type { DialogProps } from '../src/components/dialog/dialog.js';
 import type { IconProps } from '../src/components/icon/icon.js';
 import type { AspectRatioProps } from '../src/components/layout/aspect-ratio.js';
 import type { PageProps, StackProps } from '../src/components/layout/layout.js';
 import type { ContentsProps } from '../src/components/layout/wrappers.js';
 import type { ListProps } from '../src/components/list-row/list-row.js';
-import type { ModalProps } from '../src/components/modal/modal.js';
 import type { OverflowListProps } from '../src/components/overflow-list/overflow-list.js';
 import type { ScrollRegionProps } from '../src/components/scroll-region/scroll-region.js';
 import type { SegmentedChoiceProps } from '../src/components/segmented-choice/segmented-choice.js';
@@ -206,7 +206,7 @@ describe('public declarations', () => {
     expectTypeOf<ComboboxProps['size']>().toEqualTypeOf<ControlSize | undefined>();
     expectTypeOf<BadgeProps['tone']>().toEqualTypeOf<Tone | undefined>();
     expectTypeOf<BannerProps['tone']>().toEqualTypeOf<Tone | undefined>();
-    expectTypeOf<ModalProps['tone']>().toEqualTypeOf<Tone | undefined>();
+    expectTypeOf<DialogProps['tone']>().toEqualTypeOf<Tone | undefined>();
     expectTypeOf<StatusLightProps['tone']>().toEqualTypeOf<Tone | undefined>();
     expectTypeOf<TagProps['tone']>().toEqualTypeOf<Tone | undefined>();
     expectTypeOf<ButtonGroupProps['density']>().toEqualTypeOf<

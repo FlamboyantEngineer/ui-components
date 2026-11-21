@@ -15,5 +15,21 @@ export type {
   CardGridProps,
 } from './card-grid.js';
 export { CardGrid, CardGridItem } from './card-grid.js';
-export type { CardActionProps, CardTitleProps } from './card-parts.js';
-export { CardAction, CardTitle } from './card-parts.js';
+export type {
+  CardActionProps,
+  CardContentProps,
+  CardDescriptionProps,
+  CardFooterProps,
+  CardHeaderProps,
+  CardTitleActionProps,
+  CardTitleProps,
+} from './card-parts.js';
+export {
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardTitleAction,
+} from './card-parts.js';

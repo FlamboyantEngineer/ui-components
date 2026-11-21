@@ -1,19 +1,30 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, useContext } from 'react';
 import type { PressEvent } from '../../core/events.js';
 import { UsersGlyph } from '../../core/glyphs.js';
-import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, PresenceStatus, RefProps, Size } from '../../core/props.js';
+import type { BaseProps, PresenceStatus, RefProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { getInitials } from '../../utils/initials.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { type ImageLoading, useImageLoading } from '../../utils/use-image-loading.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import type { PreviewTriggerType } from '../hover-card/hover-card.js';
 import { toImageProps } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { resolveAvatarColor } from './avatar-color.js';
+import { avatarHooks as hooks } from './avatar-hooks.js';
+import {
+  AvatarBadge,
+  type AvatarBadgePlacement,
+  type AvatarBadgeProps,
+  AvatarFallback,
+  type AvatarFallbackProps,
+  type AvatarImageAttributes,
+  type AvatarImageProps,
+  resolveAvatarParts,
+  resolveBadgePlacement,
+} from './avatar-parts.js';
 import { AvatarRoot } from './avatar-root.js';
 
 /** Circle size. `fill` takes the whole box its container gives it. */
@@ -28,14 +39,8 @@ export type AvatarKind = 'person' | 'group';
 /** `circle` for people; `rounded` or `square` for bots, organisations and groups. */
 export type AvatarShape = 'circle' | 'rounded' | 'square';
 
-/**
- * The corner a badge sits on, in the reading direction. With a status, `bottom-end` gives way to
- * the status indicator and the badge takes `top-end`.
- */
-export type AvatarBadgePlacement = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
-
 /** A small marker on a corner of the avatar, such as a country flag, and the words that name it. */
-export interface AvatarBadgeProps {
+interface AvatarBadgeOptions {
   /**
    * Caller content drawn on a corner, outside the clipped picture: a flag image, an emoji or a
    * glyph. It is decorative and inert, so it must not hold controls.
@@ -50,12 +55,6 @@ export interface AvatarBadgeProps {
 /** No picture to load (`idle`), or the picture is loading, has loaded or has failed. */
 export type AvatarLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
-/** Attributes for the picture's `<img>` besides its address. */
-export type AvatarImageProps = Pick<
-  NativeProps<'img'>,
-  'srcSet' | 'sizes' | 'crossOrigin' | 'referrerPolicy' | 'loading'
->;
-
 /** The identity fields every component that draws an avatar accepts and hands to it unchanged. */
 export interface AvatarIdentity {
   /** Display name. The initials, the derived color and the accessible name come from it. */
@@ -63,7 +62,7 @@ export interface AvatarIdentity {
   /** Picture URL. A picture that fails to load falls back to the initials. */
   src?: string | undefined;
   /** The picture's `srcSet`, `sizes`, `crossOrigin`, `referrerPolicy` and `loading` attributes. */
-  imageProps?: AvatarImageProps | undefined;
+  imageProps?: AvatarImageAttributes | undefined;
   /** Initials to show instead of the ones derived from `name`. */
   initials?: string | undefined;
   /** Stable key for the derived color, such as an id, so a renamed person keeps their color. Defaults to `name`. */
@@ -79,9 +78,13 @@ export interface AvatarIdentity {
 export interface AvatarProps
   extends
     RefProps<HTMLSpanElement | HTMLButtonElement>,
-    AvatarIdentity,
-    AvatarBadgeProps,
+    Omit<AvatarIdentity, 'name'>,
+    AvatarBadgeOptions,
     BaseProps {
+  /** The display name. A composed image's alt text supplies it when omitted. */
+  name?: string | undefined;
+  /** One AvatarImage, AvatarFallback or AvatarBadge of each kind, composed in a client component. */
+  children?: ReactNode;
   /** The person's presence, published as `data-status`. */
   status?: PresenceStatus | undefined;
   /** The status in words, added to the accessible name. Defaults to the provider's `presenceStatus`. */
@@ -108,14 +111,7 @@ export interface AvatarProps
   onLoadingStatusChange?: ((status: AvatarLoadingStatus) => void) | undefined;
 }
 
-const hooks = createHooks('avatar', [
-  'image',
-  'initials',
-  'glyph',
-  'surface',
-  'indicator',
-  'badge',
-]);
+export const AvatarSizeContext = createContext<AvatarSize>('md');
 
 /** The picture an identity draws: its trimmed `src`, or none for a group or a blank address. */
 function pictureOf({ src, kind }: Pick<AvatarIdentity, 'src' | 'kind'>): string {
@@ -133,30 +129,46 @@ function requestOf(identity: Pick<AvatarIdentity, 'src' | 'kind' | 'imageProps'>
   return [picture, srcSet, sizes, crossOrigin, referrerPolicy];
 }
 
-/** The group glyph, the picture, or the initials without a picture or once it has failed. */
-function AvatarContent({ identity, picture }: { identity: AvatarIdentity; picture: ImageLoading }) {
+function AvatarContent({
+  identity,
+  picture,
+  image,
+  fallback,
+}: {
+  identity: AvatarIdentity;
+  picture: ImageLoading;
+  image?: AvatarImageProps | undefined;
+  fallback?: AvatarFallbackProps | undefined;
+}) {
   const { name, src, imageProps, initials, kind } = identity;
   const { status, generation, imageRef, settle } = picture;
+  const combinedRef = useMergedRefs(imageRef, image?.ref);
+  const hasPicture = status === 'loading' || status === 'loaded';
   if (kind === 'group') return <Glyph icon={UsersGlyph} className={hooks.slotClass('glyph')} />;
-  if (status === 'loading' || status === 'loaded') {
-    return (
-      <img
-        {...imageProps}
-        // A new element per request, so events of a departed request never reach the handlers.
-        key={generation}
-        {...hooks.slot('image')}
-        ref={imageRef}
-        src={src?.trim()}
-        alt=""
-        onLoad={() => settle('loaded')}
-        onError={() => settle('error')}
-      />
-    );
-  }
   return (
-    <span {...hooks.slot('initials')} aria-hidden="true">
-      {initials?.trim() || getInitials(name)}
-    </span>
+    <>
+      {hasPicture ? (
+        <img
+          {...imageProps}
+          {...image}
+          // A new element per request, so events of a departed request never reach the handlers.
+          key={generation}
+          {...hooks.slot('image', { state: status }, image?.className)}
+          ref={combinedRef}
+          src={src?.trim()}
+          alt=""
+          onLoad={() => settle('loaded')}
+          onError={() => settle('error')}
+        />
+      ) : null}
+      {fallback && status !== 'loaded' ? (
+        <AvatarFallback {...fallback} />
+      ) : !hasPicture ? (
+        <span {...hooks.slot('initials')} aria-hidden="true">
+          {initials?.trim() || getInitials(name)}
+        </span>
+      ) : null}
+    </>
   );
 }
 
@@ -188,7 +200,6 @@ export function resolveStatusLabel(
 function useAvatarPresentation(
   props: Pick<
     AvatarProps,
-    | 'name'
     | 'label'
     | 'status'
     | 'statusLabel'
@@ -197,7 +208,8 @@ function useAvatarPresentation(
     | 'card'
     | 'cardTrigger'
     | 'onPress'
-  >,
+  > &
+    Pick<AvatarIdentity, 'name'>,
 ) {
   const strings = useUiStrings();
   const named = [resolveStatusLabel(props, strings), props.badgeLabel?.trim()].reduce(
@@ -212,36 +224,41 @@ function useAvatarPresentation(
   };
 }
 
-/** The corner a badge takes: the one asked for, unless the status indicator holds it. */
-export function resolveBadgePlacement(
-  placement: AvatarBadgePlacement | undefined,
-  hasStatus: boolean,
-): AvatarBadgePlacement {
-  const asked = placement ?? 'bottom-end';
-  return hasStatus && asked === 'bottom-end' ? 'top-end' : asked;
+function toAvatarIdentityProps(
+  { name, ...props }: Omit<AvatarProps, 'children'>,
+  image: AvatarImageProps | undefined,
+) {
+  const displayName = name?.trim() ? name : (image?.alt ?? '');
+  if (!image) return { ...props, name: displayName };
+  const { src, srcSet, sizes, crossOrigin, referrerPolicy, loading } = image;
+  return {
+    ...props,
+    name: displayName,
+    src,
+    imageProps: { srcSet, sizes, crossOrigin, referrerPolicy, loading },
+  };
 }
 
-/** The badge on its corner, hidden and inert: the avatar's name says what it means. */
-function AvatarBadge({
-  badge,
-  badgePlacement,
-  hasStatus,
-}: Pick<AvatarProps, 'badge' | 'badgePlacement'> & { hasStatus: boolean }) {
-  if (isEmptyNode(badge)) return null;
-  const placement = resolveBadgePlacement(badgePlacement, hasStatus);
-  return (
-    <span {...hooks.slot('badge', { placement })} aria-hidden="true" inert>
-      {badge}
-    </span>
-  );
+function toAvatarBadgeProps(
+  part: AvatarBadgeProps | undefined,
+  { badge, badgeLabel, badgePlacement, status }: AvatarBadgeOptions & Pick<AvatarProps, 'status'>,
+): AvatarBadgeProps {
+  return {
+    ...part,
+    label: part ? part.label : badgeLabel,
+    placement: resolveBadgePlacement(part?.placement ?? badgePlacement, Boolean(status)),
+    children: part ? part.children : badge,
+  };
 }
 
 /** A person's picture, or their initials on a stable color slot; a group glyph for a group. */
-export function Avatar(props: AvatarProps) {
+export function Avatar({ children, ...props }: AvatarProps) {
+  const parts = resolveAvatarParts(children);
+  const inheritedSize = useContext(AvatarSizeContext);
   const [
     identity,
     {
-      size = 'md',
+      size = inheritedSize,
       variant = 'filled',
       colorCount,
       label,
@@ -259,7 +276,8 @@ export function Avatar(props: AvatarProps) {
       className,
       ...rest
     },
-  ] = splitAvatarIdentity(props);
+  ] = splitAvatarIdentity(toAvatarIdentityProps(props, parts.image));
+  const badgeProps = toAvatarBadgeProps(parts.badge, { badge, badgeLabel, badgePlacement, status });
   const picture = useImageLoading(requestOf(identity), onLoadingStatusChange);
   const color = resolveAvatarColor(identity, colorCount);
   const { accessibleName, hasTooltip, surfaceProps } = useAvatarPresentation({
@@ -267,7 +285,7 @@ export function Avatar(props: AvatarProps) {
     label,
     status,
     statusLabel,
-    badgeLabel,
+    badgeLabel: badgeProps.label,
     nameTooltip,
     card,
     cardTrigger,
@@ -297,10 +315,10 @@ export function Avatar(props: AvatarProps) {
       aria-describedby={hasTooltip ? '' : undefined}
     >
       <span {...hooks.slot('surface')} {...surfaceProps}>
-        <AvatarContent identity={identity} picture={picture} />
+        <AvatarContent {...parts} identity={identity} picture={picture} />
       </span>
       {status ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
-      <AvatarBadge badge={badge} badgePlacement={badgePlacement} hasStatus={Boolean(status)} />
+      <AvatarBadge {...badgeProps} />
     </AvatarRoot>
   );
   // A pressable avatar keeps its tooltip trigger while the tooltip is off, so turning it on or off
@@ -315,3 +333,11 @@ export function Avatar(props: AvatarProps) {
 }
 
 export { DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar-color.js';
+export type {
+  AvatarBadgePlacement,
+  AvatarBadgeProps,
+  AvatarFallbackProps,
+  AvatarImageAttributes,
+  AvatarImageProps,
+} from './avatar-parts.js';
+export { AvatarBadge, AvatarFallback, AvatarImage, resolveBadgePlacement } from './avatar-parts.js';

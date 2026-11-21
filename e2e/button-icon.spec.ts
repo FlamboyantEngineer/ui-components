@@ -16,7 +16,7 @@ test.describe('Button icon-only content', () => {
         'primary',
         'secondary',
         'tertiary',
-        'danger',
+        'destructive',
         'ghost',
         'accent',
         'chip',

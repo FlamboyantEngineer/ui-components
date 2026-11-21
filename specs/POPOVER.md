@@ -1,6 +1,6 @@
 # Popover
 
-`Popover` is a dialog that floats against its trigger: an optional title and close button, then the reader's content, such as filters, a short form or details about a control. Unlike a [Modal](MODAL.md) it stays beside what opened it; unlike a [Tooltip](TOOLTIP.md) it may hold interactive content. It is built on React Aria's `DialogTrigger`, `Popover`, `OverlayArrow` and `Dialog`, which place it, flip it to stay in the viewport, move and contain focus, close it on Escape and outside presses, and return focus to the trigger. Its floating panel is shared with [Hover Card](HOVER-CARD.md), the anchored [Modal](MODAL.md#uic-modal-82---anchored-dialog) and the [Preview Trigger](HOVER-CARD.md) popover.
+`Popover` is a dialog that floats against its trigger: an optional title and close button, then the reader's content, such as filters, a short form or details about a control. Unlike a [Dialog](DIALOG.md) it stays beside what opened it; unlike a [Tooltip](TOOLTIP.md) it may hold interactive content. It is built on React Aria's `DialogTrigger`, `Popover`, `OverlayArrow` and `Dialog`, which place it, flip it to stay in the viewport, move and contain focus, close it on Escape and outside presses, and return focus to the trigger. Its floating panel is shared with [Hover Card](HOVER-CARD.md), the anchored [Dialog](DIALOG.md#uic-dialog-82---anchored-dialog) and the [Preview Trigger](HOVER-CARD.md) popover.
 
 ## UIC-POPOVER-1 - Overlay
 
@@ -92,6 +92,13 @@ Verification: `src/components/popover/popover.test.tsx`
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`
 
+### UIC-POPOVER-3.5 - Composed header
+
+`PopoverHeader` shall group caller content, including a `PopoverTitle` and an optional `PopoverDescription`, in the popover body. `PopoverTitle` shall name the dialog with a level-2 heading unless `aria-label` or `aria-labelledby` names it instead. One `PopoverDescription` shall describe the dialog through its caller-supplied or generated ID while mounted, unless the popover supplies its own `aria-describedby`. These parts shall append caller classes and forward `id`, `ref` and caller `data-*` attributes.
+
+Implementation: `src/components/popover/popover.tsx`, `src/components/popover/popover-parts.tsx`, `labs/reference/popover.css`
+Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
+
 ## UIC-POPOVER-6 - Reserved scrollbar space
 
 ### UIC-POPOVER-6.1 - Consistent anchor spacing
@@ -103,16 +110,17 @@ Verification: `src/components/popover/use-popover-gutter.test.tsx`, `e2e/popover
 
 ## Hooks
 
-| Hook                 | Kind  | Values                           | Description                                                 |
-| -------------------- | ----- | -------------------------------- | ----------------------------------------------------------- |
-| `ui-popover`         | root  |                                  | The floating panel (React Aria `Popover`).                  |
-| `ui-popover__arrow`  | slot  |                                  | The arrow pointing at the trigger.                          |
-| `ui-popover__dialog` | slot  |                                  | The `role="dialog"` element.                                |
-| `ui-popover__header` | slot  |                                  | The title and close button row.                             |
-| `ui-popover__title`  | slot  |                                  | The `<h2>` title.                                           |
-| `ui-popover__close`  | slot  |                                  | The header close button (also `ui-button`).                 |
-| `ui-popover__body`   | slot  |                                  | The body.                                                   |
-| `data-placement`     | state | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |
-| `data-trigger`       | state | `DialogTrigger`                  | On the panel inside a `PopoverTrigger`, what opened it.     |
-| `data-entering`      | state | `true`                           | On the panel while its entry animation runs (React Aria).   |
-| `data-exiting`       | state | `true`                           | On the panel while its exit animation runs (React Aria).    |
+| Hook                      | Kind  | Values                           | Description                                                 |
+| ------------------------- | ----- | -------------------------------- | ----------------------------------------------------------- |
+| `ui-popover`              | root  |                                  | The floating panel (React Aria `Popover`).                  |
+| `ui-popover__arrow`       | slot  |                                  | The arrow pointing at the trigger.                          |
+| `ui-popover__dialog`      | slot  |                                  | The `role="dialog"` element.                                |
+| `ui-popover__header`      | slot  |                                  | The title and close button row.                             |
+| `ui-popover__title`       | slot  |                                  | The `<h2>` title.                                           |
+| `ui-popover__description` | slot  |                                  | The paragraph describing the dialog.                        |
+| `ui-popover__close`       | slot  |                                  | The header close button (also `ui-button`).                 |
+| `ui-popover__body`        | slot  |                                  | The body.                                                   |
+| `data-placement`          | state | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |
+| `data-trigger`            | state | `DialogTrigger`                  | On the panel inside a `PopoverTrigger`, what opened it.     |
+| `data-entering`           | state | `true`                           | On the panel while its entry animation runs (React Aria).   |
+| `data-exiting`            | state | `true`                           | On the panel while its exit animation runs (React Aria).    |

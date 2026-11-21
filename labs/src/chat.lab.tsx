@@ -63,6 +63,7 @@ mountLab(
       description="Focused examples share the Chat family API, contract and reference styling."
     >
       <Cluster space="md" wrap="wrap">
+        <Link href="assistant-chat.html">Composable assistant thread</Link>
         <Link href="chat-activity.html">Activity</Link>
         <Link href="chat-controller.html">Controller</Link>
         <Link href="chat-list.html">Conversation list</Link>

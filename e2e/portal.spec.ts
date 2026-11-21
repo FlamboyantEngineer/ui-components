@@ -126,7 +126,9 @@ test.describe('Portal lab', () => {
     await demo.getByRole('button', { name: 'Hosted dialog' }).click();
     const dialog = host.getByRole('dialog', { name: 'Hosted dialog' });
     await expect(dialog).toBeVisible();
-    await expect(page.locator('body > [data-react-aria-overlay], body > .ui-modal')).toHaveCount(0);
+    await expect(page.locator('body > [data-react-aria-overlay], body > .ui-dialog')).toHaveCount(
+      0,
+    );
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
   });

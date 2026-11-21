@@ -157,3 +157,8 @@ export type {
   MessageReferenceResolver,
 } from './message-reference.js';
 export { MessageReference } from './message-reference.js';
+export {
+  type PromptSubmission,
+  type PromptSubmissionOptions,
+  usePromptSubmission,
+} from './use-prompt-submission.js';

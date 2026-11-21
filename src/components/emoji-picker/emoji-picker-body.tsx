@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs/tabs.js';
 import { EmojiGrid } from './emoji-grid.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { emojiPickerHooks as hooks } from './emoji-picker-hooks.js';
@@ -48,17 +48,17 @@ function EmojiTabs({ className, ...rest }: EmojiPickerBodyProps) {
       selectedKey={tab?.id}
       onSelectionChange={(key) => setTabId(String(key))}
     >
-      <TabList aria-label={strings.emojiCategories}>
+      <TabsList aria-label={strings.emojiCategories}>
         {tabs.map(({ id }) => (
-          <Tab key={id} id={id} icon={<span>{categoryIcons[id]}</span>}>
+          <TabsTrigger key={id} id={id} icon={<span>{categoryIcons[id]}</span>}>
             {strings.emojiCategory(id)}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {tabs.map(({ id, entries }) => (
-        <TabPanel key={id} id={id}>
+        <TabsContent key={id} id={id}>
           <EmojiGrid {...grid} label={strings.emojiCategory(id)} entries={entries} />
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );

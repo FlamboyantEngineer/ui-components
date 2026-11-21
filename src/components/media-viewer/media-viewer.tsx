@@ -9,7 +9,7 @@ import { useLocale } from '../../primitives/index.js';
 import { containsFocus, isFocused } from '../../utils/focus-target.js';
 import { isNode } from '../../utils/is-element.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { resolveMediaKey } from './media-layout.js';
 import { MediaStage } from './media-stage.js';
 import {
@@ -127,7 +127,8 @@ function MediaViewerDialog({
     else if (isImageReady) view.step(command === 'zoom-in' ? 1 : -1);
   };
   return (
-    <Modal
+    <Dialog
+      isDismissable={false}
       {...modal}
       className={mergeClassNames(hooks.className, modal.className)}
       title={item.name}
@@ -150,9 +151,7 @@ function MediaViewerDialog({
         />
       }
       footerContent={
-        items.length > 1 ? (
-          <MediaThumbnails items={items} current={item.id} onSelect={show} />
-        ) : null
+        items.length > 1 && <MediaThumbnails items={items} current={item.id} onSelect={show} />
       }
     >
       <MediaStage
@@ -167,12 +166,12 @@ function MediaViewerDialog({
         renderItem={renderItem}
         request={request}
       />
-    </Modal>
+    </Dialog>
   );
 }
 
 /**
- * A lightbox over the page, on the library's `Modal`: it shows one file of a set at a time with its
+ * A lightbox over the page, on the library's `Dialog`: it shows one file of a set at a time with its
  * name and caption, moves to the previous and next file from buttons, a thumbnail strip and the
  * arrow keys, and zooms (`ZoomControl`, `+` and `-`), turns and scrolls images. Other files, such as
  * PDFs, render through `renderItem`. Each file with a download URL offers a Download link. Escape

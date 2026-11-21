@@ -8,7 +8,7 @@ import { deepActive, inShadow, ShadowHost } from '../../../test/shadow-fixtures.
 import { EditGlyph } from '../../core/glyphs.js';
 import { Avatar } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { PortalHost } from '../portal/portal.js';
 import { PreviewTrigger } from './preview-trigger.js';
 
@@ -129,13 +129,13 @@ describe('PreviewTrigger', () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
     render(
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Edit</Button>
-        <Modal title="Editor">
+        <Dialog title="Editor">
           <input aria-label="Draft" />
           <PreviewContent name="Maria Santos" actions={actions} onAction={onAction} />
-        </Modal>
-      </ModalTrigger>,
+        </Dialog>
+      </DialogTrigger>,
     );
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     const draft = await screen.findByRole('textbox', { name: 'Draft' });

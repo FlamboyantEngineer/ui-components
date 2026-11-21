@@ -142,7 +142,7 @@ Verification: `src/components/calendar-view/calendar-event-menu.test.tsx`, `e2e/
 
 ### UIC-CALENDAR-VIEW-5.2 - Host editing
 
-Event presses shall call `onEventAction`; menu choices shall call `onEventMenuAction`. CalendarView shall not open an editor. Hosts compose Modal, TextField, Checkbox and DateTimeField and apply saved values to `events`; `CalendarEditorComposition` in `labs/src/composition-editors.tsx` demonstrates this boundary with shared reference styling.
+Event presses shall call `onEventAction`; menu choices shall call `onEventMenuAction`. CalendarView shall not open an editor. Hosts compose Dialog, TextField, Checkbox and DateTimeField and apply saved values to `events`; `CalendarEditorComposition` in `labs/src/composition-editors.tsx` demonstrates this boundary with shared reference styling.
 
 Implementation: `src/components/calendar-view/calendar-event.tsx`, `src/components/calendar-view/calendar-event-menu.tsx`
 Verification: `src/components/calendar-view/calendar-event-menu.test.tsx`, `labs/src/composition-editors.test.tsx`

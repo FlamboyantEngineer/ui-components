@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
-import { Modal } from '../modal/modal.js';
+import { Dialog } from '../dialog/dialog.js';
 import { SelectField } from './select-field.js';
 
 const choices = [
@@ -48,13 +48,13 @@ for (const mode of ['list', 'tree'] as const) {
     const onOpenChange = vi.fn();
     const props = { label: 'Choice', defaultValue: 'pear' };
     render(
-      <Modal title="Catalogue" defaultOpen onOpenChange={onOpenChange}>
+      <Dialog isDismissable={false} title="Catalogue" defaultOpen onOpenChange={onOpenChange}>
         {mode === 'tree' ? (
           <SelectField {...props} mode="tree" items={choices} getTextValue={(item) => item.label} />
         ) : (
           <SelectField {...props} options={choices} filterable />
         )}
-      </Modal>,
+      </Dialog>,
     );
     const trigger = screen.getByRole('button', { name: /Choice/ });
     await user.click(trigger);

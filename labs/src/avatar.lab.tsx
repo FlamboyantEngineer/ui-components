@@ -1,6 +1,9 @@
 import { type ReactNode, useState } from 'react';
 import {
   Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
   type AvatarLoadingStatus,
   type AvatarSize,
 } from '../../src/components/avatar/avatar.js';
@@ -112,6 +115,13 @@ function LoadingStatus() {
 
 mountLab(
   <>
+    <LabSection title="Composed avatar">
+      <Avatar size="lg" status="away">
+        <AvatarImage src={brokenPicture} alt="Clara Walker" />
+        <AvatarFallback>CW</AvatarFallback>
+        <AvatarBadge label="Contributor">✦</AvatarBadge>
+      </Avatar>
+    </LabSection>
     <div data-lab-family="avatar-main">
       <LabSection
         title="Content, variant and size"

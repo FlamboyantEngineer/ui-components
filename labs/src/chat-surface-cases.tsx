@@ -3,7 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat, useChatController } from '../../src/components/chat/index.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../src/components/tabs/tabs.js';
 import { HelpGlyph } from '../../src/core/glyphs.js';
 import { agents } from './chat-agent.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
@@ -83,11 +83,11 @@ function TabDemo() {
       }}
     >
       <Tabs defaultSelectedKey="planner">
-        <TabList aria-label="Side panel">
-          <Tab id="planner">Trip planner</Tab>
-          <Tab id="notes">Notes</Tab>
-        </TabList>
-        <TabPanel id="planner">
+        <TabsList aria-label="Side panel">
+          <TabsTrigger id="planner">Trip planner</TabsTrigger>
+          <TabsTrigger id="notes">Notes</TabsTrigger>
+        </TabsList>
+        <TabsContent id="planner">
           <div style={{ height: 380, padding: '0 8px 8px' }}>
             <Chat
               {...controller.props}
@@ -99,8 +99,8 @@ function TabDemo() {
               presentation="embedded"
             />
           </div>
-        </TabPanel>
-        <TabPanel id="notes">Notes for the trip.</TabPanel>
+        </TabsContent>
+        <TabsContent id="notes">Notes for the trip.</TabsContent>
       </Tabs>
     </div>
   );

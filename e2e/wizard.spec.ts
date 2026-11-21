@@ -172,7 +172,7 @@ test.describe('Wizard lab', () => {
     const demo = page.locator('[data-lab-demo="modal"]');
     await demo.getByRole('button', { name: 'New project' }).click();
     const dialog = page.getByRole('dialog', { name: 'New project' });
-    await expect(dialog.locator('.ui-modal__footer')).toHaveCount(0);
+    await expect(dialog.locator('.ui-dialog__footer')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);
     await demo.getByRole('button', { name: 'New project' }).click();
@@ -199,8 +199,8 @@ test.describe('Wizard lab', () => {
       .click();
     const dialog = page.getByRole('dialog', { name: 'New project' });
     await expect(dialog).toBeVisible();
-    await expect(page.locator('.ui-modal[data-entering]')).toHaveCount(0);
-    await lab.expectAccessible('.ui-modal');
+    await expect(page.locator('.ui-dialog[data-entering]')).toHaveCount(0);
+    await lab.expectAccessible('.ui-dialog');
     await page.keyboard.press('Escape');
   });
 

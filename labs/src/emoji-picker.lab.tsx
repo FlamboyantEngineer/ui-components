@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { EmojiPicker, EmojiPickerTrigger } from '../../src/components/emoji-picker/emoji-picker.js';
 import {
   type CustomEmoji,
@@ -11,7 +12,6 @@ import {
   type SkinTone,
   useActiveEmoji,
 } from '../../src/components/emoji-picker/index.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { EmojiPickerLifetimeCases } from './emoji-picker-lifetime-cases.js';
@@ -55,9 +55,9 @@ const fastFood = new Set(['🍔', '🍟', '🌭', '🍕']);
 function PickerInModal() {
   const [chosen, setChosen] = useState('');
   return (
-    <ModalTrigger>
+    <DialogTrigger>
       <Button>Choose a status emoji</Button>
-      <Modal
+      <Dialog
         title="Status emoji"
         description={chosen ? `Chosen: ${chosen}` : 'Nothing chosen yet.'}
       >
@@ -67,8 +67,8 @@ function PickerInModal() {
             setChosen(selection.kind === 'native' ? selection.unicode : selection.emoji.shortcode)
           }
         />
-      </Modal>
-    </ModalTrigger>
+      </Dialog>
+    </DialogTrigger>
   );
 }
 

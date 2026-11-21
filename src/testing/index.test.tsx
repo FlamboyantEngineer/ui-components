@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { Tab, TabList, TabPanel, Tabs } from '../components/tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/tabs/tabs.js';
 import { UiProvider } from '../core/provider.js';
 import { createMemoryStorage } from './index.js';
 
@@ -14,12 +14,12 @@ const MODULE_REFERENCE = /^(?:import|export) (type )?[^;]*?'([^']+)';/gms;
 function Fruit() {
   return (
     <Tabs persistKey="fruit">
-      <TabList aria-label="Fruit">
-        <Tab id="apple">Apple</Tab>
-        <Tab id="pear">Pear</Tab>
-      </TabList>
-      <TabPanel id="apple">Crisp.</TabPanel>
-      <TabPanel id="pear">Soft.</TabPanel>
+      <TabsList aria-label="Fruit">
+        <TabsTrigger id="apple">Apple</TabsTrigger>
+        <TabsTrigger id="pear">Pear</TabsTrigger>
+      </TabsList>
+      <TabsContent id="apple">Crisp.</TabsContent>
+      <TabsContent id="pear">Soft.</TabsContent>
     </Tabs>
   );
 }

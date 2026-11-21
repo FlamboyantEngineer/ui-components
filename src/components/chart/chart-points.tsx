@@ -13,10 +13,14 @@ import {
   useState,
 } from 'react';
 import type { Tone } from '../../core/props.js';
-import { type TooltipTriggerState, TooltipTriggerStateContext } from '../../primitives/index.js';
+import {
+  TooltipContext,
+  type TooltipTriggerState,
+  TooltipTriggerStateContext,
+} from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { getOwnerDocument } from '../../utils/owner-window.js';
-import { TooltipPanel } from '../tooltip/tooltip.js';
+import { TooltipContent } from '../tooltip/tooltip.js';
 import { chartHooks as hooks } from './chart-hooks.js';
 
 /** A drawn value a reader can focus: its series' position and its position along the series. */
@@ -260,19 +264,17 @@ function ChartTooltip(props: ChartTooltipProps) {
     () => ({ isOpen, shouldSkipAnimation: false, open: () => {}, close: () => {} }),
     [isOpen],
   );
+  const context = useMemo(() => ({ triggerRef: anchor }), [anchor]);
   return (
-    <TooltipTriggerStateContext value={state}>
-      {isOpen ? (
-        <TooltipPanel
-          key={activeKey}
-          variant="default"
-          className={hooks.slotClass('tooltip')}
-          triggerRef={anchor}
-        >
-          {content ?? <TooltipBody {...props} />}
-        </TooltipPanel>
-      ) : null}
-    </TooltipTriggerStateContext>
+    <TooltipContext value={context}>
+      <TooltipTriggerStateContext value={state}>
+        {isOpen ? (
+          <TooltipContent key={activeKey} className={hooks.slotClass('tooltip')}>
+            {content ?? <TooltipBody {...props} />}
+          </TooltipContent>
+        ) : null}
+      </TooltipTriggerStateContext>
+    </TooltipContext>
   );
 }
 

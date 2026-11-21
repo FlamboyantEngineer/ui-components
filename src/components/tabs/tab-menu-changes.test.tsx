@@ -3,9 +3,9 @@ import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import type { MenuEntry } from '../menu/menu.js';
-import { Tab, TabList, type TabListProps, Tabs } from './tabs.js';
+import { Tabs, TabsList, type TabsListProps, TabsTrigger } from './tabs.js';
 
-interface ListOptions extends Partial<TabListProps> {
+interface ListOptions extends Partial<TabsListProps> {
   isDisabled?: boolean;
   disabledKeys?: Key[];
   disabledTab?: string;
@@ -19,13 +19,13 @@ function list({ isDisabled, disabledKeys, disabledTab, ids, ...props }: ListOpti
   const shown = ids ?? Object.keys(names);
   return (
     <Tabs isDisabled={isDisabled} disabledKeys={disabledKeys}>
-      <TabList aria-label="Fruit" getMenuItems={standard} {...props}>
+      <TabsList aria-label="Fruit" getMenuItems={standard} {...props}>
         {shown.map((id) => (
-          <Tab key={id} id={id} isDisabled={id === disabledTab}>
+          <TabsTrigger key={id} id={id} isDisabled={id === disabledTab}>
             {names[id]}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
     </Tabs>
   );
 }

@@ -16,7 +16,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Modal } from '../modal/modal.js';
+import { AlertDialog } from '../dialog/dialog.js';
 import {
   createUnsavedChangesStore,
   isUnsavable,
@@ -267,9 +267,8 @@ function LeaveConfirmation({
     close();
   };
   return (
-    <Modal
+    <AlertDialog
       {...rest}
-      role="alertdialog"
       tone={canSave ? 'neutral' : 'danger'}
       onOpenChange={(next) => {
         if (!next) {
@@ -295,7 +294,7 @@ function LeaveConfirmation({
           ))}
         </ul>
       ) : null}
-    </Modal>
+    </AlertDialog>
   );
 }
 

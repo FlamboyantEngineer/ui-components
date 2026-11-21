@@ -1,0 +1,53 @@
+/* Message Scroller */
+
+.ui-message-scroller {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  block-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  color: var(--ref-text);
+  font: var(--ref-font-size)/1.45 var(--ref-font);
+}
+
+.ui-message-scroller__viewport {
+  min-block-size: 0;
+  min-inline-size: 0;
+  padding: 12px;
+  overflow-y: auto;
+  overflow-anchor: none;
+  scroll-behavior: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+.ui-message-scroller__content {
+  display: flow-root;
+  min-inline-size: 0;
+}
+
+.ui-message-scroller__item {
+  min-inline-size: 0;
+  margin-block-end: 12px;
+}
+
+.ui-message-scroller__spacer {
+  pointer-events: none;
+}
+
+.ui-message-scroller > .ui-message-scroller__button {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: 12px;
+  translate: -50% 0;
+}
+
+[dir='rtl'] .ui-message-scroller > .ui-message-scroller__button {
+  translate: 50% 0;
+}
+
+.ui-message-scroller > .ui-message-scroller__button[data-direction='start'] {
+  inset-block-start: 12px;
+  inset-block-end: auto;
+}

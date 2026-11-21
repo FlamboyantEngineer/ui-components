@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { Key } from '../../primitives/index.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
-import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs/tabs.js';
 import { Tree } from '../tree/tree.js';
 import type { PdfOutlineNode, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { PdfViewerThumbnails } from './pdf-viewer-thumbnails.js';
@@ -104,16 +104,16 @@ export function PdfViewerSidebar<V extends PdfViewport, C extends PdfTextContent
         defaultSelectedKey={hasOutline ? 'outline' : 'pages'}
         disabledKeys={hasOutline ? [] : ['outline']}
       >
-        <TabList aria-label={strings.sidebar}>
-          <Tab id="pages">{strings.pages}</Tab>
-          <Tab id="outline">{strings.outline}</Tab>
-        </TabList>
-        <TabPanel id="pages">
+        <TabsList aria-label={strings.sidebar}>
+          <TabsTrigger id="pages">{strings.pages}</TabsTrigger>
+          <TabsTrigger id="outline">{strings.outline}</TabsTrigger>
+        </TabsList>
+        <TabsContent id="pages">
           <PdfViewerThumbnails view={view} currentPage={currentPage} onPageChange={onPageChange} />
-        </TabPanel>
-        <TabPanel id="outline">
+        </TabsContent>
+        <TabsContent id="outline">
           <PdfViewerOutline outline={view.outline} followDestination={followDestination} />
-        </TabPanel>
+        </TabsContent>
       </Tabs>
     </div>
   );

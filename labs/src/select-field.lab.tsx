@@ -14,6 +14,7 @@ import { fieldLayouts, type FieldStateName, fieldStates } from './field-states.j
 import { LabOutput } from './lab-output.js';
 import { BulkMembershipEditor } from './select-field-bulk.js';
 import { ChangeFit, ChangeMatrix } from './select-field-changes.js';
+import { ComposedSelect } from './select-field-composed.js';
 import { OpenStates } from './select-field-open-cases.js';
 import { Paged } from './select-field-paged.js';
 import { StyledValueField, TriggerRefField } from './select-field-trigger-cases.js';
@@ -396,6 +397,9 @@ const paragraphStyles: SelectFieldOption[] = [
 
 mountLab(
   <>
+    <LabSection title="Controlled select parts">
+      <ComposedSelect />
+    </LabSection>
     {treeChoices}
     {iconsChoices}
     {nativeChoices}

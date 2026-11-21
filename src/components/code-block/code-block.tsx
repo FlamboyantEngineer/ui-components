@@ -20,7 +20,28 @@ import {
   TerminalLines,
 } from './code-block-content.js';
 import { findLanguageTokenizer } from './code-block-languages.js';
+import { CodeBlockFrame, type CodeBlockFrameProps } from './code-block-parts.js';
 
+export type {
+  CodeBlockActionsProps,
+  CodeBlockContentProps,
+  CodeBlockCopyButtonProps,
+  CodeBlockFooterProps,
+  CodeBlockFrameProps,
+  CodeBlockHeaderProps,
+  CodeBlockLineProps,
+  CodeBlockLineVariant,
+  CodeBlockTitleProps,
+} from './code-block-parts.js';
+export {
+  CodeBlockActions,
+  CodeBlockContent,
+  CodeBlockCopyButton,
+  CodeBlockFooter,
+  CodeBlockHeader,
+  CodeBlockLine,
+  CodeBlockTitle,
+} from './code-block-parts.js';
 export type { CodeBlockOverrideOptions } from './markdown-code-block.js';
 export { createCodeBlockOverride } from './markdown-code-block.js';
 
@@ -39,7 +60,7 @@ export interface CodeBlockData {
   variant?: CodeBlockVariant | undefined;
 }
 
-export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, CodeBlockData {
+export interface CodeBlockDataProps extends RefProps<HTMLDivElement>, BaseProps, CodeBlockData {
   /** Shows an Apply action that hands over the block's value, such as to insert it in a file. */
   onApply?: ((code: string) => void) | undefined;
   /** Names the Apply action. Defaults to the provider's `codeBlockApply` string. */
@@ -57,6 +78,13 @@ export interface CodeBlockProps extends RefProps<HTMLDivElement>, BaseProps, Cod
   firstLineNumber?: number | undefined;
   /** `off` (the default) scrolls long lines sideways; `soft` wraps them. */
   wrap?: CodeEditorWrap | undefined;
+}
+
+/** A block drawn from its `code`, or with `children` and no `code`, one composed from parts. */
+export type CodeBlockProps = CodeBlockDataProps | CodeBlockFrameProps;
+
+function isDataBlock(props: CodeBlockProps): props is CodeBlockDataProps {
+  return props.code !== undefined;
 }
 
 function readCopyLabel(strings: UiStrings, variant: CodeBlockVariant, commands: TerminalLine[]) {
@@ -88,7 +116,11 @@ function readNumberedLines(code: string, firstLineNumber: number | undefined): N
  * can focus it to scroll by keyboard. A `terminal` block marks its command lines and copies only the
  * commands.
  */
-export function CodeBlock({
+export function CodeBlock(props: CodeBlockProps) {
+  return isDataBlock(props) ? <DataCodeBlock {...props} /> : <CodeBlockFrame {...props} />;
+}
+
+function DataCodeBlock({
   ref,
   code,
   language,
@@ -104,7 +136,7 @@ export function CodeBlock({
   className,
   id,
   ...rest
-}: CodeBlockProps) {
+}: CodeBlockDataProps) {
   const strings = useUiStrings();
   const titleId = useId();
   const codeRef = useRef<HTMLPreElement>(null);

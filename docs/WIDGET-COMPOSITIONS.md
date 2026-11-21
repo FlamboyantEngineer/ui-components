@@ -1,6 +1,6 @@
 # Host-owned editor compositions
 
-Import the package reference stylesheet once. The examples use `Stack space="md"`, `Cluster space="sm" wrap="wrap"` and `Modal bodyLayout="column"`; their spacing, alignment and narrow-screen wrapping come from that stylesheet. They require no host spacing CSS.
+Import the package reference stylesheet once. The examples use `Stack space="md"`, `Cluster space="sm" wrap="wrap"` and `Dialog bodyLayout="column"`; their spacing, alignment and narrow-screen wrapping come from that stylesheet. They require no host spacing CSS.
 
 | Host capability                           | Copyable example                                                      | Library interaction retained                                                                                              |
 | ----------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -12,7 +12,7 @@ Import the package reference stylesheet once. The examples use `Stack space="md"
 | Asset placement                           | `AssetPlacementComposition` in `labs/src/composition-editors.tsx`     | AssetPicker browsing, asynchronous search, paging and selection.                                                          |
 | Choosing a graph or an ordered sequence   | `StateMachineComposition` in `labs/src/composition-editors-grid.tsx`  | StateMachineGraph canvas/outline editing and StateMachineSequence label interaction share the same state/transition data. |
 
-The examples keep the host's draft, validation and application policy next to its controls. A host can place its editor in a Modal or side panel without moving the calendar, timeline or asset-picker interaction into that form. A rejected or cancelled draft leaves the original collection intact. Hosts decide when external changes replace a draft, whether an empty alternative text is allowed, how assignees are searched, and where focus returns when an edited item disappears.
+The examples keep the host's draft, validation and application policy next to its controls. A host can place its editor in a Dialog or side panel without moving the calendar, timeline or asset-picker interaction into that form. A rejected or cancelled draft leaves the original collection intact. Hosts decide when external changes replace a draft, whether an empty alternative text is allowed, how assignees are searched, and where focus returns when an edited item disappears.
 
 For timed events, use DateTimeField's `date-time-range` with the calendar's `timeZone`. Decide explicitly whether stored times represent a wall clock, an offset or a named zone, and preserve that representation when saving. An all-day end is inclusive; a timed end is exclusive. All-day conversion is host policy. Timeline milestones use a single date field; bars use a date range. Add PeoplePicker for host-owned assignment and a Link for an item's destination.
 

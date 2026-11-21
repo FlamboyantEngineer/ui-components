@@ -9,7 +9,15 @@ import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { Portal } from '../portal/portal.js';
 import { Card } from './card.js';
 import { CardGrid, CardGridItem } from './card-grid.js';
-import { CardAction, CardTitle } from './card-parts.js';
+import {
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardTitleAction,
+} from './card-parts.js';
 
 const cities = [
   { id: 'lisbon', name: 'Lisbon' },
@@ -139,7 +147,7 @@ describe('Card', () => {
     render(
       <>
         <CardTitle className="own">Loose title</CardTitle>
-        <CardAction>Loose action</CardAction>
+        <CardTitleAction>Loose action</CardTitleAction>
       </>,
     );
     const title = screen.getByRole('heading', { name: 'Loose title' });
@@ -433,7 +441,7 @@ describe('Card', () => {
     ]);
   });
 
-  it('UIC-CARD-3.3 UIC-COMPOSITION-3.1 draws the CardAction of a custom header as the card action', async () => {
+  it('UIC-CARD-3.3 UIC-COMPOSITION-3.1 draws the CardTitleAction of a custom header as the card action', async () => {
     const onAction = vi.fn();
     const { container, rerender } = render(
       <Card
@@ -441,7 +449,7 @@ describe('Card', () => {
         header={
           <>
             <CardTitle>
-              <CardAction>Garden plan</CardAction>
+              <CardTitleAction>Garden plan</CardTitleAction>
             </CardTitle>
             <button type="button">Menu</button>
           </>
@@ -460,7 +468,7 @@ describe('Card', () => {
     rerender(
       <Card
         onAction={onAction}
-        header={<CardAction aria-label="Open the seed list">Seeds</CardAction>}
+        header={<CardTitleAction aria-label="Open the seed list">Seeds</CardTitleAction>}
       >
         <p>Twelve packets</p>
       </Card>,
@@ -861,4 +869,54 @@ describe('Card root ref', () => {
     expect(ref.current).toBe(container.querySelector('.ui-card'));
     expect(ref.current?.tagName).toBe('SECTION');
   });
+});
+
+it('UIC-CARD-8.1 composes independent header actions and collapsible card regions', async () => {
+  const user = userEvent.setup();
+  const onOpen = vi.fn();
+  const onEdit = vi.fn();
+  const footer = { current: null as HTMLElement | null };
+  render(
+    <Card onAction={onOpen} isCollapsible>
+      <>
+        <CardHeader className="caller">
+          <CardTitle>
+            <CardTitleAction>Field notes</CardTitleAction>
+          </CardTitle>
+          <CardDescription>From the west trail</CardDescription>
+          <CardAction>
+            <button type="button" onClick={onEdit}>
+              Edit notes
+            </button>
+          </CardAction>
+        </CardHeader>
+        <CardContent id="observations">
+          <input aria-label="Observation" defaultValue="New tracks" />
+        </CardContent>
+      </>
+      <CardFooter ref={footer} id="updated">
+        Updated today
+      </CardFooter>
+    </Card>,
+  );
+  const card = screen.getByRole('region', { name: 'Field notes' });
+  const edit = within(card).getByRole('button', { name: 'Edit notes' });
+  const observation = within(card).getByRole('textbox', { name: 'Observation' });
+  expect(card.querySelector('.ui-card__header')).toHaveClass('caller');
+  expect(footer.current).toHaveTextContent('Updated today');
+  expectHooksMatchSpec(card, 'CARD', {
+    slots: ['header', 'title', 'action', 'description', 'actions', 'body', 'footer'],
+  });
+  await user.click(edit);
+  expect(onEdit).toHaveBeenCalledTimes(1);
+  expect(onOpen).not.toHaveBeenCalled();
+  await user.click(within(card).getByRole('button', { name: 'Field notes' }));
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  const toggle = within(card).getByRole('button', { name: 'Details Field notes' });
+  expect(toggle.getAttribute('aria-controls')?.split(' ')).toEqual(['observations', 'updated']);
+  await user.click(toggle);
+  expect(observation).not.toBeVisible();
+  expect(footer.current).not.toBeVisible();
+  await user.click(toggle);
+  expect(within(card).getByRole('textbox', { name: 'Observation' })).toBe(observation);
 });

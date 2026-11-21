@@ -37,6 +37,7 @@ export const codeBlockHooks = createHooks('code-block', [
   'line',
   'line-number',
   'prompt',
+  'footer',
 ]);
 
 const hooks = codeBlockHooks;

@@ -298,3 +298,27 @@
   border-width: 2px;
   font-size: 0.6em;
 }
+
+.ui-avatar__surface:has(> .ui-avatar__fallback) {
+  display: grid;
+  grid-template: 'avatar' 1fr / 1fr;
+}
+
+.ui-avatar__surface > .ui-avatar__fallback,
+.ui-avatar__surface:has(> .ui-avatar__fallback) > .ui-avatar__image {
+  grid-area: avatar;
+}
+
+.ui-avatar__fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--ref-avatar-color);
+  color: var(--ref-on-fill);
+}
+
+.ui-avatar[data-variant='outlined'] .ui-avatar__fallback {
+  background: transparent;
+  color: var(--ref-text);
+}

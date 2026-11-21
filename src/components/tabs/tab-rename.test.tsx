@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
-import { Tab, TabList, type TabListProps, TabPanel, Tabs } from './tabs.js';
+import { Tabs, TabsContent, TabsList, type TabsListProps, TabsTrigger } from './tabs.js';
 
 interface Fruit {
   id: string;
@@ -23,11 +23,11 @@ function Renameable({
   onRename,
   disabledKeys,
   ...list
-}: Partial<TabListProps> & { disabledKeys?: Key[] }) {
+}: Partial<TabsListProps> & { disabledKeys?: Key[] }) {
   const [items, setItems] = useState(fruit);
   return (
     <Tabs disabledKeys={disabledKeys}>
-      <TabList
+      <TabsList
         aria-label="Fruit"
         onRename={(key, name) => {
           onRename?.(key, name);
@@ -38,15 +38,15 @@ function Renameable({
         {...list}
       >
         {items.map((item) => (
-          <Tab key={item.id} id={item.id}>
+          <TabsTrigger key={item.id} id={item.id}>
             {item.name}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
       {items.map((item) => (
-        <TabPanel key={item.id} id={item.id}>
+        <TabsContent key={item.id} id={item.id}>
           About {item.name}
-        </TabPanel>
+        </TabsContent>
       ))}
     </Tabs>
   );

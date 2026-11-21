@@ -75,11 +75,11 @@
   background: transparent;
   color: var(--ref-accent-ink);
 }
-.ui-button[data-variant='danger'] {
+.ui-button[data-variant='destructive'] {
   border-color: var(--ref-danger);
   color: var(--ref-danger);
 }
-.ui-button[data-variant='danger'][data-hovered] {
+.ui-button[data-variant='destructive'][data-hovered] {
   background: var(--ref-danger-fill);
   color: var(--ref-on-fill);
 }

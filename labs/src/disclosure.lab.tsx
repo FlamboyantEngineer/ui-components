@@ -1,8 +1,14 @@
 import { type CSSProperties, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   Disclosure,
-  DisclosureGroup,
   DisclosureHeader,
   DisclosurePanel,
   DisclosureTitle,
@@ -22,19 +28,22 @@ const questions = [
   { id: 'dogs', title: 'Can I bring a dog?', answer: 'Dogs on a lead are welcome.' },
 ] as const;
 
-function Accordion() {
+function MarketAccordion() {
   return (
     <div style={column(360)} data-lab-demo="accordion">
-      <DisclosureGroup defaultExpandedKeys={['season']}>
+      <Accordion defaultExpandedKeys={['season']}>
         {questions.map((question) => (
-          <Disclosure key={question.id} id={question.id} title={question.title}>
-            <p>{question.answer}</p>
-          </Disclosure>
+          <AccordionItem key={question.id} id={question.id}>
+            <AccordionTrigger>{question.title}</AccordionTrigger>
+            <AccordionContent>
+              <p>{question.answer}</p>
+            </AccordionContent>
+          </AccordionItem>
         ))}
         <Disclosure id="stalls" title="Can I rent a stall?" isDisabled>
           <p>Stalls are booked for this season.</p>
         </Disclosure>
-      </DisclosureGroup>
+      </Accordion>
     </div>
   );
 }
@@ -52,13 +61,13 @@ function ControlledGroup() {
           Collapse all
         </Button>
       </p>
-      <DisclosureGroup allowsMultipleExpanded expandedKeys={keys} onExpandedChange={setKeys}>
+      <Accordion allowsMultipleExpanded expandedKeys={keys} onExpandedChange={setKeys}>
         {fruits.map((fruit) => (
           <Disclosure key={fruit} id={fruit} title={`${fruit[0]?.toUpperCase()}${fruit.slice(1)}`}>
             <p>Twelve {fruit} trees in the orchard.</p>
           </Disclosure>
         ))}
-      </DisclosureGroup>
+      </Accordion>
       <p>
         Open: <output data-lab-output="keys">{[...keys].join(', ') || 'none'}</output>
       </p>
@@ -117,14 +126,14 @@ function NestedLevels() {
       <HeadingLevelContext value={2}>
         <Disclosure title="Garden" defaultExpanded>
           <Disclosure title="Orchard" defaultExpanded>
-            <DisclosureGroup defaultExpandedKeys={['apples']}>
+            <Accordion defaultExpandedKeys={['apples']}>
               <Disclosure id="apples" title="Apples">
                 <p>Twelve trees.</p>
               </Disclosure>
               <Disclosure id="pears" title="Pears">
                 <p>Six trees.</p>
               </Disclosure>
-            </DisclosureGroup>
+            </Accordion>
           </Disclosure>
           <Disclosure title="Pond">
             <p>Water lilies and frogs.</p>
@@ -143,14 +152,14 @@ function NestedLevels() {
 function DisabledGroup() {
   return (
     <div style={column(360)} data-lab-demo="disabled-group">
-      <DisclosureGroup isDisabled defaultExpandedKeys={['winter']}>
+      <Accordion isDisabled defaultExpandedKeys={['winter']}>
         <Disclosure id="winter" title="Winter opening">
           <p>Closed until March.</p>
         </Disclosure>
         <Disclosure id="summer" title="Summer opening">
           <p>Open every day.</p>
         </Disclosure>
-      </DisclosureGroup>
+      </Accordion>
     </div>
   );
 }
@@ -159,7 +168,7 @@ function DisabledGroup() {
 function NestedContent() {
   return (
     <div style={column(360)} data-lab-demo="nested-content">
-      <DisclosureGroup defaultExpandedKeys={['delivery']}>
+      <Accordion defaultExpandedKeys={['delivery']}>
         <Disclosure id="delivery" title="Delivery">
           <p>Ships in two days.</p>
           <Disclosure title="Advanced delivery">
@@ -169,7 +178,7 @@ function NestedContent() {
         <Disclosure id="returns" title="Returns">
           <p>Free within a month.</p>
         </Disclosure>
-      </DisclosureGroup>
+      </Accordion>
       <Disclosure title="Contents" defaultExpanded>
         <Outline
           aria-label="Guide contents"
@@ -185,6 +194,12 @@ function NestedContent() {
 
 mountLab(
   <>
+    <LabSection title="Standalone collapsible">
+      <Collapsible>
+        <CollapsibleTrigger>Show trail details</CollapsibleTrigger>
+        <CollapsibleContent>The loop follows the river for two miles.</CollapsibleContent>
+      </Collapsible>
+    </LabSection>
     <LabSection
       title="Indicators and states"
       description="A collapsed, an expanded and a disabled disclosure with the indicator at the start and at the end."
@@ -209,7 +224,7 @@ mountLab(
       title="Accordion"
       description="A group that opens one answer at a time; the last disclosure is disabled. Arrow keys, Home and End move between the triggers."
     >
-      <Accordion />
+      <MarketAccordion />
     </LabSection>
     <LabSection
       title="Several open"

@@ -101,7 +101,7 @@ async function settled<T>(promise: Promise<T>): Promise<T | 'pending'> {
 }
 
 const actionNames = () =>
-  [...document.querySelectorAll('.ui-modal__actions button')].map((button) => button.textContent);
+  [...document.querySelectorAll('.ui-dialog__actions button')].map((button) => button.textContent);
 
 const listed = () => document.querySelector('.ui-unsaved-changes-guard__list')?.textContent;
 
@@ -317,7 +317,7 @@ describe('UnsavedChangesGuard sources', () => {
     update(dirty);
     const third = leave();
     await screen.findByRole('alertdialog');
-    expect(document.querySelector('.ui-modal__primary')).not.toHaveAttribute('data-pending');
+    expect(document.querySelector('.ui-dialog__primary')).not.toHaveAttribute('data-pending');
     expect(await settled(third)).toBe('pending');
     // The late save leaves nothing dirty: nothing is left to lose, so the new question lets the
     // reader leave (UIC-UNSAVED-CHANGES-GUARD-2.7) rather than asking to discard nothing.

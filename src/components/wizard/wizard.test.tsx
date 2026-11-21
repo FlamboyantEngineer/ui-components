@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import { TextField } from '../text-field/text-field.js';
 import { Wizard, type WizardProps, type WizardStep } from './wizard.js';
@@ -635,9 +635,9 @@ describe('Wizard', () => {
       const [finished, setFinished] = useState(false);
       return (
         <>
-          <ModalTrigger>
+          <DialogTrigger>
             <Button>Plan a trip</Button>
-            <Modal title="Plan a trip">
+            <Dialog title="Plan a trip">
               {({ close }) => (
                 <Wizard
                   steps={tripSteps()}
@@ -648,8 +648,8 @@ describe('Wizard', () => {
                   }}
                 />
               )}
-            </Modal>
-          </ModalTrigger>
+            </Dialog>
+          </DialogTrigger>
           {finished ? <p>Trip booked</p> : null}
         </>
       );

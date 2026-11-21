@@ -6,7 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key, Orientation } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { resolveTabMove, stepTabMove, type TabMove } from './tab-reorder.js';
-import { Tab, TabList, Tabs } from './tabs.js';
+import { Tabs, TabsList, TabsTrigger } from './tabs.js';
 
 const fruit = ['apple', 'banana', 'cherry', 'fig'];
 const label = (key: string) => key[0]?.toUpperCase() + key.slice(1);
@@ -26,7 +26,7 @@ function Reorderable({
   const [keys, setKeys] = useState(fruit);
   return (
     <Tabs orientation={orientation} disabledKeys={disabledKeys} isDisabled={isDisabled}>
-      <TabList
+      <TabsList
         aria-label="Fruit"
         onReorder={(move) => {
           onReorder?.(move);
@@ -38,11 +38,11 @@ function Reorderable({
         }}
       >
         {keys.map((key) => (
-          <Tab key={key} id={key}>
+          <TabsTrigger key={key} id={key}>
             {label(key)}
-          </Tab>
+          </TabsTrigger>
         ))}
-      </TabList>
+      </TabsList>
     </Tabs>
   );
 }
@@ -136,10 +136,10 @@ describe('Tab reordering', { timeout: 15_000 }, () => {
     const onReorder = vi.fn();
     render(
       <Tabs>
-        <TabList aria-label="Typed drag" onReorder={onReorder}>
-          <Tab id={1}>Numeric</Tab>
-          <Tab id="1">Text</Tab>
-        </TabList>
+        <TabsList aria-label="Typed drag" onReorder={onReorder}>
+          <TabsTrigger id={1}>Numeric</TabsTrigger>
+          <TabsTrigger id="1">Text</TabsTrigger>
+        </TabsList>
       </Tabs>,
     );
     const numeric = tab('Numeric');
@@ -307,9 +307,9 @@ describe('Tab reordering', { timeout: 15_000 }, () => {
   it('UIC-TABS-3.3 draws no drag affordance without onReorder', () => {
     render(
       <Tabs>
-        <TabList aria-label="Fruit">
-          <Tab id="apple">Apple</Tab>
-        </TabList>
+        <TabsList aria-label="Fruit">
+          <TabsTrigger id="apple">Apple</TabsTrigger>
+        </TabsList>
       </Tabs>,
     );
     expect(tab('Apple')).not.toHaveAttribute('draggable');

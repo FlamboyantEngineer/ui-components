@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { PortalContainerProvider } from '../../src/components/portal/portal.js';
 import {
   createToastQueue,
@@ -145,14 +145,14 @@ function OverlayDemo() {
           <PushFromOverlay from="drawer" />
         </Drawer>
       </DrawerTrigger>{' '}
-      <ModalTrigger>
+      <DialogTrigger>
         <Button size="sm" data-lab-open="dialog">
           Open dialog
         </Button>
-        <Modal title="Edit city" data-lab-modal="toast">
+        <Dialog title="Edit city" data-lab-modal="toast">
           <PushFromOverlay from="dialog" />
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
     </p>
   );
 }

@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import type { BaseProps, RefProps, Size } from '../../core/props.js';
 import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
-import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
+import { type AvatarIdentity, type AvatarProps, AvatarSizeContext } from '../avatar/avatar.js';
 import { avatarGroupHooks as hooks } from './avatar-group-hooks.js';
 import { AvatarGroupListTrigger } from './avatar-group-list.js';
 import { AvatarGroupPeople } from './avatar-group-people.js';
@@ -27,7 +27,9 @@ export interface AvatarGroupProps
     RefProps<HTMLSpanElement>,
     Pick<AvatarProps, 'colorCount' | 'variant' | 'nameTooltip' | 'cardTrigger'> {
   /** The people in display order, including optional presence status. */
-  people: readonly AvatarGroupPerson[];
+  people?: readonly AvatarGroupPerson[] | undefined;
+  /** Composed avatars and an optional count, used when people are supplied as elements. */
+  children?: ReactNode;
   /** Maximum visible people; the rest join the overflow count. Defaults to all. */
   maxVisible?: number | undefined;
   /** Additional people already omitted from the supplied list. */
@@ -50,9 +52,13 @@ export interface AvatarGroupProps
   'aria-label'?: string | undefined;
 }
 
-/** One group of identities, including optional presence, cards, commands and overflow. */
-export function AvatarGroup({
+interface ManagedAvatarGroupProps extends AvatarGroupProps {
+  people: readonly AvatarGroupPerson[];
+}
+
+function ManagedAvatarGroup({
   people,
+  children: _children,
   maxVisible,
   overflowCount,
   hiddenNames,
@@ -69,7 +75,7 @@ export function AvatarGroup({
   'aria-label': ariaLabel,
   className,
   ...rest
-}: AvatarGroupProps) {
+}: ManagedAvatarGroupProps) {
   const presence = windowPeople({ people, maxVisible, overflowCount });
   const labels = usePresenceLabels({
     people,
@@ -116,3 +122,47 @@ export function AvatarGroup({
     </span>
   );
 }
+
+/** Groups caller-composed avatars, or manages a collection of identities and its overflow. */
+export function AvatarGroup({
+  people,
+  children,
+  layout = 'stack',
+  size = 'md',
+  ...rest
+}: AvatarGroupProps) {
+  if (people !== undefined) {
+    return <ManagedAvatarGroup {...rest} people={people} layout={layout} size={size} />;
+  }
+  return (
+    <ComposedAvatarGroup {...rest} layout={layout === 'strip' ? 'strip' : 'stack'} size={size}>
+      {children}
+    </ComposedAvatarGroup>
+  );
+}
+
+function ComposedAvatarGroup({
+  children,
+  layout,
+  size = 'md',
+  className,
+  id,
+  ref,
+  'aria-label': label,
+  ...rest
+}: Omit<AvatarGroupProps, 'people'>) {
+  return (
+    <span
+      {...hooks.root({ className, props: rest, data: { layout, size } })}
+      id={id}
+      ref={ref}
+      role="group"
+      aria-label={label}
+    >
+      <AvatarSizeContext value={size}>{children}</AvatarSizeContext>
+    </span>
+  );
+}
+
+export type { AvatarGroupCountProps } from './avatar-group-count.js';
+export { AvatarGroupCount } from './avatar-group-count.js';

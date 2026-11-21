@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { Menu, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { isLayerAbove, overlayLayers } from '../../src/components/portal/index.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
@@ -108,12 +108,12 @@ function HostedOverlays() {
             />
           </MenuPopover>
         </MenuTrigger>{' '}
-        <ModalTrigger>
+        <DialogTrigger>
           <Button>Hosted dialog</Button>
-          <Modal title="Hosted dialog" size="sm" isDismissable>
+          <Dialog title="Hosted dialog" size="sm" isDismissable>
             <p>This dialog renders in the portal host.</p>
-          </Modal>
-        </ModalTrigger>
+          </Dialog>
+        </DialogTrigger>
       </PortalHost>
     </div>
   );
@@ -155,9 +155,9 @@ function ColorDialog() {
   const [chosen, setChosen] = useState<string>('none');
   const toggle = useRef<HTMLButtonElement>(null);
   return (
-    <ModalTrigger>
+    <DialogTrigger>
       <Button>Choose a color</Button>
-      <Modal
+      <Dialog
         title="Color"
         size="sm"
         isDismissable
@@ -199,8 +199,8 @@ function ColorDialog() {
             </ul>
           </Portal>
         ) : null}
-      </Modal>
-    </ModalTrigger>
+      </Dialog>
+    </DialogTrigger>
   );
 }
 

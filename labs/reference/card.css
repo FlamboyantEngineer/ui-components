@@ -369,3 +369,14 @@
 .ui-card [data-moved][hidden] {
   display: none;
 }
+
+.ui-card__heading:has(> .ui-card__actions) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.ui-card__heading > .ui-card__actions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}

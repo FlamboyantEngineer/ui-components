@@ -3,7 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { AvatarGroup, type AvatarGroupPerson } from './avatar-group.js';
+import { Avatar } from '../avatar/avatar.js';
+import { AvatarGroup, AvatarGroupCount, type AvatarGroupPerson } from './avatar-group.js';
 
 const names = ['Maria Santos', 'Jon Berg', 'Lena Ortiz', 'Sam Okafor', 'Priya Nair', 'Tom Li'];
 const people: AvatarGroupPerson[] = names.map((name, index) => ({ id: `p${index}`, name }));
@@ -168,4 +169,23 @@ describe('AvatarGroup root ref', () => {
     expect(ref.current).not.toBeNull();
     expect(ref.current).toBe(container.querySelector('.ui-avatar-group'));
   });
+});
+
+it('UIC-AVATAR-GROUP-13.1 composes a named stack, inheriting the default size and naming the count', () => {
+  const { container } = render(
+    <AvatarGroup size="sm" aria-label="Hiking club">
+      <Avatar name="Avery Chen" />
+      <Avatar name="Sam Lee" size="lg" />
+      <AvatarGroupCount count={2} hiddenNames={['Dana Wu', 'Tony Moore']} />
+      <AvatarGroupCount count={0} />
+    </AvatarGroup>,
+  );
+  const group = screen.getByRole('group', { name: 'Hiking club' });
+  expect(within(group).getByRole('img', { name: 'Avery Chen' })).toHaveAttribute('data-size', 'sm');
+  expect(within(group).getByRole('img', { name: 'Sam Lee' })).toHaveAttribute('data-size', 'lg');
+  expect(
+    within(group).getByRole('img', { name: /2 more.*Dana Wu.*Tony Moore/i }),
+  ).toHaveTextContent('+2');
+  expect(screen.queryByText('+0')).not.toBeInTheDocument();
+  expectHooksMatchSpec(container, 'AVATAR-GROUP', { slots: ['overflow'] });
 });

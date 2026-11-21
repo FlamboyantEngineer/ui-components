@@ -2,10 +2,11 @@
 
 import { type CSSProperties, type ReactNode, useState } from 'react';
 import type { ComponentHooks } from '../../core/hooks.js';
-import type { Key, SelectableState } from '../../core/props.js';
+import type { BaseProps, Key, RefProps, SelectableState } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ListBoxItem, PopoverContext, useSlottedContext } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import type { RemoteSearch } from '../../utils/use-remote-search.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
@@ -24,7 +25,7 @@ type PickerSearchStatus = Pick<
 type PickerOptionSlot =
   'option' | 'option-icon' | 'option-label' | 'option-description' | 'option-shortcut';
 
-interface PickerOptionRowProps {
+interface PickerOptionRowProps extends Omit<BaseProps, 'id'>, RefProps<HTMLDivElement> {
   /** The row's collection key. */
   id: Key;
   option: PickerOption;
@@ -106,16 +107,21 @@ export function PickerOptionRow({
   highlightMatches,
   renderLead,
   renderOption,
+  className,
+  ref,
+  ...rest
 }: PickerOptionRowProps) {
   // The row, which an option's hint is positioned against.
   const [row, setRow] = useState<HTMLDivElement | null>(null);
+  const rowRef = useMergedRefs(ref, setRow);
   return (
     <ListBoxItem
-      ref={setRow}
+      {...rest}
+      ref={rowRef}
       id={id}
       textValue={option.label}
       isDisabled={isDisabled ?? option.isDisabled}
-      className={hooks.slotClass('option')}
+      {...hooks.slot('option', {}, className)}
     >
       {(item) => {
         const state: SelectableState = {

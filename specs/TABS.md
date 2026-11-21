@@ -1,6 +1,6 @@
 # Tabs
 
-`Tabs` switches between peer sections of one surface. It is a family built on React Aria's `Tabs`, `TabList`, `Tab` and `TabPanel`: `Tabs` holds the selection, `TabList` the row (or column) of `Tab`s, and each `TabPanel` the content of the tab with the same `id`. A horizontal list that runs out of room scrolls, with optional scroll buttons, or collapses the tabs that do not fit into a "more" [Dropdown Menu](DROPDOWN-MENU.md) measured by [`useOverflowItems`](OVERFLOW-LIST.md); tabs can be removable and the list can add tabs. A list can also rename its tabs in place, reorder them by dragging and from the keyboard, and give each tab a menu of its actions, and `Tabs` can remember its selected tab through the provider's storage. Picking one of a few values of a setting is a [Segmented Choice](SEGMENTED-CHOICE.md); showing where a page sits in a hierarchy is a [Breadcrumb](BREADCRUMB.md).
+`Tabs` switches between peer sections of one surface. It is a family built on React Aria's `Tabs`, `TabList`, `Tab` and `TabPanel`: `Tabs` holds the selection, `TabsList` the row (or column) of `TabsTrigger`s, and each `TabsContent` the content of the tab with the same `id`. A horizontal list that runs out of room scrolls, with optional scroll buttons, or collapses the tabs that do not fit into a "more" [Dropdown Menu](DROPDOWN-MENU.md) measured by [`useOverflowItems`](OVERFLOW-LIST.md); tabs can be removable and the list can add tabs. A list can also rename its tabs in place, reorder them by dragging and from the keyboard, and give each tab a menu of its actions, and `Tabs` can remember its selected tab through the provider's storage. Picking one of a few values of a setting is a [Segmented Choice](SEGMENTED-CHOICE.md); showing where a page sits in a hierarchy is a [Breadcrumb](BREADCRUMB.md).
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -8,7 +8,7 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-TABS-1.1 - Tabs, list and panels
 
-`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including tabs and panels returned from a host component that forwards their props ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)). `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected. A panel whose tab is not selected unmounts, unless `shouldForceMount` keeps it mounted, hidden and inert (`data-inert`), so its content keeps its state.
+`Tabs` shall render its root, a `TabsList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `TabsTrigger` per section with role `tab` named by its label, and the `TabsContent` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including tabs and panels returned from a host component that forwards their props ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)). `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected. A panel whose tab is not selected unmounts, unless `shouldForceMount` keeps it mounted, hidden and inert (`data-inert`), so its content keeps its state.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-keys.test.tsx`, `e2e/tabs.spec.ts`, `e2e/tabs-composition.spec.ts`
@@ -36,14 +36,14 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.5 - Hooks and caller attributes
 
-Each family member shall carry its hooks below and append the caller's `className`. `Tabs`, `TabList`, `Tab` and `TabPanel` forward caller `data-*` attributes and `ref` to their elements; `Tabs` also forwards `id`, `TabList` and `Tab` the ARIA labelling attributes, and `Tab` its `onContextMenu` handler, so a host can open a menu for a tab. A tab's and a panel's `id` is a `Key` (a string or a number).
+Each family member shall carry its hooks below and append the caller's `className`. `Tabs`, `TabsList`, `TabsTrigger` and `TabsContent` forward caller `data-*` attributes and `ref` to their elements; `Tabs` also forwards `id`, `TabsList` and `TabsTrigger` the ARIA labelling attributes, and `TabsTrigger` its `onContextMenu` handler, so a host can open a menu for a tab. A tab's and a panel's `id` is a `Key` (a string or a number).
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs-composition.spec.ts`
 
 ### UIC-TABS-1.6 - Swapping elements
 
-`Tabs`, `TabList`, `Tab` and `TabPanel` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabListRenderState` (`orientation`), the shared `SelectableState` for `Tab` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabPanelRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
+`Tabs`, `TabsList`, `TabsTrigger` and `TabsContent` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabsListRenderState` (`orientation`), the shared `SelectableState` for `TabsTrigger` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabsContentRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs-composition.spec.ts`
@@ -59,14 +59,14 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.2 - Disabled tabs
 
-A `Tab` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses including its close mark, and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab, the overflow menu (closing it if open, UIC-DROPDOWN-MENU-1.8) and reordering. Disabled states shall also refuse Delete or Backspace on a tab that already has focus. The close mark follows changes to these disabled states without removing the mark.
+A `TabsTrigger` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses including its close mark, and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab, the overflow menu (closing it if open, UIC-DROPDOWN-MENU-1.8) and reordering. Disabled states shall also refuse Delete or Backspace on a tab that already has focus. The close mark follows changes to these disabled states without removing the mark.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.3 - Tab links
 
-A `Tab` with `href` shall render an `<a>` that keeps tab semantics. Selecting it navigates to its `href`, through the provider's `navigate` when the host sets one ([PROVIDER.md](PROVIDER.md)).
+A `TabsTrigger` with `href` shall render an `<a>` that keeps tab semantics. Selecting it navigates to its `href`, through the provider's `navigate` when the host sets one ([PROVIDER.md](PROVIDER.md)).
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
@@ -189,7 +189,7 @@ Verification: `src/components/tabs/tab-rename-presentation.test.tsx`, `e2e/tabs.
 
 ### UIC-TABS-3.11 - Actions between tabs
 
-`TabList.renderAfterTab(key)` may return ordinary content after that tab. Null adds no part. Actions shall remain outside selection, panel and hidden-tab menu keys, with normal keyboard focus and an independent overflow identity. The visual list retains its native geometry and key handlers. In this composition the `ui-tabs__owner` tablist shall own only the IDs of mounted native tabs through `aria-owns`, updating after late collection commits, insertion, removal and ID changes. The visual `ui-tabs__list` is a group. If every action, the selected tab and the overflow indicator cannot fit together, a horizontal menu list shall scroll with all parts mounted until enough room returns. While it scrolls it is a scroll strip like an `overflow="scroll"` list and takes the wheel the same way ([UIC-TABS-2.4](#uic-tabs-24---overflow)), in either reading direction, holding it at both ends; back in menu mode it leaves the wheel to the page. Actions shall never be hidden or enter the menu. The `data-inline-actions` bar fills the room offered by its parent row, so collapsing children does not change the room being measured. With no action content, the original tablist structure is unchanged.
+`TabsList.renderAfterTab(key)` may return ordinary content after that tab. Null adds no part. Actions shall remain outside selection, panel and hidden-tab menu keys, with normal keyboard focus and an independent overflow identity. The visual list retains its native geometry and key handlers. In this composition the `ui-tabs__owner` tablist shall own only the IDs of mounted native tabs through `aria-owns`, updating after late collection commits, insertion, removal and ID changes. The visual `ui-tabs__list` is a group. If every action, the selected tab and the overflow indicator cannot fit together, a horizontal menu list shall scroll with all parts mounted until enough room returns. While it scrolls it is a scroll strip like an `overflow="scroll"` list and takes the wheel the same way ([UIC-TABS-2.4](#uic-tabs-24---overflow)), in either reading direction, holding it at both ends; back in menu mode it leaves the wheel to the page. Actions shall never be hidden or enter the menu. The `data-inline-actions` bar fills the room offered by its parent row, so collapsing children does not change the room being measured. With no action content, the original tablist structure is unchanged.
 
 Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-list-parts.tsx`, `src/components/tabs/tab-action-room.ts`, `src/components/tabs/tab-list-layout.ts`, `src/components/tabs/tab-bar.tsx`
 Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-actions.spec.ts`
@@ -202,12 +202,12 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons, edge fades or an add button.      |
 | `ui-tabs__owner`         | slot      |                          | The semantic tablist owning mounted tabs when action parts are present.                  |
 | `ui-tabs__action`        | slot      |                          | An ordinary action part, excluded from tab selection.                                    |
-| `ui-tabs__list`          | slot      |                          | The visual `TabList` (`role="group"` with actions, otherwise `tablist`).                 |
+| `ui-tabs__list`          | slot      |                          | The visual `TabsList` (`role="group"` with actions, otherwise `tablist`).                |
 | `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                                      |
 | `ui-tabs__fade`          | slot      |                          | A decorative fade over an edge of a scrolling list that hides tabs.                      |
 | `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                                             |
 | `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                                       |
-| `ui-tabs__tab`           | slot      |                          | One `Tab` (`role="tab"`, an `<a>` with `href`).                                          |
+| `ui-tabs__tab`           | slot      |                          | One `TabsTrigger` (`role="tab"`, an `<a>` with `href`).                                  |
 | `ui-tabs__indicator`     | slot      |                          | The selection indicator inside the selected tab.                                         |
 | `ui-tabs__icon`          | slot      |                          | A tab's leading icon (also `ui-icon`).                                                   |
 | `ui-tabs__label`         | slot      |                          | A tab's label.                                                                           |
@@ -216,7 +216,7 @@ Verification: `src/components/tabs/tab-list-parts.test.tsx`, `e2e/tabs-inline-ac
 | `ui-tabs__rename`        | slot      |                          | The element after the list laid over a tab being renamed.                                |
 | `ui-tabs__rename-input`  | slot      |                          | The name field of a tab being renamed.                                                   |
 | `ui-tabs__rename-error`  | slot      |                          | The message of a refused name.                                                           |
-| `ui-tabs__panel`         | slot      |                          | One `TabPanel` (`role="tabpanel"`).                                                      |
+| `ui-tabs__panel`         | slot      |                          | One `TabsContent` (`role="tabpanel"`).                                                   |
 | `data-size`              | attribute | `sm`, `md`, `lg`         | Tab block size, on the root.                                                             |
 | `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria).               |
 | `data-inline-actions`    | state     | `true`                   | The bar contains independent action parts; its reference layout fills the available row. |

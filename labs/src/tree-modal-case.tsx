@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { Tree } from '../../src/components/tree/tree.js';
 
 /** A tree keeps its ordinary action; modified Enter applies its enclosing dialog. */
@@ -9,9 +9,9 @@ export function ModalTree() {
   const [actions, setActions] = useState(0);
   return (
     <div data-lab-demo="modal-tree">
-      <ModalTrigger>
+      <DialogTrigger>
         <Button>Choose destination</Button>
-        <Modal
+        <Dialog
           title="Destination"
           primaryAction={{
             label: 'Apply',
@@ -27,8 +27,8 @@ export function ModalTree() {
             getTextValue={(item) => item.name}
             onAction={() => setActions((count) => count + 1)}
           />
-        </Modal>
-      </ModalTrigger>
+        </Dialog>
+      </DialogTrigger>
       <output aria-label="Applied destinations">{applied}</output>
       <output aria-label="Place actions">{actions}</output>
     </div>

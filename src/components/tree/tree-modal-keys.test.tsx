@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button/button.js';
-import { Modal, ModalTrigger } from '../modal/modal.js';
+import { Dialog, DialogTrigger } from '../dialog/dialog.js';
 import { Tree } from './tree.js';
 
 const places = [{ id: 'lisbon', name: 'Lisbon' }];
@@ -16,10 +16,10 @@ describe('Tree modal shortcuts', () => {
       const outerApply = vi.fn();
       const onAction = vi.fn();
       render(
-        <Modal isOpen title="Outer" primaryAction={{ label: 'Save outer', onPress: outerApply }}>
-          <ModalTrigger>
+        <Dialog isOpen title="Outer" primaryAction={{ label: 'Save outer', onPress: outerApply }}>
+          <DialogTrigger>
             <Button>Choose place</Button>
-            <Modal
+            <Dialog
               title="Destination"
               primaryAction={{
                 label: 'Apply',
@@ -35,9 +35,9 @@ describe('Tree modal shortcuts', () => {
                 getTextValue={(item) => item.name}
                 onAction={onAction}
               />
-            </Modal>
-          </ModalTrigger>
-        </Modal>,
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>,
       );
       await user.click(screen.getByRole('button', { name: 'Choose place' }));
       const dialog = screen.getByRole('dialog', { name: 'Destination' });
@@ -59,7 +59,7 @@ describe('Tree modal shortcuts', () => {
       const onApply = vi.fn();
       const onAction = vi.fn();
       render(
-        <Modal
+        <Dialog
           isOpen
           title="Destination"
           primaryAction={{ label: 'Apply', onPress: onApply, isPending: refusal === 'pending' }}
@@ -71,7 +71,7 @@ describe('Tree modal shortcuts', () => {
             onAction={onAction}
             onItemKeyDown={(_item, event) => refusal === 'owner' && event.ctrlKey}
           />
-        </Modal>,
+        </Dialog>,
       );
       act(() => screen.getByRole('row', { name: 'Lisbon' }).focus());
       await user.keyboard('{Control>}{Enter}{/Control}');
