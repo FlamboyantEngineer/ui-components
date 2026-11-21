@@ -180,7 +180,15 @@ export function SelectItem({
   ...rest
 }: SelectItemProps) {
   const option = { id, label, icon, description, shortcut, isDisabled, tooltip };
-  return <PickerOptionRow {...rest} id={toCollectionKey(id)} option={option} hooks={hooks} />;
+  return (
+    <PickerOptionRow
+      {...rest}
+      id={toCollectionKey(id)}
+      option={option}
+      hooks={hooks}
+      hasIndicator
+    />
+  );
 }
 
 export interface SelectGroupProps extends Omit<BaseProps, 'id'>, RefProps<HTMLElement> {
