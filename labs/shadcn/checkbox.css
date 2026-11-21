@@ -1,13 +1,32 @@
 /*
- * shadcn/ui stylesheet: checkboxes.
- * A light input border that fills with the primary color when checked.
+ * shadcn/ui stylesheet: checkboxes, after the checkbox of shadcn/ui's "nova" style.
+ * A 16 pixel box with a 4 pixel radius and an input border that fills with the primary color when
+ * ticked, a 14 pixel tick, and the input tint in the dark. Focus and an invalid box take a 3 pixel
+ * ring; a ticked invalid box keeps its primary border, in either theme. Its label is medium, 8
+ * pixels from the box.
  */
+
+.ui-checkbox {
+  gap: 8px;
+}
+
+.ui-checkbox__label {
+  font-weight: var(--ref-font-weight-medium);
+}
 
 .ui-checkbox__box {
   border-color: var(--input);
-  background: var(--ref-field-fill);
   border-radius: var(--ref-radius-xs);
+  background: transparent;
   color: var(--primary-foreground);
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-checkbox__glyph {
+  width: calc(var(--ref-checkbox-box) - 2px);
+  height: calc(var(--ref-checkbox-box) - 2px);
 }
 
 .ui-checkbox:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
@@ -21,9 +40,31 @@
 
 .ui-checkbox[data-focus-visible] .ui-checkbox__box {
   border-color: var(--ref-focus);
-  outline-offset: 0;
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-checkbox[data-invalid] .ui-checkbox__box {
-  border-color: var(--ref-danger);
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-checkbox[data-invalid]:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
+  border-color: var(--primary);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-checkbox:not([data-selected], [data-indeterminate])
+  .ui-checkbox__box {
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-checkbox[data-invalid]:not([data-selected], [data-indeterminate])
+  .ui-checkbox__box {
+  border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-checkbox[data-invalid] .ui-checkbox__box {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }

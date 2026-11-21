@@ -1,0 +1,149 @@
+/*
+ * shadcn/ui stylesheet: input groups, after the input group of shadcn/ui's "nova" style.
+ * The group is the field: a 32 pixel frame with the input border, transparent (the input tint in the
+ * dark), that takes the ring under focus, the destructive ring when invalid, and the disabled fill.
+ * Its control loses its own frame and comes 6 pixels from an addon beside it; addons are muted 14
+ * pixel medium type, 8 pixels in from the edge, and an addon's button sits 5 pixels closer.
+ */
+
+.ui-input-group {
+  gap: 0;
+  border-color: var(--input);
+  border-radius: var(--ref-radius);
+  background: transparent;
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
+}
+
+.ui-input-group:not(
+  :has(
+    > .ui-input-group__addon:is([data-align='block-start'], [data-align='block-end']),
+    > textarea.ui-input-group__control
+  )
+) {
+  flex-wrap: nowrap;
+  height: var(--ref-control-height-md);
+}
+
+.ui-input-group:has(> .ui-input-group__control:focus) {
+  border-color: var(--ref-focus);
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-input-group:is([data-invalid], :has(> .ui-input-group__control[data-invalid])) {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
+}
+
+.ui-input-group:is([data-disabled], :has(> .ui-input-group__control[data-disabled])) {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+  opacity: 0.5;
+}
+
+/* The control draws no frame, focus or fill of its own inside the group. */
+.ui-input-group > .ui-input-group__control:is(.ui-input, .ui-textarea) {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-input-group:has(> .ui-input-group__addon[data-align='inline-start'])
+  > .ui-input-group__control {
+  padding-inline-start: 6px;
+}
+
+.ui-input-group:has(> .ui-input-group__addon[data-align='inline-end']) > .ui-input-group__control {
+  padding-inline-end: 6px;
+}
+
+.ui-input-group:has(> .ui-input-group__addon[data-align='block-start'])
+  > input.ui-input-group__control {
+  padding-bottom: 12px;
+}
+
+.ui-input-group:has(> .ui-input-group__addon[data-align='block-end'])
+  > input.ui-input-group__control {
+  padding-top: 12px;
+}
+
+.ui-input-group > textarea.ui-input-group__control {
+  padding-block: 8px;
+}
+
+.ui-input-group__addon {
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+  cursor: text;
+}
+
+.ui-input-group__addon[data-align='inline-start'] {
+  padding-inline-start: 8px;
+}
+
+.ui-input-group__addon[data-align='inline-end'] {
+  padding-inline-end: 8px;
+}
+
+.ui-input-group__addon[data-align='inline-start']:has(> .ui-input-group__button) {
+  margin-inline-start: -4.8px;
+}
+
+.ui-input-group__addon[data-align='inline-end']:has(> .ui-input-group__button) {
+  margin-inline-end: -4.8px;
+}
+
+.ui-input-group__addon[data-align='block-start'] {
+  padding: 8px 10px 0;
+}
+
+.ui-input-group__addon[data-align='block-end'] {
+  padding: 0 10px 8px;
+}
+
+.ui-input-group:is([data-disabled], :has(> .ui-input-group__control[data-disabled]))
+  .ui-input-group__addon {
+  opacity: 0.5;
+}
+
+.ui-input-group__text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-input-group__button {
+  gap: 8px;
+  color: inherit;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-input-group__button:is([data-group-size='xs'], [data-group-size='icon-xs']) {
+  border-radius: calc(var(--radius) - 3px);
+}
+
+.ui-input-group__button[data-group-size='xs'] {
+  gap: 4px;
+  padding-inline: 6px;
+}
+
+:where(.dark, [data-theme='dark']) .ui-input-group {
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-input-group:is([data-invalid], :has(> .ui-input-group__control[data-invalid])) {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-input-group:is([data-disabled], :has(> .ui-input-group__control[data-disabled])) {
+  background: color-mix(in oklab, var(--input) 80%, transparent);
+}

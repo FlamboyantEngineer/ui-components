@@ -1,0 +1,40 @@
+/*
+ * shadcn/ui stylesheet: fields, after the field of shadcn/ui's "nova" style. A medium label, the
+ * control and the help 8 pixels apart; the description and the message in 14 pixel type (smaller
+ * fields keep their smaller help). A fieldset is a plain column 16 pixels apart under a medium
+ * legend, with no frame.
+ */
+
+.ui-field__label {
+  margin-bottom: 8px;
+  font-weight: var(--ref-font-weight-medium);
+  line-height: 1.375;
+}
+
+.ui-field:is([data-label-layout='label-colon-control'], [data-label-layout='control-label'])
+  .ui-field__label {
+  margin-bottom: 0;
+}
+
+.ui-field:not([data-size='xs'], [data-size='sm']) :is(.ui-field__description, .ui-field__message) {
+  margin-top: 8px;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-field__description {
+  line-height: 1.5;
+}
+
+.ui-fieldset {
+  gap: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.ui-fieldset__legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-medium);
+}

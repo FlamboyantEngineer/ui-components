@@ -1,27 +1,69 @@
 /*
- * shadcn/ui stylesheet: radios.
- * A light input border around a primary dot when selected.
+ * shadcn/ui stylesheet: radios, after the radio group of shadcn/ui's "nova" style.
+ * A 16 pixel ring with an input border; when selected, a primary fill around an 8 pixel dot in the
+ * primary foreground. The input tint in the dark; focus and an invalid radio take a 3 pixel ring.
+ * Its label is medium, 8 pixels from the ring.
  */
+
+.ui-choice__button {
+  gap: 8px;
+}
+
+.ui-choice__label {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-choice__description {
+  margin-inline-start: calc(var(--ref-choice-group-size) + 8px);
+}
 
 .ui-choice__indicator {
   border-color: var(--input);
-  background: var(--ref-field-fill);
+  background: transparent;
+  transition:
+    border-color var(--ref-duration-fast),
+    box-shadow var(--ref-duration-fast);
 }
 
 .ui-choice__button[data-hovered]:not([data-selected]) .ui-choice__indicator {
   border-color: var(--input);
 }
 
+/* The dot is the fill left inside a primary border a quarter of the ring wide. */
 .ui-choice__button[data-selected] .ui-choice__indicator {
+  border-width: calc(var(--ref-choice-group-size) / 4);
   border-color: var(--primary);
   background: var(--primary-foreground);
 }
 
 .ui-choice__button[data-focus-visible] .ui-choice__indicator {
   border-color: var(--ref-focus);
-  outline-offset: 0;
+  outline: none;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-choice__button[data-focus-visible][data-selected] .ui-choice__indicator {
+  border-color: var(--primary);
+}
+
+.ui-choice__button[data-invalid] .ui-choice__indicator {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
 }
 
 .ui-choice__button[data-invalid]:not([data-selected]) .ui-choice__indicator {
-  border-color: var(--ref-danger);
+  border-color: var(--destructive);
+}
+
+:where(.dark, [data-theme='dark']) .ui-choice__button:not([data-selected]) .ui-choice__indicator {
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+:where(.dark, [data-theme='dark'])
+  .ui-choice__button[data-invalid]:not([data-selected])
+  .ui-choice__indicator {
+  border-color: color-mix(in oklab, var(--destructive) 50%, transparent);
+}
+
+:where(.dark, [data-theme='dark']) .ui-choice__button[data-invalid] .ui-choice__indicator {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }

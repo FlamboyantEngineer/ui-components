@@ -1,0 +1,5 @@
+/* shadcn/ui stylesheet: forms, after the field group of shadcn/ui's "nova" style: fields 20 pixels apart. */
+
+.ui-form {
+  gap: 20px;
+}
