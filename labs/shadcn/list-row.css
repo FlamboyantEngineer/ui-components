@@ -1,0 +1,119 @@
+/*
+ * shadcn/ui stylesheet: list row, after the item of shadcn/ui's "nova" style. A row is a rounded
+ * box with a hairline border, transparent by default, the border color in the outline variant and
+ * the muted fill at half strength in the muted one. Its content sits 10 pixels from the top and 12
+ * from the sides, 8 and 10 at the extra small size, beside a 16 pixel icon; the title is 14 pixel
+ * medium text over 14 pixel muted meta, 12 pixel at the extra small size. A row that links or acts
+ * fills with the muted color on hover and takes the focus ring on its border.
+ */
+
+.ui-list-row {
+  column-gap: 10px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: var(--ref-radius);
+}
+
+.ui-list-row[data-variant='outline'] {
+  border-color: var(--border);
+}
+
+.ui-list-row[data-variant='muted'] {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.ui-list-row > .ui-list-row__primary,
+.ui-list-row[data-size] > .ui-list-row__primary {
+  min-height: 0;
+  padding-block: 10px;
+  padding-inline: 12px 0;
+  border-radius: 0;
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-list-row > .ui-list-row__primary:last-child {
+  padding-inline-end: 12px;
+}
+
+.ui-list-row__trailing {
+  gap: 8px;
+  padding-inline-end: 12px;
+}
+
+.ui-list-row[data-size='xs'] {
+  column-gap: 8px;
+}
+
+.ui-list-row[data-size='xs'] > .ui-list-row__primary {
+  padding-block: 8px;
+  padding-inline: 10px 0;
+}
+
+.ui-list-row[data-size='xs'] > .ui-list-row__primary:last-child {
+  padding-inline-end: 10px;
+}
+
+.ui-list-row[data-size='xs'] > .ui-list-row__trailing {
+  padding-inline-end: 10px;
+}
+
+.ui-list-row:not([data-disabled]) > .ui-list-row__primary:is(:hover, [data-hovered]),
+.ui-list-row__primary[data-pressed],
+.ui-list-row[data-current] > .ui-list-row__primary {
+  background: transparent;
+}
+
+.ui-list-row:is([data-kind='link'], [data-kind='action']):not([data-disabled]):has(
+    > .ui-list-row__primary:is(:hover, [data-hovered])
+  ),
+.ui-list-row[data-current] {
+  background: var(--muted);
+}
+
+.ui-list-row__primary:focus-visible {
+  box-shadow: none;
+}
+
+.ui-list-row:has(> .ui-list-row__primary:focus-visible) {
+  border-color: var(--ring);
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-list-row-content {
+  gap: 10px;
+}
+
+.ui-list-row-content__text {
+  gap: 4px;
+}
+
+.ui-list-row[data-size='xs'] .ui-list-row-content__text {
+  gap: 0;
+}
+
+.ui-list-row-content__title {
+  font-weight: var(--ref-font-weight-medium);
+  line-height: 1.375;
+}
+
+.ui-list-row-content__meta {
+  font-size: var(--ref-font-size-md);
+  line-height: 1.5;
+}
+
+.ui-list-row[data-size='xs'] .ui-list-row-content__meta {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-list-row-content > .ui-label {
+  gap: 10px;
+}
+
+.ui-list-row-content:has(.ui-list-row-content__meta) > .ui-label {
+  align-items: flex-start;
+}
+
+.ui-list-row-content:has(.ui-list-row-content__meta) .ui-label__icon {
+  margin-block-start: 2px;
+}
