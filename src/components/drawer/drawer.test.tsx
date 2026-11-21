@@ -331,6 +331,23 @@ describe('Drawer', () => {
     expect(overlay()).toHaveAttribute('data-swipe-direction', 'horizontal');
   });
 
+  it('UIC-DRAWER-2.3 closes once its scroll settles with the panel out, unnoticed by the sheet', async () => {
+    const onOpenChange = vi.fn();
+    render(<Page triggerProps={{ onOpenChange }} />);
+    const dialog = await open();
+    const place = (left: number) =>
+      vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue(new DOMRect(left, 0, 400, 768));
+    // React Aria's observer saw the panel in, then nothing: it still touches the viewport's edge.
+    reportVisible(1);
+    place(624);
+    await settle();
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    place(1024);
+    await settle();
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(overlay()).toBeNull();
+  });
+
   it('UIC-DRAWER-2.4 refuses every dismissal while isDismissDisabled is set', async () => {
     render(
       <Page isDismissDisabled showCloseButton>

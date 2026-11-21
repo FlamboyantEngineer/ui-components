@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createTestSend, settle, textMessage } from '../../../test/chat-controller-fixtures.js';
 import { useChatController } from './chat-controller.js';
 
@@ -26,9 +26,19 @@ describe('useChatController stream coalescing', () => {
     act(() => result.current.send('Soak the beans?'));
     const before = result.current.messages;
     const rendersBefore = renders.count;
+    // The frame is held until the deltas have arrived: on a busy machine jsdom's frame timer can
+    // otherwise run before the zero-delay timer that delivers them.
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) =>
+      frames.push(callback),
+    );
     at().push(...deltas(20));
     await deliver();
     expect(result.current.messages).toBe(before);
+    vi.restoreAllMocks();
+    act(() => {
+      for (const frame of frames.splice(0)) frame(performance.now());
+    });
     await settle();
     expect(renders.count - rendersBefore).toBe(1);
     expect(result.current.messages[1]?.parts).toEqual([

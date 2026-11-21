@@ -34,6 +34,7 @@ import {
   usePortalContainer,
   useStackedLayer,
 } from '../portal/portal.js';
+import { useSheetDeparture } from './sheet-departure.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
 export interface DrawerTriggerProps extends OpenStateProps {
@@ -125,6 +126,17 @@ function DrawerHeader({ title, showCloseButton, isDisabled, onClose }: DrawerHea
   );
 }
 
+/**
+ * React Aria sizes the sheet's overlay to the page rounded down to whole pixels, anchored to the top
+ * of the document, so on a page of fractional height scrolled to its end the overlay clips the
+ * panel up to a pixel short of the viewport's bottom edge. The sheet then never sees the panel whole:
+ * it misses `data-expanded`, and its observer may never learn that the panel entered. One more pixel
+ * keeps the overlay over the whole viewport; the page under an open drawer does not scroll.
+ */
+const coverScrolledViewport = {
+  height: 'max(calc(var(--page-height) + 1px), 100dvh)',
+} as const;
+
 /** Opens the `Drawer` among its children when its trigger, such as a `Button`, is pressed. */
 export function DrawerTrigger({ children, ...openState }: DrawerTriggerProps) {
   return <SheetTrigger {...openState}>{children}</SheetTrigger>;
@@ -133,16 +145,20 @@ export function DrawerTrigger({ children, ...openState }: DrawerTriggerProps) {
 /**
  * What a drawer gives its content while it shows: the sheet's entrance as React Aria defers it for
  * the dialog (until the panel has slid in), so a field with `autoFocus` waits for it too, and an
- * available loading boundary. Closing while the content it was opened from loads, focus waits on
+ * available loading boundary. It closes the drawer once the panel has left the viewport. Closing while the content it was opened from loads, focus waits on
  * that content's boundary to return to the opener.
  */
 function DrawerOpening({
   overlayRef,
+  sheet,
   children,
 }: {
   overlayRef: RefObject<HTMLDivElement | null>;
+  sheet: { isEntering: boolean; isExiting: boolean; state: { close: () => void } };
   children: ReactNode;
 }) {
+  const { isEntering, isExiting, state } = sheet;
+  useSheetDeparture({ overlayRef, isEntering, isExiting, close: state.close });
   const dialog = useSlottedContext(DialogContext);
   const container = usePortalContainer();
   const [opener] = useState(() => getDeepActiveElement(getOwnerDocument(container)));
@@ -204,43 +220,45 @@ export function Drawer({
       shouldCloseOnInteractOutside={(element) =>
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
-      style={{ zIndex }}
+      style={{ zIndex, ...coverScrolledViewport }}
       ref={rootRefs}
     >
-      <DrawerOpening overlayRef={overlayRef}>
-        <SheetBackdrop className={hooks.slotClass('backdrop')} />
-        <Sheet {...hooks.slot('panel')}>
-          <SheetContent
-            id={id}
-            {...hooks.slot('dialog')}
-            // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-            render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-          >
-            {({ close }) => (
-              <>
-                <DrawerHeader
-                  title={title}
-                  showCloseButton={showCloseButton}
-                  isDisabled={isDismissDisabled}
-                  onClose={close}
-                />
-                {children === undefined || children === null ? null : (
-                  <div {...hooks.slot('body')}>
-                    <OverlayLayerScope layer={resolvedLayer}>
-                      <HeadingLevelContext value={dialogTitleLevel}>
-                        <FormBoundary>
-                          {typeof children === 'function' ? children({ close }) : children}
-                        </FormBoundary>
-                      </HeadingLevelContext>
-                    </OverlayLayerScope>
-                  </div>
-                )}
-                {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}
-              </>
-            )}
-          </SheetContent>
-        </Sheet>
-      </DrawerOpening>
+      {(sheet) => (
+        <DrawerOpening overlayRef={overlayRef} sheet={sheet}>
+          <SheetBackdrop className={hooks.slotClass('backdrop')} />
+          <Sheet {...hooks.slot('panel')}>
+            <SheetContent
+              id={id}
+              {...hooks.slot('dialog')}
+              // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
+              render={(props) => <section {...props} onKeyDown={onKeyDown} />}
+            >
+              {({ close }) => (
+                <>
+                  <DrawerHeader
+                    title={title}
+                    showCloseButton={showCloseButton}
+                    isDisabled={isDismissDisabled}
+                    onClose={close}
+                  />
+                  {children === undefined || children === null ? null : (
+                    <div {...hooks.slot('body')}>
+                      <OverlayLayerScope layer={resolvedLayer}>
+                        <HeadingLevelContext value={dialogTitleLevel}>
+                          <FormBoundary>
+                            {typeof children === 'function' ? children({ close }) : children}
+                          </FormBoundary>
+                        </HeadingLevelContext>
+                      </OverlayLayerScope>
+                    </div>
+                  )}
+                  {isEmptyNode(footer) ? null : <div {...hooks.slot('footer')}>{footer}</div>}
+                </>
+              )}
+            </SheetContent>
+          </Sheet>
+        </DrawerOpening>
+      )}
     </SheetOverlay>
   );
 }
