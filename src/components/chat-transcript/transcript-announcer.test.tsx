@@ -29,6 +29,7 @@ interface Line {
   status?: ChatMessageProps['status'];
   error?: string;
   author?: string;
+  action?: string;
 }
 
 const history: Line[] = [
@@ -49,6 +50,7 @@ function Conversation({ lines, virtualized }: { lines: Line[]; virtualized?: boo
           author={line.author ? { name: line.author } : undefined}
           time="2026-04-20T10:00:00"
           getNow={() => new Date('2026-04-20T10:30:00')}
+          actions={line.action ? <button>{line.action}</button> : undefined}
         >
           {line.text}
         </ChatMessage>
@@ -225,17 +227,20 @@ describe('ChatTranscript announcements', () => {
     expect(announcer()).toHaveTextContent(/^New message: Reply 2$/);
   });
 
-  it('UIC-CHAT-TRANSCRIPT-3.6 announces an arriving message once, without the history', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.1 UIC-CHAT-TRANSCRIPT-3.6 announces an arriving message once, without the history or its actions', () => {
     const { container, rerender } = render(<Conversation lines={history} />);
     expect(announcer()).toHaveClass('ui-chat-transcript__announcer');
     expect(announcer()).toHaveTextContent(/^$/);
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['announcer'] });
     rerender(
       <Conversation
-        lines={[...history, { id: 'n1', text: 'Seats 12 and 13.', author: 'Ana Lima' }]}
+        lines={[
+          ...history,
+          { id: 'n1', text: 'Seats 12 and 13.', author: 'Ana Lima', action: 'Copy' },
+        ]}
       />,
     );
-    expect(announcer()).toHaveTextContent('New message from Ana Lima: Seats 12 and 13.');
+    expect(announcer()).toHaveTextContent(/^New message from Ana Lima: Seats 12 and 13\.$/);
     expect(screen.getByRole('feed')).not.toHaveAttribute('aria-live');
   });
 

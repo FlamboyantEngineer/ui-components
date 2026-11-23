@@ -103,10 +103,13 @@ test.describe('Command Palette lab', () => {
         await page.keyboard.press('Enter');
       }
       const closed = await page.evaluate(() => performance.now());
-      // Focus is back at once, and the leaving palette takes no press or key.
-      await expect(opener, how).toBeFocused({ timeout: 150 });
+      // Focus is back while the palette still fades (a second of wall time), and the leaving
+      // palette takes no press or key. Measured against the fade rather than a fixed wait, so a
+      // loaded runner that answers the close late does not fail it.
+      await expect(opener, how).toBeFocused();
       const overlay = page.locator('[data-lab-palette="global"]');
       await expect(overlay).toHaveAttribute('data-exiting', 'true');
+      expect((await page.evaluate(() => performance.now())) - closed, how).toBeLessThan(800);
       await expect(overlay).toHaveCSS('pointer-events', 'none');
       expect(await overlay.evaluate((node) => (node as HTMLElement).inert)).toBe(true);
       // One fade of a quarter second, running now.

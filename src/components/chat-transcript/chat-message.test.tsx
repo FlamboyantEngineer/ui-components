@@ -473,7 +473,7 @@ describe('ChatMessage markers, quote and slots', () => {
     );
   });
 
-  it('UIC-CHAT-TRANSCRIPT-2.12 renders the reactions before the actions and the readers last', () => {
+  it('UIC-CHAT-TRANSCRIPT-2.1 UIC-CHAT-TRANSCRIPT-2.12 renders the actions in the bubble, the reactions after it and the readers last', () => {
     const { container } = render(
       <ChatMessage
         reactions={<span>👍 2</span>}
@@ -490,9 +490,14 @@ describe('ChatMessage markers, quote and slots', () => {
     expect(slots).toEqual([
       'ui-chat-message__content',
       'ui-chat-message__reactions',
-      'ui-chat-message__actions',
       'ui-chat-message__readers',
     ]);
+    const bubble = container.querySelector('.ui-chat-message__content');
+    expect([...(bubble?.children ?? [])].map((child) => child.className)).toEqual([
+      'ui-bubble__content',
+      'ui-chat-message__actions',
+    ]);
+    expect(within(bubble as HTMLElement).getByRole('button', { name: 'Copy' })).toBeVisible();
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['reactions', 'readers'] });
     const { container: bare } = render(<ChatMessage>Done.</ChatMessage>);
     expect(bare.querySelector('.ui-chat-message__reactions')).toBeNull();

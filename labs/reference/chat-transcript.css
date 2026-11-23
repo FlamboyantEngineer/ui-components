@@ -296,10 +296,18 @@
   inset-inline: auto 0;
 }
 
-/* The actions float over the bubble's corner while the message is hovered or holds focus. */
+/*
+ * The actions sit in the bubble and float just above its top corner, the start for a sent message
+ * and the end otherwise, while the message is hovered or holds focus: anchored to the bubble the
+ * reader sees, not to the wider body around it. The bar reaches only into the bubble's padding, so it
+ * covers none of the text, and takes none of the bubble's text layout.
+ */
 .ui-chat-message__actions {
   position: absolute;
-  inset-block-start: -14px;
+  gap: 2px;
+  white-space: normal;
+  user-select: none;
+  inset-block-end: calc(100% - 4px);
   inset-inline-end: 4px;
   padding: 2px;
   border: 1px solid var(--ref-border);
@@ -312,6 +320,22 @@
 
 .ui-chat-message[data-origin='sent'] .ui-chat-message__actions {
   inset-inline: 4px auto;
+}
+
+/* A plain message has no padding above its text, so its bar sits wholly above it. */
+.ui-chat-message__content[data-variant='ghost'] > .ui-chat-message__actions {
+  inset-block-end: 100%;
+}
+
+/* The floating bar's icon buttons take the smallest control size, so it stays small over the chat. */
+.ui-chat-message__actions .ui-button[data-content='icon'] {
+  width: var(--ref-control-height-xs);
+  height: var(--ref-control-height-xs);
+}
+
+.ui-chat-message__actions .ui-button[data-content='icon'] > .ui-button__icon {
+  width: var(--ref-icon-size-sm);
+  height: var(--ref-icon-size-sm);
 }
 
 .ui-chat-message:is([data-hovered], [data-focus-within]) .ui-chat-message__actions {

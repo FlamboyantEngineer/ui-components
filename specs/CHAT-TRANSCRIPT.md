@@ -61,7 +61,7 @@ Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/ch
 
 ### UIC-CHAT-TRANSCRIPT-2.1 - Parts
 
-`ChatMessage` shall render through the [Message](MESSAGE.md) and [Bubble](BUBBLE.md) parts: a `Message` `<article>` (`ui-chat-message`, aligned to the `end` for a `sent` message and the `start` otherwise) with, given an `author`, a decorative small `Avatar` (`ui-chat-message__avatar`) in a `MessageAvatar`, and a `MessageContent` (`ui-chat-message__body`) holding the author's name (`ui-chat-message__author`, or the provider's `unnamed` string for a blank name) and, given a `time`, a `RelativeTime` (`ui-chat-message__time`, read against `getNow`), both in a `MessageHeader` (`ui-chat-message__header`); then the children in a `Bubble` (`ui-chat-message__content`) holding a `BubbleContent`, the footer in a `MessageFooter` (`ui-chat-message__footer`) and `actions` in `ui-chat-message__actions`. The bubble takes the message's side and its surface from the message: `secondary` for a `sent` message, `muted` for a `received` one and `ghost` for a `plain` message or a `system` notice. Without an author or a time there is no header.
+`ChatMessage` shall render through the [Message](MESSAGE.md) and [Bubble](BUBBLE.md) parts: a `Message` `<article>` (`ui-chat-message`, aligned to the `end` for a `sent` message and the `start` otherwise) with, given an `author`, a decorative small `Avatar` (`ui-chat-message__avatar`) in a `MessageAvatar`, and a `MessageContent` (`ui-chat-message__body`) holding the author's name (`ui-chat-message__author`, or the provider's `unnamed` string for a blank name) and, given a `time`, a `RelativeTime` (`ui-chat-message__time`, read against `getNow`), both in a `MessageHeader` (`ui-chat-message__header`); then the children in a `Bubble` (`ui-chat-message__content`) holding a `BubbleContent` and, after it, `actions` in `ui-chat-message__actions`, so a stylesheet anchors them to the bubble the reader sees, and the footer in a `MessageFooter` (`ui-chat-message__footer`). The transcript announces the text of the `BubbleContent` alone. The bubble takes the message's side and its surface from the message: `secondary` for a `sent` message, `muted` for a `received` one and `ghost` for a `plain` message or a `system` notice. Without an author or a time there is no header.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`
 Verification: `src/components/chat-transcript/chat-transcript.test.tsx`, `e2e/chat-transcript.spec.ts`
@@ -103,10 +103,10 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.7 - Hover and focus
 
-`ChatMessage` shall publish `data-hovered` while a pointer rests on it and `data-focus-within` while it or an element inside it has focus, so a stylesheet can show the actions bar and a grouped message's time on hover and on keyboard focus alike. Focus in an overlay a part opened elsewhere in the page, such as an actions menu, does not count; the part keeps its own trigger shown while its overlay is open.
+`ChatMessage` shall publish `data-hovered` while a pointer rests on it and `data-focus-within` while it or an element inside it has focus, so a stylesheet can show the actions bar and a grouped message's time on hover and on keyboard focus alike. The reference stylesheet floats the actions bar, with the smallest icon buttons, just above the bubble's top corner, the start for a `sent` message and the end otherwise, reaching only into the bubble's padding so it covers none of the text, however much wider than the bubble the message's row is, as for a long sent message that reaches the bubble's widest. Focus in an overlay a part opened elsewhere in the page, such as an actions menu, does not count; the part keeps its own trigger shown while its overlay is open.
 
-Implementation: `src/components/chat-transcript/chat-message.tsx`, `labs/reference/chat-transcript.css`
-Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`, `labs/reference/chat-transcript.css`
+Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `e2e/chat-transcript-actions.spec.ts`
 
 ### UIC-CHAT-TRANSCRIPT-2.8 - Delivery
 
@@ -140,7 +140,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.12 - Reactions and readers
 
-`reactions` (usually a [Reaction Bar](REACTION-BAR.md)) shall render in `ui-chat-message__reactions` after the error and before the actions, and `readers` (usually `ChatReadReceipts`, [UIC-CHAT-TRANSCRIPT-5.5](#uic-chat-transcript-55---read-receipts)) in `ui-chat-message__readers`, last in the body. Each slot renders only with content. The reference stylesheet sets the reactions at the bottom end of every message, sent or received, under the content and the footer and clear of the actions, wrapping onto more lines when the message is narrow; right under the content, a summary reaction bar ([UIC-REACTION-BAR-1.7](REACTION-BAR.md#uic-reaction-bar-17---summary)) overlaps the bubble's bottom edge at its end, and under a footer or an error it keeps clear of them; the readers sit at the end of sent messages only.
+`reactions` (usually a [Reaction Bar](REACTION-BAR.md)) shall render in `ui-chat-message__reactions` after the error, and `readers` (usually `ChatReadReceipts`, [UIC-CHAT-TRANSCRIPT-5.5](#uic-chat-transcript-55---read-receipts)) in `ui-chat-message__readers`, last in the body. Each slot renders only with content. The reference stylesheet sets the reactions at the bottom end of every message, sent or received, under the content and the footer and clear of the actions, wrapping onto more lines when the message is narrow; right under the content, a summary reaction bar ([UIC-REACTION-BAR-1.7](REACTION-BAR.md#uic-reaction-bar-17---summary)) overlaps the bubble's bottom edge at its end, and under a footer or an error it keeps clear of them; the readers sit at the end of sent messages only.
 
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`, `e2e/chat-chat-message-actions.spec.ts`
@@ -340,12 +340,12 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `data-highlighted`                | state     | `true`                                           | On a message: the transcript's highlighted message.                                             |
 | `ui-chat-message`                 | root      |                                                  | A message (`<article>`).                                                                        |
 | `ui-chat-message__avatar`         | slot      |                                                  | The author's avatar (also `ui-avatar`).                                                         |
-| `ui-chat-message__body`           | slot      |                                                  | The header, content and actions.                                                                |
+| `ui-chat-message__body`           | slot      |                                                  | The header, content, footer, reactions and readers.                                             |
 | `ui-chat-message__header`         | slot      |                                                  | The author's name and the time.                                                                 |
 | `ui-chat-message__author`         | slot      |                                                  | The author's name.                                                                              |
 | `ui-chat-message__time`           | slot      |                                                  | The time (also `ui-relative-time`), in the header, the footer or the tooltip.                   |
-| `ui-chat-message__content`        | slot      |                                                  | The message's content.                                                                          |
-| `ui-chat-message__actions`        | slot      |                                                  | The message's actions.                                                                          |
+| `ui-chat-message__content`        | slot      |                                                  | The message's bubble: its content, then its actions.                                            |
+| `ui-chat-message__actions`        | slot      |                                                  | The message's actions, in the bubble after its content.                                         |
 | `data-origin`                     | attribute | `sent`, `received`, `system`                     | On a message: who it is from, relative to the reader.                                           |
 | `data-status`                     | attribute | `complete`, `streaming`, `error`, `cancelled`    | On a message: whether it is complete.                                                           |
 | `data-variant`                    | attribute | `bubble`, `plain`                                | On a message: its content on a background, or as plain text.                                    |

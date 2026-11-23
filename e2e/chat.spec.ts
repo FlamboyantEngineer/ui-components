@@ -160,6 +160,9 @@ test.describe('Chat lab', () => {
     await page.keyboard.press('End');
     await expect(message(pair, 'pair-4')).toBeFocused();
     await page.keyboard.press('Enter');
+    // The actions bar sits in the bubble, so it comes first and the footer's Retry last.
+    await expect(message(pair, 'pair-4').getByRole('button', { name: 'Copy' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
     await expect(message(pair, 'pair-4').getByRole('button', { name: 'Retry' })).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(message(pair, 'pair-4')).toBeFocused();
