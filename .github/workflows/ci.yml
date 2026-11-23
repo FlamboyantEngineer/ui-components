@@ -85,14 +85,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
-    name: unit (${{ matrix.shard }} of 2)
+        shard: [1, 2, 3]
+    name: unit (${{ matrix.shard }} of 3)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
       - run: npm run build:package
-      - name: Unit tests (${{ matrix.shard }} of 2)
-        run: npx vitest run --shard=${{ matrix.shard }}/2
+      - name: Unit tests (${{ matrix.shard }} of 3)
+        run: npx vitest run --shard=${{ matrix.shard }}/3
 
   check:
     # The status the dev branch rules require: it passes only when the gates, lint and every unit
