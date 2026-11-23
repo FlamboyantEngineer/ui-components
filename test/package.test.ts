@@ -239,9 +239,10 @@ describe('hosted CI', () => {
   const checks = readFileSync(join(process.cwd(), 'scripts/check.mjs'), 'utf8');
 
   it('UIC-PRIMITIVES-2.1 runs the shared gate list, which checks public types after the build', () => {
-    expect(workflow).toMatch(/^\s+run: npm run check -- --skip test$/m);
+    expect(workflow).toMatch(/^\s+run: npm run check -- --skip lint --skip test$/m);
+    expect(workflow).toMatch(/^\s+run: npm run lint -- --concurrency=2$/m);
     expect(workflow).toContain('npx vitest run --shard=${{ matrix.shard }}/2');
-    expect(workflow).toMatch(/^ {4}needs: \[gates, unit\]$/m);
+    expect(workflow).toMatch(/^ {4}needs: \[reuse, gates, lint, unit\]$/m);
     const build = checks.indexOf("'build',");
     const publicTypes = checks.indexOf("'check:public-types'");
     expect(build).toBeGreaterThan(-1);
@@ -277,27 +278,57 @@ describe('hosted lab browser suite', () => {
     return end === -1 ? workflow.slice(start) : workflow.slice(start, start + 1 + end);
   };
 
-  it('UIC-LABS-1.7 builds the labs once and hands the build to the browser jobs', () => {
-    const key = 'key: labs-build-${{ github.sha }}';
-    expect(job('labs-build')).toContain('run: npm run build:labs');
-    expect(job('labs-build')).toContain('actions/cache/save');
-    expect(job('labs-build')).toContain(key);
-    expect(job('labs')).toContain('needs: labs-build');
-    expect(job('labs')).toContain('actions/cache/restore');
-    expect(job('labs')).toContain(key);
-    expect(job('labs')).not.toContain('build:labs');
+  it('UIC-LABS-1.7 builds the labs in each browser job and shards Chromium by measured time', () => {
+    const labs = job('labs');
+    expect(labs).not.toContain('needs: labs-build');
+    expect(labs).toContain('run: npm run build:labs');
+    expect(labs).toContain(
+      'node scripts/lab-shards.mjs plan --project chromium --shards 6 --shard ${{ matrix.shard }}',
+    );
+    expect(labs).toContain(
+      'npx playwright test --project=chromium --test-list "$RUNNER_TEMP/shard.txt"',
+    );
+    for (let shard = 1; shard <= 6; shard += 1) {
+      expect(labs).toContain(
+        `{ name: chromium ${shard} of 6, browsers: chromium, shard: ${shard} }`,
+      );
+    }
+    expect(labs).toContain(
+      'npx playwright test --project=webkit --project=mobile-webkit --project=firefox',
+    );
   });
 
-  it("UIC-LABS-1.7 installs only each job's browser, from a cache keyed by the Playwright version", () => {
-    const labs = job('labs');
-    expect(labs).toContain('path: ~/.cache/ms-playwright');
-    expect(labs).toContain('${{ steps.playwright.outputs.version }}-${{ matrix.browser }}');
-    expect(labs).toContain('npx playwright install --with-deps ${{ matrix.browser }}');
-    for (let shard = 1; shard <= 6; shard += 1) {
-      expect(labs).toContain(`--project=chromium --shard=${shard}/6`);
+  it("UIC-LABS-1.7 installs only each job's browsers and saves their system packages", () => {
+    const action = readFileSync(
+      join(process.cwd(), '.github/actions/playwright/action.yml'),
+      'utf8',
+    );
+    expect(job('labs')).toContain('browsers: ${{ matrix.browsers }}');
+    expect(job('server-components')).toContain('browsers: chromium');
+    expect(action).toContain('path: ~/.cache/ms-playwright');
+    expect(action).toContain(
+      'key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.cache-name }}',
+    );
+    expect(action).toContain('${{ steps.playwright.outputs.image }}');
+    expect(action).toContain('npx playwright install ${{ inputs.browsers }}');
+    expect(action).toContain('npx playwright install-deps ${{ inputs.browsers }}');
+    expect(action).toContain('apt-get install -y --no-download');
+  });
+
+  it('UIC-LABS-1.12 restores node_modules by the lockfile and reuses a passed run of the same tree', () => {
+    const setup = readFileSync(join(process.cwd(), '.github/actions/setup/action.yml'), 'utf8');
+    expect(setup).toContain("hashFiles('.nvmrc', 'package-lock.json')");
+    expect(setup).toContain("if: steps.modules.outputs.cache-hit != 'true'");
+    expect(setup).toContain('restore-keys: tool-cache-${{ runner.os }}-${{ github.job }}-');
+    expect(workflow.match(/uses: \.\/\.github\/actions\/setup$/gm)?.length).toBe(6);
+    expect(workflow).not.toContain('run: npm ci');
+    expect(job('reuse')).toContain("if: github.event_name == 'push'");
+    expect(job('reuse')).toContain('.tree.sha');
+    expect(job('reuse')).toContain('event=pull_request&status=success');
+    for (const name of ['gates', 'lint', 'unit', 'git-install', 'server-components', 'labs']) {
+      expect(job(name), name).toContain("if: needs.reuse.outputs.passed != 'true'");
     }
-    expect(labs).toContain('--project=webkit --project=mobile-webkit');
-    expect(labs).toContain('--project=firefox');
+    expect(job('check')).toContain('test "$REUSED" = true && exit 0');
   });
 
   it('UIC-LABS-1.7 records no traces, which a run would not keep', () => {
@@ -309,11 +340,18 @@ describe('hosted lab browser suite', () => {
 
 describe('repository workflows', () => {
   const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
-  const workflows = ['.github/workflows/ci.yml', '.github/workflows/release.yml'];
+  const workflows = [
+    '.github/workflows/ci.yml',
+    '.github/workflows/release.yml',
+    '.github/actions/setup/action.yml',
+    '.github/actions/playwright/action.yml',
+  ];
 
   it('pins every action to a commit with its version in a comment', () => {
     for (const path of workflows) {
-      const uses = [...read(path).matchAll(/uses: (\S+)(.*)$/gm)];
+      const uses = [...read(path).matchAll(/uses: (\S+)(.*)$/gm)].filter(
+        ([, action = '']) => !action.startsWith('./.github/actions/'),
+      );
       expect(uses.length, path).toBeGreaterThan(0);
       for (const [, action = '', comment = ''] of uses) {
         expect(action, path).toMatch(/@[0-9a-f]{40}$/);

@@ -15,26 +15,71 @@ permissions:
   contents: read
 
 jobs:
+  reuse:
+    # A push to dev or main whose tree is the tree of a merged pull request's head, which already
+    # passed this whole workflow, reuses that result: every other job is skipped and `check` passes.
+    # Strict branch rules make the head hold the base before it merges, so the pull request run
+    # tested this exact tree. Any other push, and every pull request, runs everything.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      passed: ${{ steps.find.outputs.passed }}
+    steps:
+      - name: Find a passed run of this tree
+        id: find
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          tree=$(gh api "repos/$REPO/git/commits/$SHA" --jq .tree.sha)
+          for head in $(gh api "repos/$REPO/commits/$SHA/pulls" --jq '.[] | select(.merged_at) | .head.sha'); do
+            test "$(gh api "repos/$REPO/git/commits/$head" --jq .tree.sha)" = "$tree" || continue
+            run=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$head&event=pull_request&status=success" --jq '.workflow_runs[0].html_url // empty')
+            if test -n "$run"; then
+              echo "::notice::This tree passed in $run"
+              echo passed=true >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+
   gates:
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      # scripts/check.mjs is the one list of gates, shared with `npm run check` locally: lint,
-      # format, types, references, specs, labs, structure, client boundaries, builds, public types
-      # against the real build, the labs archive and the package contents. The unit tests run in the
-      # unit job's shards beside it.
+      - uses: ./.github/actions/setup
+      # scripts/check.mjs is the one list of gates, shared with `npm run check` locally: format,
+      # types, references, specs, labs, structure, client boundaries, builds, public types against
+      # the real build, the labs archive and the package contents. Lint, the longest gate, runs in
+      # its own job and the unit tests in the unit job's shards, both beside it.
       - name: Checks
-        run: npm run check -- --skip test
+        run: npm run check -- --skip lint --skip test
+
+  lint:
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      # Two lint workers halve the type-aware lint on the runner's four cores; four run out of memory.
+      - name: Lint
+        run: npm run lint -- --concurrency=2
 
   unit:
     # The unit tests, the longest check, split across runners so the required check finishes sooner.
     # Some tests read the built package, so each shard builds it first.
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -44,33 +89,35 @@ jobs:
     name: unit (${{ matrix.shard }} of 2)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup
       - run: npm run build:package
       - name: Unit tests (${{ matrix.shard }} of 2)
         run: npx vitest run --shard=${{ matrix.shard }}/2
 
   check:
-    # The status the dev branch rules require: it passes only when the gates and every unit test
-    # shard passed, so a failed, cancelled or skipped job fails it.
+    # The status the dev branch rules require: it passes only when the gates, lint and every unit
+    # test shard passed, so a failed, cancelled or skipped job fails it, unless `reuse` found that
+    # this tree already passed.
     if: ${{ !cancelled() }}
-    needs: [gates, unit]
+    needs: [reuse, gates, lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Gates and unit tests passed
+      - name: Gates, lint and unit tests passed
         env:
+          REUSED: ${{ needs.reuse.outputs.passed }}
           RESULTS: ${{ join(needs.*.result, ' ') }}
-        run: for result in $RESULTS; do test "$result" = success || exit 1; done
+        run: |
+          test "$REUSED" = true && exit 0
+          for result in $RESULTS; do test "$result" = success || exit 1; done
 
   git-install:
     # A clean consumer installs the commit as a Git dependency through npm install and npm ci, with
     # the minimum supported React, then the rich-text peers (scripts/check-git-install.mjs).
     # It runs when a change can reach installation: the manifest, lockfile, build setup, entry points or
     # the reference stylesheet the package ships.
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -104,107 +151,65 @@ jobs:
               - scripts/lib/**
               - tooling/**
               - .github/workflows/ci.yml
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              - .github/actions/setup/**
+      - uses: ./.github/actions/setup
         if: steps.changes.outputs.install == 'true'
-        with:
-          node-version-file: .nvmrc
-          cache: npm
       - name: Install from Git
         if: steps.changes.outputs.install == 'true'
-        run: npm ci && npm run check:git-install
+        run: npm run check:git-install
 
   server-components:
     # An installed-package Next.js consumer: production build, server rendering and hydration.
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/playwright
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: Playwright version
-        id: playwright
-        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: browsers
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
-      - name: Install Playwright browser
-        if: steps.browsers.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-      - name: Install Playwright system dependencies
-        if: steps.browsers.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+          browsers: chromium
+          cache-name: chromium
       - name: Server components consumer
         run: npm run check:server-components
 
-  labs-build:
-    # The labs are built once; the browser jobs restore the build from the cache.
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: Build labs
-        run: npm run build:labs
-      # Saved under this commit, so the browser jobs of this run restore exactly this build.
-      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: labs/build/
-          key: labs-build-${{ github.sha }}
-
   labs:
-    # The lab browser suite runs in shards beside the check job so it fits the time budget. The
-    # Chromium shards, the WebKit job and the Firefox job each install only their own browser, from a cache keyed by
-    # the Playwright version. CI records no traces; rerun a failing test locally with --trace=on.
-    needs: labs-build
+    # The lab browser suite runs in shards beside the check job so it fits the time budget. Each job
+    # builds the labs itself, which takes seconds. The Chromium shards split the tests by their
+    # measured time (scripts/lab-shards.mjs); WebKit and Firefox share one job. Each job installs
+    # only its own browsers (.github/actions/playwright). CI records no traces; rerun a failing
+    # test locally with --trace=on.
+    needs: reuse
+    if: needs.reuse.outputs.passed != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: chromium 1 of 6, browser: chromium, args: --project=chromium --shard=1/6 }
-          - { name: chromium 2 of 6, browser: chromium, args: --project=chromium --shard=2/6 }
-          - { name: chromium 3 of 6, browser: chromium, args: --project=chromium --shard=3/6 }
-          - { name: chromium 4 of 6, browser: chromium, args: --project=chromium --shard=4/6 }
-          - { name: chromium 5 of 6, browser: chromium, args: --project=chromium --shard=5/6 }
-          - { name: chromium 6 of 6, browser: chromium, args: --project=chromium --shard=6/6 }
-          - { name: webkit, browser: webkit, args: --project=webkit --project=mobile-webkit }
-          - { name: firefox, browser: firefox, args: --project=firefox }
+          - { name: chromium 1 of 6, browsers: chromium, shard: 1 }
+          - { name: chromium 2 of 6, browsers: chromium, shard: 2 }
+          - { name: chromium 3 of 6, browsers: chromium, shard: 3 }
+          - { name: chromium 4 of 6, browsers: chromium, shard: 4 }
+          - { name: chromium 5 of 6, browsers: chromium, shard: 5 }
+          - { name: chromium 6 of 6, browsers: chromium, shard: 6 }
+          - { name: webkit and firefox, browsers: webkit firefox }
     name: labs (${{ matrix.name }})
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup
+      - name: Build labs
+        run: npm run build:labs
+      - uses: ./.github/actions/playwright
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: labs/build/
-          key: labs-build-${{ github.sha }}
-          fail-on-cache-miss: true
-      - name: Playwright version
-        id: playwright
-        run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: browsers
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ matrix.browser }}
-      - name: Install Playwright browser
-        if: steps.browsers.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Install Playwright system dependencies
-        if: steps.browsers.outputs.cache-hit == 'true'
-        run: npx playwright install-deps ${{ matrix.browser }}
+          browsers: ${{ matrix.browsers }}
+          cache-name: ${{ matrix.shard && 'chromium' || 'webkit-firefox' }}
       - name: Lab browser tests (${{ matrix.name }})
-        run: npx playwright test ${{ matrix.args }}
+        if: matrix.shard
+        run: |
+          node scripts/lab-shards.mjs plan --project chromium --shards 6 --shard ${{ matrix.shard }} --out "$RUNNER_TEMP/shard.txt"
+          npx playwright test --project=chromium --test-list "$RUNNER_TEMP/shard.txt"
+      - name: Lab browser tests (${{ matrix.name }})
+        if: ${{ !matrix.shard }}
+        run: npx playwright test --project=webkit --project=mobile-webkit --project=firefox
