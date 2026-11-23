@@ -1,3 +1,4 @@
+import { ChatTranscriptActionsCase } from './chat-transcript-actions-case.js';
 import { ChatTranscriptBehaviourCases } from './chat-transcript-behaviour-cases.js';
 import { ChatTranscriptComposerCase } from './chat-transcript-composer-case.js';
 import { ChatTranscriptConversationCases } from './chat-transcript-conversation-cases.js';
@@ -18,5 +19,6 @@ mountLab(
     <ChatTranscriptOptionCases />
     <ChatTranscriptWidthCases />
     <ChatTranscriptEmbeddedCases />
+    <ChatTranscriptActionsCase />
   </>,
 );

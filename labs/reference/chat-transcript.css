@@ -296,9 +296,15 @@
   inset-inline: auto 0;
 }
 
-/* The actions float over the bubble's corner while the message is hovered or holds focus. */
+/*
+ * The actions sit in the bubble and float over its top corner, the start for a sent message and the
+ * end otherwise, while the message is hovered or holds focus: anchored to the bubble the reader
+ * sees, not to the wider body around it. They take none of the bubble's text layout.
+ */
 .ui-chat-message__actions {
   position: absolute;
+  white-space: normal;
+  user-select: none;
   inset-block-start: -14px;
   inset-inline-end: 4px;
   padding: 2px;

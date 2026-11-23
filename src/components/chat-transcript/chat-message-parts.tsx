@@ -196,25 +196,6 @@ function toBubbleVariant(origin: ChatMessageOrigin, variant: ChatMessageVariant)
   return origin === 'sent' ? 'secondary' : 'muted';
 }
 
-/** The message's content in its bubble; the transcript announces the content's text. */
-function MessageBubble({
-  origin,
-  variant,
-  children,
-}: Pick<ChatMessageBodyProps, 'origin' | 'variant' | 'children'>) {
-  const contentRef = useTranscriptContentRef();
-  return (
-    <Bubble
-      ref={contentRef}
-      align={origin === 'sent' ? 'end' : 'start'}
-      variant={toBubbleVariant(origin, variant)}
-      className={hooks.slotClass('content')}
-    >
-      <BubbleContent>{children}</BubbleContent>
-    </Bubble>
-  );
-}
-
 /** A slot that renders only when it has content. */
 function ChatMessageSlot({
   name,
@@ -227,8 +208,31 @@ function ChatMessageSlot({
 }
 
 /**
- * Everything a message that is not deleted shows under its header: the quote, the content, the
- * footer, the error with Retry, the reactions and the actions.
+ * The message's content in its bubble, with the actions after it, so a stylesheet anchors them to
+ * the bubble the reader sees; the transcript announces the content's text alone.
+ */
+function MessageBubble({
+  origin,
+  variant,
+  actions,
+  children,
+}: Pick<ChatMessageBodyProps, 'origin' | 'variant' | 'actions' | 'children'>) {
+  const contentRef = useTranscriptContentRef();
+  return (
+    <Bubble
+      align={origin === 'sent' ? 'end' : 'start'}
+      variant={toBubbleVariant(origin, variant)}
+      className={hooks.slotClass('content')}
+    >
+      <BubbleContent ref={contentRef}>{children}</BubbleContent>
+      <ChatMessageSlot name="actions">{actions}</ChatMessageSlot>
+    </Bubble>
+  );
+}
+
+/**
+ * Everything a message that is not deleted shows under its header: the quote, the content with its
+ * actions, the footer, the error with Retry and the reactions.
  */
 export function ChatMessageBody({
   quote,
@@ -272,7 +276,7 @@ export function ChatMessageBody({
           onPress={quotedId && onQuotePress ? () => onQuotePress(quotedId) : undefined}
         />
       ) : null}
-      <MessageBubble origin={origin} variant={variant}>
+      <MessageBubble origin={origin} variant={variant} actions={actions}>
         {children}
       </MessageBubble>
       <ChatMessageFooter
@@ -291,7 +295,6 @@ export function ChatMessageBody({
         </div>
       ) : null}
       <ChatMessageSlot name="reactions">{reactions}</ChatMessageSlot>
-      <ChatMessageSlot name="actions">{actions}</ChatMessageSlot>
     </>
   );
 }
