@@ -1,0 +1,50 @@
+name: Set up Playwright browsers
+description: >-
+  Installs only the named browsers, from a cache keyed by the Playwright version, and their system
+  packages. The packages are saved as .deb files under a key that also names the runner image, since
+  the Ubuntu mirror sometimes serves them slowly enough to take minutes, and later jobs install
+  the saved files without downloading them again.
+inputs:
+  browsers:
+    description: The browsers to install, separated by spaces.
+    required: true
+  cache-name:
+    description: The browsers' name in the cache keys.
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: playwright
+      shell: bash
+      run: |
+        echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+        echo "image=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: browsers
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-${{ inputs.cache-name }}
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: packages
+      with:
+        path: ~/.cache/playwright-packages
+        key: playwright-packages-${{ runner.os }}-${{ steps.playwright.outputs.image }}-${{ steps.playwright.outputs.version }}-${{ inputs.cache-name }}
+    - name: Install Playwright browsers
+      if: steps.browsers.outputs.cache-hit != 'true'
+      shell: bash
+      run: npx playwright install ${{ inputs.browsers }}
+    - name: Install system packages from the cache
+      id: saved
+      if: steps.packages.outputs.cache-hit == 'true'
+      shell: bash
+      continue-on-error: true
+      run: sudo apt-get install -y --no-download "$HOME"/.cache/playwright-packages/*.deb
+    - name: Install and save system packages
+      if: steps.packages.outputs.cache-hit != 'true' || steps.saved.outcome != 'success'
+      shell: bash
+      run: |
+        echo 'APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/99-keep-packages
+        sudo rm -f /var/cache/apt/archives/*.deb
+        npx playwright install-deps ${{ inputs.browsers }}
+        mkdir -p ~/.cache/playwright-packages
+        cp /var/cache/apt/archives/*.deb ~/.cache/playwright-packages/ 2>/dev/null || true

@@ -1,0 +1,29 @@
+name: Set up Node and dependencies
+description: >-
+  Node from .nvmrc and the locked dependencies. node_modules is restored whole from a cache keyed by
+  the lockfile and Node version, so a job runs npm ci only when that cache misses. The incremental
+  type check and Prettier caches under node_modules/.cache roll forward from the newest earlier run.
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: modules
+      with:
+        path: |
+          node_modules
+          !node_modules/.cache
+        key: node-modules-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.nvmrc', 'package-lock.json') }}
+    # The npm download cache only helps the install that a node_modules miss runs.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: ${{ steps.modules.outputs.cache-hit != 'true' && 'npm' || '' }}
+    - if: steps.modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
+    # tsc's build info and Prettier's cache hold content hashes, so an older entry only saves work.
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: node_modules/.cache
+        key: tool-cache-${{ runner.os }}-${{ github.job }}-${{ github.sha }}
+        restore-keys: tool-cache-${{ runner.os }}-${{ github.job }}-

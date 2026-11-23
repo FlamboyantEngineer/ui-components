@@ -50,10 +50,10 @@ Verification: `test/package.test.ts`, `test/package-bundle.test.ts`
 
 ### UIC-LABS-1.7 - Browser suite in hosted CI
 
-Hosted CI shall build the labs once, in one job, and hand the build to the browser jobs through a cache entry keyed by the commit. The Chromium projects run in six shards, and the WebKit projects and the Firefox project each in their own job, and each job installs only its own browser, restored from a cache keyed by the Playwright version, plus that browser's system packages. No run records traces, since CI keeps no files from a run; a failing test is rerun locally with `--trace=on`.
+Each hosted CI browser job shall build the labs itself, which takes seconds, so no job waits for another. The Chromium project runs in six shards of about equal running time: `node scripts/lab-shards.mjs plan` gives every test its file's seconds per test from `scripts/lab-durations.json` (the median file's for a file it has no time for), deals the tests out slowest first, each to the shard with the least time so far, writes the chosen shard as a `--test-list` file and fails unless that list selects exactly the tests it names, so every test runs in exactly one shard. `gh run view <run> --log | node scripts/lab-shards.mjs record` rewrites the durations from the list reporter's lines of one run's shards. The WebKit projects and the Firefox project share one job. Each job installs only its own browsers, restored from a cache keyed by the Playwright version, and their system packages, which it installs from `.deb` files saved under a key that also names the runner image, and downloads only when that key is new. No run records traces, since CI keeps no files from a run; a failing test is rerun locally with `--trace=on`.
 
-Implementation: `.github/workflows/ci.yml`, `playwright.config.ts`
-Verification: `test/package.test.ts`
+Implementation: `.github/workflows/ci.yml`, `.github/actions/playwright/action.yml`, `playwright.config.ts`, `scripts/lab-shards.mjs`, `scripts/lib/lab-shards.mjs`, `scripts/lab-durations.json`
+Verification: `test/package.test.ts`, `test/lab-shards.test.ts`
 
 ### UIC-LABS-1.8 - Consumer bundle budgets
 
@@ -84,6 +84,13 @@ The installed package shall ship a second complete stylesheet at `labs/build/sha
 
 Implementation: `package.json`, `scripts/build-labs.mjs`, `scripts/lib/reference-stylesheet.mjs`, `scripts/check-package.mjs`, `scripts/check-git-install.mjs`, `scripts/pack-labs.mjs`, `scripts/release.mjs`
 Verification: `test/shadcn-stylesheet.test.ts`, `test/package.test.ts`
+
+### UIC-LABS-1.12 - Reused work in hosted CI
+
+Every hosted CI job that installs dependencies shall restore `node_modules` whole from a cache keyed by the runner, `.nvmrc` and `package-lock.json`, and run `npm ci` only when that cache misses. The incremental type check and Prettier caches under `node_modules/.cache`, which hold content hashes, roll forward from the newest earlier entry of the same job. Lint, the longest gate, runs in its own job beside the other gates and the unit test shards, and the required `check` passes only when all of them passed. A push to `dev` or `main` whose tree is the tree of a merged pull request's head whose run of the workflow passed reuses that result: the `reuse` job names that run, every other job is skipped and `check` passes. The strict branch rule makes a head hold its base before it merges, so that run tested this tree; any other push, and every pull request, runs every job.
+
+Implementation: `.github/workflows/ci.yml`, `.github/actions/setup/action.yml`
+Verification: `test/package.test.ts`
 
 ## UIC-LABS-2 - Chrome
 
