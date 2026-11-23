@@ -7,21 +7,27 @@ const offsets = (message: Locator) =>
     const rect = (slot: string) =>
       (node.querySelector(`.ui-chat-message__${slot}`) as HTMLElement).getBoundingClientRect();
     const [bar, bubble, body] = [rect('actions'), rect('content'), rect('body')];
+    const text = (node.querySelector('.ui-bubble__content') as HTMLElement).getBoundingClientRect();
     return {
       start: bar.left - bubble.left,
       end: bubble.right - bar.right,
       top: bar.top - bubble.top,
       bottom: bar.bottom - bubble.top,
+      overText: bar.bottom - text.top,
       bodyWider: body.width - bubble.width,
     };
   });
 
-/** The bar overlaps the bubble's top edge, starting just inside its left corner. */
+/**
+ * The bar overlaps the bubble's top edge, starting just inside its left corner, and reaches no
+ * further down than the bubble's padding, so it covers none of the text.
+ */
 function expectAtUpperLeft(offset: Awaited<ReturnType<typeof offsets>>) {
   expect(offset.start).toBeGreaterThanOrEqual(0);
   expect(offset.start).toBeLessThanOrEqual(8);
   expect(offset.top).toBeLessThan(0);
   expect(offset.bottom).toBeGreaterThan(0);
+  expect(offset.overText).toBeLessThanOrEqual(0);
 }
 
 test.describe('Chat Transcript lab: actions on a long message', () => {
