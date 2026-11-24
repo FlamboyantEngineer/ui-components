@@ -42,7 +42,7 @@ export type ButtonVariant =
   | 'link'
   | 'bare';
 
-/** `label` wraps children in one label slot; `parts` lays them out directly; `sentence` lets a prose label wrap. */
+/** Layout for children, with `icon` requesting a square and `sentence` allowing wrapping. */
 export type ButtonContent = 'label' | 'parts' | 'sentence' | 'icon';
 
 export type ButtonAlign = 'center' | 'start';

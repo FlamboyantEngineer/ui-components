@@ -1,10 +1,11 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
+import { useTableRows } from './use-table-rows.js';
 
 interface Item {
   id: string;
@@ -49,6 +50,37 @@ function ControlledPages({ onPageChange }: { onPageChange: (page: number) => voi
   );
 }
 
+describe('Table row projections', () => {
+  it.each([
+    ['without pagination', {}],
+    ['with empty pin lists', { pinnedRows: { top: [], bottom: [] } }],
+    [
+      'with a page supplied by the caller',
+      { pagination: { page: 3, pageSize: 10_000, rowCount: 40_000 } },
+    ],
+    ['with every row on one local page', { pagination: { pageSize: 20_000 } }],
+  ] as const)(
+    'UIC-TABLE-2.11 reads each row ID once and shares the full projection %s',
+    (_, options) => {
+      let idReads = 0;
+      const rows = Array.from({ length: 10_000 }, (_, index) => ({
+        get id() {
+          idReads++;
+          return `item-${index}`;
+        },
+        name: `Item ${index}`,
+        amount: index,
+      }));
+      const { result } = renderHook(() => useTableRows({ rows, columns, ...options }));
+
+      expect(idReads).toBe(rows.length);
+      expect(result.current.nodes).toHaveLength(rows.length);
+      expect(result.current.nodes).toBe(result.current.presentedNodes);
+      expect(result.current.rows).toBe(result.current.presentedRows);
+    },
+  );
+});
+
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table pagination', { timeout: 15_000 }, () => {
   it('UIC-TABLE-10.1 shows one page of rows under a named page navigation', async () => {
@@ -88,6 +120,35 @@ describe('Table pagination', { timeout: 15_000 }, () => {
     expect(within(pages()).getByRole('button', { name: 'Page 2' })).toHaveAttribute(
       'aria-current',
       'page',
+    );
+  });
+
+  it('UIC-TABLE-3.1 UIC-TABLE-10.1 UIC-TABLE-12.1 UIC-TABLE-18.2 preserves the full selection and summary across grouped pages with pins', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    renderItems({
+      columns: columns.map((column) =>
+        column.id === 'name'
+          ? { ...column, renderFooter: (rows) => `${rows.length} items` }
+          : column,
+      ),
+      pagination: { page: 2, pageSize: 1 },
+      groupBy: ['amount'],
+      pinnedRows: { top: ['item-7'], bottom: ['item-1'] },
+      selectionMode: 'multiple',
+      selectedKeys: 'all',
+      disabledKeys: ['item-5'],
+      onSelectionChange,
+    });
+    const visible = screen.getByRole('row', { name: /^Item 3\b/ });
+    const checkbox = within(visible).getByRole('checkbox');
+    expect(checkbox).toBeChecked();
+    expect(screen.queryByRole('row', { name: /^Item 4\b/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('row', { name: 'Summary' })).toHaveTextContent('7 items');
+
+    await user.click(checkbox);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(['item-7', 'item-2', 'item-4', 'item-6', 'item-1']),
     );
   });
 

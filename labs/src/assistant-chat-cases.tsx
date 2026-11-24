@@ -122,12 +122,12 @@ function AssistantPrompt({
         <InputGroupAddon align="block-end">
           <Cluster grow justify="end">
             {isPending ? (
-              <InputGroupButton icon={StopGlyph} label="Stop reply" size="icon-sm" onPress={stop} />
+              <InputGroupButton icon={StopGlyph} label="Stop reply" size="sm" onPress={stop} />
             ) : (
               <InputGroupButton
                 icon={SendGlyph}
                 label="Send message"
-                size="icon-sm"
+                size="sm"
                 type="submit"
                 variant="primary"
                 isDisabled={!prompt.canSubmit}

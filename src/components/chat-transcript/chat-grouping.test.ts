@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as primitives from '../../primitives/index.js';
 import {
   type ChatGroupableMessage,
   type ChatSequenceItem,
@@ -23,6 +24,37 @@ const by = (authorId: string | undefined, id: string, createdAt: string): ChatGr
 const inUtc = { timeZone: 'UTC' };
 
 describe('groupChatMessages', () => {
+  it('UIC-CHAT-TRANSCRIPT-6.3 reuses dates for unchanged messages when a long reply streams', () => {
+    const parse = vi.spyOn(primitives, 'parseIsoDateTime');
+    try {
+      const firstTime = Date.UTC(2026, 3, 19, 9);
+      const history = Array.from({ length: 10_001 }, (_, index) =>
+        by('ana', String(index), new Date(firstTime + index * 1000).toISOString()),
+      );
+      groupChatMessages(history, inUtc);
+      parse.mockClear();
+
+      const reply = by('ben', 'reply', new Date(firstTime + 10_001_000).toISOString());
+      const items = groupChatMessages([...history, reply], inUtc);
+
+      expect(parse).toHaveBeenCalledTimes(1);
+      expect(items.at(-1)).toMatchObject({ kind: 'message', message: reply });
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-6.3 recomputes a message after its date or time zone changes', () => {
+    const message = by('ana', 'm1', '2026-04-20T00:30:00Z');
+    expect(describeItems(groupChatMessages([message], inUtc))).toEqual(['2026-04-20', 'm1:single']);
+    message.createdAt = '2026-04-21T00:30:00Z';
+    expect(describeItems(groupChatMessages([message], inUtc))).toEqual(['2026-04-21', 'm1:single']);
+    expect(describeItems(groupChatMessages([message], { timeZone: 'America/New_York' }))).toEqual([
+      '2026-04-20',
+      'm1:single',
+    ]);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-6.1 puts date separators and the unread divider between the messages', () => {
     const messages = [
       by('ana', 'm1', '2026-04-19T09:00:00'),

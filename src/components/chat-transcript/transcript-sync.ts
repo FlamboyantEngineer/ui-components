@@ -1,5 +1,10 @@
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
-import { findLastVisible, readDistanceToBottom, readOffset } from './transcript-geometry.js';
+import {
+  findLastVisible,
+  readDistanceToBottom,
+  readOffset,
+  readOffsetBox,
+} from './transcript-geometry.js';
 import {
   resolveMessageKey,
   type TranscriptRuntime,
@@ -14,8 +19,7 @@ const pageSettleDelay = 150;
 
 /** Whether at least half of an element, or of the view when the element is taller, is in view. */
 function isMostlyVisible(element: Element, viewport: HTMLElement): boolean {
-  const top = readOffset(element, viewport);
-  const height = element.getBoundingClientRect().height;
+  const { top, height } = readOffsetBox(element, viewport);
   const visible = Math.min(top + height, viewport.clientHeight) - Math.max(top, 0);
   return visible >= Math.min(height, viewport.clientHeight) / 2;
 }
@@ -27,7 +31,10 @@ function resolveUnreadAbove(runtime: TranscriptRuntime, firstUnreadId: string | 
   const index = key === undefined ? undefined : runtime.indexOf.get(key);
   if (!viewport || key === undefined || index === undefined) return false;
   const element = runtime.registry.element(key);
-  if (element) return readOffset(element, viewport) + element.getBoundingClientRect().height <= 0;
+  if (element) {
+    const { top, height } = readOffsetBox(element, viewport);
+    return top + height <= 0;
+  }
   const snapshot = runtime.keeper.snapshot();
   const firstInView = snapshot ? runtime.indexOf.get(snapshot.key) : undefined;
   return firstInView !== undefined && index < firstInView;

@@ -125,11 +125,11 @@
   font-size: var(--ref-font-size-md);
 }
 
-.ui-input-group__button:is([data-group-size='xs'], [data-group-size='icon-xs']) {
+.ui-input-group__button[data-size='xs'] {
   border-radius: calc(var(--radius) - 3px);
 }
 
-.ui-input-group__button[data-group-size='xs'] {
+.ui-input-group__button[data-size='xs']:not([data-content='icon']) {
   gap: 4px;
   padding-inline: 6px;
 }

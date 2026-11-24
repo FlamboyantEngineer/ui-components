@@ -74,8 +74,11 @@ const initialUi: TranscriptUi = { isAway: false, unseenCount: 0, isUnreadAbove: 
 
 /** Measures the mounted children of a virtualized transcript. */
 function measureWindow(runtime: TranscriptRuntime, settings: TranscriptSettings) {
+  const viewport = runtime.viewport.current;
   const feed = runtime.feed.current;
-  if (settings.virtualized && feed) runtime.windowModel.measure(feed, runtime.mountedItems);
+  if (settings.virtualized && viewport && feed) {
+    runtime.windowModel.measure(viewport, feed, runtime.mountedItems);
+  }
 }
 
 /** A commit's keys and window, with how the keys changed since the last commit that read them. */

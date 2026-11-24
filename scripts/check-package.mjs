@@ -7,7 +7,7 @@
 // each of its sources to a file the tarball ships, or embed it (UIC-LABS-1.5).
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { packTarball } from '../tooling/lib/npm.mjs';
@@ -49,6 +49,33 @@ function reactAriaPinProblems(dependencies) {
       found.push(`dependency ${name} is ${dependencies[name]}, not exactly ${version}`);
   }
   return found;
+}
+
+/**
+ * UIC-BUTTON-22.5: the packed focused entry point exposes the same group parts as the button entry.
+ * @param {string} installed
+ * @param {string} packageName
+ */
+function buttonGroupProblems(installed, packageName) {
+  const probe = `
+    import assert from 'node:assert/strict';
+    import * as group from ${JSON.stringify(`${packageName}/button/group`)};
+    import * as button from ${JSON.stringify(`${packageName}/button`)};
+    for (const part of ['ButtonGroup', 'ButtonGroupSeparator', 'ButtonGroupText']) {
+      assert.ok(part in group, part + ' is missing from /button/group');
+      assert.equal(group[part], button[part], part + ' differs from /button');
+    }
+  `;
+  try {
+    symlinkSync(join(root, 'node_modules'), join(installed, 'node_modules'), 'junction');
+    execFileSync(process.execPath, ['--input-type=module', '--eval', probe], {
+      cwd: installed,
+      stdio: 'pipe',
+    });
+    return [];
+  } catch (error) {
+    return [`Unable to import the packed /button/group: ${String(error)}`];
+  }
 }
 
 const dirFlag = process.argv.indexOf('--dir');
@@ -164,6 +191,7 @@ try {
   } catch {
     problems.push('the packed tarball contains host references (see above)');
   }
+  problems.push(...buttonGroupProblems(installed, manifest.name));
 
   if (problems.length === 0) {
     console.log(

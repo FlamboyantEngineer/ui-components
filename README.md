@@ -64,7 +64,7 @@ Related controls share a component family. Import focused chat modules from `/ch
 
 Build an assistant thread with `/message-scroller`, `/message`, `/bubble`, and a plain prompt with `/input-group` and `/message-composer`. See the working example in [Chat integration](docs/CHAT-INTEGRATION.md#composable-assistant-thread).
 
-Other focused family entries are `/button/group`, `/badge/status-light`, `/chart/sparkline`, `/text-diff/inline`, `/dialog/controller`, `/tooltip/truncation` and `/scroll-region/overview`. The sparkline entry loads its small SVG renderer independently of the chart engine; scroll overview accepts an external `scrollRef` and keeps its draggable thumb.
+Other focused family entries are `/button/group`, `/badge/status-light`, `/chart/sparkline`, `/text-diff/inline`, `/dialog/controller`, `/tooltip/truncation` and `/scroll-region/overview`. The button group entry includes the group, separator and text parts. The sparkline entry loads its small SVG renderer independently of the chart engine; scroll overview accepts an external `scrollRef` and keeps its draggable thumb.
 
 Then style the hooks in the host stylesheet:
 

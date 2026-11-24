@@ -13,7 +13,7 @@ Verification: `src/components/input-group/input-group.test.tsx`, `e2e/input-grou
 
 ### UIC-INPUT-GROUP-1.2 - Addon focus and button actions
 
-Clicking plain addon content shall focus the directly grouped, enabled input or textarea. The caller may prevent that click's default. Interactive elements in an addon retain their own focus and actions. `InputGroupButton` uses the library's Button with `type="button"`, `variant="ghost"` and `size="xs"` by default. The other sizes are `sm`, `icon-xs` and `icon-sm`.
+Clicking plain addon content shall focus the directly grouped, enabled input or textarea. The caller may prevent that click's default. Interactive elements in an addon retain their own focus and actions. `InputGroupButton` uses the library's Button with `type="button"`, `variant="ghost"` and `size="xs"` by default. It also takes `size="sm"`. It uses the [Button](BUTTON.md) size and content hooks. Pass a named `icon` for a square icon button, or pass `content="icon"` to give its own children the square layout.
 
 Implementation: `src/components/input-group/input-group.tsx`
 Verification: `src/components/input-group/input-group.test.tsx`, `e2e/input-group.spec.ts`
@@ -49,4 +49,3 @@ Verification: `src/components/message-composer/use-prompt-submission.test.tsx`
 | `data-disabled`           | state     | `true`                                                   | The group is marked disabled with ARIA. |
 | `data-invalid`            | state     | `true`                                                   | The group is marked invalid with ARIA.  |
 | `data-align`              | attribute | `inline-start`, `inline-end`, `block-start`, `block-end` | The addon's edge.                       |
-| `data-group-size`         | attribute | `xs`, `sm`, `icon-xs`, `icon-sm`                         | The group button's size.                |

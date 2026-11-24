@@ -10,16 +10,16 @@ import { createJsonCodec } from '../../utils/json-codec.js';
  */
 export type MessageComposerTokenKind = 'mention' | 'command' | 'reference' | 'trigger';
 
-/** A mention, command or record reference in the message's text, by its range. */
+/** A pill in the message's text, by its range. */
 export interface MessageComposerToken {
-  /** Where the pill's text starts in `text`. */
+  /** Where the pill's text starts in `text`, in UTF-16 code units. */
   start: number;
   /** Where it ends in `text`, exclusive. */
   end: number;
   kind: MessageComposerTokenKind;
-  /** The mentioned person's, the command's or the referenced record's id. */
+  /** The person, command, record or trigger entry that the pill identifies. */
   id: string;
-  /** The person's or the command's label, without the trigger character, or the reference's text. */
+  /** The pill's label, without the trigger character for mentions and commands. */
   label: string;
   /** A reference's record kind or scope, as the host names it. */
   recordType?: string | undefined;

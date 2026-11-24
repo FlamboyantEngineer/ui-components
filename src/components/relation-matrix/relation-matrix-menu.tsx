@@ -12,6 +12,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { useLocale } from '../../primitives/index.js';
 import { isFocusLost } from '../../utils/composed-focus.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { isElement, isHTMLElement } from '../../utils/is-element.js';
 import { getOwnerWindow } from '../../utils/owner-window.js';
 import {
@@ -93,10 +94,6 @@ interface MenuModel {
   label: string;
   entries: MenuEntry[];
   onAction: (key: Key) => void;
-}
-
-function isKeyboardContextMenu(event: KeyboardEvent) {
-  return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
 }
 
 function separator(id: string): MenuEntry {
@@ -305,7 +302,7 @@ export function useMatrixMenu(
       },
       onKeyDown: (event) => {
         grid.onKeyDown(event);
-        if (isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+        if (isDisabled || event.defaultPrevented || !isContextMenuKey(event)) return;
         const next = findTarget(event.target, options);
         const cell = cellOf(event.target);
         if (!next || !cell) return;

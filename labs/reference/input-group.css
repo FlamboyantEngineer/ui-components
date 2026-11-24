@@ -60,14 +60,8 @@
   order: 2;
 }
 
-.ui-input-group__button[data-group-size='icon-xs'] {
-  inline-size: var(--ref-control-height-xs);
-  padding-inline: 0;
-}
-
-.ui-input-group__button[data-group-size='icon-sm'] {
-  inline-size: var(--ref-control-height-sm);
-  padding-inline: 0;
+.ui-input-group__button {
+  flex-shrink: 0;
 }
 
 .ui-input-group__text {

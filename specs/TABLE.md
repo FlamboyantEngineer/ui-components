@@ -137,6 +137,8 @@ The table shall derive the rows it presents in three steps, each kept for one ta
 
 Measured with React rendering the table's row hook in the unit test environment, with a search query and a sorted column: for 20,000 flat rows a sort change went from 250 to 300 ms, 20,000 `getChildRows` calls and 20,000 reads of each searched column to 4 to 76 ms with none of them; for 5,000 rows of four nested rows each, from 270 to 340 ms and 25,000 `getChildRows` calls to 1 to 6 ms with none. Sorting still reads each sorted value once per row.
 
+With no pinned keys the initial derivation reads each row's ID once to build its node, including when the caller supplies the current page. When the current page contains every presented row, the page and full view share the nodes and rows.
+
 Implementation: `src/components/table/use-table-rows.ts`
 Verification: `src/components/table/table-derivations.test.tsx`, `src/components/table/use-table-rows.test.tsx`
 
