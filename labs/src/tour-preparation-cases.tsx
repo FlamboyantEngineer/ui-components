@@ -79,13 +79,43 @@ function PreparedTour() {
   );
 }
 
+function SingleStepTour() {
+  const [isOpen, setOpen] = useState(false);
+  return (
+    <div data-lab-demo="pending-single-step">
+      <Button data-lab-single-step="" onPress={() => setOpen(true)}>
+        Open the introduction
+      </Button>
+      <Tour
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        steps={[
+          {
+            target: '[data-lab-single-step]',
+            title: 'Getting started',
+            prepare: (context) => load(5000, context, false),
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
 export function TourPreparationSections() {
   return (
-    <LabSection
-      title="Getting a step ready"
-      description="Shipping options opens its collapsed section after a short load: the step shows as pending, then points at the options. Turn on Fail loading the options to see the failed step and Retry it. Notes waits up to three seconds for its target, which arrives after a moment. Back or Skip during a load aborts it."
-    >
-      <PreparedTour />
-    </LabSection>
+    <>
+      <LabSection
+        title="Getting a step ready"
+        description="Shipping options opens its collapsed section after a short load: the step shows as pending, then points at the options. Turn on Fail loading the options to see the failed step and Retry it. Notes waits up to three seconds for its target, which arrives after a moment. Back or Skip during a load aborts it."
+      >
+        <PreparedTour />
+      </LabSection>
+      <LabSection
+        title="Skipping a pending introduction"
+        description="The single step prepares for five seconds. Skip closes it during that wait. Finish becomes available once it is ready."
+      >
+        <SingleStepTour />
+      </LabSection>
+    </>
   );
 }

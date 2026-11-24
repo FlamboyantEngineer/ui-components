@@ -5,6 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Dialog, Heading } from '../../primitives/index.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useFocusRecovery } from '../../utils/use-focus-recovery.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { Button } from '../button/button.js';
 import { tourHooks as hooks } from './tour-hooks.js';
@@ -43,25 +44,13 @@ function TourStatus({ status }: { status: TourStepStatus }) {
   );
 }
 
-/**
- * One step's dialog: the title, which names it, the step count, the body, then Skip, Back and Next
- * (Finish on the last step). Escape skips the tour.
- */
-export function TourPanel({
-  id,
-  step,
-  count,
-  title,
-  content,
-  status,
-  onRetry,
-  onBack,
-  onNext,
-  onSkip,
-}: TourPanelProps) {
-  const strings = useUiStrings();
-  const isLast = step === count - 1;
+/** Keeps focus in the tour when Skip disappears and lets the step's controls handle Escape first. */
+function useTourPanelKeyboard(onSkip: () => void) {
   const dialogRef = useRef<HTMLElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  useFocusRecovery(dialogRef, (lost) =>
+    lost.classList.contains(hooks.slotClass('skip')) ? nextRef.current : undefined,
+  );
   const skip = useLatest(onSkip);
   // The dialog takes no key handler, so Escape is heard on its document, once the event has bubbled
   // past React's root: a control in the step's content that handles Escape in its own React or
@@ -80,6 +69,28 @@ export function TourPanel({
     owner.addEventListener('keydown', onKeyDown);
     return () => owner.removeEventListener('keydown', onKeyDown);
   }, [skip]);
+  return { dialogRef, nextRef };
+}
+
+/**
+ * One step's dialog: the title, which names it, the step count, the body, then Skip, Back and Next
+ * (Finish on the last step). Escape skips the tour.
+ */
+export function TourPanel({
+  id,
+  step,
+  count,
+  title,
+  content,
+  status,
+  onRetry,
+  onBack,
+  onNext,
+  onSkip,
+}: TourPanelProps) {
+  const strings = useUiStrings();
+  const isLast = step === count - 1;
+  const { dialogRef, nextRef } = useTourPanelKeyboard(onSkip);
   return (
     <Dialog ref={dialogRef} id={id} className={hooks.slotClass('dialog')}>
       <div {...hooks.slot('header')}>
@@ -91,11 +102,11 @@ export function TourPanel({
       {isEmptyNode(content) ? null : <div {...hooks.slot('body')}>{content}</div>}
       <TourStatus status={status} />
       <div {...hooks.slot('footer')}>
-        {isLast ? null : (
+        {!isLast || status === 'pending' ? (
           <Button variant="ghost" size="sm" className={hooks.slotClass('skip')} onPress={onSkip}>
             {strings.skip}
           </Button>
-        )}
+        ) : null}
         {step > 0 ? (
           <Button
             variant="secondary"
@@ -117,6 +128,7 @@ export function TourPanel({
           </Button>
         ) : null}
         <Button
+          ref={nextRef}
           variant="primary"
           size="sm"
           className={hooks.slotClass('next')}

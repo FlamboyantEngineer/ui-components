@@ -32,7 +32,7 @@ describe('Measured virtual window boundaries', () => {
     viewport.scrollTop = 648;
     const model = createWindowModel();
     const order = createOrder(keys);
-    model.measure(feed, keys);
+    model.measure(viewport, feed, keys);
     const initial = model.range(viewport, feed, order);
     for (let pass = 0; pass < 8; pass += 1) {
       correction *= -1;
@@ -70,7 +70,7 @@ describe('Measured virtual window boundaries', () => {
         .mockReturnValue(new DOMRect(0, 0, 600, 80));
       const model = createWindowModel();
       const mounted = ['row-0', `row-${size - 1}`];
-      model.measure(feed, mounted);
+      model.measure(viewport, feed, mounted);
       const keys = Array.from({ length: size }, (_, index) => `row-${index}`);
       const readKey = vi.fn();
       const watched = new Proxy(keys, {
@@ -93,7 +93,7 @@ describe('Measured virtual window boundaries', () => {
 
       // A changed measurement adjusts every estimate without rereading the ordered keys.
       lastBox.mockReturnValue(new DOMRect(0, 0, 600, 100));
-      model.measure(feed, mounted);
+      model.measure(viewport, feed, mounted);
       const threeQuarters = (size * 3) / 4;
       viewport.scrollTop = threeQuarters * 77 - 26 + 200;
       expect(model.range(viewport, feed, order)).toEqual({

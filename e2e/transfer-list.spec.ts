@@ -111,6 +111,28 @@ test.describe('Transfer List lab', () => {
     await field(page, 'columns').getByRole('row', { name: 'Owner' }).click();
     await lab.expectAccessible();
   });
+
+  test('UIC-TRANSFER-LIST-1.5 UIC-TRANSFER-LIST-2.1 keeps a filtered select-all fixed in both list modes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('transfer-list');
+    const selectMatches = async (name: string, query: string, firstRow: string) => {
+      const example = field(page, name);
+      const filter = example.getByRole('searchbox', { name: 'Filter available' });
+      await filter.fill(query);
+      await example.getByRole('row', { name: firstRow }).press('Control+a');
+      await filter.fill('');
+      await example.getByRole('button', { name: 'Move selected to chosen' }).click();
+    };
+
+    await selectMatches('itinerary', 'LI', 'Lisbon');
+    await expect(output(page, 'itinerary')).toHaveText('lisbon, lima');
+
+    await selectMatches('records', 'record 00', 'Record 0001');
+    await expect(output(page, 'records')).toHaveText('185 chosen');
+  });
+
   test('UIC-TRANSFER-LIST-1.5 virtualized sides render bounded rows and reach the last record', async ({
     page,
     lab,

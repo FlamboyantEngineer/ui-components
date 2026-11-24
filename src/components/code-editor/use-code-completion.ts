@@ -10,7 +10,7 @@ import {
   type CompletionsModel,
   useCompletions,
 } from '../completion-list/completion-list.js';
-import { type CodeEdit, indentationAt } from './code-editing.js';
+import { type CodeEdit, indentationAt, normalizeCodeSource } from './code-editing.js';
 import type { CodeRange } from './code-ranges.js';
 import { findCompletionQuery, indentInsertion, parseSnippet } from './completion-match.js';
 import type { CodeSnippetSession } from './use-code-snippet.js';
@@ -140,10 +140,9 @@ function insertCompletion(
   if (!input) return;
   const end = Math.max(range.end, input.selectionStart);
   const indentation = indentationAt(input.value, range.start);
+  const insertion = normalizeCodeSource(option.insertText ?? option.label);
   const parsed = indentInsertion(
-    option.insertText === undefined
-      ? { text: option.label, fields: [] }
-      : parseSnippet(option.insertText),
+    option.insertText === undefined ? { text: insertion, fields: [] } : parseSnippet(insertion),
     indentation,
   );
   const text = input.value.slice(0, range.start) + parsed.text + input.value.slice(end);

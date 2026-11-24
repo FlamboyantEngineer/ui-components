@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '../../src/components/button/index.js';
 import {
   buildSearchSnippet,
   SearchPane,
@@ -52,19 +53,35 @@ function makeManyResults(count: number): SearchPaneResult[] {
 }
 
 const manyResults = makeManyResults(820);
+const reorderedResults = [
+  ...manyResults.slice(0, 1),
+  ...manyResults.slice(200, 201),
+  ...manyResults.slice(1, 200),
+  ...manyResults.slice(201),
+];
 
 /** A pane over 820 matches: the list mounts a page of rows, while counting and stepping cover all. */
 function ManyResults() {
   const [currentKey, setCurrentKey] = useState<Key | null>(null);
   const [activations, setActivations] = useState(0);
+  const [pageSize, setPageSize] = useState(200);
+  const [isEntryMoved, setEntryMoved] = useState(false);
+  const nextPageSize = pageSize === 200 ? 150 : 200;
   return (
     <div data-lab-demo="many-results">
+      <Button size="sm" onPress={() => setPageSize(nextPageSize)}>
+        Show {nextPageSize} results per page
+      </Button>{' '}
+      <Button size="sm" onPress={() => setEntryMoved(!isEntryMoved)}>
+        {isEntryMoved ? 'Restore Entry 201' : 'Move Entry 201 near the start'}
+      </Button>
       <div style={{ display: 'flex', flexDirection: 'column', width: 380, height: 360 }}>
         <SearchPane
           label="Find in the log"
           defaultQuery="pear"
-          results={manyResults}
+          results={isEntryMoved ? reorderedResults : manyResults}
           currentKey={currentKey}
+          maxMountedResults={pageSize}
           onCurrentKeyChange={(key) => {
             setCurrentKey(key);
             setActivations((count) => count + 1);
@@ -126,7 +143,7 @@ mountLab(
   <>
     <LabSection
       title="States and modes"
-      description="Each state in each replace mode (none, hidable behind the chevron, always shown): empty, not searched yet, searching (the last results stay browsable), results, no results, failed and unavailable."
+      description="Each state in each replace mode (none, hidable behind the chevron, always shown): empty, not searched yet, searching (the last results stay browsable and replacement waits), results, no results, failed and unavailable."
     >
       <StateMatrix
         axes={{ state: states, mode: modes }}
@@ -155,7 +172,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Many results"
-      description="820 matches: the list mounts 200 rows at a time, with buttons for the earlier and later pages, while the count and stepping cover every match. Shift+Enter from no match goes to the last one."
+      description="Browse to the page beginning with Entry 201, then resize the page or move Entry 201 near the start. Its page stays in view. The count and stepping cover all 820 matches. Shift+Enter from no match goes to the last one."
     >
       <ManyResults />
     </LabSection>

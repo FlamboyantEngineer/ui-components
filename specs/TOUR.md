@@ -49,7 +49,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-2.2 - Skipping
 
-Every step but the last shall offer a Skip button (`ui-tour__skip`, provider string `skip`), and Escape inside the dialog skips too, unless a control handled it or it belongs to an input method composition (`isComposing`, or key code 229) in a field of the step's content: the tour closes and `onSkip` receives the shown step's index. The tour hears Escape after the step's content has: a control that calls `preventDefault` or `stopPropagation` on it, in a React or a native handler, keeps it, the tour neither skips nor records completion, and an Escape no control handled skips once, in modal and non-modal tours alike. Presses outside the dialog never close the tour.
+Every step before the last and any pending step shall offer a Skip button (`ui-tour__skip`, provider string `skip`). The last step offers Skip during preparation or while waiting for a target, when Finish is unavailable. Escape inside the dialog skips too, unless a control handled it or it belongs to an input method composition (`isComposing`, or key code 229) in a field of the step's content: the tour closes and `onSkip` receives the shown step's index. The tour hears Escape after the step's content has: a control that calls `preventDefault` or `stopPropagation` on it, in a React or a native handler, keeps it, the tour neither skips nor records completion, and an Escape no control handled skips once, in modal and non-modal tours alike. Presses outside the dialog never close the tour.
 
 Implementation: `src/components/tour/tour.tsx`, `src/components/tour/tour-panel.tsx`
 Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
@@ -70,10 +70,10 @@ Verification: `src/components/tour/tour.test.tsx`
 
 ### UIC-TOUR-2.5 - Focus
 
-When the tour opens, focus shall move to the step's dialog, which announces its title; each new step moves focus to its own dialog; while a modal tour is open focus stays inside the dialog; when the tour closes focus returns to where it was before it opened.
+When the tour opens, focus shall move to the step's dialog, which announces its title; each new step moves focus to its own dialog; while a modal tour is open focus stays inside the dialog; when the tour closes focus returns to where it was before it opened. When the last step settles and its Skip button disappears while focused, focus moves to Finish.
 
 Implementation: `src/components/tour/tour.tsx`, `src/components/tour/tour-panel.tsx`, `src/components/popover/popover.tsx`
-Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
+Verification: `src/components/tour/tour.test.tsx`, `src/components/tour/tour-preparation.test.tsx`, `e2e/tour.spec.ts`
 
 ## UIC-TOUR-3 - Persistence, modality and hooks
 

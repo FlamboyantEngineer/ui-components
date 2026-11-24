@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UndoGlyph } from '../../core/glyphs.js';
 import { Button } from './button.js';
-import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './button-group.js';
+import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './group.js';
 
 describe('ButtonGroup', () => {
   it('UIC-BUTTON-22.1 groups its buttons under a name and keeps each tab stop', async () => {

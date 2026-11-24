@@ -68,3 +68,47 @@ test('UIC-QUESTIONNAIRE-2.2 stops at a required question and says why', async ({
   expect(danger).not.toBe(plain);
   await lab.expectAccessible();
 });
+
+test('UIC-QUESTIONNAIRE-2.2 UIC-QUESTIONNAIRE-2.3 advances and submits with a disabled required question', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('questionnaire');
+  const label = 'Questionnaire with an unavailable question';
+  const form = page.getByRole('form', { name: label });
+  await expect(form.getByRole('radio', { name: 'Ferry' })).toBeDisabled();
+  await form.getByRole('button', { name: 'Next' }).click();
+  await expect(form.getByRole('progressbar')).toHaveText('Question 2 of 3');
+  await expect(form.getByRole('checkbox', { name: 'A bike' })).toBeFocused();
+  await form.getByRole('button', { name: 'Next' }).click();
+  const note = form.getByRole('textbox', { name: 'A note for the crew' });
+  await note.fill('A window seat');
+  await note.press('Enter');
+  await expect(page.getByRole('status', { name: `${label} answers` })).toHaveText(
+    '{"crossing":[],"extras":[],"note":["A window seat"]}',
+  );
+});
+
+test('UIC-QUESTIONNAIRE-2.2 follows the disabled state of an enclosing fieldset', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('questionnaire');
+  const form = page.getByRole('form', { name: 'Survey in an enclosing fieldset' });
+  const question = form.getByRole('group', { name: 'Which crossing suits you?' });
+  const radio = question.getByRole('radio', { name: 'Ferry' });
+  const toggle = page.getByRole('checkbox', { name: 'Disable the survey fieldset' });
+  await form.getByRole('button', { name: 'Submit' }).click();
+  await expect(question).toHaveAttribute('data-invalid', 'true');
+  await expect(radio).toBeFocused();
+
+  await toggle.check();
+  await expect(radio).toBeDisabled();
+  await expect(question).not.toHaveAttribute('data-invalid');
+  await expect(question.getByText('Answer this question to continue.')).toHaveCount(0);
+
+  await toggle.uncheck();
+  await expect(radio).toBeEnabled();
+  await expect(question).toHaveAttribute('data-invalid', 'true');
+  await expect(toggle).toBeFocused();
+});

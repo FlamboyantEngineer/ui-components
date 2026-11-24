@@ -8,6 +8,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../../primitives/index.js';
 import { getComposedActiveElement, isFocusLost } from '../../utils/composed-focus.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isHiddenOrGone, useFocusRecovery } from '../../utils/use-focus-recovery.js';
@@ -15,7 +16,7 @@ import { Badge } from '../badge/badge.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { describeState, getStateCount, notificationCountMax } from './describe-state.js';
-import { getContextMenuRequestHandlers, isKeyboardContextMenu } from './sequence-interaction.js';
+import { getContextMenuRequestHandlers } from './sequence-interaction.js';
 import type { SequenceLayout } from './sequence-layout.js';
 import type { StateMachineState } from './state-machine-model.js';
 import type { StateMachineSequenceProps } from './state-machine-sequence.js';
@@ -254,7 +255,7 @@ function SequenceState({
           onFocus={onFocus}
           onBlur={(event) => onBlur(event.relatedTarget)}
           onKeyDown={(event) => {
-            if (isKeyboardContextMenu(event)) menu.onKeyDown?.(event);
+            if (isContextMenuKey(event)) menu.onKeyDown?.(event);
             else if (moveFocus(event)) event.preventDefault();
             else event.continuePropagation();
           }}

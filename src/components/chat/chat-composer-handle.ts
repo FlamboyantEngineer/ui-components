@@ -3,7 +3,9 @@ import { type Ref, type RefObject, useEffect, useImperativeHandle } from 'react'
 import { useLatest } from '../../utils/use-latest.js';
 import type {
   MessageComposerContent,
+  MessageComposerEditResult,
   MessageComposerHandle,
+  MessageComposerInsertResult,
   MessageComposerRange,
   RichMessageComposerProps,
 } from '../message-composer/rich/rich-message-composer.js';
@@ -16,8 +18,7 @@ import type { ChatTextToken } from './chat-parts.js';
  * `disabled`, is `editing` a message, is `submitting` a message the host has not accepted yet, or
  * is `unavailable` (a chat without `onSend` has no composer).
  */
-export type ChatComposerInsertResult =
-  'inserted' | 'other-conversation' | 'disabled' | 'editing' | 'submitting' | 'unavailable';
+export type ChatComposerInsertResult = MessageComposerInsertResult | 'other-conversation';
 
 /**
  * Sends a text with its mentions and commands about a message: an edit or a reply. A returned
@@ -46,14 +47,7 @@ export interface ChatComposerInsertOptions {
  * What a selection or range edit did: `applied`, or why it changed nothing: as for `insertToken`,
  * or `invalid` for a range outside the shown message's text.
  */
-export type ChatComposerEditResult =
-  | 'applied'
-  | 'other-conversation'
-  | 'disabled'
-  | 'editing'
-  | 'submitting'
-  | 'unavailable'
-  | 'invalid';
+export type ChatComposerEditResult = MessageComposerEditResult | 'other-conversation';
 
 /** What replaces a range of the composer's text: plain text, or text with its own tokens. */
 export type ChatComposerContent = string | { text: string; tokens: readonly ChatTextToken[] };
@@ -171,11 +165,8 @@ export function useChatComposerHandle(options: ChatComposerHandleOptions) {
     };
     return {
       insertToken: (token, insert) => {
-        const shown = latest.current.conversationId;
-        const asked = insert?.conversationId ?? conversationId;
-        if (shown !== conversationId || asked !== shown) return 'other-conversation';
-        const composer = composerRef.current;
-        if (!composer) return 'unavailable';
+        const composer = reach(insert);
+        if (typeof composer === 'string') return composer;
         const [pill = token] = toComposerTokens([token]);
         const result = composer.insertToken(pill);
         if (result === 'inserted') latest.current.focusComposer();

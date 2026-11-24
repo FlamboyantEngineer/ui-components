@@ -14,6 +14,7 @@ import { useCodeSnippet } from './use-code-snippet.js';
 
 function Editor({
   initialValue = '',
+  onChange,
   ...props
 }: Omit<CodeEditorSurfaceProps, 'value' | 'variant'> & { initialValue?: string }) {
   const [value, setValue] = useState(initialValue);
@@ -23,7 +24,10 @@ function Editor({
       aria-label="Source"
       {...props}
       value={value}
-      onChange={setValue}
+      onChange={(next) => {
+        setValue(next);
+        onChange?.(next);
+      }}
     />
   );
 }
@@ -210,6 +214,22 @@ describe('CodeEditor completion sources', () => {
     expect(marked()).toBe('let a = pick([pear], count)');
     await user.keyboard('{Tab}2{Tab}');
     expect(marked()).toBe('let a = pick(pear, 2)|');
+  });
+
+  it('UIC-CODE-EDITOR-4.8 places snippet fields using native offsets after CRLF', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const completions = [{ label: 'basket', insertText: 'pick(${fruit})\r\npack(${count})' }];
+    render(<Editor {...{ completions, onChange }} initialValue={'first\r\n  '} />);
+    await user.click(input());
+    await user.keyboard('{End}bas');
+    await screen.findByRole('option', { name: 'basket' });
+    onChange.mockClear();
+    await user.keyboard('{Enter}');
+    expect(marked()).toBe('first\n  pick([fruit])\n  pack(count)');
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('first\n  pick(fruit)\n  pack(count)');
+    await user.keyboard('{Tab}');
+    expect(marked()).toBe('first\n  pick(fruit)\n  pack([count])');
   });
 
   it('UIC-CODE-EDITOR-4.8 UIC-CODE-EDITOR-6.2 leaves keys an input method owns to it', async () => {

@@ -4,6 +4,7 @@ import type {
   ChatMessageStatus,
   ChatReader,
 } from '../chat-transcript/chat-transcript.js';
+import { tokenTriggers } from '../message-composer/composer-message.js';
 import { splitMatchTerms, textMatchesTerms } from '../text-match/match-ranges.js';
 import type { ChatStatusLineActivity } from './chat-activity.js';
 import type { ChatMessageData, ChatParticipant, ChatTextToken } from './chat-parts.js';
@@ -73,8 +74,6 @@ export function toExcerpt(text: string): string {
   return line.length > excerptLength ? `${line.slice(0, excerptLength - 1).trimEnd()}…` : line;
 }
 
-const triggers = { mention: '@', command: '/', reference: '', trigger: '' } as const;
-
 /**
  * Tokens as a message shows them: the composer names a pill by its bare label (`Ana Lopez`), while
  * a message's token label is the pill's text, trigger included (`@Ana Lopez`). A reference has no
@@ -82,7 +81,7 @@ const triggers = { mention: '@', command: '/', reference: '', trigger: '' } as c
  */
 export function toDisplayTokens(tokens: readonly ChatTextToken[]): ChatTextToken[] {
   return tokens.map((token) => {
-    const trigger = triggers[token.kind];
+    const trigger = tokenTriggers[token.kind];
     return !trigger || token.label.startsWith(trigger)
       ? token
       : { ...token, label: trigger + token.label };
@@ -94,7 +93,7 @@ export function toComposerTokens<T extends Pick<ChatTextToken, 'kind' | 'label'>
   tokens: readonly T[],
 ): T[] {
   return tokens.map((token) => {
-    const trigger = triggers[token.kind];
+    const trigger = tokenTriggers[token.kind];
     return trigger && token.label.startsWith(trigger)
       ? { ...token, label: token.label.slice(trigger.length) }
       : token;

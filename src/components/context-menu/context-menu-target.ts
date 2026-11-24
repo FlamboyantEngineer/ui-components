@@ -13,6 +13,7 @@ import {
   useRef,
 } from 'react';
 import { isFocused } from '../../utils/focus-target.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { LONG_PRESS_DELAY } from '../../utils/overlay-defaults.js';
@@ -89,10 +90,6 @@ function isTextInside(target: EventTarget, owner: Element): boolean {
 /** Whether an event reached the target from a portal it renders, such as its own open menu. */
 function isFromPortal(event: { target: EventTarget; currentTarget: Element }): boolean {
   return !event.currentTarget.contains(event.target as Node);
-}
-
-function isKeyboardContextMenu(event: KeyboardEvent) {
-  return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
 }
 
 function hasMoved(press: PendingPress, event: PointerEvent) {
@@ -199,7 +196,7 @@ export function useContextMenuTarget(
     },
     onKeyDownCapture(event) {
       own.onKeyDownCapture?.(event);
-      if (options.isDisabled || !isKeyboardContextMenu(event) || isFromPortal(event)) return;
+      if (options.isDisabled || !isContextMenuKey(event) || isFromPortal(event)) return;
       if (!accepts(event.target)) return;
       if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;
       const { nativeEvent, currentTarget } = event;
@@ -216,7 +213,7 @@ export function useContextMenuTarget(
     },
     onKeyDown(event) {
       own.onKeyDown?.(event);
-      if (options.isDisabled || event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+      if (options.isDisabled || event.defaultPrevented || !isContextMenuKey(event)) return;
       if (isFromPortal(event) || !accepts(event.target)) return;
       // A text control inside the target keeps the key for its own editing menu.
       if (!opensInsideText && isTextInside(event.target, event.currentTarget)) return;

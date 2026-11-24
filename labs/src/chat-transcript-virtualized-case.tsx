@@ -13,6 +13,7 @@ export function ChatTranscriptVirtualizedCase() {
   const chat = useSimulatedChat('long', () => sampleMessages('long', 0, 5000));
   const frame = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(0);
+  const [isScaled, setScaled] = useState(false);
   useEffect(() => {
     const element = frame.current;
     if (!element) return undefined;
@@ -24,13 +25,28 @@ export function ChatTranscriptVirtualizedCase() {
   }, []);
   return (
     <>
-      <div ref={frame} style={{ height: 300 }}>
-        <ChatTranscript virtualized aria-label="Long history" data-lab-transcript="virtualized">
+      <div
+        ref={frame}
+        style={{
+          height: 300,
+          transform: isScaled ? 'scale(0.5)' : undefined,
+          transformOrigin: 'top left',
+        }}
+      >
+        <ChatTranscript
+          key={isScaled ? 'scaled' : 'full-size'}
+          virtualized
+          aria-label="Long history"
+          data-lab-transcript="virtualized"
+        >
           {chat.messages.map((message) => (
             <SampleMessageView key={message.id} message={message} />
           ))}
         </ChatTranscript>
       </div>
+      <Button size="sm" onPress={() => setScaled(!isScaled)}>
+        {isScaled ? 'Use full size' : 'Use half size'}
+      </Button>
       <MessageComposer
         aria-label="Ask in the long history"
         isPending={chat.isStreaming}

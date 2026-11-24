@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
   Questionnaire,
   QuestionnaireActions,
@@ -20,7 +20,15 @@ import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 
 const steps = ['crossing', 'extras', 'note'];
 
-function TripQuestions({ isStepping, label }: { isStepping: boolean; label: string }) {
+function TripQuestions({
+  isStepping,
+  label,
+  isCrossingDisabled = false,
+}: {
+  isStepping: boolean;
+  label: string;
+  isCrossingDisabled?: boolean;
+}) {
   const [answers, setAnswers] = useState<QuestionnaireAnswers | null>(null);
   return (
     <div style={{ inlineSize: '24rem' }}>
@@ -30,7 +38,7 @@ function TripQuestions({ isStepping, label }: { isStepping: boolean; label: stri
         onSubmit={setAnswers}
       >
         <QuestionnaireProgress />
-        <QuestionnaireItem name="crossing" isRequired>
+        <QuestionnaireItem name="crossing" isRequired isDisabled={isCrossingDisabled}>
           <QuestionnaireTitle>Which crossing suits you?</QuestionnaireTitle>
           <QuestionnaireDescription>Both reach the island before noon.</QuestionnaireDescription>
           <QuestionnaireChoices>
@@ -67,6 +75,47 @@ function TripQuestions({ isStepping, label }: { isStepping: boolean; label: stri
       </Questionnaire>
       <output aria-label={`${label} answers`}>{answers ? JSON.stringify(answers) : ''}</output>
     </div>
+  );
+}
+
+function UnavailableQuestion() {
+  const [isDisabled, setDisabled] = useState(true);
+  return (
+    <>
+      <label>
+        <input
+          type="checkbox"
+          checked={isDisabled}
+          onChange={(event) => setDisabled(event.target.checked)}
+        />{' '}
+        Disable the crossing question
+      </label>
+      <TripQuestions
+        isStepping
+        label="Questionnaire with an unavailable question"
+        isCrossingDisabled={isDisabled}
+      />
+    </>
+  );
+}
+
+function EnclosingFieldset({ children }: { children: ReactNode }) {
+  const [isDisabled, setDisabled] = useState(false);
+  return (
+    <>
+      <label>
+        <input
+          type="checkbox"
+          checked={isDisabled}
+          onChange={(event) => setDisabled(event.target.checked)}
+        />{' '}
+        Disable the survey fieldset
+      </label>
+      <fieldset disabled={isDisabled}>
+        <legend>Survey fieldset</legend>
+        {children}
+      </fieldset>
+    </>
   );
 }
 
@@ -152,6 +201,20 @@ mountLab(
           <KeptQuestions isReadOnly={mode === 'read-only'} label={`${mode} kept questionnaire`} />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Unavailable question"
+      description="The crossing question is required when enabled. While disabled, go to the next question and submit without choosing a crossing."
+    >
+      <UnavailableQuestion />
+    </LabSection>
+    <LabSection
+      title="Enclosing fieldset"
+      description="Submit with unanswered questions, then disable the enclosing fieldset. Validation messages disappear until you enable the fieldset again."
+    >
+      <EnclosingFieldset>
+        <TripQuestions isStepping={false} label="Survey in an enclosing fieldset" />
+      </EnclosingFieldset>
     </LabSection>
   </>,
 );

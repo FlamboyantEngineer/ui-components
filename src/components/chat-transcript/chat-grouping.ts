@@ -40,6 +40,12 @@ interface Moment {
   day: string;
 }
 
+interface MessageMoment {
+  createdAt: string;
+  timeZone: string;
+  moment: Moment | null;
+}
+
 interface Placed<M extends ChatGroupableMessage> {
   message: M;
   moment: Moment | null;
@@ -58,6 +64,9 @@ const momentCacheSize = 10_000;
  */
 const moments = new Map<string, Moment | null>();
 
+/** Reuses timestamps for live message objects even when the text cache fills during a long history. */
+const messageMoments = new WeakMap<ChatGroupableMessage, MessageMoment>();
+
 /** The instant of a date and time and its calendar day in `timeZone`; `null` when unreadable. */
 function readMoment(text: string, timeZone: string): Moment | null {
   const key = `${timeZone} ${text}`;
@@ -70,6 +79,15 @@ function readMoment(text: string, timeZone: string): Moment | null {
       : null;
   if (moments.size >= momentCacheSize) moments.clear();
   moments.set(key, moment);
+  return moment;
+}
+
+function readMessageMoment(message: ChatGroupableMessage, timeZone: string): Moment | null {
+  const { createdAt } = message;
+  const cached = messageMoments.get(message);
+  if (cached?.createdAt === createdAt && cached.timeZone === timeZone) return cached.moment;
+  const moment = readMoment(createdAt, timeZone);
+  messageMoments.set(message, { createdAt, timeZone, moment });
   return moment;
 }
 
@@ -105,7 +123,7 @@ function placeMessages<M extends ChatGroupableMessage>(
   let previous: Placed<M> | null = null;
   let day: string | null = null;
   for (const message of messages) {
-    const moment = readMoment(message.createdAt, timeZone);
+    const moment = readMessageMoment(message, timeZone);
     if (moment && moment.day !== day) {
       entries.push({ kind: 'date', date: moment.day });
       day = moment.day;

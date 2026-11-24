@@ -49,7 +49,7 @@ export interface QuestionnaireProgressProps extends RefProps<HTMLDivElement>, Ba
 export interface QuestionnaireItemProps extends RefProps<HTMLFieldSetElement>, BaseProps {
   /** The question's name, under which its answers submit and by which `items` orders it. */
   name: string;
-  /** Next and Submit stop here until it has an answer. */
+  /** While enabled, Next and Submit stop here until it has an answer. */
   isRequired?: boolean | undefined;
   isDisabled?: boolean | undefined;
   /** The title, description, answer controls and error. */

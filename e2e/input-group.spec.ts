@@ -43,3 +43,42 @@ test('UIC-INPUT-GROUP-2.1 runs native constraints and sends from the textarea an
   await page.getByRole('button', { name: 'Send' }).click();
   await expect(page.getByText('Sent: A second prompt')).toBeVisible();
 });
+
+for (const [stylesheet, xs, sm] of [
+  ['reference', 20, 24],
+  ['shadcn', 24, 28],
+] as const) {
+  test(`UIC-INPUT-GROUP-1.2 sizes addon buttons with Button hooks under ${stylesheet}`, async ({
+    lab,
+    page,
+  }) => {
+    await lab.open('input-group', { stylesheet });
+    const clear = page.getByRole('button', { name: 'Clear domain' });
+    const send = page.getByRole('button', { name: 'Send', exact: true });
+    const increase = page.getByRole('button', { name: 'Increase quantity' });
+    const reset = page.getByRole('button', { name: 'Reset quantity' });
+    const quantity = page.getByRole('textbox', { name: 'Quantity' });
+
+    for (const [button, size, pixels] of [
+      [clear, 'xs', xs],
+      [send, 'sm', sm],
+      [increase, 'sm', sm],
+    ] as const) {
+      await expect(button).toHaveAttribute('data-size', size);
+      await expect(button).toHaveAttribute('data-content', 'icon');
+      await expect(button).toHaveCSS('width', `${pixels}px`);
+      await expect(button).toHaveCSS('height', `${pixels}px`);
+      await expect(button).toHaveCSS('padding-inline-start', '0px');
+    }
+    await expect(reset).toHaveAttribute('data-size', 'xs');
+    await expect(reset).toHaveAttribute('data-content', 'label');
+    await expect(reset).toHaveCSS('height', `${xs}px`);
+    await expect(reset).toHaveCSS('padding-inline-start', '6px');
+    expect((await reset.boundingBox())?.width ?? 0).toBeGreaterThan(xs);
+
+    await increase.click();
+    await expect(quantity).toHaveValue('1');
+    await reset.click();
+    await expect(quantity).toHaveValue('0');
+  });
+}

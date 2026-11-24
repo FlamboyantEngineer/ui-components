@@ -29,7 +29,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.4 - Content and alignment
 
-By default (`content="label"`) the children shall sit in one `ui-button__label` slot. With `content="parts"` they sit directly in the button so the caller lays out its own parts; with `content="sentence"` a prose label may wrap. `content`, `align` (`center` by default, or `start` for scannable rows) and `fullWidth` publish `data-content`, `data-align` and `data-full-width`.
+By default (`content="label"`) the children shall sit in one `ui-button__label` slot. With `content="parts"` they sit directly in the button so the caller lays out its own parts; with `content="sentence"` a prose label may wrap. With `content="icon"` the button keeps its children and the stylesheets draw a square at the given size. Supplying an `icon` selects this layout automatically. `content`, `align` (`center` by default, or `start` for scannable rows) and `fullWidth` publish `data-content`, `data-align` and `data-full-width`.
 
 Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
 Verification: `src/components/button/button.test.tsx`
@@ -276,9 +276,9 @@ Verification: `src/components/button/button-group.test.tsx`, `e2e/button-button-
 
 ### UIC-BUTTON-22.5 - Separator and text parts
 
-`ButtonGroupSeparator` shall render a `Separator` carrying `ui-button-group__separator` and data-slot `button-group-separator`, vertical unless `orientation` says otherwise, and `ButtonGroupText` a `<span>` carrying `ui-button-group__text` for text beside the buttons, such as a unit or a prefix; shadcn/ui's button group separator and text. Both append the caller's `className` and forward native props. The reference sheet stretches the separator across the group and draws the text as a framed muted box of a button's height that joins an attached group like a button.
+`ButtonGroupSeparator` shall render a `Separator` carrying `ui-button-group__separator` and data-slot `button-group-separator`, vertical unless `orientation` says otherwise, and `ButtonGroupText` a `<span>` carrying `ui-button-group__text` for text beside the buttons, such as a unit or a prefix; shadcn/ui's button group separator and text. Both append the caller's `className` and forward native props. The reference sheet stretches the separator across the group and draws the text as a framed muted box of a button's height that joins an attached group like a button. The group and both parts are available from `/button/group` and `/button`.
 
-Implementation: `src/components/button/button-group.tsx`, `labs/reference/button.css`
+Implementation: `src/components/button/button-group.tsx`, `src/components/button/group.ts`, `labs/reference/button.css`
 Verification: `src/components/button/button-group.test.tsx`
 
 ## Hooks

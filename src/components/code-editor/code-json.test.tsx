@@ -305,6 +305,28 @@ describe('CodeEditor', () => {
     expect(container.querySelector('.ui-code-editor__mark')).toHaveTextContent('3');
   });
 
+  it('UIC-CODE-EDITOR-1.1 UIC-CODE-EDITOR-3.4 aligns JSON diagnostics with a lone CR line break', async () => {
+    const user = userEvent.setup();
+    const schema = { type: 'object' as const, properties: { name: { type: 'string' as const } } };
+    const { container } = render(
+      <CodeEditor
+        language="json"
+        label="Settings"
+        schema={schema}
+        defaultValue={'{\r  "name": 3\r}'}
+      />,
+    );
+    expect(editor()).toHaveValue('{\n  "name": 3\n}');
+    expect(container.querySelectorAll('.ui-code-editor__line-number')).toHaveLength(3);
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Line 2, column 11: Expected string.',
+    );
+    expect(container.querySelector('.ui-code-editor__mark')).toHaveTextContent('3');
+    await user.click(editor());
+    await user.keyboard('{F8}');
+    expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe('3');
+  });
+
   it('UIC-CODE-EDITOR-13.1 checks parsed text against the schema and reports the first problem with its place', async () => {
     const user = userEvent.setup();
     const schema = {
