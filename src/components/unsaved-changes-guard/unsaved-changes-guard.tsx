@@ -47,10 +47,12 @@ export interface UnsavedChangesOptions {
   onDiscard?: UnsavedChangesAction | undefined;
 }
 
-/** Overrides the guard's text for one confirmation. */
+/** Options for one confirmation. */
 export interface ConfirmLeaveOptions {
   title?: ReactNode;
   message?: ReactNode;
+  /** Cancels this confirmation and resolves it false when aborted. */
+  signal?: AbortSignal | undefined;
 }
 
 export interface UnsavedChangesGuardState {
@@ -126,6 +128,8 @@ function useLeaveRequests(store: UnsavedChangesStore) {
   const [isOpen, setOpen] = useState(false);
   const confirmLeave = useCallback(
     (options: ConfirmLeaveOptions = {}) => {
+      const { signal } = options;
+      if (signal?.aborted) return Promise.resolve(false);
       const displaced = pending.current;
       displaced?.settle(false);
       if (!store.getSummary().isDirty) {
@@ -135,17 +139,23 @@ function useLeaveRequests(store: UnsavedChangesStore) {
       return new Promise<boolean>((resolve) => {
         let isSettled = false;
         nextId.current += 1;
+        const abort = () => {
+          request.settle(false);
+          setOpen(false);
+        };
         const request: LeaveRequest = {
           ...options,
           id: nextId.current,
           settle: (allowed) => {
             if (isSettled) return;
             isSettled = true;
+            signal?.removeEventListener('abort', abort);
             if (pending.current === request) pending.current = null;
             resolve(allowed);
           },
         };
         pending.current = request;
+        signal?.addEventListener('abort', abort);
         setShown(request);
         setOpen(true);
       });
@@ -247,6 +257,7 @@ function LeaveConfirmation({
     onOpenChange(false);
   }, [isOpen, held, summary, request, onOpenChange]);
   const leaveAfter = (action: LeaveAction) => async (close: () => void) => {
+    if (request?.signal?.aborted) return;
     setHeld(summary);
     try {
       await store[action]();
