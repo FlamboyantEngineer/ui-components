@@ -191,6 +191,30 @@ function ReplacedQuestion() {
   );
 }
 
+function CancelledQuestion() {
+  const { confirmLeave } = useUnsavedChangesGuard();
+  const [answer, setAnswer] = useState('Not asked');
+  useUnsavedChanges({ isDirty: true, label: 'Trip plan' });
+  return (
+    <div data-lab-demo="cancelled">
+      <Button
+        size="sm"
+        onPress={() => {
+          const choice = new AbortController();
+          const timer = setTimeout(() => choice.abort(), 1000);
+          void confirmLeave({ signal: choice.signal }).then((ok) => {
+            clearTimeout(timer);
+            setAnswer(ok ? 'Left' : 'Stayed');
+          });
+        }}
+      >
+        Leave, then cancel navigation
+      </Button>{' '}
+      <output>{answer}</output>
+    </div>
+  );
+}
+
 /** A source that loses its save a second after Leave asks, as when the connection drops. */
 function ChangingSource() {
   const { confirmLeave } = useUnsavedChangesGuard();
@@ -334,6 +358,14 @@ mountLab(
     >
       <UnsavedChangesGuard shouldConfirmUnload={false}>
         <ChangingSource />
+      </UnsavedChangesGuard>
+    </LabSection>
+    <LabSection
+      title="Cancelled navigation"
+      description="Leave opens a confirmation. After one second, the pending navigation is cancelled and the confirmation closes."
+    >
+      <UnsavedChangesGuard shouldConfirmUnload={false}>
+        <CancelledQuestion />
       </UnsavedChangesGuard>
     </LabSection>
     <LabSection

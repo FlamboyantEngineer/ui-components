@@ -45,6 +45,11 @@ function Source(props: UnsavedChangesOptions) {
   return null;
 }
 
+function DirtySource(props: UnsavedChangesOptions) {
+  useUnsavedChanges(props);
+  return null;
+}
+
 /** Exposes the nearest guard to the test. */
 function Probe({ onState }: { onState: (state: UnsavedChangesGuardState) => void }) {
   const state = useUnsavedChangesGuard();
@@ -332,6 +337,68 @@ describe('UnsavedChangesGuard', () => {
     expect(await screen.findByRole('alertdialog', { name: 'Close the panel?' })).toBeVisible();
     unmount();
     await expect(second).resolves.toBe(false);
+  });
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 cancels a question without changing the dirty editor', async () => {
+    const user = userEvent.setup();
+    const controller = new AbortController();
+    const onSave = vi.fn();
+    const onDiscard = vi.fn();
+    const { leave } = setup(
+      <Source isDirty label="Profile" onSave={onSave} onDiscard={onDiscard} />,
+    );
+    const cancelled = leave({ signal: controller.signal });
+    await screen.findByRole('alertdialog');
+    act(() => controller.abort());
+    await expect(cancelled).resolves.toBe(false);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(dirtyState()).toHaveTextContent('true');
+    expect(onSave).not.toHaveBeenCalled();
+    expect(onDiscard).not.toHaveBeenCalled();
+
+    const next = leave({ title: 'Close the panel?' });
+    expect(await screen.findByRole('alertdialog', { name: 'Close the panel?' })).toBeVisible();
+    await expect(leave({ signal: controller.signal })).resolves.toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    await expect(next).resolves.toBe(true);
+    expect(onDiscard).toHaveBeenCalledOnce();
+  });
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 ignores the signal of a question that was replaced', async () => {
+    const user = userEvent.setup();
+    const controller = new AbortController();
+    const { leave } = setup(<Source isDirty label="Profile" />);
+    const replaced = leave({ signal: controller.signal });
+    await screen.findByRole('alertdialog');
+    const current = leave({ title: 'Close the panel?' });
+    await expect(replaced).resolves.toBe(false);
+    act(() => controller.abort());
+    expect(await screen.findByRole('alertdialog', { name: 'Close the panel?' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
+    await expect(current).resolves.toBe(false);
+  });
+
+  it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps the next question open when an aborted question’s Save finishes', async () => {
+    const user = userEvent.setup();
+    const controller = new AbortController();
+    const save = deferred();
+    const onSave = vi.fn(() => save.promise);
+    const { leave } = setup(<DirtySource isDirty label="Profile" onSave={onSave} />);
+    const cancelled = leave({ title: 'First question', signal: controller.signal });
+    await screen.findByRole('alertdialog', { name: 'First question' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).toHaveBeenCalledOnce();
+    act(() => controller.abort());
+    await expect(cancelled).resolves.toBe(false);
+
+    const next = leave({ title: 'Second question' });
+    const dialog = await screen.findByRole('alertdialog', { name: 'Second question' });
+    await act(async () => save.resolve());
+    expect(dialog).toBeVisible();
+    expect(await settled(next)).toBe('pending');
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
+    await expect(next).resolves.toBe(false);
+    expect(onSave).toHaveBeenCalledOnce();
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.6 keeps a new question open and free when the save of the one it replaced finishes', async () => {
