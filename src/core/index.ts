@@ -1,3 +1,10 @@
+export type {
+  ClipboardWriter,
+  CopyOptions,
+  RichCopyOptions,
+  RichCopyResult,
+} from '../utils/clipboard.js';
+export { copyRichText, copyText } from '../utils/clipboard.js';
 export { getColorIndex, placeColorIndexes } from '../utils/color-index.js';
 export { type CompositionKey, isComposingKey } from '../utils/is-composing-key.js';
 export {
@@ -8,6 +15,8 @@ export {
   keyListCodec,
   numberCodec,
 } from '../utils/json-codec.js';
+export type { ResizeObserverTarget, ResizeObserverTargets } from '../utils/use-resize-observer.js';
+export { useResizeObserver } from '../utils/use-resize-observer.js';
 export { useNow, useTimeZone, useToday } from './clock.js';
 export {
   AbbreviationGlyph,

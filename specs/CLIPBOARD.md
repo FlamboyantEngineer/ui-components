@@ -39,6 +39,13 @@ With `owner`, such as the pressed element, `copyText` and `copyRichText` shall c
 Implementation: `src/utils/clipboard.ts`, `src/utils/use-clipboard.ts`, `src/components/copy-button/copy-button.tsx`, `src/components/chat/message-commands.ts`, `src/components/pdf-viewer/use-pdf-context-menu.ts`
 Verification: `src/utils/clipboard.test.ts`
 
+### UIC-CLIPBOARD-1.6 - Entry
+
+`copyText` and `copyRichText`, with their option and result types, shall be exported from the `./core` entry as well as from the package root, so a library that copies with them imports them without the root entry.
+
+Implementation: `src/core/index.ts`
+Verification: `src/utils/clipboard.test.ts`
+
 ## UIC-CLIPBOARD-2 - Copy feedback
 
 ### UIC-CLIPBOARD-2.1 - Copied state with a timeout

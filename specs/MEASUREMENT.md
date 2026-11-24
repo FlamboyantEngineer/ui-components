@@ -25,6 +25,13 @@ Each element shall be observed with the `ResizeObserver` of its own window; an e
 Implementation: `src/utils/use-resize-observer.ts`
 Verification: `src/utils/use-resize-observer.test.ts`
 
+### UIC-MEASUREMENT-1.4 - Entry
+
+`useResizeObserver`, with its target types, shall be exported from the `./core` entry as well as from the package root, so a library that observes its own elements imports it without the root entry.
+
+Implementation: `src/core/index.ts`
+Verification: `src/utils/use-resize-observer.test.ts`
+
 ## UIC-MEASUREMENT-2 - Element size
 
 ### UIC-MEASUREMENT-2.1 - Reading a size

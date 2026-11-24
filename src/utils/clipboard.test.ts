@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import * as core from '../core/index.js';
 import { type ClipboardWriter, copyRichText, copyText } from './clipboard.js';
 
 interface CopyCapture {
@@ -214,5 +215,12 @@ describe('the owner window', () => {
     await expect(copyText('Crate 12', { owner: button, clipboard: null })).resolves.toBe(true);
     expect(commands).toEqual([view.document]);
     expect(view.document.body.querySelector('pre')).toBeNull();
+  });
+});
+
+describe('clipboard entry', () => {
+  it('UIC-CLIPBOARD-1.6 is exported from the core entry', () => {
+    expect(core.copyText).toBe(copyText);
+    expect(core.copyRichText).toBe(copyRichText);
   });
 });
