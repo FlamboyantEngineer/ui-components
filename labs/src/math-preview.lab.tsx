@@ -1,5 +1,8 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import {
+  copyMath,
+  copyMathImage,
   MathField,
   MathPreview,
   type MathRenderer,
@@ -7,6 +10,7 @@ import {
   renderMathElement,
 } from '../../src/components/math-preview/index.js';
 import { VisuallyHidden } from '../../src/components/visually-hidden/visually-hidden.js';
+import { copyText } from '../../src/utils/clipboard.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
 import { MathFieldCorners, MathFieldSizes, MathPreviewCorners } from './math-preview-cases.js';
@@ -133,6 +137,68 @@ function ElementDemo({ source }: { source: string }) {
   );
 }
 
+const copied = String.raw`\frac{a}{b}`;
+
+/**
+ * Copying math as a document editor's menu would: the typeset MathML as an equation, the source as
+ * text, and a drawing of it, standing in for a layouter's SVG, as a PNG.
+ */
+function CopyDemo() {
+  const preview = useRef<HTMLSpanElement>(null);
+  const drawing = useRef<SVGSVGElement>(null);
+  const [result, setResult] = useState('');
+  const math = () => preview.current?.querySelector('math') ?? null;
+  return (
+    <div data-lab-demo="copy" style={column}>
+      <p>
+        <span ref={preview}>
+          <MathPreview source={copied} />
+        </span>{' '}
+        drawn as{' '}
+        <svg
+          ref={drawing}
+          width="24"
+          height="32"
+          viewBox="0 0 24 32"
+          role="img"
+          aria-label="a over b"
+        >
+          <text x="12" y="12" textAnchor="middle" fontSize="12" fill="currentColor">
+            a
+          </text>
+          <rect x="3" y="15" width="18" height="1.5" fill="currentColor" />
+          <text x="12" y="29" textAnchor="middle" fontSize="12" fill="currentColor">
+            b
+          </text>
+        </svg>
+      </p>
+      <Button
+        onPress={() => {
+          const element = math();
+          if (element)
+            void copyMath(element, { source: copied }).then((how) => setResult(`equation: ${how}`));
+        }}
+      >
+        Copy equation
+      </Button>{' '}
+      <Button
+        onPress={() => void copyText(copied).then((done) => setResult(`source: ${String(done)}`))}
+      >
+        Copy LaTeX
+      </Button>{' '}
+      <Button
+        onPress={() => {
+          if (drawing.current)
+            void copyMathImage(drawing.current).then((done) => setResult(`image: ${String(done)}`));
+        }}
+      >
+        Copy as image
+      </Button>
+      <LabOutput name="Copy result">{result}</LabOutput>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -197,6 +263,12 @@ mountLab(
         <ElementDemo source={String.raw`e^{i\pi} + 1 = 0`} />
         <ElementDemo source={String.raw`\frac{1}{`} />
       </ul>
+    </LabSection>
+    <LabSection
+      title="Copying math"
+      description="copyMath copies the MathML as an equation, copyText the source, and copyMathImage a drawing as a PNG with black ink."
+    >
+      <CopyDemo />
     </LabSection>
   </>,
 );

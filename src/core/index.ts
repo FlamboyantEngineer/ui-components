@@ -1,10 +1,11 @@
 export type {
   ClipboardWriter,
   CopyOptions,
+  ImageCopyOptions,
   RichCopyOptions,
   RichCopyResult,
 } from '../utils/clipboard.js';
-export { copyRichText, copyText } from '../utils/clipboard.js';
+export { copyImage, copyRichText, copyText } from '../utils/clipboard.js';
 export { getColorIndex, placeColorIndexes } from '../utils/color-index.js';
 export { type CompositionKey, isComposingKey } from '../utils/is-composing-key.js';
 export {

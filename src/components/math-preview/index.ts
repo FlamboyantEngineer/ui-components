@@ -1,5 +1,12 @@
 export { renderKatexMath } from './katex-renderer.js';
 export {
+  copyMath,
+  copyMathImage,
+  type MathCopyOptions,
+  type MathImageCopyOptions,
+  mathMarkup,
+} from './math-copy.js';
+export {
   type MathElementOptions,
   type MathElementResult,
   renderMathElement,

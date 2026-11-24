@@ -46,6 +46,20 @@ Verification: `src/utils/clipboard.test.ts`
 Implementation: `src/core/index.ts`
 Verification: `src/utils/clipboard.test.ts`
 
+### UIC-CLIPBOARD-1.7 - Images
+
+`copyImage(image, options)` shall write one image through `ClipboardItem`, typed as the blob's type or `image/png` while the image is a promise, and resolve true once the write succeeds. With `size`, the same item also holds an HTML `<img>` of the image (a `data:` URL) shown at that size in CSS pixels, with `alt` as its text alternative, so editors that paste HTML show a high-density image at its intended size; browsers re-encode a copied PNG and drop any density it records. It builds the clipboard item at once around a pending image, so a browser that takes only writes started during the user's press takes an image still being drawn. It resolves false without the asynchronous Clipboard API or `ClipboardItem`, once `signal` is aborted, when the image rejects or when the write is refused; the selection fallback cannot copy images. It takes `owner` as UIC-CLIPBOARD-1.5 describes and is exported from `./core` and the package root.
+
+Implementation: `src/utils/clipboard.ts`, `src/core/index.ts`
+Verification: `src/utils/clipboard.test.ts`
+
+### UIC-CLIPBOARD-1.8 - Drawing an SVG as an image
+
+`drawSvgImage(svg, options)` shall resolve a PNG of the SVG element alone at `width` by `height` CSS pixels (its drawn size by default, else its `width` and `height` attributes) times `scale` (2 by default), with `currentColor` painted in `color` (the element's computed color by default) over `background` (transparent by default). It rejects when the element has no size or the browser cannot decode, paint or encode it. Page styles do not reach the drawing; only its own attributes paint it. It is exported from the package root.
+
+Implementation: `src/utils/svg-image.ts`
+Verification: `src/utils/svg-image.test.ts`, `e2e/math-preview.spec.ts`
+
 ## UIC-CLIPBOARD-2 - Copy feedback
 
 ### UIC-CLIPBOARD-2.1 - Copied state with a timeout

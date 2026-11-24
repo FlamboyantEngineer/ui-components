@@ -177,3 +177,65 @@ export async function copyRichText(
   const formats = { 'text/plain': text, 'text/html': html };
   return copyWithSelection(formats, options.owner) ? 'rich' : 'failed';
 }
+
+export interface ImageCopyOptions extends CopyOptions {
+  /** The `ClipboardItem` constructor. Defaults to the owner window's. */
+  ClipboardItem?: (new (items: Record<string, Blob | Promise<Blob>>) => unknown) | undefined;
+  /**
+   * The size to show the image at, in CSS pixels. With it, an HTML `<img>` of that size holding the
+   * image goes with it, so editors that paste HTML show a high-density image at its size.
+   */
+  size?: { width: number; height: number } | undefined;
+  /** The HTML image's text alternative. */
+  alt?: string | undefined;
+}
+
+function readDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error('The image could not be read.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+const escapeAttribute = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+/** The image as an HTML `<img>` shown at `size`. */
+async function imageHtml(image: Promise<Blob>, size: { width: number; height: number }, alt = '') {
+  const source = await readDataUrl(await image);
+  const html = `<img src="${source}" width="${String(Math.round(size.width))}" height="${String(Math.round(size.height))}" alt="${escapeAttribute(alt)}">`;
+  return new Blob([html], { type: 'text/html' });
+}
+
+/**
+ * Copies an image, such as a PNG. The image may still be on its way: the clipboard item is built
+ * at once around the promise, so a browser that only takes writes started in the user's press
+ * (Safari) still takes it. With `size`, an HTML `<img>` of the image at that size goes with it.
+ * Resolves false when there is no asynchronous Clipboard API or
+ * `ClipboardItem`, the image fails, or the write is refused; the selection fallback cannot copy
+ * images.
+ */
+export async function copyImage(
+  image: Blob | Promise<Blob>,
+  options: ImageCopyOptions = {},
+): Promise<boolean> {
+  const clipboard = getDefaultClipboard(options);
+  const Item =
+    options.ClipboardItem ??
+    (getCopyWindow(options.owner)?.ClipboardItem as unknown as ImageCopyOptions['ClipboardItem']);
+  const blob = Promise.resolve(image);
+  // A refused image still settles here, so it never surfaces as an unhandled rejection.
+  blob.catch(() => undefined);
+  if (typeof clipboard?.write !== 'function' || !Item || options.signal?.aborted) return false;
+  try {
+    const type = image instanceof Blob && image.type ? image.type : 'image/png';
+    const formats: Record<string, Promise<Blob>> = { [type]: blob };
+    if (options.size) formats['text/html'] = imageHtml(blob, options.size, options.alt);
+    await clipboard.write([new Item(formats) as never]);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -78,6 +78,24 @@ Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-prev
 Implementation: `src/components/math-preview/math-element.ts`
 Verification: `src/components/math-preview/math-element.test.ts`, `e2e/math-preview.spec.ts`
 
+## UIC-MATH-PREVIEW-4 - Copying math
+
+So that a host can offer Copy equation, Copy LaTeX and Copy as image for math it shows, the `math-preview` entry shall export copy helpers that need no React and no KaTeX. The LaTeX source copies as plain text through `copyText` (UIC-CLIPBOARD-1.1).
+
+### UIC-MATH-PREVIEW-4.1 - Copying an equation
+
+`mathMarkup(math, source)` shall answer the `<math>` element as standalone MathML markup in the MathML namespace, its attributes and content kept; when `source` is given and the math carries no `application/x-tex` annotation, its content is wrapped in `semantics` with `source` as that annotation. `copyMath(math, { source, ...options })` copies that markup as both the HTML and the plain text through `copyRichText` (UIC-CLIPBOARD-1.3), so word processors that read MathML from either format paste an equation, and an editor that reads the TeX annotation gets the source back.
+
+Implementation: `src/components/math-preview/math-copy.ts`
+Verification: `src/components/math-preview/math-copy.test.ts`
+
+### UIC-MATH-PREVIEW-4.2 - Copying an equation as an image
+
+`copyMathImage(drawing, options)` shall copy math's SVG drawing as a PNG through `drawSvgImage` and `copyImage` (UIC-CLIPBOARD-1.7, 1.8), with the HTML image shown at the drawing's size, its ink black (`#000000`) on a transparent ground unless `color` or `background` say otherwise, so the image reads on a white page whatever theme the reader sees the math in. `width`, `height` and `scale` size the image, and the copy runs in the drawing's window.
+
+Implementation: `src/components/math-preview/math-copy.ts`
+Verification: `src/components/math-preview/math-copy.test.ts`, `e2e/math-preview.spec.ts`
+
 ## Hooks
 
 | Hook                       | Kind      | Values                                 | Description                                              |
