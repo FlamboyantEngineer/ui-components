@@ -2,6 +2,7 @@
 
 import { type KeyboardEvent, type RefCallback, useCallback, useMemo, useRef } from 'react';
 import { containsFocus } from '../../utils/composed-focus.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { isElement } from '../../utils/is-element.js';
 import {
@@ -36,10 +37,6 @@ const closedController: MenuController = {
   getSnapshot: () => ({ isOpen: false, anchor: null, items: undefined }),
   subscribe: () => () => {},
 };
-
-function isKeyboardContextMenu(event: KeyboardEvent) {
-  return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
-}
 
 /**
  * Makes a row the target of the list's context menu, for its own conversation: a secondary click
@@ -88,7 +85,7 @@ export function useConversationMenuTarget({
  * below the row. The list handles the keys for its rows, which take no key handlers of their own.
  */
 export function openRowMenu(menu: ChatListMenu, event: KeyboardEvent<HTMLElement>): void {
-  if (event.defaultPrevented || !isKeyboardContextMenu(event)) return;
+  if (event.defaultPrevented || !isContextMenuKey(event)) return;
   if (isEditableTarget(event.target)) return;
   let node = isElement(event.target) ? event.target : null;
   while (node && node !== event.currentTarget) {

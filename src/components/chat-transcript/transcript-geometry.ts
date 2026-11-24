@@ -16,7 +16,10 @@ export function readViewportPadding(viewport: HTMLElement): { top: number; botto
  * How far an element's top edge sits below the top of the viewport's padding box, and its height,
  * in the viewport's own pixels under any ancestor scale.
  */
-function readOffsetBox(element: Element, viewport: HTMLElement): { top: number; height: number } {
+export function readOffsetBox(
+  element: Element,
+  viewport: HTMLElement,
+): { top: number; height: number } {
   const box = measureInScroller(element, viewport);
   return { top: box.top - viewport.scrollTop, height: box.height };
 }

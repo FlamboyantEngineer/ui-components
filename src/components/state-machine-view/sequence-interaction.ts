@@ -6,6 +6,7 @@
 import { useEffect, useRef } from 'react';
 import type { PointerType } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { MenuAnchor } from '../context-menu/context-menu.js';
@@ -41,10 +42,6 @@ const keyRequestWindow = 600;
  * `contextmenu` event, which repeats the request and is kept away only if the host took it.
  */
 const keyRequests = new WeakMap<EventTarget, { until: number; isTaken: boolean }>();
-
-export function isKeyboardContextMenu(event: Pick<MenuKeyEvent, 'key' | 'shiftKey'>): boolean {
-  return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
-}
 
 function readPointerType(event: Event): PointerType {
   const type = 'pointerType' in event ? event.pointerType : undefined;
@@ -98,7 +95,7 @@ export function getContextMenuRequestHandlers(
     },
     onKeyDown(event) {
       const target = event.currentTarget;
-      if (!isKeyboardContextMenu(event) || !isHTMLElement(target)) return;
+      if (!isContextMenuKey(event) || !isHTMLElement(target)) return;
       const request = createMenuEvent(target, target, 'keyboard');
       dispatch(request);
       keyRequests.set(target, {

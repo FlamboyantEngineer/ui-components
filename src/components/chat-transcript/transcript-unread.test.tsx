@@ -52,6 +52,17 @@ function Thread({
 
 const article = (id: string) => document.getElementById(id) as HTMLElement;
 
+function scaleThread(viewport: HTMLElement, factor: number) {
+  Object.defineProperty(viewport, 'offsetHeight', { value: viewport.clientHeight });
+  for (const element of [viewport, ...screen.getAllByRole('article')]) {
+    const readRect = element.getBoundingClientRect.bind(element);
+    vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+      const { x, y, width, height } = readRect();
+      return new DOMRect(x * factor, y * factor, width * factor, height * factor);
+    });
+  }
+}
+
 describe('ChatTranscript unread', () => {
   it('UIC-CHAT-TRANSCRIPT-4.4 counts the messages that arrive while the reader is away', () => {
     const { rerender } = render(<Thread count={10} />);
@@ -91,6 +102,29 @@ describe('ChatTranscript unread', () => {
     expect(screen.queryByRole('button', { name: 'Jump' })).not.toBeInTheDocument();
     rerender(<Thread count={30} firstUnreadId="m29" />);
     expect(screen.queryByRole('button', { name: 'Jump' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-4.5 leaves the unread bar hidden while the first unread message is partly visible at half scale', () => {
+    render(<Thread count={10} firstUnreadId="m5" />);
+    const viewport = getViewport();
+    scaleThread(viewport, 0.5);
+    scrollViewport(viewport, 250);
+    expect(screen.queryByRole('button', { name: 'Jump' })).not.toBeInTheDocument();
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-4.6 reports the last message when half of it is visible at double scale', () => {
+    vi.useFakeTimers();
+    const onRead = vi.fn();
+    const { rerender } = render(<Thread count={10} />);
+    const viewport = getViewport();
+    scaleThread(viewport, 2);
+    scrollViewport(viewport, 125);
+    rerender(<Thread count={10} onRead={onRead} />);
+    scrollViewport(viewport, 126);
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(onRead).toHaveBeenLastCalledWith('m7');
   });
 
   it('UIC-CHAT-TRANSCRIPT-4.6 reports the newest message seen or focused, once it settles', () => {

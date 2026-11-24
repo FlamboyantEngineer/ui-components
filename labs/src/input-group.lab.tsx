@@ -8,7 +8,8 @@ import {
   InputGroupTextarea,
 } from '../../src/components/input-group/input-group.js';
 import { usePromptSubmission } from '../../src/components/message-composer/message-composer.js';
-import { ArrowUpGlyph, CloseGlyph } from '../../src/core/glyphs.js';
+import { ArrowUpGlyph, CloseGlyph, PlusGlyph } from '../../src/core/glyphs.js';
+import { Glyph } from '../../src/core/provider.js';
 import { LabSection, mountLab } from './chrome/index.js';
 
 function Address() {
@@ -28,9 +29,29 @@ function Address() {
         <InputGroupButton
           icon={CloseGlyph}
           label="Clear domain"
-          size="icon-xs"
+          size="xs"
           onPress={() => setValue('')}
         />
+      </InputGroupAddon>
+    </InputGroup>
+  );
+}
+
+function Quantity() {
+  const [quantity, setQuantity] = useState(0);
+  return (
+    <InputGroup aria-label="Quantity controls">
+      <InputGroupInput aria-label="Quantity" value={quantity} readOnly />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton onPress={() => setQuantity(0)}>Reset quantity</InputGroupButton>
+        <InputGroupButton
+          content="icon"
+          size="sm"
+          aria-label="Increase quantity"
+          onPress={() => setQuantity((current) => current + 1)}
+        >
+          <Glyph icon={PlusGlyph} />
+        </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>
   );
@@ -59,7 +80,7 @@ function Prompt() {
           <InputGroupButton
             type="submit"
             variant="primary"
-            size="icon-sm"
+            size="sm"
             icon={ArrowUpGlyph}
             label="Send"
             isDisabled={!prompt.canSubmit}
@@ -78,6 +99,9 @@ mountLab(
     </LabSection>
     <LabSection title="Block addons">
       <Prompt />
+    </LabSection>
+    <LabSection title="Button layouts">
+      <Quantity />
     </LabSection>
   </>,
 );

@@ -1,3 +1,4 @@
+import { measureScale } from '../../utils/element-scale.js';
 import { readOffset } from './transcript-geometry.js';
 import { createTranscriptHeights, type TranscriptOrder } from './transcript-heights.js';
 
@@ -14,7 +15,7 @@ export interface WindowModel {
   /** Whether an element is one of those gap spacers. */
   isSpacer(element: Element): boolean;
   /** Measures the mounted children, given their keys in order. */
-  measure(feed: HTMLElement, mounted: readonly string[]): void;
+  measure(viewport: HTMLElement, feed: HTMLElement, mounted: readonly string[]): void;
   /** The children within one viewport height of the visible area. */
   range(viewport: HTMLElement, feed: HTMLElement, order: TranscriptOrder): WindowRange | null;
   /**
@@ -77,14 +78,17 @@ export function createWindowModel(): WindowModel {
       gap = 0;
       previousRange = null;
     },
-    measure(feed, mounted) {
+    measure(viewport, feed, mounted) {
       const elements = [...feed.children].filter((child) => !spacers.has(child));
       // A child that drew no element, or several, would pair heights with the wrong keys.
       if (elements.length !== mounted.length) return;
+      // Spacer heights and scroll offsets use layout pixels, even inside a scaled ancestor.
+      const { y: scale } = measureScale(viewport);
+      if (scale <= 0) return;
       const style = feed.ownerDocument.defaultView?.getComputedStyle(feed);
       gap = Number.parseFloat(style?.rowGap ?? '') || 0;
       elements.forEach((element, index) => {
-        heights.set(mounted[index] as string, element.getBoundingClientRect().height);
+        heights.set(mounted[index] as string, element.getBoundingClientRect().height / scale);
       });
     },
     range(viewport, feed, order) {

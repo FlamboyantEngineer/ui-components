@@ -70,6 +70,31 @@ describe('Chat composer', () => {
     expect(box()).toHaveTextContent('');
   });
 
+  it('UIC-CHAT-3.2 UIC-CHAT-3.10 UIC-MESSAGE-COMPOSER-3.6 sends stored draft tokens with their labels and ranges', async () => {
+    const user = userEvent.setup();
+    const text = '👋 @Ana Lopez /summarize TRIP-4 #taken';
+    const tokens = [
+      { start: 3, end: 13, ...ana, label: 'Ana Lopez' },
+      { start: 14, end: 24, kind: 'command', id: 'summary', label: 'summarize' },
+      { start: 25, end: 31, kind: 'reference', id: 'trip-4', label: 'TRIP-4', recordType: 'trip' },
+      { start: 32, end: 38, kind: 'trigger', id: 'taken', label: 'Taken', trigger: 'notes' },
+    ] as const;
+    const storage = createMemoryStorage({ 'chat-draft:trip': JSON.stringify({ text, tokens }) });
+    const onSend = vi.fn();
+    render(
+      <UiProvider storage={storage}>
+        <TestChat conversationId="trip" onSend={onSend} />
+      </UiProvider>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSend).toHaveBeenCalledExactlyOnceWith(text, [
+      { ...tokens[0], label: '@Ana Lopez' },
+      { ...tokens[1], label: '/summarize' },
+      tokens[2],
+      tokens[3],
+    ]);
+  });
+
   it('UIC-CHAT-3.1 offers Stop while a reply is pending', async () => {
     const onStop = vi.fn();
     const { user } = renderChat({ participants: assistantPeople, isPending: true, onStop });

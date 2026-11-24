@@ -21,6 +21,7 @@ import {
 } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import { useLatest } from '../../utils/use-latest.js';
 import {
   ContextMenu,
@@ -223,7 +224,7 @@ export function useTabMenuTarget(menu: TabMenu, options: TabMenuTargetOptions) {
         showEntries();
       },
       onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
-        if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) showEntries();
+        if (isContextMenuKey(event)) showEntries();
       },
       onPointerDownCapture: (event: PointerEvent<HTMLElement>) => {
         if (event.pointerType === 'touch') showEntries();

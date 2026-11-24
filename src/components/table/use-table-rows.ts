@@ -73,11 +73,11 @@ export interface TableRowsView<T> {
   /** The pinned rows at each edge, on every page. */
   pinned: { top: readonly TableNode<T>[]; bottom: readonly TableNode<T>[] };
   /**
-   * The top-level rows of every page, filtered and, while the table owns the sort, ordered, between
-   * the pinned rows.
+   * The top-level rows of every page, filtered and, while the table owns the sort, ordered, with
+   * pinned rows at the edges.
    */
   presentedRows: readonly T[];
-  /** The rows of every page with their presented child rows, between the pinned rows. */
+  /** The nodes of every page with their presented child rows and pinned rows at the edges. */
   presentedNodes: readonly TableNode<T>[];
   sort: TableSortState;
   filter: TableFilter;
@@ -119,6 +119,8 @@ function splitPinnedRows<T extends TableRow>(
   rows: readonly T[],
   pinned: TablePinnedRows | undefined,
 ) {
+  if (!pinned?.top?.length && !pinned?.bottom?.length) return { top: [], bottom: [], rest: rows };
+
   const byId = new Map(rows.map((row) => [row.id, row]));
   const taken = new Set<Key>();
   const take = (keys: readonly Key[] | undefined, pin: TableRowPin): TableNode<T>[] =>
@@ -182,14 +184,20 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
   }, [filtered, columns, sort.isControlled, sort.descriptors, locale]);
 
   const { page, pageCount, start, end } = resolvePages(pagination, requestedPage, presented.length);
-  const nodes = useMemo(() => presented.slice(start, end), [presented, start, end]);
-  const pageRows = useMemo(() => nodes.map((node) => node.row), [nodes]);
+  const nodes = useMemo(
+    () => (start === 0 && end >= presented.length ? presented : presented.slice(start, end)),
+    [presented, start, end],
+  );
   const presentedNodes = useMemo(
     () =>
       pinned.rest === options.rows ? presented : [...pinned.top, ...presented, ...pinned.bottom],
     [pinned, presented, options.rows],
   );
   const presentedRows = useMemo(() => presentedNodes.map((node) => node.row), [presentedNodes]);
+  const pageRows = useMemo(
+    () => (nodes === presentedNodes ? presentedRows : nodes.map((node) => node.row)),
+    [nodes, presentedNodes, presentedRows],
+  );
 
   return {
     nodes,

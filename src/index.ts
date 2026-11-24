@@ -18,7 +18,6 @@ export * from './components/board/index.js';
 export * from './components/boolean-field/index.js';
 export * from './components/breadcrumb/index.js';
 export * from './components/bubble/index.js';
-export * from './components/button/group.js';
 export * from './components/button/index.js';
 export * from './components/calendar-view/index.js';
 export * from './components/card/index.js';

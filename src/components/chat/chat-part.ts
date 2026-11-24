@@ -1,5 +1,6 @@
 import type { AttachmentData } from '../attachment/attachment.js';
 import type { CodeBlockData } from '../code-block/code-block.js';
+import type { MessageComposerToken } from '../message-composer/composer-message.js';
 import type { ChatPlanData, ChatReasoningData } from './chat-activity.js';
 import type { ChatQuestionData } from './chat-question.js';
 import type { ChatSourcesData } from './chat-sources.js';
@@ -12,20 +13,9 @@ export type ChatTextFormat = 'markdown' | 'plain';
  * A mention, command, record reference or host trigger entry the composer inserted, as a range of
  * the part's text.
  */
-export interface ChatTextToken {
-  /** Where the token starts in `text`, in UTF-16 code units. */
-  start: number;
-  /** Where the token ends in `text` (exclusive). */
-  end: number;
-  kind: 'mention' | 'command' | 'reference' | 'trigger';
-  /** The participant's, command's, referenced record's or trigger entry's id. */
-  id: string;
-  /** The text the pill shows; a reference's chip identifier. */
+export interface ChatTextToken extends MessageComposerToken {
+  /** The text the pill shows, including the trigger for mentions and commands. */
   label: string;
-  /** A reference's record kind or scope, as the host names it. */
-  recordType?: string | undefined;
-  /** The `id` of the host trigger whose vocabulary a `trigger` token came from. */
-  trigger?: string | undefined;
 }
 
 /** Text: Markdown by default, streamed in while `status` is `streaming`. */

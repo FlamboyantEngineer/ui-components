@@ -11,6 +11,6 @@ export type {
   ButtonGroupRenderState,
   ButtonGroupSeparatorProps,
   ButtonGroupTextProps,
-} from './button-group.js';
-export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './button-group.js';
+} from './group.js';
+export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './group.js';
 export { runPendingAction } from './pending-action.js';

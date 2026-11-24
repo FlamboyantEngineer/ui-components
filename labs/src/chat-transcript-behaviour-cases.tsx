@@ -272,7 +272,7 @@ export function ChatTranscriptBehaviourCases() {
       </LabSection>
       <LabSection
         title="Virtualized history"
-        description="Five thousand messages, with only those near the view mounted. Scroll into the history and prepend 100 older messages to see the current message stay in place. Scroll away before receiving a batch to see all 100 counted on the jump button. Following, sending, the keyboard model and jumps work as in a short conversation."
+        description="Five thousand messages, with only those near the view mounted. Prepend older messages to see the current message stay in place, or use half size to test scrolling inside a scaled panel. Scroll away before receiving a batch to count its messages on the jump button."
       >
         <ChatTranscriptVirtualizedCase />
       </LabSection>

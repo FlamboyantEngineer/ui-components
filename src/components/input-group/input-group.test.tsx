@@ -23,7 +23,7 @@ it('UIC-INPUT-GROUP-1.1 UIC-INPUT-GROUP-1.2 focuses a grouped input from plain t
         </InputGroupAddon>
         <InputGroupInput aria-label="Domain" />
         <InputGroupAddon align="inline-end">
-          <InputGroupButton size="icon-sm" onPress={onPress}>
+          <InputGroupButton size="sm" content="icon" onPress={onPress}>
             Copy
           </InputGroupButton>
         </InputGroupAddon>
@@ -35,7 +35,8 @@ it('UIC-INPUT-GROUP-1.1 UIC-INPUT-GROUP-1.2 focuses a grouped input from plain t
   const copy = screen.getByRole('button', { name: 'Copy' });
   const prefix = screen.getByText('https://');
   expect(prefix.closest('.ui-input-group__addon')).toHaveAttribute('data-align', 'inline-start');
-  expect(copy).toHaveAttribute('data-group-size', 'icon-sm');
+  expect(copy).toHaveAttribute('data-size', 'sm');
+  expect(copy).toHaveAttribute('data-content', 'icon');
   expect(copy).toHaveAttribute('type', 'button');
   await user.click(prefix);
   expect(input).toHaveFocus();

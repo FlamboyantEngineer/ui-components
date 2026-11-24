@@ -267,6 +267,47 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
     }).toPass();
   });
 
+  test('UIC-CHAT-TRANSCRIPT-1.6 sizes virtual gaps in layout pixels and reaches the start inside a scaled panel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const long = transcript(page, 'virtualized');
+    const viewport = viewportOf(page, 'virtualized');
+    const scrollHeight = () => viewport.evaluate((element) => element.scrollHeight);
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    const fullHeight = await scrollHeight();
+    expect(fullHeight).toBeGreaterThan(100_000);
+
+    await page.getByRole('button', { name: 'Use half size' }).press('Enter');
+    await expect(page.getByRole('button', { name: 'Use full size' })).toBeVisible();
+    await expect(async () => {
+      const size = await viewport.evaluate((element) => ({
+        rendered: element.getBoundingClientRect().height,
+        layout: (element as HTMLElement).offsetHeight,
+      }));
+      expect(size.rendered / size.layout).toBeCloseTo(0.5);
+      expect(await distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+      expect(Math.abs((await scrollHeight()) - fullHeight) / fullHeight).toBeLessThan(0.05);
+    }).toPass();
+
+    await viewport.evaluate((element) => element.scrollTo({ top: element.scrollHeight / 2 }));
+    await expect(long.getByRole('button', { name: 'Jump to latest' })).toBeVisible();
+    await viewport.evaluate((element) => element.scrollTo({ top: 0 }));
+    await expect(async () => {
+      const first = await long.locator('#long-m1').evaluate((element) => {
+        const viewport = element.closest('.ui-scroll-region__viewport') as HTMLElement;
+        return {
+          offset: element.getBoundingClientRect().bottom - viewport.getBoundingClientRect().top,
+          scrollTop: viewport.scrollTop,
+        };
+      });
+      expect(first.offset).toBeGreaterThan(0);
+      expect(first.scrollTop).toBeLessThan(20);
+      expect(await long.getByRole('article').count()).toBeLessThan(80);
+    }).toPass();
+  });
+
   for (const isAway of [false, true]) {
     test(`UIC-CHAT-TRANSCRIPT-1.6 releases a batch while ${isAway ? 'reading older messages' : 'following'}`, async ({
       page,

@@ -2,7 +2,7 @@
 
 import type { MouseEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, ContainerProps, RefProps } from '../../core/props.js';
+import type { BaseProps, ContainerProps, ControlSize, RefProps } from '../../core/props.js';
 import { Group } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -22,10 +22,10 @@ export interface InputGroupAddonProps extends InputGroupProps {
   align?: InputGroupAddonAlign | undefined;
 }
 
-export type InputGroupButtonSize = 'xs' | 'sm' | 'icon-xs' | 'icon-sm';
+export type InputGroupButtonSize = Extract<ControlSize, 'xs' | 'sm'>;
 
 export interface InputGroupButtonProps extends Omit<ButtonProps, 'size'> {
-  /** Compact size, including two square variants. Defaults to xs. */
+  /** Compact button size. Defaults to xs. */
   size?: InputGroupButtonSize | undefined;
 }
 
@@ -89,14 +89,13 @@ export function InputGroupButton({
   size = 'xs',
   ...props
 }: InputGroupButtonProps) {
-  const buttonSize = size === 'sm' || size === 'icon-sm' ? 'sm' : 'xs';
   return (
     <Button
       {...props}
-      {...hooks.slot('button', { groupSize: size }, className)}
+      {...hooks.slot('button', undefined, className)}
       type={type}
       variant={variant}
-      size={buttonSize}
+      size={size}
     />
   );
 }
