@@ -36,7 +36,7 @@ interface SearchResultsProps {
   onCurrentIndexChange: (index: number) => void;
   /** Marks the results that cannot be replaced. */
   isReplaceMode: boolean;
-  maxMounted: number;
+  maxMounted?: number | undefined;
 }
 
 interface SearchResultRowProps {
@@ -45,6 +45,13 @@ interface SearchResultRowProps {
   isCurrent: boolean;
   onActivate: () => void;
 }
+
+interface ResultPageAnchor {
+  key: Key;
+  index: number;
+}
+
+const defaultPageSize = 200;
 
 function readSelectedKey(keys: Selection): Key | null {
   if (keys === 'all') return null;
@@ -102,16 +109,28 @@ function SearchResultRow({ result, isReadOnly, isCurrent, onActivate }: SearchRe
  * The rows mounted out of `count`: at most `size`, in pages that start on a multiple of `size`. The
  * page follows the current result; the Show buttons turn it until the current result changes again.
  */
-function useResultWindow(count: number, currentIndex: number, size: number) {
-  const [turned, setTurned] = useStateFor<number | null>(currentIndex, null);
+function useResultWindow(results: readonly SearchPaneResult[], currentIndex: number, size: number) {
+  const currentKey = results[currentIndex]?.id;
+  const owner = useMemo(() => ({ currentIndex, currentKey }), [currentIndex, currentKey]);
+  const [turned, setTurned] = useStateFor<ResultPageAnchor | null>(owner, null);
+  const count = results.length;
   const lastPage = Math.max(0, Math.floor((count - 1) / size) * size);
-  const followed = currentIndex >= 0 ? currentIndex - (currentIndex % size) : 0;
-  const first = Math.min(turned ?? followed, lastPage);
+  const anchor = useMemo(() => {
+    if (!turned) return Math.max(0, currentIndex);
+    if (results[turned.index]?.id === turned.key) return turned.index;
+    const moved = results.findIndex((result) => result.id === turned.key);
+    return moved < 0 ? turned.index : moved;
+  }, [currentIndex, results, turned]);
+  const first = Math.min(anchor - (anchor % size), lastPage);
+  const turnTo = (index: number) => {
+    const result = results[index];
+    if (result) setTurned({ key: result.id, index });
+  };
   return {
     first,
     last: Math.min(count, first + size),
-    showEarlier: () => setTurned(Math.max(0, first - size)),
-    showLater: () => setTurned(first + size),
+    showEarlier: () => turnTo(Math.max(0, first - size)),
+    showLater: () => turnTo(first + size),
   };
 }
 
@@ -125,17 +144,14 @@ export function SearchResults({
   currentIndex,
   onCurrentIndexChange,
   isReplaceMode,
-  maxMounted,
+  maxMounted = defaultPageSize,
 }: SearchResultsProps) {
   const strings = useUiStrings();
-  const size = Math.max(1, Math.floor(maxMounted));
-  const { first, last, showEarlier, showLater } = useResultWindow(
-    results.length,
-    currentIndex,
-    size,
-  );
+  const size = Number.isFinite(maxMounted) ? Math.max(1, Math.floor(maxMounted)) : defaultPageSize;
+  const { first, last, showEarlier, showLater } = useResultWindow(results, currentIndex, size);
   const listRef = useRef<HTMLDivElement>(null);
   const current = results[currentIndex];
+  const page = results.slice(first, last);
   const requestFocus = useFocusRequest();
   // The Show button pressed may go with the page it turned: the new page's first row takes focus.
   const turnPage = (turn: () => void) => {
@@ -144,8 +160,8 @@ export function SearchResults({
   };
   const onSelectionChange = (keys: Selection) => {
     const key = readSelectedKey(keys);
-    const index = results.findIndex((result) => result.id === key);
-    if (index >= 0) onCurrentIndexChange(index);
+    const index = page.findIndex((result) => result.id === key);
+    if (index >= 0) onCurrentIndexChange(first + index);
   };
   return (
     <>
@@ -168,7 +184,7 @@ export function SearchResults({
         selectedKeys={current ? [toCollectionKey(current.id)] : []}
         onSelectionChange={onSelectionChange}
       >
-        {results.slice(first, last).map((result, index) => (
+        {page.map((result, index) => (
           <SearchResultRow
             key={toCollectionKey(result.id)}
             result={result}

@@ -52,6 +52,8 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 
 The list shall mount at most `maxMountedResults` rows (200 by default), a page of results that starts at a multiple of that number and holds the current result. A Show earlier button (`ui-search-pane__show-earlier`, the provider's `showEarlierResults` string with how many come before) before the list and a Show more button (`ui-search-pane__show-later`, `showLaterResults` with how many come after) after it turn the page until the current result changes, and move focus to the first row of the page they turn to, as the button pressed may go; a later change back to an earlier current result follows it again rather than restoring the page turned for it. The cap never limits the count or stepping, which cover every result.
 
+A change to the current result's key or position returns the page to it. Otherwise, when results or cap change during browsing, the page uses the current boundaries and includes the first result of the page the reader chose, identified by its typed key. If the result has been removed, the page uses its former ordinal, clamped to the last page. A non-finite cap uses the default. A finite cap is rounded down and clamped to at least one.
+
 Implementation: `src/components/search-pane/search-results.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`
 
@@ -74,6 +76,8 @@ Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pan
 ### UIC-SEARCH-PANE-3.3 - Replace and Replace all
 
 Replace and Enter in the replacement box shall call `onReplace` with the replacement and the current result's key, and Replace all calls `onReplaceAll` with the replacement; the host edits the document and reports the new results. Each action is disabled on its own: Replace by `isReplaceDisabled`, while no result is current and while the current result has `isReplaceable: false`; Replace all by `isReplaceAllDisabled` and while no result can be replaced. While the pane can replace, a row whose result cannot be replaced publishes `data-read-only` and reads the provider's `notReplaceable` string (`ui-search-pane__result-read-only`).
+
+While a new search is pending, the retained results can still be browsed, but both replacement actions are disabled. Enter in the replacement box resumes replacing when the host reports ready results and the current match allows it.
 
 Implementation: `src/components/search-pane/search-pane.tsx`, `src/components/search-pane/search-results.tsx`
 Verification: `src/components/search-pane/search-pane.test.tsx`, `e2e/search-pane.spec.ts`

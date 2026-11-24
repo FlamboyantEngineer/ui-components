@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { findDiagnosticRange, findMatches, matchBracket, toTextLines } from './code-ranges.js';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  createBracketMatcher,
+  findDiagnosticRange,
+  findMatches,
+  toTextLines,
+} from './code-ranges.js';
 
 const source = 'let total = 12\n  call(fruit)\n';
 
@@ -29,25 +34,28 @@ describe('code ranges', () => {
   it('UIC-CODE-EDITOR-6.5 pairs the bracket at the caret, skipping strings and comments', () => {
     const text = 'f(a, "(", [b])';
     const tokens = [{ text: 'f(a, ' }, { text: '"("', type: 'string' }, { text: ', [b])' }];
-    expect(matchBracket(text, tokens, 2)).toEqual({ at: 1, partner: 13 });
-    expect(matchBracket(text, tokens, 14)).toEqual({ at: 13, partner: 1 });
-    expect(matchBracket(text, tokens, 10)).toEqual({ at: 10, partner: 12 });
-    expect(matchBracket(text, tokens, 6)).toBeNull();
-    expect(matchBracket('(]', [{ text: '(]' }], 1)).toEqual({ at: 0, partner: null });
-    expect(matchBracket('ab', [{ text: 'ab' }], 1)).toBeNull();
+    const match = createBracketMatcher(text, tokens);
+    expect(match(2)).toEqual({ at: 1, partner: 13 });
+    expect(match(14)).toEqual({ at: 13, partner: 1 });
+    expect(match(10)).toEqual({ at: 10, partner: 12 });
+    expect(match(6)).toBeNull();
+    expect(createBracketMatcher('(]', [{ text: '(]' }])(1)).toEqual({ at: 0, partner: null });
+    expect(createBracketMatcher('ab', [{ text: 'ab' }])(1)).toBeNull();
   });
 
   it('UIC-CODE-EDITOR-6.5 rejects mismatched nested pairs in either direction', () => {
     for (const text of ['([})', '({])', '([{)}])']) {
-      expect(matchBracket(text, [{ text }], 1)).toEqual({ at: 0, partner: null });
-      expect(matchBracket(text, [{ text }], text.length)).toEqual({
+      const match = createBracketMatcher(text, [{ text }]);
+      expect(match(1)).toEqual({ at: 0, partner: null });
+      expect(match(text.length)).toEqual({
         at: text.length - 1,
         partner: null,
       });
     }
     const text = '(([]))';
-    expect(matchBracket(text, [{ text }], 1)).toEqual({ at: 0, partner: 5 });
-    expect(matchBracket(text, [{ text }], 6)).toEqual({ at: 5, partner: 0 });
+    const match = createBracketMatcher(text, [{ text }]);
+    expect(match(1)).toEqual({ at: 0, partner: 5 });
+    expect(match(6)).toEqual({ at: 5, partner: 0 });
   });
 
   it('UIC-CODE-EDITOR-6.5 skips many comment ranges while scanning brackets', () => {
@@ -57,7 +65,30 @@ describe('code ranges', () => {
       { text: ')' },
     ];
     const text = tokens.map((token) => token.text).join('');
-    expect(matchBracket(text, tokens, 1)).toEqual({ at: 0, partner: text.length - 1 });
+    expect(createBracketMatcher(text, tokens)(1)).toEqual({ at: 0, partner: text.length - 1 });
+  });
+
+  it('UIC-CODE-EDITOR-6.5 skips token reads away from brackets and reads each token once on demand', () => {
+    const count = 5000;
+    const read = vi.fn(() => 'item ');
+    const token = {
+      type: 'key',
+      get text() {
+        return read();
+      },
+    };
+    const plain = 'item '.repeat(count);
+    const text = `${plain}([item])`;
+    const match = createBracketMatcher(text, [
+      ...Array<typeof token>(count).fill(token),
+      { type: 'code', text: '([item])' },
+    ]);
+    for (let caret = 1; caret <= 100; caret += 1) expect(match(caret)).toBeNull();
+    expect(read).not.toHaveBeenCalled();
+    expect(match(plain.length)).toEqual({ at: plain.length, partner: text.length - 1 });
+    expect(match(plain.length + 2)).toEqual({ at: plain.length + 1, partner: text.length - 2 });
+    expect(match(text.length)).toEqual({ at: text.length - 1, partner: plain.length });
+    expect(read).toHaveBeenCalledTimes(count);
   });
 
   it('UIC-CODE-EDITOR-7.2 finds every match of a query ignoring case, without overlaps', () => {

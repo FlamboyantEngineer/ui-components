@@ -615,6 +615,47 @@ test.describe('Code Editor lab', () => {
     await expect(input).toHaveValue(all);
   });
 
+  test('UIC-CODE-EDITOR-1.1 UIC-CODE-EDITOR-6.1 UIC-CODE-EDITOR-7.4 edits imported line endings at native offsets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const imported = editor(page, 'line-endings');
+    const input = imported.getByRole('textbox', { name: 'Imported source' });
+    const find = imported.getByRole('searchbox', { name: 'Find' });
+    const original = 'first\nbasket here\nbasket end';
+    await expect(imported.locator('.ui-code-editor__line-number')).toHaveCount(3);
+    await expect(input).toHaveValue(original);
+    await input.press('Control+Home');
+    await input.press('Control+f');
+    await find.fill('basket');
+    await find.press('Escape');
+    await expect(input).toBeFocused();
+    expect(
+      await input.evaluate((node: HTMLTextAreaElement) =>
+        node.value.slice(node.selectionStart, node.selectionEnd),
+      ),
+    ).toBe('basket');
+    await input.press('Control+f');
+    await imported.getByRole('textbox', { name: 'Replace with' }).fill('crate');
+    await imported.getByRole('button', { name: 'Replace', exact: true }).click();
+    await expect(input).toHaveValue('first\ncrate here\nbasket end');
+    await imported.getByRole('button', { name: 'Replace all' }).click();
+    await expect(input).toHaveValue('first\ncrate here\ncrate end');
+    await find.press('Escape');
+    await input.press('Control+z');
+    await expect(input).toHaveValue('first\ncrate here\nbasket end');
+    await input.press('Control+z');
+    await expect(input).toHaveValue(original);
+    await page.getByRole('button', { name: 'Load CR source' }).click();
+    await expect(imported.locator('.ui-code-editor__line-number')).toHaveCount(3);
+    await input.press('Control+Home');
+    await input.press('Control+f');
+    await find.fill('basket');
+    await imported.getByRole('button', { name: 'Replace all' }).click();
+    await expect(input).toHaveValue('first\ncrate here\ncrate end');
+  });
+
   test('UIC-CODE-EDITOR-3.4 UIC-CODE-EDITOR-3.5 UIC-CODE-EDITOR-3.6 underlines problems with hover tips and F8', async ({
     page,
     lab,

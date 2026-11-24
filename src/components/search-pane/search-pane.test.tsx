@@ -4,6 +4,7 @@ import { createRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { pressComposingKeys } from '../../../test/composition.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { SearchPane, type SearchPaneProps } from './search-pane.js';
 import type { SearchPaneResult } from './search-results.js';
 import type { SearchPaneHandle } from './use-search-pane.js';
@@ -338,6 +339,58 @@ describe('SearchPane', () => {
     expectHooksMatchSpec(container, 'SEARCH-PANE', { slots: ['show-later'] });
   });
 
+  it('UIC-SEARCH-PANE-2.3 aligns a browsed page when the page size changes', async () => {
+    const user = userEvent.setup();
+    const results = makeResults(9);
+    const { rerender } = render(pane({ results, maxMountedResults: 4 }));
+    await user.click(screen.getByRole('button', { name: 'Show 5 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 5');
+    rerender(pane({ results, maxMountedResults: 3 }));
+    const rows = within(list()).getAllByRole('option');
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('Section 4');
+    expect(rows[1]).toHaveTextContent('Section 5');
+    expect(screen.getByRole('button', { name: 'Show 3 earlier results' })).toBeInTheDocument();
+  });
+
+  it('UIC-SEARCH-PANE-2.3 follows a moved browse anchor by typed key and falls back to its ordinal', async () => {
+    const user = userEvent.setup();
+    const results = makeResults(9).map((result, index) => ({
+      ...result,
+      id: index === 4 ? 5 : index === 5 ? '5' : result.id,
+    }));
+    const { rerender } = render(pane({ results, currentKey: 'r1', maxMountedResults: 4 }));
+    await user.click(screen.getByRole('button', { name: 'Show 5 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 5');
+
+    const moved = [0, 4, 1, 2, 5, 3, 6, 7, 8].map((index) => requireDefined(results[index]));
+    rerender(pane({ results: moved, currentKey: 'r1', maxMountedResults: 3 }));
+    expect(within(list()).getAllByRole('option')[1]).toHaveTextContent('Section 5');
+    expect(within(list()).queryByRole('option', { name: /Section 6/ })).not.toBeInTheDocument();
+
+    const remaining = moved.filter((result) => result.id !== 5);
+    rerender(pane({ results: remaining, currentKey: 'r1', maxMountedResults: 3 }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 6');
+    expect(screen.getByRole('button', { name: 'Show 3 earlier results' })).toBeInTheDocument();
+  });
+
+  it('UIC-SEARCH-PANE-2.3 follows a new current result at the same index', async () => {
+    const user = userEvent.setup();
+    const results = makeResults(6);
+    const { rerender } = render(pane({ results, currentKey: 'r1', maxMountedResults: 2 }));
+    await user.click(screen.getByRole('button', { name: 'Show 4 more results' }));
+    expect(within(list()).getAllByRole('option')[0]).toHaveTextContent('Section 3');
+    const newResults = results.map((result) => ({ ...result, id: `new-${result.id}` }));
+    rerender(pane({ results: newResults, currentKey: 'new-r1', maxMountedResults: 2 }));
+    expect(within(list()).getByRole('option', { selected: true })).toHaveTextContent('Section 1');
+  });
+
+  it.each([NaN, Infinity])('UIC-SEARCH-PANE-2.3 defaults an invalid page size of %s', (size) => {
+    render(pane({ results: makeResults(205), maxMountedResults: size }));
+    expect(within(list()).getAllByRole('option')).toHaveLength(200);
+    expect(screen.getByRole('button', { name: 'Show 5 more results' })).toBeInTheDocument();
+  });
+
   it('UIC-SEARCH-PANE-2.3 steps across every result and turns pages in both directions', async () => {
     const user = userEvent.setup();
     render(pane({ results: makeResults(650), maxMountedResults: 20 }));
@@ -493,6 +546,41 @@ describe('SearchPane', () => {
     expect(status()).toHaveTextContent('1 of 3');
     await user.click(screen.getByRole('button', { name: 'Replace all' }));
     expect(onReplaceAll).toHaveBeenLastCalledWith('plum');
+  });
+
+  it('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.3 browses retained results while replacement waits for the new search', async () => {
+    const user = userEvent.setup();
+    const onReplace = vi.fn();
+    const onReplaceAll = vi.fn();
+    const props = {
+      replaceMode: 'shown' as const,
+      query: 'quince',
+      defaultReplacement: 'plum',
+      onReplace,
+      onReplaceAll,
+    };
+    const { rerender } = render(pane({ ...props, status: 'pending' }));
+    await user.click(within(list()).getByRole('option', { name: /Section 2/ }));
+    expect(within(list()).getByRole('option', { selected: true })).toHaveTextContent('Section 2');
+    const replace = screen.getByRole('button', { name: 'Replace' });
+    const replaceAll = screen.getByRole('button', { name: 'Replace all' });
+    await user.click(replace);
+    await user.click(replaceAll);
+    await user.click(screen.getByRole('textbox', { name: 'Replace with' }));
+    await user.keyboard('{Enter}');
+    expect(onReplace).not.toHaveBeenCalled();
+    expect(onReplaceAll).not.toHaveBeenCalled();
+    expect(replace).toBeDisabled();
+    expect(replaceAll).toBeDisabled();
+
+    const results = [
+      { id: 'new-match', source: 'Ripe quince', start: 5, end: 11, label: 'New match' },
+    ];
+    rerender(pane({ ...props, results, currentKey: 'new-match' }));
+    await user.keyboard('{Enter}');
+    await user.click(replaceAll);
+    expect(onReplace).toHaveBeenCalledExactlyOnceWith('plum', 'new-match');
+    expect(onReplaceAll).toHaveBeenCalledExactlyOnceWith('plum');
   });
 
   it('UIC-SEARCH-PANE-3.3 disables each action on its own, and marks results that cannot be replaced', async () => {

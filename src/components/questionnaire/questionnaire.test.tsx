@@ -1,11 +1,12 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   Questionnaire,
   QuestionnaireActions,
+  type QuestionnaireAnswers,
   QuestionnaireChoice,
   QuestionnaireChoices,
   QuestionnaireDescription,
@@ -34,11 +35,15 @@ function Trip({
   onSubmit,
   currentKey,
   onCurrentKeyChange,
+  answers,
+  isCrossingDisabled = false,
 }: {
   stepped?: boolean;
   onSubmit?: (answers: Record<string, string[]>) => void;
   currentKey?: string;
   onCurrentKeyChange?: (key: string) => void;
+  answers?: QuestionnaireAnswers;
+  isCrossingDisabled?: boolean;
 }): ReactNode {
   return (
     <Questionnaire
@@ -47,9 +52,10 @@ function Trip({
       currentKey={currentKey}
       onCurrentKeyChange={onCurrentKeyChange}
       onSubmit={onSubmit}
+      answers={answers}
     >
       <QuestionnaireProgress />
-      <QuestionnaireItem name="crossing" isRequired>
+      <QuestionnaireItem name="crossing" isRequired isDisabled={isCrossingDisabled}>
         <QuestionnaireTitle>Which crossing?</QuestionnaireTitle>
         <QuestionnaireDescription>Both reach the island.</QuestionnaireDescription>
         <QuestionnaireChoices>
@@ -234,6 +240,104 @@ it('UIC-QUESTIONNAIRE-2.2 stops Next at a required question until it has an answ
   expect(crossing).not.toHaveAttribute('data-invalid');
   expect(container.querySelector('.ui-questionnaire__error')).toBeNull();
   expect(crossing).toHaveAccessibleDescription('Both reach the island.');
+});
+
+it('UIC-QUESTIONNAIRE-2.2 can advance through a disabled required question', async () => {
+  const user = userEvent.setup();
+  render(<Trip isCrossingDisabled />);
+  const crossing = question('Which crossing?');
+  expect(crossing).toHaveAttribute('data-required', 'true');
+  expect(within(crossing).getByRole('radio', { name: 'Ferry' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Skip' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Next' }));
+  expect(crossing).not.toHaveAttribute('data-invalid');
+  expect(screen.getByRole('progressbar')).toHaveTextContent('Question 2 of 3');
+  expect(screen.getByRole('checkbox', { name: 'Bike' })).toHaveFocus();
+});
+
+it('UIC-QUESTIONNAIRE-2.2 UIC-QUESTIONNAIRE-2.3 clears a disabled question error and restores its requirement when enabled', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const view = render(<Trip stepped={false} onSubmit={onSubmit} />);
+  const crossing = question('Which crossing?');
+  const ferry = within(crossing).getByRole('radio', { name: 'Ferry' });
+  const submit = screen.getByRole('button', { name: 'Submit' });
+  await user.type(screen.getByRole('textbox', { name: 'A note for the crew' }), 'Window seat');
+  await user.click(submit);
+  expect(crossing).toHaveAttribute('data-invalid', 'true');
+  expect(onSubmit).not.toHaveBeenCalled();
+
+  view.rerender(<Trip stepped={false} onSubmit={onSubmit} isCrossingDisabled />);
+  expect(crossing).not.toHaveAttribute('data-invalid');
+  expect(crossing).not.toHaveAccessibleDescription(/Answer this question/);
+  expect(ferry).toBeDisabled();
+  await user.click(submit);
+  expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+    crossing: [],
+    extras: [],
+    note: ['Window seat'],
+  });
+
+  view.rerender(<Trip stepped={false} onSubmit={onSubmit} />);
+  expect(ferry).toBeEnabled();
+  await user.click(submit);
+  expect(crossing).toHaveAttribute('data-invalid', 'true');
+  expect(ferry).toHaveFocus();
+  expect(onSubmit).toHaveBeenCalledTimes(1);
+});
+
+it('UIC-QUESTIONNAIRE-1.4 UIC-QUESTIONNAIRE-2.3 preserves an owner-provided answer for a disabled question', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const answers = { crossing: ['ferry'], extras: [], note: ['Window seat'] };
+  render(<Trip stepped={false} onSubmit={onSubmit} answers={answers} isCrossingDisabled />);
+  await user.click(screen.getByRole('button', { name: 'Submit' }));
+  expect(onSubmit).toHaveBeenCalledExactlyOnceWith(answers);
+});
+
+function LockingFieldsets({ children }: { children: ReactNode }) {
+  const [isOuterDisabled, setOuterDisabled] = useState(false);
+  const [isInnerDisabled, setInnerDisabled] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOuterDisabled((disabled) => !disabled)}>
+        Toggle outer fieldset
+      </button>
+      <button type="button" onClick={() => setInnerDisabled((disabled) => !disabled)}>
+        Toggle inner fieldset
+      </button>
+      <fieldset disabled={isOuterDisabled}>
+        <fieldset disabled={isInnerDisabled}>{children}</fieldset>
+      </fieldset>
+    </>
+  );
+}
+
+it('UIC-QUESTIONNAIRE-2.2 refreshes validation when enclosing fieldsets disable the same questionnaire child', async () => {
+  const user = userEvent.setup();
+  render(
+    <LockingFieldsets>
+      <Trip stepped={false} />
+    </LockingFieldsets>,
+  );
+  const crossing = question('Which crossing?');
+  const ferry = within(crossing).getByRole('radio', { name: 'Ferry' });
+  const outer = screen.getByRole('button', { name: 'Toggle outer fieldset' });
+  const inner = screen.getByRole('button', { name: 'Toggle inner fieldset' });
+  await user.click(screen.getByRole('button', { name: 'Submit' }));
+  expect(crossing).toHaveAttribute('data-invalid', 'true');
+
+  await user.click(outer);
+  expect(ferry).toBeDisabled();
+  await waitFor(() => expect(crossing).not.toHaveAttribute('data-invalid'));
+  await user.click(inner);
+  await user.click(outer);
+  expect(ferry).toBeDisabled();
+  expect(crossing).not.toHaveAttribute('data-invalid');
+
+  await user.click(inner);
+  expect(ferry).toBeEnabled();
+  await waitFor(() => expect(crossing).toHaveAttribute('data-invalid', 'true'));
 });
 
 it('UIC-QUESTIONNAIRE-2.3 submits from the last question, or returns to the first unanswered', async () => {

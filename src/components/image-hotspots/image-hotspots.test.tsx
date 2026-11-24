@@ -226,6 +226,35 @@ describe('ImageHotspots', () => {
     );
   });
 
+  it('UIC-IMAGE-HOTSPOTS-1.3 UIC-IMAGE-HOTSPOTS-1.4 keeps typed hotspot focus and actions after reordering', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const typed = [
+      { id: 1, label: 'Numeric hotspot', x: 10, y: 20, width: 15, height: 10 },
+      { id: '1', label: 'Text hotspot', x: 50, y: 40, width: 20, height: 30 },
+    ];
+    const surface = (items: readonly ImageHotspotsItem[]) => (
+      <ImageHotspots
+        aria-label="Panel"
+        src="/panel.svg"
+        alt=""
+        width={400}
+        height={200}
+        hotspots={items}
+        onAction={onAction}
+      />
+    );
+    const { rerender } = render(surface(typed));
+    const numeric = screen.getByRole('button', { name: 'Numeric hotspot' });
+    numeric.focus();
+    await user.keyboard('{Enter}');
+    rerender(surface([...typed].reverse()));
+    expect(numeric).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Numeric hotspot' })).toBe(numeric);
+    await user.keyboard('{Enter}');
+    expect(onAction.mock.calls).toEqual([[1], [1]]);
+  });
+
   it('UIC-IMAGE-HOTSPOTS-1.4 shows one caller state on several hotspots', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();

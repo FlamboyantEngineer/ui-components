@@ -367,6 +367,25 @@ function BoundaryEditor() {
   );
 }
 
+function LineEndingsEditor() {
+  const [value, setValue] = useState('first\r\nbasket here\r\nbasket end');
+  return (
+    <>
+      <CodeEditor
+        variant="surface"
+        aria-label="Imported source"
+        data-lab-editor="line-endings"
+        value={value}
+        onChange={setValue}
+        tokenize={tokenize}
+        lineNumbers
+        allowsSearch
+      />
+      <Button onPress={() => setValue('first\rbasket here\rbasket end')}>Load CR source</Button>
+    </>
+  );
+}
+
 function ProblemsEditor() {
   const [value, setValue] = useState(
     'let basket = "apples"\nreturn pick(fruit.ripe, baskit, "pears")',
@@ -507,9 +526,15 @@ mountLab(
       </LabSection>
       <LabSection
         title="Source boundaries"
-        description="Find apple after İ and replace it without shifting the source. The second line has a mismatched nested bracket. Ctrl+Space offers a literal label and an escaped snippet; overlapping diagnostics retain the worst severity."
+        description="Find apple after İ and replace it without shifting the source. Move the caret over the mismatched brackets on the second line to see the active mark follow it. Ctrl+Space offers a literal label and an escaped snippet. Overlapping diagnostics retain the worst severity."
       >
         <BoundaryEditor />
+      </LabSection>
+      <LabSection
+        title="Imported line endings"
+        description="This source uses CRLF. Load CR source uses a lone CR for each line break. Find basket, close the bar to select it, or replace it and undo the edit. Both sources use the textarea's line numbers and selection offsets."
+      >
+        <LineEndingsEditor />
       </LabSection>
       <LabSection
         title="Problems and hover tips"

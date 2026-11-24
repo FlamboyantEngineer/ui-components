@@ -152,6 +152,31 @@ test.describe('Image Hotspots lab', () => {
     await expect(demo.locator('[data-lab-output="output-a"]')).toHaveText('off');
   });
 
+  test('UIC-IMAGE-HOTSPOTS-1.3 UIC-IMAGE-HOTSPOTS-1.4 keeps keyboard focus on the typed hotspot when order changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('image-hotspots');
+    const demo = page.locator('[data-lab-demo="typed-hotspots"]');
+    const numeric = demo.getByRole('button', { name: 'Numeric hotspot' });
+    const text = demo.getByRole('button', { name: 'Text hotspot' });
+    const actions = demo.locator('[data-lab-output="typed-actions"]');
+    await numeric.focus();
+    await page.keyboard.press('Enter');
+    await expect(actions).toHaveText('number 1');
+    await expect(demo.getByRole('button', { name: /hotspot/ }).first()).toHaveAttribute(
+      'aria-label',
+      'Text hotspot',
+    );
+    await expect(numeric).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(actions).toHaveText('number 1, number 1');
+    await text.focus();
+    await page.keyboard.press('Space');
+    await expect(actions).toHaveText('number 1, number 1, string 1');
+    await expect(text).toBeFocused();
+  });
+
   test('UIC-IMAGE-HOTSPOTS-1.5 UIC-IMAGE-HOTSPOTS-1.6 keeps a disabled hotspot focusable with a visible warning', async ({
     page,
     lab,

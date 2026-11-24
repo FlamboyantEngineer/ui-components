@@ -325,3 +325,41 @@ test('UIC-TOUR-1.4 retries a failed step and aborts a load on Back', async ({ pa
   await expect(page.locator('.ui-tour')).toHaveAttribute('data-status', 'ready');
   await expect(demo.locator('[data-lab-prepared="shipping"]')).toBeVisible();
 });
+
+test('UIC-TOUR-1.4 UIC-TOUR-2.2 skips a modal tour whose only step is pending', async ({
+  page,
+  lab,
+}) => {
+  await page.clock.install();
+  await lab.open('tour');
+  const demo = page.locator('[data-lab-demo="pending-single-step"]');
+  const opener = demo.getByRole('button', { name: 'Open the introduction' });
+  await page.clock.pauseAt(Date.now() + 10_000);
+  await opener.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'Getting started' });
+  await expect(dialog.getByRole('button', { name: 'Finish' })).toBeDisabled();
+  await dialog.getByRole('button', { name: 'Skip' }).click();
+  await page.clock.runFor(5500);
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+});
+
+test('UIC-TOUR-2.5 focuses Finish if the pending Skip button disappears', async ({ page, lab }) => {
+  await page.clock.install();
+  await lab.open('tour');
+  await page.clock.pauseAt(Date.now() + 10_000);
+  const opener = page.getByRole('button', { name: 'Open the introduction' });
+  await opener.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'Getting started' });
+  await expect(dialog).toBeFocused();
+  const skip = dialog.getByRole('button', { name: 'Skip' });
+  await page.keyboard.press('Tab');
+  await expect(skip).toBeFocused();
+  await page.clock.runFor(5500);
+  await expect(skip).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Finish' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await page.clock.runFor(100);
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+});

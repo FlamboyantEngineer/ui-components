@@ -4,6 +4,7 @@ import { type FormEvent, useLayoutEffect, useRef, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { containsFocus } from '../../utils/composed-focus.js';
 import { readOwn } from '../../utils/read-own.js';
+import { useLatest } from '../../utils/use-latest.js';
 import {
   type QuestionnaireAnswers,
   questionnaireHooks as hooks,
@@ -21,7 +22,7 @@ interface QuestionnaireOptions {
   isReadOnly: boolean;
 }
 
-/** What the form's questions hold now: which are answered and which are required. */
+/** What the form's questions hold now: which are answered and which are enabled and required. */
 interface Snapshot {
   answered: ReadonlySet<string>;
   required: ReadonlySet<string>;
@@ -68,7 +69,7 @@ function readSnapshot(
     ),
     required: new Set(
       readItems(form)
-        .filter((item) => item.hasAttribute('data-required'))
+        .filter((item) => item.hasAttribute('data-required') && !item.matches(':disabled'))
         .map((item) => item.name),
     ),
   };
@@ -91,6 +92,36 @@ function focusItem(form: HTMLFormElement | null, name: string | null) {
   (control ?? item)?.focus();
 }
 
+/** Only fieldsets whose disabled state applies to the form, outside their first legend. */
+function findAncestorFieldsets(form: HTMLFormElement): HTMLFieldSetElement[] {
+  const fieldsets: HTMLFieldSetElement[] = [];
+  for (
+    let fieldset = form.parentElement?.closest('fieldset');
+    fieldset;
+    fieldset = fieldset.parentElement?.closest('fieldset')
+  ) {
+    if (!fieldset.querySelector(':scope > legend')?.contains(form)) fieldsets.push(fieldset);
+  }
+  return fieldsets;
+}
+
+/** A parent can disable the form's controls without committing a render of the questionnaire. */
+function observeAncestorDisabled(form: HTMLFormElement, onChange: () => void) {
+  const view = form.ownerDocument.defaultView;
+  const fieldsets = findAncestorFieldsets(form);
+  if (!view || fieldsets.length === 0) return undefined;
+  const readDisabled = () => fieldsets.some((fieldset) => fieldset.disabled);
+  let isDisabled = readDisabled();
+  const observer = new view.MutationObserver(() => {
+    const next = readDisabled();
+    if (next === isDisabled) return;
+    isDisabled = next;
+    onChange();
+  });
+  for (const fieldset of fieldsets) observer.observe(fieldset, { attributeFilter: ['disabled'] });
+  return () => observer.disconnect();
+}
+
 /** Re-reads the questions after every render and on every change, keeping the last equal read. */
 function useSnapshot(given: QuestionnaireAnswers | undefined) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -107,9 +138,13 @@ function useSnapshot(given: QuestionnaireAnswers | undefined) {
     );
     return next;
   };
+  const refreshRef = useLatest(refresh);
+  useLayoutEffect(() => {
+    const form = formRef.current;
+    return form ? observeAncestorDisabled(form, () => refreshRef.current()) : undefined;
+  }, [refreshRef]);
   // The answers live in the form's controls, which only the committed DOM shows; an equal read
   // keeps the shown state, so this settles after one pass.
-
   useLayoutEffect(() => void refresh());
   return { formRef, snapshot, refresh, noteChange };
 }
@@ -175,7 +210,8 @@ export function useQuestionnaire(options: QuestionnaireOptions) {
     count,
     statusOf: (name: string) =>
       snapshot.answered.has(name) ? 'answered' : skipped.has(name) ? 'skipped' : 'unanswered',
-    isInvalid: (name: string) => marked.has(name) && !snapshot.answered.has(name),
+    isInvalid: (name: string) =>
+      snapshot.required.has(name) && marked.has(name) && !snapshot.answered.has(name),
     isRequired: (name: string) => snapshot.required.has(name),
     noteChange,
     goPrevious: () => goTo(position - 1),

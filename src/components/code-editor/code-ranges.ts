@@ -135,20 +135,22 @@ function scanForPartner(value: string, from: number, isCode: (offset: number) =>
 }
 
 /**
- * The bracket just before the caret (or else just after it) and its partner, skipping brackets in
- * strings, keys and comments; `null` when no bracket touches the caret.
+ * Finds a bracket touching the caret and its partner. The token mask is needed only at a bracket
+ * and can be reused until the source or its tokens change.
  */
-export function matchBracket(
+export function createBracketMatcher(
   value: string,
   tokens: readonly CodeToken[],
-  caret: number,
-): BracketMatch | null {
-  const isCode = createCodeMask(tokens);
-  const at = [caret - 1, caret].find(
-    (offset) => offset >= 0 && (value[offset] ?? '') in pairs && isCode(offset),
-  );
-  if (at === undefined) return null;
-  return { at, partner: scanForPartner(value, at, isCode) };
+): (caret: number) => BracketMatch | null {
+  let mask: ((offset: number) => boolean) | undefined;
+  const isCode = (offset: number) => (mask ??= createCodeMask(tokens))(offset);
+  return (caret) => {
+    const at = [caret - 1, caret].find(
+      (offset) => offset >= 0 && (value[offset] ?? '') in pairs && isCode(offset),
+    );
+    if (at === undefined) return null;
+    return { at, partner: scanForPartner(value, at, isCode) };
+  };
 }
 
 /** The places `query` occurs in the source, ignoring case, without overlaps. */

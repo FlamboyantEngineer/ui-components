@@ -17,6 +17,11 @@ import {
 
 const states = ['plain', 'pressed', 'disabled', 'advisory'] as const;
 const zooms = ['100', '200'] as const;
+const powerHotspot = { id: 'power', x: 10, y: 25, width: 10, height: 15 };
+const typedHotspots: readonly ImageHotspotsItem[] = [
+  { ...powerHotspot, id: 1, label: 'Numeric hotspot' },
+  { id: '1', label: 'Text hotspot', x: 12, y: 66.5, width: 11, height: 22 },
+];
 
 const cellHotspot: Record<(typeof states)[number], Partial<ImageHotspotsItem>> = {
   plain: {},
@@ -116,6 +121,30 @@ function ChangingImage() {
   );
 }
 
+/** Each press reverses the order, so the second press checks the currently focused hotspot. */
+function TypedHotspotOrder() {
+  const [actions, setActions] = useState<Key[]>([]);
+  return (
+    <div data-lab-demo="typed-hotspots">
+      <ImageHotspots
+        aria-label="Typed hotspot controls"
+        src={frontPanel.src}
+        alt=""
+        width={frontPanel.width}
+        height={frontPanel.height}
+        hotspots={actions.length % 2 === 0 ? typedHotspots : [...typedHotspots].reverse()}
+        onAction={(key) => setActions((current) => [...current, key])}
+      />
+      <p>
+        Pressed keys:{' '}
+        <output data-lab-output="typed-actions">
+          {actions.map((key) => `${typeof key} ${String(key)}`).join(', ') || 'none'}
+        </output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -129,6 +158,28 @@ mountLab(
       description="A new src, size and hotspot list load in place; the third image fails to load, and its hotspots stay pressable."
     >
       <ChangingImage />
+    </LabSection>
+    <LabSection
+      title="Reordering hotspots"
+      description="The two hotspot IDs both spell 1. One is a number and the other is text. Pressing either reverses their order while keeping focus on the same hotspot."
+    >
+      <TypedHotspotOrder />
+    </LabSection>
+    <LabSection
+      title="Fit in a narrow panel"
+      description="Zoom in once to 125%. With classic scrollbars, the image and Power marker keep their size as the bars appear. Reset fits the image in the panel again."
+    >
+      <div data-lab-demo="narrow-panel" style={{ inlineSize: 494, maxInlineSize: '100%' }}>
+        <ImageHotspots
+          aria-label="Narrow front panel controls"
+          src={frontPanel.src}
+          alt=""
+          width={frontPanel.width}
+          height={frontPanel.height}
+          hotspots={[{ ...powerHotspot, label: 'Power' }]}
+          showZoomReset
+        />
+      </div>
     </LabSection>
     <LabSection
       title="Hotspot states and zoom"
@@ -146,12 +197,8 @@ mountLab(
             defaultZoom={Number(zoom)}
             hotspots={[
               {
-                id: 'power',
+                ...powerHotspot,
                 label: `Power ${state}`,
-                x: 10,
-                y: 25,
-                width: 10,
-                height: 15,
                 ...cellHotspot[state],
               },
             ]}

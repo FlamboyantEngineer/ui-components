@@ -5,7 +5,7 @@ import type { Completions, CompletionsModel } from '../completion-list/completio
 import { revealRange } from './code-geometry.js';
 import { type CodeHoverModel, type MarkedDiagnostic, useCodeHover } from './code-hover.js';
 import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
-import { type BracketMatch, findDiagnosticRange, matchBracket } from './code-ranges.js';
+import { type BracketMatch, createBracketMatcher, findDiagnosticRange } from './code-ranges.js';
 import { type CodeDecorations, type CodeSegment, splitSegments } from './code-segments.js';
 import { findLineStarts } from './find-line-starts.js';
 import { type CodeCompletionsModel, useCodeCompletion } from './use-code-completion.js';
@@ -152,9 +152,10 @@ function useDecoratedText(options: CodeEditorOptions, caret: number | null) {
       return range ? [{ diagnostic, range }] : [];
     });
   }, [diagnostics, value]);
+  const matchBracket = useMemo(() => createBracketMatcher(value, tokens), [value, tokens]);
   const bracket = useMemo(
-    () => (caret === null ? null : matchBracket(value, tokens, caret)),
-    [value, tokens, caret],
+    () => (caret === null ? null : matchBracket(caret)),
+    [matchBracket, caret],
   );
   return { tokens, marked, bracket };
 }
