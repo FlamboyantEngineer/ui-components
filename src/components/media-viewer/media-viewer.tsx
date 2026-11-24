@@ -7,7 +7,7 @@ import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useLocale } from '../../primitives/index.js';
 import { containsFocus, isFocused } from '../../utils/focus-target.js';
-import { isNode } from '../../utils/is-element.js';
+import { isElement, isNode } from '../../utils/is-element.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { Dialog } from '../dialog/dialog.js';
 import { resolveMediaKey } from './media-layout.js';
@@ -71,6 +71,13 @@ function isPanning(viewport: HTMLElement | null, target: EventTarget): boolean {
   );
 }
 
+/** A rendered document keeps its keys while it has focus, including native scrolling. */
+function isInPreviewDocument(viewport: HTMLElement | null, target: EventTarget): boolean {
+  return (
+    viewport !== null && isElement(target) && viewport.contains(target.closest('[role="document"]'))
+  );
+}
+
 /**
  * Before the shown item changes: focus inside the caller's rendering of it, which the next item
  * replaces, moves to the viewport, so it stays in the viewer.
@@ -106,7 +113,7 @@ function MediaViewerDialog({
 }: MediaViewerDialogProps) {
   const { direction } = useLocale();
   const viewportRef = useRef<HTMLDivElement>(null);
-  const request = useImageRequest(item, onImageError);
+  const request = useImageRequest(item, Boolean(modal.isOpen), onImageError);
   const view = useMediaView({ itemKey: item.id, zoom, defaultZoom, onZoomChange });
   const isImageReady = isImageItem(item) && request.status === 'loaded';
   const show = (key: Key) => {
@@ -119,6 +126,7 @@ function MediaViewerDialog({
     if (target) show(target.id);
   };
   const onKeyDown = (event: KeyboardEvent) => {
+    if (isInPreviewDocument(viewportRef.current, event.target)) return;
     const panning = isPanning(viewportRef.current, event.target);
     const command = resolveMediaKey(event.nativeEvent, direction, panning);
     if (!command) return;

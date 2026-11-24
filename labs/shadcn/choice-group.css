@@ -18,7 +18,7 @@
 }
 
 .ui-choice__indicator {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
   background: transparent;
   transition:
     border-color var(--ref-duration-fast),
@@ -26,7 +26,7 @@
 }
 
 .ui-choice__button[data-hovered]:not([data-selected]) .ui-choice__indicator {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
 }
 
 /* The dot is the fill left inside a primary border a quarter of the ring wide. */

@@ -97,7 +97,6 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     findFieldRef,
   });
   const commands = usePdfCommands({ ...props, view, rotate, label, scrollerRef });
-  const sidebar = { isOpen: isSidebarOpen, setOpen: setSidebarOpen };
   const refs = { scrollerRef, pagesRef, findFieldRef };
   return {
     label,
@@ -113,7 +112,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
     gestures,
     keyboard,
     commands,
-    sidebar,
+    sidebar: { isOpen: isSidebarOpen, setOpen: setSidebarOpen },
     refs,
   };
 }

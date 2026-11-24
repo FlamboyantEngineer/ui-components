@@ -146,7 +146,10 @@ function useStackPointer(
     const document = element.ownerDocument;
     const onMove = (event: PointerEvent) => {
       if (event.pointerType === 'touch') return;
-      const isPointOver = isOverStack(element, event.clientX, event.clientY);
+      // Direct hits are already inside the stack. Only gaps and outside moves need geometry.
+      const isPointOver =
+        event.composedPath().includes(element) ||
+        isOverStack(element, event.clientX, event.clientY);
       isLastOver.current = isPointOver;
       setOver((current) => current && isPointOver);
     };

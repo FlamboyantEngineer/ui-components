@@ -144,6 +144,47 @@ function TimerUpdates() {
   );
 }
 
+function ToastBatch() {
+  const [queue] = useState(() => createToastQueue({ defaultTimeout: 0 }));
+  const [actions, setActions] = useState(0);
+  const [closes, setCloses] = useState(0);
+  return (
+    <div data-lab-demo="toast-batch">
+      <Button
+        size="sm"
+        onPress={() => {
+          queue.clear();
+          for (let number = 1; number <= 18; number += 1) {
+            queue.add({ title: `Notification ${String(number)}` });
+          }
+        }}
+      >
+        Add 18 notifications
+      </Button>{' '}
+      <Button
+        size="sm"
+        onPress={() => {
+          queue.add(
+            {
+              title: 'File archived',
+              action: { label: 'Undo archive', onAction: () => setActions((count) => count + 1) },
+            },
+            { onClose: () => setCloses((count) => count + 1) },
+          );
+        }}
+      >
+        Show archive notification
+      </Button>{' '}
+      <Button size="sm" variant="secondary" onPress={() => queue.clear()}>
+        Clear notifications
+      </Button>
+      <ToastRegion aria-label="Batch notifications" queue={queue} />
+      <LabOutput name="Undo count">{actions}</LabOutput>
+      <LabOutput name="Archive dismissal count">{closes}</LabOutput>
+    </div>
+  );
+}
+
 export function ToastCoverageSections() {
   return (
     <>
@@ -158,6 +199,12 @@ export function ToastCoverageSections() {
         description="update(key, content) changes the toast in place and keeps its running timer; update(key, content, { timeout }) restarts it with a new lifetime counted from the update, and timeout 0 keeps it until dismissed. The result says how long after it was added the toast closed."
       >
         <TimerUpdates />
+      </LabSection>
+      <LabSection
+        title="Notification batches"
+        description="Focus the notification region with F6, then Tab to reach older notifications. The list scrolls when the viewport cannot fit the stack. Undo archive runs once, even when pressed again before the notification leaves."
+      >
+        <ToastBatch />
       </LabSection>
     </>
   );

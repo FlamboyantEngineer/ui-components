@@ -200,6 +200,7 @@ function applyChange(items: readonly TimelineItem[], change: TimelineItemChange)
 /** A timeline that applies its own changes, as an owner does. */
 function OwnedTimeline({
   initialItems,
+  onItemChange,
   ...props
 }: Omit<TimelineProps, 'items'> & { initialItems: readonly TimelineItem[] }) {
   const [items, setItems] = useState(initialItems);
@@ -207,7 +208,10 @@ function OwnedTimeline({
     <Timeline
       {...props}
       items={items}
-      onItemChange={(change) => setItems((current) => applyChange(current, change))}
+      onItemChange={(change) => {
+        setItems((current) => applyChange(current, change));
+        onItemChange?.(change);
+      }}
     />
   );
 }
@@ -277,6 +281,7 @@ const endItems: TimelineItem[] = [
 
 /** An editable timeline at the end of the supported range: moves and resizes stop at its last day. */
 function RangeEndCell() {
+  const [changes, setChanges] = useState(0);
   return (
     <div style={cellBox} data-lab-demo="range-end">
       <OwnedTimeline
@@ -285,7 +290,33 @@ function RangeEndCell() {
         scale="day"
         range={{ start: '9998-12-26', end: '9998-12-31' }}
         initialItems={endItems}
+        onItemChange={() => setChanges((count) => count + 1)}
       />
+      <p>
+        Changes: <output>{changes}</output>
+      </p>
+    </div>
+  );
+}
+
+function LongRangeCell() {
+  const [isShown, setShown] = useState(false);
+  return (
+    <div data-lab-demo="long-range" style={cellBox}>
+      <Button onPress={() => setShown(!isShown)} aria-expanded={isShown}>
+        {isShown ? 'Hide five-year plan' : 'Show five-year plan'}
+      </Button>
+      {isShown ? (
+        <Timeline
+          aria-label="Five-year plan"
+          rows={smallRows}
+          items={smallItems}
+          selectionMode="single"
+          scale="day"
+          range={{ start: '2026-01-01', end: '2030-12-31' }}
+          today={today}
+        />
+      ) : null}
     </div>
   );
 }
@@ -424,9 +455,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="End of the range"
-      description="The last supported days, up to 31 December 9998. The last day is a full day wide, an item on a later day is left out, and moving or resizing Wrap-up by drag or keyboard stops at the last day."
+      description="The last supported days, up to 31 December 9998. The last day is a full day wide, an item on a later day is left out, and moving or resizing Wrap-up stops at the last day without reporting a change once the item reaches it."
     >
       <RangeEndCell />
+    </LabSection>
+    <LabSection
+      title="Long date range"
+      description="Select a bar on a five-year day scale. The dates and gridlines stay in place while the selection changes."
+    >
+      <LongRangeCell />
     </LabSection>
     <LabSection
       title="Project plan"

@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import type { RichTextDocument } from '../src/components/rich-text-editor/index.js';
 import { expect, matrixCell, test } from './fixtures.js';
 
 interface DragPlan {
@@ -954,6 +955,41 @@ test.describe('Rich Text Editor lab', () => {
     await form.getByRole('button', { name: 'Reset' }).click();
     await expect(content(page, 'form')).toHaveText('Pick the pears on Friday.');
     expect(await submittedText()).toEqual(['Pick the pears on Friday.']);
+  });
+
+  test('UIC-RICH-TEXT-EDITOR-4.3 reads the latest form value in the edit commit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'form');
+    await box.click();
+    await pressEnd(page);
+    await page.keyboard.type(' Tomorrow');
+    const text = 'Pick the pears on Friday. Tomorrow';
+    await expect(box).toHaveText(text);
+    const snapshot = output(page, 'form-snapshot');
+    await expect(snapshot).toContainText(' on Friday. Tomorrow');
+    const read = async () => {
+      const entries = JSON.parse((await snapshot.textContent()) ?? '[]') as string[];
+      expect(entries).toHaveLength(3);
+      expect(entries[1]).toBe('revision note');
+      const documents = [entries[0], entries[2]].map(
+        (entry) => JSON.parse(entry ?? '') as RichTextDocument,
+      );
+      return documents.map((document) => document.content?.[0]?.content ?? []);
+    };
+    const [first] = await read();
+    expect(first?.map((piece) => piece.text).join('')).toBe(text);
+    expect(first?.[1]?.marks).toEqual([{ type: 'bold' }]);
+    await page.getByRole('button', { name: 'Replace both notes' }).click();
+    const [replaced, external] = await read();
+    expect(replaced?.[0]?.text).toBe('Pick the plums on Saturday.');
+    expect(external?.[0]?.text).toBe('Bring two baskets.');
+    const form = page.locator('form').filter({ has: editor(page, 'form') });
+    await form.getByRole('button', { name: 'Reset' }).click();
+    await expect(snapshot).toContainText('Bring a basket.');
+    await expect(box).toHaveText('Pick the pears on Friday.');
   });
 
   test('UIC-RICH-TEXT-EDITOR-6.3 applies a link without submitting the form around the editor', async ({

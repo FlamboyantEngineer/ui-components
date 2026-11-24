@@ -1,12 +1,14 @@
 /* Toast */
 
 .ui-toast-region {
+  --ref-toast-edge: 16px;
   position: fixed;
-  inset-block-end: 16px;
-  inset-inline-end: 16px;
-  width: min(400px, calc(100vw - 32px));
+  inset-block-end: var(--ref-toast-edge);
+  inset-inline-end: var(--ref-toast-edge);
+  width: min(400px, calc(100vw - 2 * var(--ref-toast-edge)));
   border-radius: var(--ref-radius);
   outline: none;
+  pointer-events: none;
 }
 
 .ui-toast-region[data-focus-visible] {
@@ -16,8 +18,7 @@
 
 /*
  * A list in place shows every toast, newest first, each in the flow at the list's width. In a
- * region, toasts share one grid cell instead: a pile at rest that spreads out by its offsets while
- * expanded.
+ * region, toasts share one grid cell when collapsed and stack from the bottom when expanded.
  */
 .ui-toast-list {
   display: grid;
@@ -30,6 +31,21 @@
 .ui-toast-region .ui-toast-list {
   align-items: end;
   gap: 0;
+}
+
+.ui-toast-region[data-expanded] .ui-toast-list {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* A stack scrolls as a unit. A single card instead scrolls its own oversized content. */
+.ui-toast-region[data-expanded] .ui-toast-list:has(> li + li),
+.ui-toast-region[data-expanded] .ui-toast-list > li:only-child .ui-toast {
+  max-block-size: calc(100dvb - 2 * var(--ref-toast-edge));
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .ui-toast {
@@ -68,14 +84,19 @@
     )
     scale(calc(1 - min(var(--ui-toast-index), 3) * 0.05));
   transform-origin: bottom center;
+  pointer-events: auto;
 }
 
 .ui-toast-region[data-expanded] .ui-toast {
+  flex: none;
   opacity: 1;
-  transform: translate(
-    var(--ui-toast-swipe-x, 0px),
-    calc(var(--ui-toast-swipe-y, 0px) - var(--ui-toast-offset) - var(--ui-toast-index) * 8px)
-  );
+  scroll-margin-block: min(8px, var(--ui-toast-offset, 0px));
+  transform: translate(var(--ui-toast-swipe-x, 0px), var(--ui-toast-swipe-y, 0px));
+}
+
+.ui-toast-region[data-expanded]
+  .ui-toast:is([data-swipe-direction='left'], [data-swipe-direction='right']) {
+  touch-action: pan-y;
 }
 
 .ui-toast[data-swiping] {
@@ -87,8 +108,10 @@
   animation: ref-toast-enter var(--ref-duration) ease-out;
 }
 
-.ui-toast[data-exiting] {
+.ui-toast[data-exiting],
+.ui-toast-region[data-expanded] .ui-toast[data-exiting] {
   opacity: 0;
+  pointer-events: none;
 }
 
 @keyframes ref-toast-enter {

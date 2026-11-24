@@ -36,6 +36,12 @@
   background: color-mix(in oklab, var(--input) 30%, var(--popover));
 }
 
+@media (prefers-contrast: more) {
+  .ui-command-palette__search {
+    border-color: var(--ref-field-border);
+  }
+}
+
 .ui-command-palette__search-icon {
   width: 16px;
   height: 16px;

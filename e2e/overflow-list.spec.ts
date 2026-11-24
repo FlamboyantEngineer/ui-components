@@ -122,6 +122,20 @@ test.describe('Overflow List lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-OVERFLOW-LIST-1.8 moves focus to the overflow control when a tool collapses', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('overflow-list');
+    const toolbar = page.getByRole('toolbar', { name: 'Text tools' });
+    const label = await toolbar.locator('.ui-overflow-list__item').last().textContent();
+    const tool = toolbar.getByRole('button', { name: label ?? '', exact: true });
+    await tool.focus();
+    await page.setViewportSize({ width: 240, height: 800 });
+    await expect(tool).toHaveCount(0);
+    await expect(toolbar.getByRole('button', { name: 'More tools' })).toBeFocused();
+  });
+
   test('UIC-OVERFLOW-LIST-1.8 keeps notes with their items as the list reorders and grows', async ({
     page,
     lab,

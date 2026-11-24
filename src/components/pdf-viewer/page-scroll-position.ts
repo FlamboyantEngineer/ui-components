@@ -11,9 +11,12 @@ export interface PdfScrollPosition {
   atTop: PageMeasurement | undefined;
 }
 
-interface NearbyPageQuery {
+interface PageRangeOptions {
   nearPages: ReadonlySet<number> | null;
   pageCount: number;
+}
+
+interface PageRangeQuery extends PageRangeOptions {
   view: DOMRect;
   read(pageIndex: number): PageMeasurement | undefined;
 }
@@ -22,14 +25,15 @@ interface NearbyPageQuery {
  * The observer's near pages cover the view in the page column, with one page on each side. A fresh
  * boundary check catches a jump, layout change or a scroll heard before the observer reports.
  */
-function readNearbyPages({ nearPages, pageCount, view, read }: NearbyPageQuery) {
-  if (!nearPages?.size) return null;
+function readNearbyPages({ nearPages, pageCount, view, read }: PageRangeQuery) {
+  if (!nearPages) return null;
   let first = pageCount;
   let last = -1;
   for (const pageIndex of nearPages) {
     first = Math.min(first, pageIndex);
     last = Math.max(last, pageIndex);
   }
+  if (last - first + 1 !== nearPages.size) return null;
   const before = first > 0 ? read(first - 1) : undefined;
   const after = last < pageCount - 1 ? read(last + 1) : undefined;
   if (first > 0 && (!before || before.box.bottom > view.top)) return null;
@@ -43,6 +47,29 @@ function readNearbyPages({ nearPages, pageCount, view, read }: NearbyPageQuery) 
   }
   // In a gap wider than the view, the top-edge report still belongs to the next page.
   if (after) pages.push(after);
+  return pages;
+}
+
+/** Finds the first page crossing the top edge using the live bounds, then measures the visible run. */
+function readOrderedPages({ pageCount, view, read }: PageRangeQuery) {
+  let start = 0;
+  let end = pageCount;
+  while (start < end) {
+    const middle = Math.floor((start + end) / 2);
+    const page = read(middle);
+    if (!page) return null;
+    if (page.box.bottom > view.top) end = middle;
+    else start = middle + 1;
+  }
+
+  const pages: PageMeasurement[] = [];
+  // Beyond the last page, its bounds still give the top-edge position.
+  for (let index = Math.min(start, pageCount - 1); index >= 0 && index < pageCount; index++) {
+    const page = read(index);
+    if (!page) return null;
+    pages.push(page);
+    if (page.box.top >= view.bottom) break;
+  }
   return pages;
 }
 
@@ -68,11 +95,11 @@ function selectPages(pages: Iterable<PageMeasurement | undefined>, view: DOMRect
   return { mostVisible, atTop: atTop ?? last };
 }
 
-/** Measures each needed page once. A stale or unavailable near set falls back to every page. */
+/** Measures each needed page once, even before visibility catches up after a jump. */
 export function measurePdfScrollPosition(
   scroller: HTMLElement,
   elements: ReadonlyMap<number, HTMLElement>,
-  nearPages: ReadonlySet<number> | null,
+  options: PageRangeOptions,
 ): PdfScrollPosition {
   const view = scroller.getBoundingClientRect();
   const measured = new Map<number, PageMeasurement>();
@@ -85,6 +112,10 @@ export function measurePdfScrollPosition(
     measured.set(pageIndex, page);
     return page;
   };
-  const nearby = readNearbyPages({ nearPages, pageCount: elements.size, view, read });
-  return { view, ...selectPages(nearby ?? Array.from(elements.keys(), read), view) };
+  const query = { ...options, view, read };
+  const pages =
+    elements.size === options.pageCount
+      ? (readNearbyPages(query) ?? readOrderedPages(query))
+      : null;
+  return { view, ...selectPages(pages ?? Array.from(elements.keys(), read), view) };
 }

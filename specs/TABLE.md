@@ -450,7 +450,7 @@ Verification: `src/components/table/use-table-rows.test.tsx`, `e2e/table.spec.ts
 
 ### UIC-TABLE-10.2 - Pages from the caller
 
-With `pagination.rowCount`, the rows shall be paged by the caller: the table shows `rows` as given as the current page and counts the pages from `rowCount`.
+With `pagination.rowCount`, `rows` supplies the current page and `rowCount` supplies the total used to count pages. Pagination does not slice `rows` again. Sort and filter ownership still follows [UIC-TABLE-2](#uic-table-2---sorting-and-filtering). For a server that sorts or filters across pages, pass the corresponding controlled props so the table leaves those operations to the caller.
 
 Implementation: `src/components/table/use-table-rows.ts`
 Verification: `src/components/table/use-table-rows.test.tsx`
@@ -721,7 +721,9 @@ Verification: `src/components/table/table-pinned-rows.test.tsx`, `e2e/table-data
 
 `handleRef` shall receive a `TableHandle` ([UIC-COLLECTIONS-1.6](COLLECTIONS.md#uic-collections-16---revealing-items-by-key)) whose `revealKey(id, options)` scrolls the row with that id into view with the nearest scroll, leaving focus where it is, and whose `focusKey(id, options)` also focuses it. With `columnId`, they reveal or focus that data column's cell (the cell whose `data-column` is the id) instead; a hidden column falls back to the row. Both resolve `{ found: true }` once the row is in view. Ids keep their type, so `1` and `"1"` reveal different rows, and the browser's nearest scroll follows the writing direction, so right-to-left tables scroll as the reader expects. The handle is separate from `ref`, which keeps the root element.
 
-Implementation: `src/components/table/table-reveal.ts`, `src/utils/use-collection-handle.ts`
+A row pinned at either edge shall reveal and focus from every page where the table presents it, even while the virtualizer has yet to draw it. A successful lookup of a row on the current page shall reuse keys from the latest presented body and call no source row child accessor again.
+
+Implementation: `src/components/table/table-reveal.ts`, `src/components/table/use-table-grid.ts`, `src/utils/use-collection-handle.ts`
 Verification: `src/components/table/table-reveal.test.tsx`, `e2e/table-reveal.spec.ts`
 
 ### UIC-TABLE-19.2 - Rows the table does not show

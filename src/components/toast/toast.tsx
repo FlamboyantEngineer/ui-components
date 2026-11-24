@@ -28,7 +28,6 @@ import { useLayerZIndex } from '../portal/portal.js';
 import {
   createQueueOverStore,
   getToastLifecycle,
-  type ToastAction,
   type ToastContent,
   type ToastQueue,
   type ToastQueueOptions,
@@ -129,20 +128,25 @@ function ToastText({
   );
 }
 
-/** The action button: runs the action, then closes the toast through its region's state. */
-function ToastActionButton({ action, toastKey }: { action: ToastAction; toastKey: string }) {
-  const state = useContext(ToastStateContext);
+function ToastActionButton({
+  label,
+  isOpen,
+  onPress,
+}: {
+  label: string;
+  isOpen: boolean;
+  onPress: () => void;
+}) {
   return (
     <Button
       variant="tertiary"
       size="sm"
       className={toastHooks.slotClass('action')}
-      onPress={() => {
-        action.onAction();
-        state?.close(toastKey);
-      }}
+      isDisabled={!isOpen}
+      focusableWhenDisabled
+      onPress={onPress}
     >
-      {action.label}
+      {label}
     </Button>
   );
 }
@@ -160,7 +164,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
   const ref = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, snapshot.isOpen);
   const isPaused = useIsStackPaused();
-  useToastTimer(toast.timer, { lifecycle, snapshot }, isPaused);
+  useToastTimer(lifecycle, snapshot, isPaused);
   useToastPresence(lifecycle, isMounted);
   const { index, offset, swipeThreshold, ...stack } = useToastStackPosition(toast.key, ref);
   const { direction } = useLocale();
@@ -190,8 +194,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
     <AriaToast
       {...swipe.swipeProps}
       ref={ref}
-      // The queue's entry drives the timer (useToastTimer), so React Aria does not reset it.
-      toast={{ ...toast, timeout: undefined }}
+      toast={toast}
       style={style}
       {...toastHooks.root({ data })}
     >
@@ -204,7 +207,13 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
         />
       )}
       <ToastText tone={tone} title={title} description={description} />
-      {action ? <ToastActionButton action={action} toastKey={toast.key} /> : null}
+      {action ? (
+        <ToastActionButton
+          label={action.label}
+          isOpen={snapshot.isOpen}
+          onPress={lifecycle.runAction}
+        />
+      ) : null}
       <Button
         slot="close"
         icon={CloseGlyph}

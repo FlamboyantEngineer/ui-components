@@ -82,6 +82,7 @@ function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps)
   const strings = useUiStrings();
   const { index, isPending, isFinished, goTo, skip } = navigation;
   const previous = steps[index - 1];
+  const step = steps[index];
   const isLast = index >= steps.length - 1;
   const action = (name: string) => hooks.slot('action', { action: name });
   return (
@@ -96,20 +97,22 @@ function WizardFooter({ navigation, steps, onCancel, finishLabel }: FooterProps)
           {strings.back}
         </Button>
       ) : null}
-      {steps[index]?.isOptional && !isLast ? (
+      {step?.isOptional && !isLast ? (
         <Button {...action('skip')} variant="tertiary" isDisabled={isPending} onPress={skip}>
           {strings.skip}
         </Button>
       ) : null}
-      <Button
-        {...action(isLast ? 'finish' : 'next')}
-        type="submit"
-        variant="primary"
-        isPending={isPending}
-        isDisabled={isFinished}
-      >
-        {isLast ? (finishLabel ?? strings.finish) : strings.next}
-      </Button>
+      {step ? (
+        <Button
+          {...action(isLast ? 'finish' : 'next')}
+          type="submit"
+          variant="primary"
+          isPending={isPending}
+          isDisabled={isFinished}
+        >
+          {isLast ? (finishLabel ?? strings.finish) : strings.next}
+        </Button>
+      ) : null}
     </div>
   );
 }

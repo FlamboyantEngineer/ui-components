@@ -60,7 +60,6 @@ function useIntakeLifetime(listed: readonly FileUploadItem[], isLocked: boolean)
  * disabled or read-only are abandoned: they call nothing and show nothing.
  */
 export function useFileIntake(props: FileUploadProps, listed: readonly FileUploadItem[]) {
-  const held = listed.length;
   const { allowsMultiple, acceptDirectory, isDisabled, isReadOnly } = props;
   const isLocked = Boolean(isDisabled || isReadOnly);
   const { acceptedFileTypes, maxSize, minSize, maxFiles, validate } = props;
@@ -72,6 +71,7 @@ export function useFileIntake(props: FileUploadProps, listed: readonly FileUploa
   const callbacks = useLatest(props);
   const isMultiple = Boolean(allowsMultiple || acceptDirectory);
   const rejectsMultiple = !isMultiple && props.multipleFileBehavior === 'reject';
+  const readHeld = () => countRef.current.held + countRef.current.accepted;
   const report = (result: FilePartition) => {
     setReadFailure(null);
     countRef.current.accepted += result.accepted.length;
@@ -81,18 +81,18 @@ export function useFileIntake(props: FileUploadProps, listed: readonly FileUploa
   };
   const judge = (offered: readonly File[], owner: object): Promise<void> | undefined => {
     if (owner !== lifetimeRef.current) return undefined;
-    const files = isMultiple ? offered : offered.slice(0, 1);
-    const outcome: FilePartition | Promise<FilePartition> =
-      rejectsMultiple && offered.length > 1
-        ? { accepted: [], rejections: offered.map((file) => ({ file, reason: 'count' })) }
-        : partitionFiles(files, rules, countRef.current.held + countRef.current.accepted);
-    if (!isThenable(outcome)) {
-      report(outcome);
+    if (rejectsMultiple && offered.length > 1) {
+      report({ accepted: [], rejections: offered.map((file) => ({ file, reason: 'count' })) });
       return undefined;
     }
-    return outcome.then((result) => {
-      if (owner === lifetimeRef.current) report(result);
+    const files = isMultiple ? offered : offered.slice(0, 1);
+    const outcome = partitionFiles(files, rules, {
+      readRemaining: () => (callbacks.current.maxFiles ?? Infinity) - readHeld(),
+      report: (result) => {
+        if (owner === lifetimeRef.current) report(result);
+      },
     });
+    return isThenable(outcome) ? outcome.then(() => undefined) : undefined;
   };
   const receive = (files: readonly File[] | Promise<File[]>) => {
     const offered = readOffer(files);
@@ -124,7 +124,7 @@ export function useFileIntake(props: FileUploadProps, listed: readonly FileUploa
       const items = readDraggedItems(event);
       const tooMany = rejectsMultiple && items.filter(({ kind }) => kind === 'file').length > 1;
       setDragAcceptable(
-        !tooMany && canAcceptDrag(isMultiple ? items : items.slice(0, 1), rules, held),
+        !tooMany && canAcceptDrag(isMultiple ? items : items.slice(0, 1), rules, readHeld()),
       );
     },
   };

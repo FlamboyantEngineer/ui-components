@@ -4,9 +4,11 @@ import type {
   FieldMenuEntry,
   FieldStateOptions,
 } from '../../src/components/field/field.js';
+import { Form } from '../../src/components/form/form.js';
 import {
   SelectField,
   type SelectFieldItem,
+  type SelectFieldLoader,
   type SelectFieldOption,
   type SelectFieldSelectionMode,
 } from '../../src/components/select-field/select-field.js';
@@ -236,6 +238,36 @@ function Search() {
   );
 }
 
+const loadCategories: SelectFieldLoader = async (query) =>
+  'unassigned'.includes(query.toLowerCase()) ? [{ id: '', label: 'Unassigned' }] : [];
+
+function RequiredRemoteChoice() {
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <Form
+      aria-label="Required category"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted(true);
+      }}
+    >
+      <SelectField
+        label="Category"
+        name="category"
+        options={[]}
+        loadItems={loadCategories}
+        minSearchLength={0}
+        searchDelay={0}
+        emptyLabel="No selection"
+        isRequired
+        onChange={() => setSubmitted(false)}
+      />
+      <button type="submit">Save category</button>
+      <LabOutput name="Category submission">{submitted ? 'Saved' : 'Not saved'}</LabOutput>
+    </Form>
+  );
+}
+
 function Groups() {
   const [committed, setCommitted] = useState('none');
   return (
@@ -356,7 +388,7 @@ function Locking() {
 
 const menu: FieldMenuEntry[] = ['clear', 'reset', 'set-default', 'help'];
 
-function Form() {
+function FormSubmission() {
   const [entries, setEntries] = useState('none');
   return (
     <form
@@ -506,6 +538,12 @@ mountLab(
         <Search />
       </LabSection>
       <LabSection
+        title="Required remote choice"
+        description="Unassigned is a real option with an empty-text ID and can be saved. No selection clears the value and blocks Save category."
+      >
+        <RequiredRemoteChoice />
+      </LabSection>
+      <LabSection
         title="Width"
         description="The trigger fits its widest complete option label, capped at the column width. Choose the long label and hover or focus it to reveal its complete text in a tooltip."
       >
@@ -583,7 +621,7 @@ mountLab(
         <Paged />
       </LabSection>
       <LabSection title="Forms" description="A named select publishes its values to its form.">
-        <Form />
+        <FormSubmission />
       </LabSection>
       <LabSection
         title="Trigger ref"

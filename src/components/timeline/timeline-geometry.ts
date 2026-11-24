@@ -98,6 +98,11 @@ interface TimelineScaleCell {
   width: number;
 }
 
+export interface TimelineScaleCells {
+  major: readonly TimelineScaleCell[];
+  minor: readonly TimelineScaleCell[];
+}
+
 interface ConnectorPoints {
   x1: number;
   y1: number;
@@ -211,15 +216,17 @@ export function createTimelineAxis(
 
 /** The cells of a header row of `unit`: whole units, with partial ones at the range's ends. */
 export function resolveScaleCells(axis: TimelineAxis, unit: TimeScaleUnit): TimelineScaleCell[] {
-  const starts = axis.scale
+  const starts: Array<{ value: string; position: number }> = axis.scale
     .ticks({ unit })
-    .map((tick) => tick.value)
-    .filter((value) => value < axis.until);
-  if (starts[0] !== axis.range.start) starts.unshift(axis.range.start);
-  return starts.map((start, index) => {
-    const left = axis.scale.map(start);
-    return { start, left, width: axis.scale.map(starts[index + 1] ?? axis.until) - left };
-  });
+    .filter((tick) => tick.value < axis.until);
+  if (starts[0]?.value !== axis.range.start) {
+    starts.unshift({ value: axis.range.start, position: 0 });
+  }
+  return starts.map(({ value: start, position: left }, index) => ({
+    start,
+    left,
+    width: (starts[index + 1]?.position ?? axis.width) - left,
+  }));
 }
 
 /** A bar's left and right edges, or a milestone's day centre as both, in pixels. */

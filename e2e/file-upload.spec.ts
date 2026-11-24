@@ -653,6 +653,24 @@ test.describe('File Upload lab', () => {
     expect(await formData()).toEqual(['Signed.pdf:64']);
   });
 
+  test('UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.7 checks the current file limit when a pending offer settles', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('file-upload');
+    const upload = page.locator('[data-lab-upload="live-limit"]');
+    await upload.locator('input[type="file"]').setInputFiles({
+      name: 'Pending.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('file'),
+    });
+    await page.getByRole('button', { name: 'Supply existing file' }).click();
+    await page.clock.runFor(2000);
+    await expect(upload.getByRole('alert')).toHaveText('1 file is over the file limit.');
+    await expect(upload.getByRole('listitem')).toHaveText('Existing.txt');
+  });
+
   test('UIC-FILE-UPLOAD-2.7 abandons a checked offer when the editor closes, and refuses a failed check', async ({
     page,
     lab,

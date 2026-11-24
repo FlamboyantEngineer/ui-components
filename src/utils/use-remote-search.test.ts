@@ -55,6 +55,27 @@ describe('useRemoteSearch', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
+  it('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.3 cancels work during both the delay and paging', async () => {
+    vi.useFakeTimers();
+    const load = vi.fn<RemoteLoader<string>>(async (_query, _signal, cursor) =>
+      cursor === undefined ? { items: ['first'], cursor: 'next' } : { items: ['late'] },
+    );
+    const { result } = renderHook(() => useRemoteSearch({ load, source: load }));
+    act(() => result.current.search('queued'));
+    act(() => result.current.cancel());
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(load).not.toHaveBeenCalled();
+    await act(async () => result.current.searchNow('first'));
+    act(() => result.current.loadMore());
+    const paging = load.mock.calls[1]?.[1];
+    act(() => result.current.cancel());
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(paging?.aborted).toBe(true);
+    expect(result.current.results).toEqual(['first']);
+    expect(result.current.isLoadingMore).toBe(false);
+    expect(result.current.hasMore).toBe(false);
+  });
+
   it('UIC-COMBOBOX-5.3 appends the next page and reports a failed search', async () => {
     const load = vi.fn<RemoteLoader<string>>(async (query, _signal, cursor) => {
       if (query === 'fail') throw new Error('offline');

@@ -81,7 +81,7 @@
 .ui-navigation-rail__link[data-focus-visible],
 .ui-navigation-rail__group-trigger[data-focus-visible] {
   outline: 0;
-  box-shadow: 0 0 0 2px var(--sidebar-ring);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--sidebar-ring) 70%, var(--sidebar-foreground));
 }
 
 .ui-navigation-rail__icon {

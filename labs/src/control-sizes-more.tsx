@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { Combobox } from '../../src/components/combobox/combobox.js';
 import {
   PeoplePicker,
   type PeoplePickerLoader,
@@ -7,6 +8,12 @@ import { PinInput } from '../../src/components/pin-input/pin-input.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
 const contents = ['short', 'long', 'large type'] as const;
+const densityItems = [{ id: 'pear', label: 'Pear' }];
+const themedSurface = {
+  background: 'var(--ref-canvas)',
+  color: 'var(--ref-text)',
+  padding: 8,
+};
 
 /** A directory with nobody in it: the samples only show the closed field. */
 const noPeople: PeoplePickerLoader = () => Promise.resolve([]);
@@ -78,6 +85,29 @@ export function PinCellGeometry() {
           </div>
         )}
       />
+    </LabSection>
+  );
+}
+
+export function ScopedControlDensity() {
+  return (
+    <LabSection
+      title="Scoped control density"
+      description="With the shadcn/ui stylesheet, compact controls keep their size through a nested dark theme."
+    >
+      <Combobox label="Default density" defaultItems={densityItems} />
+      <div
+        data-ui-scale="compact"
+        style={{ display: 'grid', gap: 8, width: 260, maxWidth: '100%' }}
+      >
+        <Combobox label="Compact density" defaultItems={densityItems} />
+        <div className="dark" style={themedSurface}>
+          <Combobox label="Compact with dark class" defaultItems={densityItems} />
+        </div>
+        <div data-theme="dark" style={themedSurface}>
+          <Combobox label="Compact with dark attribute" defaultItems={densityItems} />
+        </div>
+      </div>
     </LabSection>
   );
 }

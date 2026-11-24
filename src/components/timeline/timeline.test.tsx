@@ -224,6 +224,21 @@ describe('Timeline', () => {
     expect(cells.map((cell) => cell.textContent)).toEqual(['Feb', 'Mar', 'Apr']);
   });
 
+  it('UIC-TIMELINE-3.2 skips chart dependencies while showing the table', () => {
+    const readPredecessor = vi.fn(() => 'measure');
+    const dependencies = [
+      {
+        get from() {
+          return readPredecessor();
+        },
+        to: 'quote',
+      },
+    ];
+    renderTimeline({ view: 'table', dependencies });
+    expect(screen.getByRole('grid', { name: 'Kitchen plan' })).toBeVisible();
+    expect(readPredecessor).not.toHaveBeenCalled();
+  });
+
   it('UIC-TIMELINE-1.3 labels two scale rows by zoom level and draws gridlines', () => {
     const { container, rerender } = renderTimeline();
     const tier = (name: string) => requireDefined(container.querySelector(`[data-tier="${name}"]`));
@@ -473,6 +488,40 @@ describe('Timeline', () => {
       start: '2026-03-11',
       end: '2026-03-11',
     });
+  });
+
+  it('UIC-TIMELINE-2.1 reports no resize when either handle is stopped by the opposite end', async () => {
+    const user = userEvent.setup();
+    const onItemChange = vi.fn();
+    renderTimeline({
+      items: [{ id: 'visit', rowId: 'survey', label: 'Visit', start: '2026-03-12' }],
+      onItemChange,
+    });
+    const bar = item('Visit');
+    capturePointer(bar);
+    const start = requireDefined(bar.querySelector('[data-edge="start"]'));
+    const end = requireDefined(bar.querySelector('[data-edge="end"]'));
+    await drag(user, start, 100, 180);
+    await drag(user, end, 100, 20);
+    expect(onItemChange).not.toHaveBeenCalled();
+    expect(bar.style.width).toBe('32px');
+  });
+
+  it('UIC-TIMELINE-1.2 UIC-TIMELINE-2.1 holds the inferred scale while showing a drag draft', async () => {
+    const user = userEvent.setup();
+    const onItemChange = vi.fn();
+    const { container } = renderTimeline({ range: undefined, onItemChange });
+    const canvas = requireDefined(container.querySelector<HTMLElement>('.ui-timeline__body'));
+    const width = canvas.style.width;
+    const bar = item('Measure rooms');
+    capturePointer(bar);
+    await user.pointer({ keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } });
+    await user.pointer({ coords: { clientX: 300 } });
+    expect(bar).toHaveAttribute('data-dragging', 'true');
+    expect(canvas.style.width).toBe(width);
+    await user.pointer({ coords: { clientX: 100 } });
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onItemChange).not.toHaveBeenCalled();
   });
 
   it.each(['item', 'callback'] as const)(

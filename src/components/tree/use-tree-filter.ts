@@ -132,8 +132,8 @@ export function useTreeFilter<T extends TreeItemData>(
     return { kept, getShownChildren, revealed: context.revealed };
   }, [isFiltering, items, getChildren, getTextValue, filterText, filter]);
   const [choices, setChoices] = useState<ExpansionChoices | null>(null);
-  // A cleared query ends its session, so entering the same text again starts from the matches.
-  if (!result && choices !== null) setChoices(null);
+  // Changing or clearing a query ends its session, even without a new expansion choice.
+  if (choices && (!result || choices.text !== filterText)) setChoices(null);
   if (!result) return { items, getChildren, expansion };
   const session = choices?.text === filterText ? choices : null;
   const expandedKeys = applyChoices(result.revealed, session);

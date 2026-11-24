@@ -1,4 +1,4 @@
-import { act, render, renderHook, screen, within } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -130,6 +130,45 @@ describe('Tree loading children', () => {
     expect(await screen.findByRole('row', { name: 'Hanoi' })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onLoad).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-TREE-2.4 indexes a refreshed hierarchy once for the loaded branches', async () => {
+    const branches = Array.from({ length: 4 }, (_, index) => ({
+      id: `branch-${index}`,
+      name: `Branch ${index}`,
+      isLazy: true,
+    }));
+    const places: Place[] = [
+      { id: 'world', name: 'World', children: branches },
+      ...Array.from({ length: 8 }, (_, index) => ({
+        id: `place-${index}`,
+        name: `Place ${index}`,
+      })),
+    ];
+    const getChildren = vi.fn((place: Place) => place.children);
+    const onLoadChildren = vi.fn(() => Promise.resolve());
+    const getTextValue = (place: Place) => place.name;
+    const hasChildItems = (place: Place) => place.isLazy ?? false;
+    const defaultExpandedKeys = ['world', ...branches.map(({ id }) => id)];
+    const tree = (items: readonly Place[]) => (
+      <Tree
+        aria-label="Places"
+        items={items}
+        getChildren={getChildren}
+        getTextValue={getTextValue}
+        hasChildItems={hasChildItems}
+        defaultExpandedKeys={defaultExpandedKeys}
+        onLoadChildren={onLoadChildren}
+      />
+    );
+    const { rerender } = render(tree(places));
+    await waitFor(() => expect(onLoadChildren).toHaveBeenCalledTimes(branches.length));
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+    getChildren.mockClear();
+
+    rerender(tree([...places]));
+    expect(getChildren.mock.calls.filter(([place]) => place.id === 'world')).toHaveLength(1);
+    expect(onLoadChildren).toHaveBeenCalledTimes(branches.length);
   });
 });
 

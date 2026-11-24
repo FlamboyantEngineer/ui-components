@@ -3,12 +3,14 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
+  editorView,
   getContent,
   installEditorDom,
   renderEditor,
   selectRange,
   ViewProbe,
 } from '../../../test/rich-text-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { InsertMenu, InsertMenuButton, type InsertMenuItem } from './insert-menu.js';
 import { type RichTextDocument, RichTextEditor } from './rich-text-editor.js';
 
@@ -163,6 +165,37 @@ describe('InsertMenu', () => {
     ]);
   });
 
+  it('UIC-RICH-TEXT-EDITOR-8.1 only offers placements the current block allows', async () => {
+    const { user, value } = renderMenu({
+      defaultValue: {
+        type: 'doc',
+        content: [
+          { type: 'taskList', content: [{ type: 'taskItem', content: [{ type: 'paragraph' }] }] },
+        ],
+      },
+    });
+    await user.click(getContent());
+    await user.keyboard('/ol');
+    expect(list()).toBeNull();
+    expect(value()?.content?.[0]?.type).toBe('taskList');
+    expect(getContent()).toHaveTextContent('/ol');
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-8.2 reports just the inserted block and undoes it in one step', async () => {
+    const { user, changes, value } = renderMenu();
+    await user.click(getContent());
+    await user.keyboard('/head');
+    const heading = await screen.findByRole('option', { name: 'Heading 2' });
+    const before = changes.length;
+    await user.click(heading);
+    expect(changes.slice(before)).toEqual([
+      { type: 'doc', content: [{ type: 'heading', attrs: { level: 2 } }] },
+    ]);
+    await user.keyboard('{Control>}z{/Control}');
+    expect(value()?.content?.[0]?.type).toBe('paragraph');
+    expect(getContent()).toHaveTextContent('/head');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-8.2 opens again when a dismissed slash is removed and retyped at the same position', async () => {
     const { user } = renderMenu();
     await user.click(getContent());
@@ -173,6 +206,28 @@ describe('InsertMenu', () => {
     expect(getContent()).toHaveTextContent(/^$/);
     await user.keyboard('/');
     expect(await screen.findByRole('listbox', { name: 'Insert commands' })).toBeInTheDocument();
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-8.1 reads caret geometry only when showing matching options', async () => {
+    const { user } = renderMenu();
+    await user.click(getContent());
+    const coords = vi.spyOn(requireDefined(editorView.current), 'coordsAtPos');
+    await user.keyboard('/head');
+    expect(list()).toBeInTheDocument();
+    expect(coords).toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    coords.mockClear();
+    await user.keyboard('ing');
+    expect(list()).not.toBeInTheDocument();
+    expect(coords).not.toHaveBeenCalled();
+    await user.keyboard(' /zz');
+    coords.mockClear();
+    await user.keyboard('z');
+    expect(list()).not.toBeInTheDocument();
+    expect(coords).not.toHaveBeenCalled();
+    await user.keyboard(' /head');
+    expect(list()).toBeInTheDocument();
+    expect(coords).toHaveBeenCalled();
   });
 
   it('UIC-RICH-TEXT-EDITOR-8.3 inserts from the insert button and returns focus to the document', async () => {

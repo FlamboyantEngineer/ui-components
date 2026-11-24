@@ -19,11 +19,13 @@
 }
 
 .ui-select-field__trigger {
-  padding: 0 8px 0 10px;
+  padding-block: 0;
+  padding-inline: 10px 8px;
 }
 
 .ui-select-field__native {
-  padding: 0 32px 0 10px;
+  padding-block: 0;
+  padding-inline: 10px 32px;
   appearance: none;
 }
 
@@ -48,7 +50,7 @@
 
 .ui-select-field__trigger[data-hovered],
 .ui-select-field__native:hover:enabled {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
 }
 
 .ui-select-field__trigger[data-focus-visible],

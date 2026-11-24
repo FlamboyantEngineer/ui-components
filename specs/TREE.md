@@ -54,6 +54,8 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 With `onLoadChildren`, the loading row of an expanded row that has children but none loaded shall ask for them once it comes into view (React Aria's loading sentinel), calling `onLoadChildren` with the item; the owner adds the children to its items. While a returned promise is pending the loading row shows, as for `isItemPending`. A rejection shall show its message (or the provider's `actionFailed` string) in the row as an [InlineError](INLINE-ERROR.md) (`ui-tree__load-error`) whose retry button asks again; the row does not ask again on its own after a failure or a success. A branch that is no longer among the items is forgotten, along with any request still running for it: when a branch with its key is listed again, it asks again, and the forgotten request's success or failure changes nothing, neither marking the new branch loaded, showing its error nor ending the new branch's own request. Asking again while the current branch's request runs still asks once.
 
+While `onLoadChildren` is set, the loader shall index the hierarchy at most once per change of `items` or `getChildren`. Membership checks and requests use the shared index, including when several branches are already loaded and the owner refreshes the items.
+
 Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`, `src/components/tree/use-tree-model.ts`
 Verification: `src/components/tree/use-tree-loads.test.tsx`, `e2e/tree.spec.ts`
 
@@ -179,6 +181,8 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 ### UIC-TREE-6.1 - Filtered rows
 
 While `filterText` is not blank, the tree shall show only the loaded rows whose text value matches it, their ancestors and their descendants. Ancestors of a match open to show it; expanding and collapsing then changes an expansion of the filter's own, and the reader's expansion returns once the filter clears. The filter's expansion keeps each row the reader expanded or collapsed under the current query and opens the ancestors of matches that arrive later, from new items or loaded children; another query, or the same query entered after the filter clears, starts again from its matches. A row matches while its text value holds every term of `filterText`, split as [Text Match](TEXT-MATCH.md) does, or while `filter(textValue, filterText)` returns true when the caller sets one. Default labels mark the terms through `TextMatch`.
+
+Any query change ends that expansion session. Returning to an earlier query starts from its matches even when the reader left the intervening query's expansion alone.
 
 Filtering shall walk loaded hierarchies without recursive JavaScript calls and evaluate the match callback once per item in preorder, including deeply nested branches.
 

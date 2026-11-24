@@ -24,7 +24,9 @@ Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/componen
 
 `scale` shall set the zoom level and the pixels per day: `day` (32), `week` (16, the default), `month` (4) and `quarter` (1.5). The scale maps days with a UTC time scale from the range's first day to the day after its last. The header, pinned to the top of the viewport, holds two `ui-timeline__scale-row` rows, publishing `data-tier` (`major` above, `minor` below) and `data-unit`: months over days or weeks, and years over months or quarters. Each row holds a `ui-timeline__scale-cell` per unit, positioned at the unit's first day (or the range's) and as wide as the unit's days in the range, labelled for the locale: the month and year or the year above; the day of the month, the week's first day (`Mar 2`), the short month or the provider's `timelineQuarter` string (`Q2`) below. The body draws a `ui-timeline__gridline` at the start of each unit of the lower row, with `data-major` where a unit of the upper row also starts.
 
-Implementation: `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-header.tsx`, `src/components/timeline/timeline-chart.tsx`
+The header and gridlines shall share one set of scale cells. Their positions and labels are reused while the resolved endpoints, scale and locale stay the same, including when selection changes, groups expand, or a drag shows its draft.
+
+Implementation: `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-header.tsx`, `src/components/timeline/timeline-chart.tsx`, `src/components/timeline/use-timeline-chart.ts`
 Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
 
 ### UIC-TIMELINE-1.4 - Rows and groups
@@ -103,6 +105,8 @@ Verification: `src/components/timeline/timeline-row-columns.test.tsx`, `e2e/time
 
 With `onItemChange`, a primary-button pointer drag on an item that is not `isReadOnly` shall capture the pointer and move the item by whole days (the pointer's travel divided by the pixels per day, rounded, toward the later end of the axis, which is the left right to left); a drag that starts on a bar's `ui-timeline__handle` (`data-edge` `start` or `end`, drawn only on movable bars) moves that end instead, never past the other, and no drag goes past the ends of the supported range (UIC-TIMELINE-1.2). The item shows the days as it goes and publishes `data-dragging`; releasing the pointer calls `onItemChange({ id, start, end })` once when the days changed, and a cancelled drag drops them. Making the item read-only or removing `onItemChange` during a drag shall release capture, clear the draft and dragging state, and report no change. Re-enabling editing requires a new press. An item that leaves the chart during a drag (a switch to the table view, a collapsed group, a removed item) shall likewise discard its draft and report no change, so the chart shows the source dates again and the next pointer or keyboard edit starts from them. A drag belongs to its item's source days and kind and to the pixels per day and direction it started with: when the host gives the item other days or another kind, or the scale or direction changes, the drag shall be given up the same way, so its draft never overwrites the newer days; an equal copy of the item, or a change to other items, keeps it. The owner applies the change to `items`. A press that travels 3 pixels or more does not select; a drag that is cancelled or loses capture leaves the next keyboard press on the item to select as usual. Under an ancestor's axis-aligned `transform: scale()`, pointer travel counts days in the chart's own layout pixels, so a dragged bar or edge stays under the pointer; rotated or skewed ancestors are not supported.
 
+An attempted move or resize held at the calendar boundary or the opposite handle reports no edit if both dates are still the original ones. A drag that returns to its original dates also reports no edit.
+
 Implementation: `src/components/timeline/use-timeline-drag.ts`, `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-item.tsx`, `src/utils/element-scale.ts`
 Verification: `src/components/timeline/timeline.test.tsx`, `src/components/timeline/timeline-geometry.test.ts`, `src/components/timeline/timeline-planning-range.test.ts`, `e2e/timeline.spec.ts`, `src/utils/element-scale.test.ts`
 
@@ -152,10 +156,10 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 
 ### UIC-TIMELINE-3.2 - Stable table inputs
 
-The table view shall hand its `Table` the same `columns` while the provider strings and locale are unchanged, and the same `rows` while the timeline's rows and items are unchanged, so a selection change does not rebuild the table's column layout or cell grid.
+The table view shall hand its `Table` the same `columns` while the provider strings and locale are unchanged, and the same `rows` while the timeline's rows and items are unchanged, so a selection change does not rebuild the table's column layout or cell grid. The table view skips building the chart's range, visible rows, axis, placements and connectors.
 
-Implementation: `src/components/timeline/timeline-table.tsx`
-Verification: `src/components/timeline/timeline-table-identity.test.tsx`
+Implementation: `src/components/timeline/timeline-table.tsx`, `src/components/timeline/use-timeline-chart.ts`
+Verification: `src/components/timeline/timeline-table-identity.test.tsx`, `src/components/timeline/timeline.test.tsx`
 
 ## UIC-TIMELINE-4 - Accessibility
 

@@ -62,5 +62,5 @@
 
 .ui-resize-handle:focus-visible {
   outline: 0;
-  box-shadow: 0 0 0 1px var(--ring);
+  box-shadow: 0 0 0 1px var(--ref-focus);
 }

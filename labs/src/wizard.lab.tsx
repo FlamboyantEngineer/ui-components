@@ -4,6 +4,7 @@ import { Dialog, DialogTrigger } from '../../src/components/dialog/dialog.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Wizard, type WizardStep } from '../../src/components/wizard/wizard.js';
+import type { Key } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { WizardFailureCases } from './wizard-failure-cases.js';
 
@@ -228,6 +229,44 @@ function ArrivingSteps() {
   );
 }
 
+const draftSteps: WizardStep[] = [
+  {
+    id: 'details',
+    label: 'Draft details',
+    isOptional: true,
+    content: <p>Add notes to the draft.</p>,
+  },
+  { id: 'review', label: 'Review draft', content: <p>Review what is ready.</p> },
+];
+const reportSteps: WizardStep[] = [
+  { id: 'details', label: 'Report details', content: <p>Details are required in a report.</p> },
+  { id: 'publish', label: 'Publish report', content: <p>Review before publishing.</p> },
+];
+
+function WorkflowSwitch() {
+  const [isReport, setReport] = useState(false);
+  const [currentKey, setCurrentKey] = useState<Key>('details');
+  return (
+    <div data-lab-demo="replace-workflow">
+      <Button
+        size="sm"
+        onPress={() => {
+          setReport(true);
+          setCurrentKey('publish');
+        }}
+      >
+        Show report review
+      </Button>
+      <Wizard
+        aria-label="Document workflow"
+        steps={isReport ? reportSteps : draftSteps}
+        currentKey={currentKey}
+        onCurrentKeyChange={setCurrentKey}
+      />
+    </div>
+  );
+}
+
 const records = [
   { value: 'north', label: 'North office' },
   { value: 'south', label: 'South office' },
@@ -333,9 +372,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Steps that arrive"
-      description="The wizard mounts with no steps. Once they load, type a title, then add a step before it: the Title step stays shown, by its id, with its draft."
+      description="The wizard offers no Next or Finish before the steps load. Once they load, type a title, then add a step before it: the Title step stays shown, by its id, with its draft."
     >
       <ArrivingSteps />
+    </LabSection>
+    <LabSection
+      title="Replacing the workflow"
+      description="Skip Draft details and show the report review. Both workflows use the same ID for their details step, and the report does not carry over the draft's skip."
+    >
+      <WorkflowSwitch />
     </LabSection>
     <LabSection
       title="Numeric and text step IDs"

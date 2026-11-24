@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react';
 import type { Tone } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
+import { createToastTimer } from './toast-timer.js';
 
 export type ToastTone = Extract<Tone, 'info' | 'success' | 'warning' | 'danger'>;
 
@@ -84,22 +85,17 @@ export interface ToastQueue {
 }
 
 /**
- * The building block's queue a library queue drives: it orders the toasts, shows the visible ones
- * and runs their timers, all of which close through `close`.
+ * The building block's queue a library queue drives: it orders the toasts and shows the visible ones.
  */
 interface ToastStore {
-  add: (content: ToastContent, options: { timeout: number; onClose: () => void }) => string;
+  add: (content: ToastContent, options: { onClose: () => void }) => string;
   close: (key: string) => void;
   clear: () => void;
-  pauseAll: () => void;
-  resumeAll: () => void;
 }
 
 /** What a queued toast shows now, how long it lives and whether it is still open. */
 export interface ToastSnapshot {
   content: ToastContent;
-  /** The lifetime in milliseconds; `0` for none. */
-  timeout: number;
   /** Counts lifetime restarts, so the toast restarts its timer even with the same timeout. */
   lifetime: number;
   /** False once the toast is closing and playing its exit. */
@@ -117,16 +113,12 @@ export interface ToastLifecycle {
   mount: () => () => void;
   /** Removes the toast from the queue once its exit has ended. */
   finishExit: () => void;
-  /**
-   * Claims the start of the current lifetime's timer: true the first time a rendered toast shows
-   * this lifetime, false after, so a toast shown again (displaced and back, or remounted) runs on
-   * with the time that remained instead of starting over.
-   */
-  startLifetime: () => boolean;
+  /** Runs the open toast's action once, then closes it. */
+  runAction: () => void;
+  timer: ToastTimer;
 }
 
-/** The longest timer a browser keeps; React Aria needs a timer on every toast the queue restarts. */
-const timerlessTimeout = 2 ** 31 - 1;
+type ToastTimer = ReturnType<typeof createToastTimer>;
 
 const defaultToastTimeout = 5000;
 
@@ -160,13 +152,12 @@ interface ToastRecord {
   snapshot: ToastSnapshot;
   listeners: Set<() => void>;
   mounted: number;
-  /** The last lifetime whose timer started; -1 before the toast is first shown. */
-  startedLifetime: number;
+  timer: ToastTimer;
 }
 
-function createRecord(content: ToastContent, timeout: number): ToastRecord {
-  const snapshot = { content, timeout, lifetime: 0, isOpen: true };
-  return { snapshot, listeners: new Set(), mounted: 0, startedLifetime: -1 };
+function createRecord(content: ToastContent, timer: ToastTimer): ToastRecord {
+  const snapshot = { content, lifetime: 0, isOpen: true };
+  return { snapshot, listeners: new Set(), mounted: 0, timer };
 }
 
 function setSnapshot(record: ToastRecord, snapshot: ToastSnapshot) {
@@ -174,7 +165,12 @@ function setSnapshot(record: ToastRecord, snapshot: ToastSnapshot) {
   for (const listener of record.listeners) listener();
 }
 
-function createLifecycle(record: ToastRecord, remove: () => void): ToastLifecycle {
+function createLifecycle(
+  record: ToastRecord,
+  remove: () => void,
+  close: () => void,
+): ToastLifecycle {
+  let hasActed = false;
   return {
     subscribe: (listener) => {
       record.listeners.add(listener);
@@ -191,11 +187,18 @@ function createLifecycle(record: ToastRecord, remove: () => void): ToastLifecycl
       };
     },
     finishExit: remove,
-    startLifetime: () => {
-      if (record.startedLifetime === record.snapshot.lifetime) return false;
-      record.startedLifetime = record.snapshot.lifetime;
-      return true;
+    runAction: () => {
+      const { content, isOpen } = record.snapshot;
+      if (!isOpen || hasActed || !content.action) return;
+      // A host action may dispatch another press synchronously, before the toast starts its exit.
+      hasActed = true;
+      try {
+        content.action.onAction();
+      } finally {
+        close();
+      }
     },
+    timer: record.timer,
   };
 }
 
@@ -247,6 +250,22 @@ function runCallbacks(callbacks: Array<() => void>) {
   }
 }
 
+/** The building block calls onClose before removal, so wait to call hosts until it has finished. */
+function createStoreRemoval(storeClose: ToastStore['close']) {
+  const closed: Array<() => void> = [];
+  let closing = 0;
+  function removeNow(key: string) {
+    closing += 1;
+    try {
+      storeClose(key);
+    } finally {
+      closing -= 1;
+    }
+    if (closing === 0) runCallbacks(closed);
+  }
+  return { removeNow, queueCallback: (callback: () => void) => closed.push(callback) };
+}
+
 /**
  * A toast queue over a building-block queue, adding a default timeout, replacement by `id`,
  * in-place updates, promise toasts and closing exits. Every close (its timer, its dismiss button,
@@ -256,40 +275,24 @@ export function createQueueOverStore(
   ariaQueue: ToastStore,
   { defaultTimeout = defaultToastTimeout }: ToastQueueOptions = {},
 ): ToastQueue {
-  const storeClose = ariaQueue.close.bind(ariaQueue);
-  // The building block calls a toast's `onClose` before it removes the toast, by an index a callback
-  // that changes the queue would invalidate, so host callbacks wait until its close has finished.
-  const closed: Array<() => void> = [];
-  let closing = 0;
-  const removeNow = (key: string) => {
-    closing += 1;
-    try {
-      storeClose(key);
-    } finally {
-      closing -= 1;
-    }
-    if (closing === 0) runCallbacks(closed);
-  };
+  const { removeNow, queueCallback } = createStoreRemoval(ariaQueue.close.bind(ariaQueue));
   const records = new Map<string, ToastRecord>();
   const keysById = new Map<string, string>();
   const replacedKeys = new Set<string>();
 
-  // The building block's timers, dismiss buttons and state all close through the queue's `close`.
+  // Timers and the building block's dismiss buttons all close through the queue's `close`.
   ariaQueue.close = (key) => {
     const record = records.get(key);
-    if (record && record.mounted > 0) {
-      if (record.snapshot.isOpen) setSnapshot(record, { ...record.snapshot, isOpen: false });
+    if (!record?.snapshot.isOpen) return;
+    record.timer.pause();
+    const snapshot = { ...record.snapshot, isOpen: false };
+    if (record.mounted > 0) {
+      setSnapshot(record, snapshot);
       return;
     }
+    record.snapshot = snapshot;
     removeNow(key);
   };
-  // Each toast holds its own timer while its region is hovered or holds focus (useToastTimer). The
-  // building block's region pauses and resumes every timer only as its hover and focus change, which
-  // misses a timer started meanwhile, and resuming a running timer starts a second timeout, so its
-  // calls do nothing.
-  ariaQueue.pauseAll = () => {};
-  ariaQueue.resumeAll = () => {};
-
   function add(content: ToastContent, { id, onClose, timeout }: ToastAddOptions = {}) {
     const lifetime = timeout ?? (content.isPending ? 0 : defaultTimeout);
     const previous = id === undefined ? undefined : keysById.get(id);
@@ -299,20 +302,20 @@ export function createQueueOverStore(
     }
     const queued = { ...content };
     const key = ariaQueue.add(queued, {
-      timeout: lifetime > 0 ? lifetime : timerlessTimeout,
       onClose: () => {
         records.delete(key);
         if (id !== undefined && keysById.get(id) === key) keysById.delete(id);
-        if (!replacedKeys.delete(key) && onClose) closed.push(onClose);
+        if (!replacedKeys.delete(key) && onClose) queueCallback(onClose);
       },
     });
-    const record = createRecord(content, lifetime);
+    const close = () => ariaQueue.close(key);
+    const record = createRecord(content, createToastTimer(lifetime, close));
     records.set(key, record);
     // A toast is removed once, by its exit or by its last renderer leaving, unless already gone.
     const remove = () => {
       if (records.get(key) === record) removeNow(key);
     };
-    lifecycles.set(queued, createLifecycle(record, remove));
+    lifecycles.set(queued, createLifecycle(record, remove, close));
     if (id !== undefined) keysById.set(id, key);
     return key;
   }
@@ -322,11 +325,16 @@ export function createQueueOverStore(
     if (!record?.snapshot.isOpen) return;
     const previous = record.snapshot;
     const timeout = resolveUpdateTimeout(previous.content, content, { options, defaultTimeout });
-    const lifetime = timeout === undefined ? {} : { timeout, lifetime: previous.lifetime + 1 };
-    setSnapshot(record, { ...previous, content, ...lifetime });
+    if (timeout !== undefined) record.timer.reset(timeout);
+    const lifetime = timeout === undefined ? previous.lifetime : previous.lifetime + 1;
+    setSnapshot(record, { ...previous, content, lifetime });
   }
 
   function clear() {
+    for (const record of records.values()) {
+      record.timer.pause();
+      record.snapshot = { ...record.snapshot, isOpen: false };
+    }
     keysById.clear();
     replacedKeys.clear();
     records.clear();

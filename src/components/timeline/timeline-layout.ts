@@ -4,20 +4,16 @@ import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
-  createTimelineAxis,
   isDependencyConflict,
   isInTimelineRange,
   type ReadItem,
   readTimelineItem,
   resolveConnectorPath,
   resolveItemSpan,
-  resolveTimelineRange,
   type TimelineAxis,
   type TimelineDependency,
   type TimelineItem,
   type TimelineItemChange,
-  type TimelineRange,
-  type TimelineScale,
 } from './timeline-geometry.js';
 import type { VisibleRow } from './timeline-rows.js';
 
@@ -129,28 +125,4 @@ export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineL
     ];
   });
   return { rowItems, connectors, predecessors: collectPredecessors(indexed, dependencies) };
-}
-
-/**
- * The axis over the timeline's range (resolved from the items as given, so a drag never shifts it)
- * and the layout of its visible rows, with a drag in progress shown in place of the item's days.
- * `null` while the range cannot be resolved (`resolveTimelineRange`).
- */
-export function layoutTimeline(
-  options: Omit<TimelineLayoutOptions, 'axis'> & {
-    draft: TimelineItemChange | null;
-    range: TimelineRange | undefined;
-    scale: TimelineScale;
-    today: string | null;
-    locale: string;
-  },
-): { axis: TimelineAxis; layout: TimelineLayout } | null {
-  const { items, range, scale, today, locale } = options;
-  const resolved = resolveTimelineRange({ range, items, scale, today, locale });
-  if (!resolved) return null;
-  const axis = createTimelineAxis(resolved, scale, locale);
-  return {
-    axis,
-    layout: resolveTimelineLayout({ ...options, axis }),
-  };
 }

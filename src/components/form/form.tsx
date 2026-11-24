@@ -15,6 +15,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, RefProps } from '../../core/props.js';
 import { Form as AriaForm, FormContext } from '../../primitives/index.js';
 import { useFormBoundary } from '../../utils/form-boundary.js';
+import { hasNativeFormOwner } from '../../utils/form-owner.js';
 import { isHTMLElement } from '../../utils/is-element.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useShallowStable } from '../../utils/use-shallow-stable.js';
@@ -118,18 +119,25 @@ function useInvalidFocus(fields: Set<FieldRegistration>, validity: FormValidityS
   useEffect(() => {
     const element = form.current;
     if (!element) return undefined;
-    let isFocusing = false;
+    let hasBlockingField: boolean | undefined;
     const onInvalid = (event: Event) => {
+      const { target } = event;
+      if (!isHTMLElement(target)) return;
+      if (hasNativeFormOwner(target) && target.form !== element) return;
       // One pass of native validation fires an event per invalid control, synchronously: only its
       // first reveals the fields and focuses, so the work stays proportional to the form's size.
-      if (isFocusing) return;
-      isFocusing = true;
-      queueMicrotask(() => (isFocusing = false));
-      if (!validity.validate() || !isHTMLElement(event.target)) return;
-      const { target } = event;
-      const field = [...fields].find((entry) => entry.getElement()?.contains(target));
-      if (field) field.focus();
-      else target.focus();
+      if (hasBlockingField === undefined) {
+        hasBlockingField = false;
+        queueMicrotask(() => (hasBlockingField = undefined));
+        hasBlockingField = !validity.validate();
+        if (!hasBlockingField) {
+          const field = [...fields].find((entry) => entry.getElement()?.contains(target));
+          if (field) field.focus();
+          else target.focus();
+        }
+      }
+      // Any uncanceled invalid event lets the browser move focus away from the library's blocker.
+      if (hasBlockingField) event.preventDefault();
     };
     element.addEventListener('invalid', onInvalid, true);
     return () => element.removeEventListener('invalid', onInvalid, true);

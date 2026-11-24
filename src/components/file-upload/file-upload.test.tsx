@@ -676,6 +676,95 @@ describe('FileUpload', () => {
     expect(onSelect).toHaveBeenLastCalledWith([two]);
   });
 
+  it.each(['files', 'maxFiles'] as const)(
+    'UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.7 respects a smaller capacity from %s before handing on a checked offer',
+    async (change) => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      const onReject = vi.fn();
+      let answer: (message: null) => void = () => undefined;
+      const validate = vi.fn((candidate: File) =>
+        candidate.name === 'pending.txt'
+          ? new Promise<null>((resolve) => {
+              answer = resolve;
+            })
+          : null,
+      );
+      const props = {
+        label: 'Attach',
+        allowsMultiple: true,
+        maxFiles: 2,
+        onSelect,
+        onReject,
+        validate,
+      };
+      const view = render(<FileUpload {...props} files={[]} />);
+      const first = file('first.txt', 'text/plain');
+      const pending = file('pending.txt', 'text/plain');
+      const queued = file('queued.txt', 'text/plain');
+      await user.upload(chooser(view.container), [first, pending]);
+      expect(validate).toHaveBeenLastCalledWith(pending, [first]);
+      await user.upload(chooser(view.container), queued);
+      const files =
+        change === 'files'
+          ? [
+              { id: 'one', name: 'one.txt' },
+              { id: 'two', name: 'two.txt' },
+            ]
+          : [];
+      view.rerender(
+        <FileUpload {...props} files={files} maxFiles={change === 'maxFiles' ? 0 : 2} />,
+      );
+      answer(null);
+      await waitFor(() =>
+        expect(onReject.mock.calls).toEqual([
+          [
+            [
+              { file: first, reason: 'count' },
+              { file: pending, reason: 'count' },
+            ],
+          ],
+          [[{ file: queued, reason: 'count' }]],
+        ]),
+      );
+      expect(onSelect).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['files', 'maxFiles'] as const)(
+    'UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.7 fills a slot opened by %s in offer order',
+    async (change) => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      const onReject = vi.fn();
+      let answer: (message: null) => void = () => undefined;
+      const validate = vi.fn((candidate: File) =>
+        candidate.name === 'pending.txt'
+          ? new Promise<null>((resolve) => {
+              answer = resolve;
+            })
+          : null,
+      );
+      const props = { label: 'Attach', allowsMultiple: true, onSelect, onReject, validate };
+      const files = [{ id: 'owner', name: 'owner.txt' }];
+      const view = render(<FileUpload {...props} maxFiles={1} files={files} />);
+      const first = file('first.txt', 'text/plain');
+      const pending = file('pending.txt', 'text/plain');
+      await user.upload(chooser(view.container), [first, pending]);
+      expect(validate).toHaveBeenLastCalledWith(pending, []);
+      view.rerender(
+        <FileUpload
+          {...props}
+          maxFiles={change === 'maxFiles' ? 2 : 1}
+          files={change === 'files' ? [] : files}
+        />,
+      );
+      answer(null);
+      await waitFor(() => expect(onSelect).toHaveBeenCalledExactlyOnceWith([first]));
+      expect(onReject).toHaveBeenCalledExactlyOnceWith([{ file: pending, reason: 'count' }]);
+    },
+  );
+
   it('UIC-FILE-UPLOAD-2.7 refuses as unchecked a file whose check throws, behind an offer still waiting', async () => {
     const user = userEvent.setup({ applyAccept: false });
     const onSelect = vi.fn();

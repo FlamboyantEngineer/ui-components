@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { Key } from '../../primitives/index.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
@@ -97,6 +97,7 @@ export function PdfViewerSidebar<V extends PdfViewport, C extends PdfTextContent
 }: PdfViewerSidebarProps<V, C>) {
   const strings = useUiStrings();
   const hasOutline = view.outline.length > 0;
+  const thumbnailsRef = useRef<HTMLDivElement | null>(null);
   return (
     <div {...hooks.slot('sidebar')} id={id} style={{ width }}>
       <Tabs
@@ -108,8 +109,13 @@ export function PdfViewerSidebar<V extends PdfViewport, C extends PdfTextContent
           <TabsTrigger id="pages">{strings.pages}</TabsTrigger>
           <TabsTrigger id="outline">{strings.outline}</TabsTrigger>
         </TabsList>
-        <TabsContent id="pages">
-          <PdfViewerThumbnails view={view} currentPage={currentPage} onPageChange={onPageChange} />
+        <TabsContent id="pages" ref={thumbnailsRef}>
+          <PdfViewerThumbnails
+            view={view}
+            currentPage={currentPage}
+            onPageChange={onPageChange}
+            scrollerRef={thumbnailsRef}
+          />
         </TabsContent>
         <TabsContent id="outline">
           <PdfViewerOutline outline={view.outline} followDestination={followDestination} />

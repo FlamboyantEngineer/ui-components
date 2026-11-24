@@ -312,6 +312,29 @@ function SlowCheck() {
   );
 }
 
+function SlowCheckWithOwnerFile() {
+  const upload = useSimulatedUpload();
+  const [hasOwnerFile, setOwnerFile] = useState(false);
+  const files = hasOwnerFile
+    ? [{ id: 'owner', name: 'Existing.txt' }, ...upload.files]
+    : upload.files;
+  return (
+    <>
+      <button type="button" disabled={hasOwnerFile} onClick={() => setOwnerFile(true)}>
+        Supply existing file
+      </button>
+      <FileUpload
+        label="Attach one checked file"
+        maxFiles={1}
+        validate={checkSlowly}
+        files={files}
+        onSelect={upload.add}
+        data-lab-upload="live-limit"
+      />
+    </>
+  );
+}
+
 const palette = ['#3b82f6', '#16a34a', '#f59e0b', '#db2777', '#7c3aed', '#0891b2'];
 
 /** Forty photos to scroll through; the third cannot be decoded and shows the image glyph. */
@@ -501,6 +524,12 @@ mountLab(
       description='The host checks each file for 1.5 s; a file named "offline…" fails its check and one named "broken…" makes the check throw, and either is refused as unchecked. Disabling the upload or closing the editor while a check runs abandons the offer: nothing is listed or refused.'
     >
       <SlowCheck />
+    </LabSection>
+    <LabSection
+      title="File limit during a check"
+      description="Attach a file and press Supply existing file before the check finishes. The existing file takes the only slot and the checked offer is refused."
+    >
+      <SlowCheckWithOwnerFile />
     </LabSection>
     <LabSection
       title="Drop zone"

@@ -127,6 +127,20 @@ function Newsletter() {
   );
 }
 
+function MixedNativeValidation() {
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form aria-label="Schedule a visit" onSubmit={(event) => setSubmitted(readEntries(event))}>
+      <DateTimeField label="Visit date" name="date" isRequired />
+      <label>
+        Contact name <input name="contact" required />
+      </label>
+      <Button type="submit">Schedule</Button>
+      <LabOutput name="Visit">{submitted}</LabOutput>
+    </Form>
+  );
+}
+
 /** Picking up in store disables the address fieldset, whose fields then never block. */
 function Delivery() {
   const [isPickup, setIsPickup] = useState(false);
@@ -336,6 +350,12 @@ mountLab(
       description="The browser blocks the submit through the field's custom validity, and checks the email format itself."
     >
       <Newsletter />
+    </LabSection>
+    <LabSection
+      title="Mixed native validation"
+      description="Submit with both values empty. Focus moves to the visit date. Once the date is filled, the native contact input takes focus."
+    >
+      <MixedNativeValidation />
     </LabSection>
     <LabSection
       title="Fieldset"

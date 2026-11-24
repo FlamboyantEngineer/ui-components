@@ -91,6 +91,29 @@ describe('Table handle', { timeout: 15_000 }, () => {
     expect(cell.closest('[data-column]')).toHaveAttribute('data-column', 'people');
   });
 
+  it('UIC-TABLE-18.2 UIC-TABLE-19.1 reveals and focuses pins outside the paged rows', async () => {
+    const user = userEvent.setup();
+    const getChildRows = vi.fn((place: Place) => place.places);
+    const { handle } = renderPlaces({
+      getChildRows,
+      pagination: { pageSize: 1 },
+      pinnedRows: { top: [1], bottom: ['1'] },
+    });
+    const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+    await user.click(elsewhere);
+    getChildRows.mockClear();
+
+    expect(await handle().revealKey('1')).toEqual({ found: true });
+    expect(scrolled()).toHaveTextContent('Text one');
+    expect(elsewhere).toHaveFocus();
+    expect(await handle().focusKey(1, { columnId: 'people' })).toEqual({ found: true });
+    const top = screen.getByRole('row', { name: /Numeric one/ });
+    expect(within(top).getByRole('gridcell', { name: '1' })).toHaveFocus();
+    expect(await handle().revealKey('pt')).toEqual({ found: true });
+    expect(getChildRows).not.toHaveBeenCalled();
+    expect(await handle().revealKey('no')).toEqual({ found: false, reason: 'paged' });
+  });
+
   it('UIC-TABLE-19.1 keeps numeric and text ids apart', async () => {
     const { handle } = renderPlaces();
     await handle().revealKey(1);
@@ -139,6 +162,7 @@ describe('Table handle', { timeout: 15_000 }, () => {
         columns={columns}
         virtualized
         rowHeight={28}
+        pinnedRows={{ bottom: ['row-499'] }}
         handleRef={handleRef}
       />
     );
@@ -150,6 +174,9 @@ describe('Table handle', { timeout: 15_000 }, () => {
       expect(revealed).toEqual({ found: true });
       expect(scrolled()).toHaveTextContent('Place 401');
       expect(view.container.querySelector('.ui-table__scroll')?.scrollTop).toBeGreaterThan(0);
+      expect(screen.queryByRole('row', { name: /Place 500/ })).not.toBeInTheDocument();
+      expect(await act(() => handleRef.current?.revealKey('row-499'))).toEqual({ found: true });
+      expect(scrolled()).toHaveTextContent('Place 500');
 
       // A hidden page draws no frames; each wait ends after a short timeout instead.
       const noFrames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);

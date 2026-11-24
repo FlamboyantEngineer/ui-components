@@ -293,6 +293,39 @@ function RemoteSearch() {
   );
 }
 
+/** Pages repeat one city and the section ID while new entries arrive. */
+const loadRemotePage: ComboboxLoader = async (query, signal, cursor) => {
+  await delay(250, signal);
+  const matches = findCities(query);
+  const section = { id: 'matches', label: 'Matching cities' };
+  if (cursor === undefined) {
+    return {
+      items: [{ ...section, options: matches.slice(0, 1) }],
+      cursor: matches.length > 1 ? 'more' : undefined,
+    };
+  }
+  return { items: [{ ...section, options: matches }] };
+};
+
+function RemotePages() {
+  const [isMounted, setMounted] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setMounted(true)} disabled={isMounted}>
+        Mount remote combobox
+      </button>
+      {isMounted ? (
+        <Combobox
+          label="City pages"
+          loadItems={loadRemotePage}
+          defaultInputValue="li"
+          defaultOpen
+        />
+      ) : null}
+    </>
+  );
+}
+
 /** A text filter in the list header narrows the suggestions by their first letter. */
 function HeaderFilter() {
   const [prefix, setPrefix] = useState('');
@@ -657,6 +690,12 @@ mountLab(
       description="Recently used cities before typing; searches after a pause, with region filters in the list header. Type offline to see a failed search."
     >
       <RemoteSearch />
+    </LabSection>
+    <LabSection
+      title="Overlapping remote pages"
+      description="Mount the combobox to search its initial query. The next page repeats a city and its section. Each city appears once. Escape closes the list and stops any search in progress."
+    >
+      <RemotePages />
     </LabSection>
     <LabSection
       title="Filter in the list header"
