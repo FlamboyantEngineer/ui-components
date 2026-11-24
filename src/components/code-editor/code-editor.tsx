@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { FieldInputProps } from '../field/field.js';
+import { normalizeCodeSource } from './code-editing.js';
 import { CodeField } from './code-field.js';
 import { type CodeLanguage, type CodeSyntax, resolveCodeTokenizer } from './code-languages.js';
 import { type CodeEditorSize, CodeSurface, type CodeSurfaceProps } from './code-surface.js';
@@ -33,12 +34,13 @@ export type CodeEditorProps = CodeEditorFieldProps | CodeEditorSurfaceProps;
 
 /** An embedded surface; a custom `syntax` builds its tokenizer once, not on every render. */
 function SurfaceEditor(props: CodeEditorSurfaceProps) {
-  const { variant: _variant, syntax, language = 'text', ...surface } = props;
+  const { variant: _variant, syntax, language = 'text', value, ...surface } = props;
+  const source = useMemo(() => normalizeCodeSource(value), [value]);
   const tokenize = useMemo(
     () => surface.tokenize ?? resolveCodeTokenizer({ language, syntax }),
     [surface.tokenize, language, syntax],
   );
-  return <CodeSurface {...surface} language={language} tokenize={tokenize} />;
+  return <CodeSurface {...surface} value={source} language={language} tokenize={tokenize} />;
 }
 
 /** A code field, or an embedded surface, with preset or custom syntax and located diagnostics. */

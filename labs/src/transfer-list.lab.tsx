@@ -139,7 +139,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering and moving all"
-      description="Every word must match, ignoring case and accents; spaces, slashes, underscores and dashes separate words. Move every shown row, or select several with Shift and Ctrl or Cmd."
+      description="Every word must match, ignoring case and accents. Filter for LI, then focus a row and press Ctrl+A or Cmd+A. Clear the filter and Move selected still moves just Lisbon and Lima."
     >
       <Itinerary />
     </LabSection>

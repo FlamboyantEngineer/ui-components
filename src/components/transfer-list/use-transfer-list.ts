@@ -45,7 +45,7 @@ function buildSide(
     filterText,
     selection,
     blocked,
-  }: { filterText: string; selection: Selection; blocked: ReadonlySet<Key> },
+  }: { filterText: string; selection: ReadonlySet<Key>; blocked: ReadonlySet<Key> },
 ): TransferSide {
   const terms = splitMatchTerms(filterText, { ignoreAccents: true });
   const shown =
@@ -53,9 +53,8 @@ function buildSide(
       ? all
       : all.filter((item) => textMatchesTerms(item.label, terms, { ignoreAccents: true }));
   const movable = new Set(shown.map((item) => item.id).filter((key) => !blocked.has(key)));
-  const filtered =
-    selection === 'all' ? movable : new Set([...selection].filter((key) => movable.has(key)));
-  const selected = selection !== 'all' && filtered.size === selection.size ? selection : filtered;
+  const filtered = new Set([...selection].filter((key) => movable.has(key)));
+  const selected = filtered.size === selection.size ? selection : filtered;
   return { all, shown, selected, movable, filterText };
 }
 
@@ -71,9 +70,9 @@ export function useTransferList(options: TransferListOptions) {
     options.onChange && ((next) => options.onChange?.([...next])),
   );
   const [filters, setFilters] = useState<PerSide<string>>({ available: '', chosen: '' });
-  const [selections, setSelections] = useState<PerSide<Selection>>({
-    available: noKeys as Set<Key>,
-    chosen: noKeys as Set<Key>,
+  const [selections, setSelections] = useState<PerSide<ReadonlySet<Key>>>({
+    available: noKeys,
+    chosen: noKeys,
   });
   // A stable set, so the sides' lists keep their rows across unrelated renders.
   const blocked = useMemo<ReadonlySet<Key>>(
@@ -101,8 +100,11 @@ export function useTransferList(options: TransferListOptions) {
         ? addChosenKeys(chosen, { added: moved, order })
         : chosen.filter((key) => !moved.has(key)),
     );
-    const to = from === 'available' ? 'chosen' : 'available';
-    setSelections({ [from]: new Set(), [to]: moved } as PerSide<Selection>);
+    setSelections(
+      from === 'available'
+        ? { available: noKeys, chosen: moved }
+        : { available: moved, chosen: noKeys },
+    );
   };
   // Up and down step among the rows the chosen side shows; rows its filter hides keep their places.
   const shownChosen = sides.chosen.shown.map((item) => item.id);
@@ -124,8 +126,11 @@ export function useTransferList(options: TransferListOptions) {
     /** Moves the actioned row, or the whole selection when it holds the row. */
     act: (from: TransferListSide, key: Key) =>
       transfer(from, sides[from].selected.has(key) ? sides[from].selected : new Set([key])),
-    select: (side: TransferListSide, keys: Selection) =>
-      setSelections((current) => ({ ...current, [side]: keys })),
+    select: (side: TransferListSide, keys: Selection) => {
+      // Capture the items shown when Select All was pressed, before the filter or items change.
+      const selected = keys === 'all' ? sides[side].movable : keys;
+      setSelections((current) => ({ ...current, [side]: selected }));
+    },
     filter: (side: TransferListSide, text: string) =>
       setFilters((current) => ({ ...current, [side]: text })),
     // Disabled rows never move, even when a drag that held them started before they were disabled.

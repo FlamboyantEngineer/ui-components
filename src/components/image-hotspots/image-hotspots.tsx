@@ -7,6 +7,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, RefProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { layoutMedia } from '../../utils/layout-media.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useImageLoading } from '../../utils/use-image-loading.js';
 import { useZoomViewport } from '../../utils/use-zoom-viewport.js';
@@ -137,7 +138,8 @@ function useSurfaceZoom(
 ) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const stage = useElementSize(viewportRef, { box: 'client' }) ?? { width: 0, height: 0 };
+  // Scrollbars from a zoomed canvas must leave its fit unchanged.
+  const stage = useElementSize(viewportRef, { box: 'scrollbar-free' }) ?? { width: 0, height: 0 };
   const [zoom, setZoom] = useControllableState(
     options.zoom,
     options.defaultZoom ?? 100,
@@ -241,7 +243,7 @@ export function ImageHotspots({
             </span>
           ) : null}
           {hotspots.map((hotspot) => (
-            <Hotspot key={hotspot.id} hotspot={hotspot} onAction={onAction} />
+            <Hotspot key={toKeyIdentity(hotspot.id)} hotspot={hotspot} onAction={onAction} />
           ))}
         </div>
       </div>

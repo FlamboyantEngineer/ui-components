@@ -8,8 +8,10 @@
 
 `CodeEditor` shall render its `value` in a `<textarea>` (`ui-code-editor__input`), the control, with spelling, autocorrection, autocapitalization and autocomplete off, and report each edit through `onChange`. Behind it, a `<pre>` (`ui-code-editor__highlight`) hidden from assistive technology draws the same text, so a stylesheet can make the text area's text transparent and let the copy paint it. The text area takes the caller's `placeholder`, `name` (so a form submits the source under it), labelling props (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `aria-errormessage`, `isRequired` (as `aria-required`) and its focus and keyboard handlers (`onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`), which run after the editor's own.
 
-Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+Both variants render imported CRLF and CR as LF, as the native textarea does. Tokens, diagnostic and hover positions, line numbers, search ranges and native selections share that representation. Rendering an imported value does not report an edit. Editing reports the textarea's LF text.
+
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-field.tsx`, `src/components/code-editor/code-editing.ts`, `src/components/code-editor/code-layers.tsx`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-search.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-1.2 - Tokens
 
@@ -193,6 +195,8 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 A completion's `insertText` shall be inserted instead of its label. Only `insertText` interprets `${…}` as a field holding its default text; a label is literal text. A backslash before `$`, `}` or another backslash quotes that character, including inside a field. Other backslashes remain literal. The lines after the first take the indentation of the line the insertion goes into. After the insertion the first field is selected (or else the caret goes after the insertion), and while the caret stays in the current field Tab selects the next field, then the end of the insertion, and Shift+Tab the previous field; Tab with the caret elsewhere, or after the last field, ends the stepping. So does any change to the text outside the current field (a replaced, restored, reset or undone text, even of the same length, or an edit elsewhere), the editor becoming read-only or disabled, Escape (so Escape then Tab leaves the editor) and leaving the editor; edits inside the current field keep it and move the later fields.
 
+Completion text uses LF before computing insertion and snippet field offsets, so imported line endings in a completion follow the same rules as imported source text.
+
 Implementation: `src/components/code-editor/completion-match.ts`, `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/use-code-snippet.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/completion-match.test.ts`, `src/components/code-editor/use-code-completion.test.tsx`, `e2e/code-editor.spec.ts`
 
@@ -238,6 +242,8 @@ Verification: `src/components/code-editor/code-editing.test.ts`, `src/components
 ### UIC-CODE-EDITOR-6.5 - Matching brackets
 
 While the text area has focus with a collapsed caret, the bracket right before the caret (or else right after it) and its partner shall render inside `ui-code-editor__bracket`; a bracket without a partner carries `data-unmatched`. Nested brackets must match by type in order; an intervening mismatched pair leaves the bracket unmatched. Brackets inside tokens typed `string`, `key` or `comment` are not counted.
+
+Moving the caret away from brackets skips the token scan. The first adjacent bracket builds the token mask, which is reused until the source or its tokens change.
 
 Implementation: `src/components/code-editor/code-ranges.ts`, `src/components/code-editor/code-segments.ts`, `src/components/code-editor/use-code-editor.ts`
 Verification: `src/components/code-editor/code-ranges.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

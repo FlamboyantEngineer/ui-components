@@ -142,6 +142,41 @@ describe('TransferList', () => {
     expect(count()).toHaveTextContent('5 items, 5 selected');
   });
 
+  it.each([false, true])(
+    'UIC-TRANSFER-LIST-2.1 keeps a filtered select-all fixed when the query clears (virtualized=%s)',
+    async (virtualized) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <TransferList
+          aria-label="Plants"
+          items={[
+            { id: 1, label: 'Alder' },
+            { id: '1', label: 'Almond' },
+            { id: 2, label: 'Algae' },
+            { id: 3, label: 'Birch' },
+          ]}
+          disabledKeys={[2]}
+          onChange={onChange}
+          virtualized={virtualized}
+        />,
+      );
+      const row = (name: string) => within(side('Available')).getByRole('row', { name });
+      const filter = screen.getByRole('searchbox', { name: 'Filter available' });
+      await user.type(filter, 'al');
+      await user.click(row('Alder'));
+      await user.keyboard('{Control>}a{/Control}');
+      expect(row('Almond')).toHaveAttribute('aria-selected', 'true');
+      expect(row('Algae')).toHaveAttribute('aria-disabled', 'true');
+
+      await user.clear(filter);
+      expect(row('Birch')).toHaveAttribute('aria-selected', 'false');
+      await user.click(screen.getByRole('button', { name: 'Move selected to chosen' }));
+      expect(onChange).toHaveBeenCalledExactlyOnceWith([1, '1']);
+      expect(rows('Available')).toEqual(['Algae', 'Birch']);
+    },
+  );
+
   it("UIC-TRANSFER-LIST-1.3 describes each side's list by its count", () => {
     render(<TransferList aria-label="Cities" items={cities} defaultValue={['oslo']} />);
     expect(side('Available')).toHaveAccessibleDescription('4 items');

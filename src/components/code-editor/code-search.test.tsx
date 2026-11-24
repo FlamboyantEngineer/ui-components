@@ -36,6 +36,35 @@ function matches(container: HTMLElement) {
 }
 
 describe('CodeEditor find and replace', () => {
+  it.each(['\r\n', '\r'])(
+    'UIC-CODE-EDITOR-1.1 UIC-CODE-EDITOR-7.3 UIC-CODE-EDITOR-7.4 uses textarea offsets with %j line endings',
+    async (lineBreak) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const tokenize = vi.fn((value: string) => [{ text: value }]);
+      const initialValue = ['first', 'basket here', 'basket end'].join(lineBreak);
+      const { container } = render(
+        <Editor {...{ initialValue, onChange, tokenize }} lineNumbers />,
+      );
+      expect(input()).toHaveValue('first\nbasket here\nbasket end');
+      expect(tokenize).toHaveBeenCalledWith(input().value);
+      expect(container.querySelectorAll('.ui-code-editor__line-number')).toHaveLength(3);
+      expect(onChange).not.toHaveBeenCalled();
+      await user.click(input());
+      await user.keyboard('{Control>}{Home}f{/Control}basket');
+      expect(matches(container)).toEqual(['[basket]', 'basket']);
+      await user.click(screen.getByRole('button', { name: 'Close' }));
+      expect(input()).toHaveFocus();
+      expect(input().value.slice(input().selectionStart, input().selectionEnd)).toBe('basket');
+      await user.keyboard('{Control>}f{/Control}');
+      await user.type(screen.getByRole('textbox', { name: 'Replace with' }), 'crate');
+      await user.click(screen.getByRole('button', { name: 'Replace' }));
+      expect(onChange).toHaveBeenCalledExactlyOnceWith('first\ncrate here\nbasket end');
+      await user.click(screen.getByRole('button', { name: 'Replace all' }));
+      expect(onChange).toHaveBeenNthCalledWith(2, 'first\ncrate here\ncrate end');
+    },
+  );
+
   it('UIC-CODE-EDITOR-7.3 replaces original source ranges after a character whose lowercase expands', async () => {
     const user = userEvent.setup();
     render(<Editor initialValue="İ apple APPLE" />);

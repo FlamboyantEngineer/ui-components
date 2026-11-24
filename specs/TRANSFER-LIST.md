@@ -47,7 +47,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 
 ### UIC-TRANSFER-LIST-2.1 - Selection
 
-Each side shall select several rows in the list view's replace behaviour: a press selects one row, Shift extends the range, Ctrl or Cmd toggles a row, the arrow keys move the selection and Ctrl+A selects every row. A side's selection only ever holds rows it shows and can move.
+Each side shall select several rows in the list view's replace behaviour: a press selects one row, Shift extends the range, Ctrl or Cmd toggles a row, and the arrow keys move the selection. Ctrl+A or Cmd+A selects all rows that are shown and movable when pressed, including rows outside a virtualized viewport. Clearing or widening a filter leaves newly shown rows unselected when they were outside that selection. A side's active selection only holds rows it shows and can move.
 
 Implementation: `src/components/transfer-list/transfer-pane.tsx`, `src/components/transfer-list/use-transfer-list.ts`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`

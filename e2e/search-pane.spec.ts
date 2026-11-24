@@ -26,7 +26,7 @@ test.describe('Search Pane lab', () => {
     await expect(area.locator('[data-lab-output="activations"]')).toHaveText('4');
   });
 
-  test('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-5.1 draws each state in each replace mode', async ({
+  test('UIC-SEARCH-PANE-1.2 UIC-SEARCH-PANE-3.1 UIC-SEARCH-PANE-3.3 UIC-SEARCH-PANE-5.1 draws each state in each replace mode', async ({
     page,
     lab,
   }) => {
@@ -55,6 +55,14 @@ test.describe('Search Pane lab', () => {
     const pending = matrixCell(page, 'state=pending mode=none');
     await expect(pending.getByRole('option')).toHaveCount(2);
     await expect(pending.locator('.ui-find-bar__status')).toHaveText('Searching…');
+    const pendingReplace = matrixCell(page, 'state=pending mode=shown');
+    const retainedMatch = pendingReplace.getByRole('option').first();
+    await retainedMatch.click();
+    await expect(retainedMatch).toHaveAttribute('aria-selected', 'true');
+    await expect(
+      pendingReplace.getByRole('button', { name: 'Replace', exact: true }),
+    ).toBeDisabled();
+    await expect(pendingReplace.getByRole('button', { name: 'Replace all' })).toBeDisabled();
     await expect(matrixCell(page, 'state=error mode=none').getByRole('alert')).toHaveText(
       'The search failed.',
     );
@@ -189,6 +197,27 @@ test.describe('Search Pane lab', () => {
     await expect(status).toHaveText('1 of 820');
     await expect(list.getByRole('option').first()).toHaveAttribute('aria-selected', 'true');
     await expect(area.getByRole('button', { name: 'Show 620 more results' })).toBeVisible();
+  });
+
+  test('UIC-SEARCH-PANE-2.3 realigns an open result page when its cap changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('search-pane');
+    const area = demo(page, 'many-results');
+    const rows = area.getByRole('listbox', { name: 'Search results' }).getByRole('option');
+    await area.getByRole('button', { name: 'Show 620 more results' }).click();
+    await expect(rows.first()).toContainText('Entry 201');
+    const resize = area.getByRole('button', { name: 'Show 150 results per page' });
+    await resize.click();
+    await expect(rows).toHaveCount(150);
+    await expect(rows.first()).toContainText('Entry 151');
+    await expect(rows.nth(50)).toContainText('Entry 201');
+    await expect(area.getByRole('button', { name: 'Show 200 results per page' })).toBeFocused();
+
+    await area.getByRole('button', { name: 'Move Entry 201 near the start' }).click();
+    await expect(rows.first()).toContainText(/Entry 1\b/);
+    await expect(rows.nth(1)).toContainText('Entry 201');
   });
 
   test('UIC-SEARCH-PANE-5.2 wraps a narrow find row with the count and arrows together at the start', async ({

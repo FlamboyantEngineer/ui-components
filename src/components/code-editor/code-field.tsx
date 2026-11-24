@@ -11,6 +11,7 @@ import {
   toAriaControlProps,
   useFieldControl,
 } from '../field/field.js';
+import { normalizeCodeSource } from './code-editing.js';
 import type { CodeEditorFieldProps } from './code-editor.js';
 import { codeEditorHooks as hooks } from './code-editor-hooks.js';
 import { resolveCodeTokenizer } from './code-languages.js';
@@ -65,7 +66,7 @@ function useCodeFieldCheck(props: CodeEditorFieldProps) {
     check,
     isJson,
     checkField: (value: string): FieldIssue | null =>
-      (isJson ? check(value).issue : null) ??
+      (isJson ? check(normalizeCodeSource(value)).issue : null) ??
       (problem ? { severity: 'error', message: problem.message } : null),
   };
 }
@@ -78,6 +79,7 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
     emptyValue: '',
     check: checkField,
   });
+  const value = useMemo(() => normalizeCodeSource(state.value), [state.value]);
   const {
     indent = 2,
     lineNumbers = true,
@@ -102,7 +104,7 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
   const isFormattable = formatted !== null && formatted !== shownValue;
   // The checker keeps its last result, so the list changes only when the value's problems or the
   // supplied ones do, and the surface keeps its marks.
-  const ownDiagnostics = isJson ? check(state.value).diagnostics : undefined;
+  const ownDiagnostics = isJson ? check(value).diagnostics : undefined;
   const diagnostics = useMemo(
     () => [...(ownDiagnostics ?? []), ...(suppliedDiagnostics ?? [])],
     [ownDiagnostics, suppliedDiagnostics],
@@ -132,6 +134,7 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
     );
   return {
     state,
+    value,
     field,
     size,
     language,
@@ -153,7 +156,7 @@ function useCodeField({ size = 'md', variant: _variant, ...props }: CodeEditorFi
 }
 export function CodeField(props: CodeEditorFieldProps) {
   const code = useCodeField(props);
-  const { state, field, size, language, isJson, schema } = code;
+  const { state, value, field, size, language, isJson, schema } = code;
   return (
     <Field
       state={state}
@@ -171,7 +174,7 @@ export function CodeField(props: CodeEditorFieldProps) {
           language={language}
           {...toSurfaceControlProps(control)}
           ref={control.ref}
-          value={state.value}
+          value={value}
           onChange={state.setValue}
           tokenize={code.tokenizer}
           diagnostics={code.diagnostics}
@@ -179,7 +182,7 @@ export function CodeField(props: CodeEditorFieldProps) {
           completions={code.suppliedCompletions ?? (isJson ? code.completions : undefined)}
           renderHover={
             code.suppliedHover ??
-            (isJson && schema ? (offset) => describeJsonAt(schema, state.value, offset) : undefined)
+            (isJson && schema ? (offset) => describeJsonAt(schema, value, offset) : undefined)
           }
           indent={code.indent}
           autoCloseBrackets={code.autoCloseBrackets}

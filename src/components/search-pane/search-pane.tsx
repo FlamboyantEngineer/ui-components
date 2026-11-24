@@ -81,15 +81,19 @@ export interface SearchPaneProps extends RefProps<HTMLDivElement>, BaseProps {
 type ReplaceProps = Pick<
   SearchPaneProps,
   'onReplace' | 'onReplaceAll' | 'isReplaceDisabled' | 'isReplaceAllDisabled'
-> & { results: readonly SearchPaneResult[]; current: SearchPaneResult | undefined };
+> & {
+  results: readonly SearchPaneResult[];
+  current: SearchPaneResult | undefined;
+  areResultsReady: boolean;
+};
 
 const noResults: readonly SearchPaneResult[] = [];
 
 /**
- * The replace props the find bar takes: each handler given, with Replace disabled while the current
- * result cannot be replaced and Replace all while no result can.
+ * A pending search keeps its previous results for browsing, but their offsets are not safe to
+ * replace until the host reports that the search is ready.
  */
-function toFindBarReplace({ results, current, ...props }: ReplaceProps) {
+function toFindBarReplace({ results, current, areResultsReady, ...props }: ReplaceProps) {
   const { onReplace, onReplaceAll } = props;
   return {
     onReplace:
@@ -99,8 +103,12 @@ function toFindBarReplace({ results, current, ...props }: ReplaceProps) {
       }),
     onReplaceAll,
     isReplaceDisabled:
-      Boolean(props.isReplaceDisabled) || !current || current.isReplaceable === false,
+      !areResultsReady ||
+      Boolean(props.isReplaceDisabled) ||
+      !current ||
+      current.isReplaceable === false,
     isReplaceAllDisabled:
+      !areResultsReady ||
       Boolean(props.isReplaceAllDisabled) ||
       !results.some((result) => result.isReplaceable !== false),
   };
@@ -168,7 +176,9 @@ export function SearchPane(props: SearchPaneProps) {
     onKeyDownCapture,
   } = useSearchPane({ ...props, results, status, replaceMode });
   const hasList = results.length > 0 && (state === 'results' || state === 'pending');
-  const replace = isExpanded ? toFindBarReplace({ ...props, results, current }) : {};
+  const replace = isExpanded
+    ? toFindBarReplace({ ...props, results, current, areResultsReady: state === 'results' })
+    : {};
   return (
     <div
       ref={ref}
@@ -218,7 +228,7 @@ export function SearchPane(props: SearchPaneProps) {
           currentIndex={currentIndex}
           onCurrentIndexChange={setCurrentIndex}
           isReplaceMode={isReplaceMode}
-          maxMounted={props.maxMountedResults ?? 200}
+          maxMounted={props.maxMountedResults}
         />
       ) : null}
     </div>

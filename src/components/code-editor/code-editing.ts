@@ -183,3 +183,8 @@ export function deletePair(value: string, selection: CodeSelection): CodeEdit | 
 export function indentationAt(value: string, offset: number): string {
   return leadingSpace(value.slice(findLineStart(value, offset)));
 }
+
+/** Native textarea values count CRLF and CR as one LF, including in selections and input events. */
+export function normalizeCodeSource(value: string): string {
+  return value.replace(/\r\n?/g, '\n');
+}

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -68,6 +68,10 @@ describe('Tour step preparation', () => {
     expect(spotlight()).toHaveAttribute('data-pending', 'true');
     expect(spotlight()).not.toHaveAttribute('data-target-missing');
     expect(screen.getByRole('button', { name: 'Finish' })).toBeDisabled();
+    const skip = screen.getByRole('button', { name: 'Skip' });
+    expect(skip).toBeEnabled();
+    await user.tab();
+    expect(skip).toHaveFocus();
     expect(document.querySelector('.ui-tour__arrow')).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'TOUR', { slots: ['status', 'spotlight'] });
     await act(async () => {
@@ -78,7 +82,48 @@ describe('Tour step preparation', () => {
     expect(status()).toBeEmptyDOMElement();
     expect(spotlight()).not.toHaveAttribute('data-pending');
     expect(spotlight()).not.toHaveAttribute('data-target-missing');
-    expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled();
+    const finish = screen.getByRole('button', { name: 'Finish' });
+    expect(finish).toBeEnabled();
+    expect(screen.queryByRole('button', { name: 'Skip' })).not.toBeInTheDocument();
+    expect(finish).toHaveFocus();
+  });
+
+  it('UIC-TOUR-1.4 UIC-TOUR-2.2 UIC-TOUR-2.5 lets the reader skip a pending single-step modal', async () => {
+    const user = userEvent.setup();
+    const pending = deferred();
+    const prepare = vi.fn<NonNullable<TourStep['prepare']>>(() => pending.promise);
+    const onSkip = vi.fn();
+    const onFinish = vi.fn();
+    function Intro() {
+      const [isOpen, setOpen] = useState(false);
+      return (
+        <>
+          <button id="intro" type="button" onClick={() => setOpen(true)}>
+            Show introduction
+          </button>
+          <Tour
+            steps={[{ target: '#intro', title: 'Intro', prepare }]}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+            onSkip={onSkip}
+            onFinish={onFinish}
+          />
+        </>
+      );
+    }
+
+    render(<Intro />);
+    const opener = screen.getByRole('button', { name: 'Show introduction' });
+    await user.click(opener);
+    expect(root()).toHaveAttribute('data-status', 'pending');
+    expect(screen.getByRole('button', { name: 'Finish' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Skip' }));
+    expect(prepare.mock.calls[0]?.[0].signal.aborted).toBe(true);
+    expect(onSkip).toHaveBeenCalledExactlyOnceWith(0);
+    expect(onFinish).not.toHaveBeenCalled();
+    await act(async () => pending.resolve());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 
   it('UIC-TOUR-1.4 retries a failed preparation with a fresh signal', async () => {
@@ -164,6 +209,7 @@ describe('Tour step preparation', () => {
       const { rerender } = render(<Late shows={false} />);
       await screen.findByRole('dialog', { name: 'Late' });
       expect(root()).toHaveAttribute('data-status', 'pending');
+      expect(screen.getByRole('button', { name: 'Skip' })).toBeEnabled();
       rerender(<Late shows />);
       expect(root()).toHaveAttribute('data-status', 'ready');
       expect(spotlight()).not.toHaveAttribute('data-target-missing');

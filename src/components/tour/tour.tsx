@@ -137,7 +137,9 @@ function useStepPlace(step: TourStep | undefined, index: number, isOpen: boolean
     hasTarget: target.element !== null,
     timeout: step?.targetTimeout ?? 0,
   });
-  const status: TourStepStatus = isWaiting ? 'pending' : preparation.status;
+  // Keep an already shown pending dialog mounted through the first anchor lookup.
+  const isResolving = preparation.status === 'ready' && !target.isResolved;
+  const status: TourStepStatus = isWaiting || isResolving ? 'pending' : preparation.status;
   const [spotlight, setSpotlight] = useState<HTMLDivElement | null>(null);
   const element = status === 'ready' ? target.element : null;
   const anchor = element ?? spotlight;
@@ -152,7 +154,7 @@ function useStepPlace(step: TourStep | undefined, index: number, isOpen: boolean
     setSpotlight,
     anchorRef,
     shouldUpdatePosition,
-    isShown: anchor !== null && (status !== 'ready' || target.isResolved),
+    isShown: anchor !== null,
   };
 }
 
