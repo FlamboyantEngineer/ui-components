@@ -297,7 +297,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/
 
 The surface (`ui-rich-text-editor__surface`) shall be the document's scrolling viewport once the host bounds its height (the reference stylesheet gives it `overflow: auto`; a host sets `max-height` or `height`). It sits in `ui-rich-text-editor__body` beside `ui-rich-text-editor__scrollbars`, the shared overlay scrollbars of [Scroll Region](SCROLL-REGION.md), which draw a vertical track only while the surface overflows and keep its thumb out of the Tab sequence. The reference stylesheet hides the native scrollbar. The content carries `tabindex="0"` unless the editor is disabled, so the scrolling surface holds a stop in the tab sequence. The caret, selection, keyboard scrolling and the wheel keep scrolling the surface natively, and the floating chrome stays with its blocks as it scrolls.
 
-Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/surface-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/surface-scrollbars.tsx`, `src/components/scroll-region/editor-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-12.2 - Block markers

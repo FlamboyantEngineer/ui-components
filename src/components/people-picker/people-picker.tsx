@@ -42,35 +42,32 @@ export type PeoplePickerPage = RemotePage<PeoplePickerPerson>;
  */
 export type PeoplePickerLoader = RemoteLoader<PeoplePickerPerson>;
 
-export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
-  extends
-    RefProps<HTMLDivElement>,
-    BaseProps,
-    AriaLabellingProps,
-    Pick<
-      ComboboxProps<M>,
-      | 'selectionMode'
-      | 'value'
-      | 'defaultValue'
-      | 'onChange'
-      | 'label'
-      | 'description'
-      | 'errorMessage'
-      | 'placeholder'
-      | 'isDisabled'
-      | 'isReadOnly'
-      | 'isInvalid'
-      | 'isRequired'
-      | 'searchDelay'
-      | 'minSearchLength'
-      | 'name'
-      | 'form'
-      | 'autoFocus'
-      | 'inputRef'
-      | 'isOpen'
-      | 'defaultOpen'
-      | 'onOpenChange'
-    > {
+type PeoplePickerComboboxProps<M extends ComboboxSelectionMode> = Pick<
+  ComboboxProps<M>,
+  | 'selectionMode'
+  | 'value'
+  | 'defaultValue'
+  | 'onChange'
+  | 'label'
+  | 'description'
+  | 'errorMessage'
+  | 'placeholder'
+  | 'isDisabled'
+  | 'isReadOnly'
+  | 'isInvalid'
+  | 'isRequired'
+  | 'searchDelay'
+  | 'minSearchLength'
+  | 'name'
+  | 'form'
+  | 'autoFocus'
+  | 'inputRef'
+  | 'isOpen'
+  | 'defaultOpen'
+  | 'onOpenChange'
+>;
+
+interface PeoplePickerOptions extends RefProps<HTMLDivElement>, BaseProps, AriaLabellingProps {
   /** Field size. Defaults to `md`. */
   size?: Extract<ControlSize, 'sm' | 'md' | 'lg'> | undefined;
   /** Searches people and groups as the reader types. Keep it stable: a new loader searches again. */
@@ -82,6 +79,13 @@ export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
   /** People listed before a search without a heading, such as those a saved value holds, so their names show without a search. */
   knownPeople?: readonly PeoplePickerPerson[] | undefined;
 }
+
+/** One person by default, or multiple people with `selectionMode="multiple"`. */
+export type PeoplePickerProps<M extends ComboboxSelectionMode = 'single'> = {
+  selectionMode?: M | undefined;
+} & {
+  [Mode in M]: PeoplePickerOptions & PeoplePickerComboboxProps<Mode>;
+}[M];
 
 const hooks = createHooks('people-picker', ['person', 'you', 'avatar']);
 

@@ -4,10 +4,17 @@ import type { RichMessageComposerProps } from '../message-composer/rich/rich-mes
 import type { ChatComposerProps } from './chat-composer.js';
 import type { ChatQueuedMessage } from './chat-controller.js';
 import { toDisplayTokens } from './chat-model.js';
-import type { ChatProgress, ChatProgressAction } from './chat-progress.js';
+import type { ChatProgress } from './chat-progress.js';
 
 /** A message as the composer sends it: Markdown text and its tokens. */
 type ComposerMessage = Parameters<NonNullable<RichMessageComposerProps['onSubmit']>>[0];
+
+type RegularSubmission =
+  | { action: 'save'; editing: NonNullable<ChatComposerProps['state']['editing']> }
+  | { action: 'send'; replyTo?: string }
+  | { action: 'queue' };
+
+type ChatSubmission = RegularSubmission | { action: 'steer' };
 
 /** What a submission reads when it is sent and when the host accepts it. */
 interface SubmitReaders {
@@ -34,9 +41,9 @@ function whenAccepted(result: void | Promise<unknown>, onAccepted: () => void) {
 function submitMessage(
   { options, state }: ChatComposerProps,
   message: ComposerMessage,
-  { readShown, readQueue }: SubmitReaders,
+  { submission, readShown, readQueue }: SubmitReaders & { submission: RegularSubmission },
 ): void | Promise<unknown> {
-  const { editing, replyingId, session } = state;
+  const { session } = state;
   const { text, tokens: composerTokens } = message;
   const tokens = toDisplayTokens(composerTokens);
   const scope = options.conversationId;
@@ -44,22 +51,22 @@ function submitMessage(
     const shown = readShown();
     return shown === undefined || isSameMessage(shown, message);
   };
-  if (editing?.kind === 'message') {
-    const result = options.onEdit?.(editing.id, text, tokens);
+  if (submission.action === 'save') {
+    const { editing } = submission;
+    const result =
+      editing.kind === 'message'
+        ? options.onEdit?.(editing.id, text, tokens)
+        : options.onQueueChange?.(
+            readQueue().map((entry) =>
+              entry.id === editing.id ? { ...entry, text, tokens } : entry,
+            ),
+          );
     return whenAccepted(result, () => {
       if (isShown()) state.endEdit(scope, session);
     });
   }
-  if (editing) {
-    const result = options.onQueueChange?.(
-      readQueue().map((entry) => (entry.id === editing.id ? { ...entry, text, tokens } : entry)),
-    );
-    return whenAccepted(result, () => {
-      if (isShown()) state.endEdit(scope, session);
-    });
-  }
-  if (replyingId !== null && options.onReply) {
-    const result = options.onReply(replyingId, text, tokens);
+  if (submission.action === 'send' && submission.replyTo !== undefined) {
+    const result = options.onReply?.(submission.replyTo, text, tokens);
     return whenAccepted(result, () => {
       if (isShown()) state.endReply(scope, session);
     });
@@ -68,7 +75,7 @@ function submitMessage(
 }
 
 /** Sends the composer's message at once while a reply runs, ahead of the queue. */
-export function sendMessageNow(
+function sendMessageNow(
   { options, state }: ChatComposerProps,
   message: ComposerMessage,
   readShown: () => ComposerMessage | undefined,
@@ -86,40 +93,34 @@ export function sendMessageNow(
   });
 }
 
-/**
- * Whether sending the composer's message steers: a new message or quoted reply written
- * during a reply while the reader steers automatically.
- */
-function steersNow({ options, state }: ChatComposerProps, steers: boolean) {
-  return steers && Boolean(options.isPending) && !state.editing;
-}
-
-/**
- * What sending the composer's message does: save an edit, send a reply (which goes to `onReply`
- * at once, during a running response too), queue it while a reply runs, or send it.
- */
-function toSubmitAction({ options, state }: ChatComposerProps): ChatProgressAction {
-  if (state.editing) return 'save';
-  if (state.replyingId !== null && options.onReply) return 'send';
-  return options.isPending && options.onQueueChange ? 'queue' : 'send';
+/** Resolves what the usual submission does so dispatch, the hint and progress agree. */
+export function resolveChatSubmission(
+  {
+    options: { isPending, onReply, onQueueChange },
+    state: { editing, replyingId },
+  }: ChatComposerProps,
+  steers: boolean,
+): ChatSubmission {
+  if (editing) return { action: 'save', editing };
+  if (isPending && steers) return { action: 'steer' };
+  if (replyingId !== null && onReply) return { action: 'send', replyTo: replyingId };
+  return isPending && onQueueChange ? { action: 'queue' } : { action: 'send' };
 }
 
 interface SendContext extends SubmitReaders {
-  /** The reader steers during a reply instead of queuing. */
-  steers: boolean;
+  submission: ChatSubmission;
   track: ChatProgress['track'];
 }
 
-/**
- * Sends what the composer holds: at once ahead of the queue when the reader steers during a reply,
- * else as `submitMessage` does, showing the host's answer under way while it takes time.
- */
+/** Sends what the composer holds and reports the same action while the host accepts it. */
 export function sendFromComposer(
   props: ChatComposerProps,
   message: ComposerMessage,
-  { steers, track, ...readers }: SendContext,
+  { submission, track, ...readers }: SendContext,
 ): void | Promise<unknown> {
-  if (steersNow(props, steers))
-    return track('steer', sendMessageNow(props, message, readers.readShown));
-  return track(toSubmitAction(props), submitMessage(props, message, readers));
+  const result =
+    submission.action === 'steer'
+      ? sendMessageNow(props, message, readers.readShown)
+      : submitMessage(props, message, { ...readers, submission });
+  return track(submission.action, result);
 }

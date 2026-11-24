@@ -29,20 +29,20 @@ describe('SelectField pages of replaced searches', () => {
   it('UIC-SELECT-FIELD-5.4 offers no next page after a replacing search fails', async () => {
     const observers = stubObservers();
     const user = userEvent.setup();
-    const loadOptions = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
+    const loadItems = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
       if (query === 'blue') throw new Error('offline');
       return cursor === undefined
         ? { items: options(['alpha first']), cursor: 'alpha-page-2' }
         : { items: [] };
     });
-    render(<SelectField label="Words" options={[]} loadOptions={loadOptions} searchDelay={0} />);
+    render(<SelectField label="Words" options={[]} loadItems={loadItems} searchDelay={0} />);
     await user.click(screen.getByRole('button', { name: /Words$/ }));
     search('alpha');
     await waitFor(() => expect(optionLabels()).toContain('alpha first'));
     search('blue');
     expect(await screen.findByText('Search is unavailable.')).toBeInTheDocument();
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
-    expect(loadOptions.mock.calls.map(([query, , cursor]) => [query, cursor])).toEqual([
+    expect(loadItems.mock.calls.map(([query, , cursor]) => [query, cursor])).toEqual([
       ['alpha', undefined],
       ['blue', undefined],
     ]);
@@ -52,11 +52,11 @@ describe('SelectField pages of replaced searches', () => {
     const observers = stubObservers();
     const user = userEvent.setup();
     const pending = new Map<string, (result: Awaited<ReturnType<SelectFieldLoader>>) => void>();
-    const loadOptions = vi.fn<SelectFieldLoader>(
+    const loadItems = vi.fn<SelectFieldLoader>(
       (query, _signal, cursor) =>
         new Promise((resolve) => pending.set(`${query} ${cursor ?? 'first'}`, resolve)),
     );
-    render(<SelectField label="Words" options={[]} loadOptions={loadOptions} searchDelay={0} />);
+    render(<SelectField label="Words" options={[]} loadItems={loadItems} searchDelay={0} />);
     await user.click(screen.getByRole('button', { name: /Words$/ }));
     search('alpha');
     await waitFor(() => expect(pending.has('alpha first')).toBe(true));

@@ -2,7 +2,15 @@
 
 import { type ReactNode, type Ref, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, ControlSize, Key, RefProps } from '../../core/props.js';
+import type {
+  BaseProps,
+  ControlSize,
+  Key,
+  RefProps,
+  SelectionValue,
+  ValueSelectionMode,
+  ValueSelectionModeProps,
+} from '../../core/props.js';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -34,17 +42,15 @@ import { decodeComboboxValue, useComboboxValues } from './combobox-values.js';
 export type ComboboxVariant = 'default' | 'search';
 
 /** `single` picks one option; `multiple` picks several, shown as chips. */
-export type ComboboxSelectionMode = 'single' | 'multiple';
+export type ComboboxSelectionMode = ValueSelectionMode;
 
 /** The picked option's `id` (or `null`) for a single combobox, the list of ids for a multiple one. */
-export type ComboboxValue<M extends ComboboxSelectionMode = 'single'> = M extends 'multiple'
-  ? Key[]
-  : Key | null;
+export type ComboboxValue<M extends ComboboxSelectionMode = 'single'> = SelectionValue<Key, M>;
 
 /** When the list opens: as the reader types, on focus, or only from the keyboard and the button. */
 export type ComboboxMenuTrigger = 'input' | 'focus' | 'manual';
 
-export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
+interface ComboboxOptions<M extends ComboboxSelectionMode>
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** Whether the list is open (controlled). */
   isOpen?: boolean | undefined;
@@ -52,8 +58,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   defaultOpen?: boolean | undefined;
   /** Called as the list opens or closes, with what opened or closed it. */
   onOpenChange?: ((isOpen: boolean, details: ComboboxOpenChangeDetails) => void) | undefined;
-  /** `single` (the default) picks one option; `multiple` picks several, shown as chips. */
-  selectionMode?: M | undefined;
   /** The picked option ids (controlled). */
   value?: ComboboxValue<M> | undefined;
   /** The picked option ids at first, when uncontrolled. */
@@ -80,10 +84,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   name?: string | undefined;
   /** The id of the native form the submitted value belongs to, wherever the combobox sits. */
   form?: string | undefined;
-  /** Called when the end of the list scrolls into view, to load more suggestions. */
-  onLoadMore?: (() => void) | undefined;
-  /** More suggestions are loading: the list ends with a loading row. */
-  isLoading?: boolean | undefined;
   /** A visible label. Without one, pass `aria-label`. */
   label?: ReactNode;
   /** Help text under the field. */
@@ -118,8 +118,6 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   completesInline?: boolean | undefined;
   /** Draws each option's content in the list instead of its icon, label and description. */
   renderOption?: ComboboxOptionRenderer | undefined;
-  /** Searches as the reader types; `items` or `defaultItems` show while the text is too short. */
-  loadItems?: ComboboxLoader | undefined;
   /** Milliseconds after the last keystroke before `loadItems` runs. Defaults to 240. */
   searchDelay?: number | undefined;
   /** Shortest trimmed text that runs `loadItems`; 0 also searches the empty text. Defaults to 1. */
@@ -135,6 +133,29 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   /** Compose the input frame and suggestions using ComboboxInput and ComboboxContent. */
   children?: ReactNode;
 }
+
+interface ComboboxCallerPaging {
+  loadItems?: undefined;
+  /** Called when the end of the list scrolls into view, to load more suggestions. */
+  onLoadMore?: (() => void) | undefined;
+  /** More suggestions are loading: the list ends with a loading row. */
+  isLoading?: boolean | undefined;
+}
+
+interface ComboboxManagedPaging {
+  /** Searches as the reader types; `items` or `defaultItems` show while the text is too short. */
+  loadItems?: ComboboxLoader | undefined;
+  onLoadMore?: undefined;
+  isLoading?: undefined;
+}
+
+/** One choice by default, or multiple chips with `selectionMode="multiple"`. */
+export type ComboboxProps<M extends ComboboxSelectionMode = 'single'> = {
+  selectionMode?: M | undefined;
+} & {
+  [Mode in M]: ComboboxOptions<Mode> & ValueSelectionModeProps<Mode>;
+}[M] &
+  (ComboboxCallerPaging | ComboboxManagedPaging);
 
 type ComboboxListProps = Pick<
   ComboboxProps,
@@ -214,7 +235,7 @@ function useComboboxChange<M extends ComboboxSelectionMode>({
   inputRef,
   onChange,
   isMultiple,
-}: Pick<ComboboxProps<M>, 'inputRef' | 'onChange'> & { isMultiple: boolean }) {
+}: Pick<ComboboxOptions<M>, 'inputRef' | 'onChange'> & { isMultiple: boolean }) {
   const [input, setInput] = useForwardedRef(inputRef);
   const reasons = useComboboxReasons(input);
   const reset = useHeldChange(reasons.probeRef, (next) =>

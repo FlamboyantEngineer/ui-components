@@ -97,6 +97,33 @@ test.describe('Select Field native lab', () => {
     await expect(select).toBeFocused();
   });
 
+  test('UIC-SELECT-FIELD-14.2 UIC-SELECT-FIELD-14.4 accepts a real empty-string id and rejects the placeholder', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const form = demo(page, 'native-empty-id');
+    const select = form.getByRole('combobox', { name: 'Channel' });
+    const selected = select.locator('option:checked');
+    await expect(selected).toHaveText('Unnumbered');
+    expect(await select.evaluate((control: HTMLSelectElement) => control.validity.valid)).toBe(
+      true,
+    );
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.locator('[data-lab-output="Channel entry"]')).toHaveText('""');
+    await select.selectOption({ label: 'None' });
+    await expect(selected).toHaveText('None');
+    expect(
+      await select.evaluate((control: HTMLSelectElement) => control.validity.valueMissing),
+    ).toBe(true);
+    await expect(select).toHaveAttribute('data-placeholder', 'true');
+    await select.selectOption({ label: 'Unnumbered' });
+    await expect(selected).toHaveText('Unnumbered');
+    expect(await select.evaluate((control: HTMLSelectElement) => control.validity.valid)).toBe(
+      true,
+    );
+  });
+
   test('UIC-SELECT-FIELD-14.1 reads and focuses the native select through its ref', async ({
     page,
     lab,

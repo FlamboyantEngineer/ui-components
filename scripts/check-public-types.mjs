@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { option, relativePosix, reportProblems, walk } from '../tooling/lib/script.mjs';
 import { findUnexportedTypes } from '../tooling/lib/unexported-types.mjs';
+import { findPackageEntries } from '../tooling/package-entries.mjs';
 import { root } from './lib/root.mjs';
 import { findMissingRootRefs } from './lib/root-refs.mjs';
 
@@ -48,12 +49,7 @@ reportProblems(problems, {
   success: `No building block exposed in ${files.length} public declaration files.`,
 });
 
-// The entry points package.json exports: the root, `core`, `testing`, `labs` and every component
-// index.
-const entries = walk(dir).filter((path) => {
-  const rel = relativePosix(dir, path);
-  return /^(index|core\/index|testing\/index|labs\/index|components\/.+\/index)\.d\.ts$/.test(rel);
-});
+const entries = findPackageEntries(root, dir, walk(dir), 'declaration');
 const unexported = findUnexportedTypes(dir, { entries, only: components });
 reportProblems(unexported, {
   heading: `${unexported.length} public type(s) name a type no entry point exports`,
@@ -64,7 +60,7 @@ reportProblems(unexported, {
 const componentEntries = entries.filter((path) => {
   const rel = relativePosix(dir, path);
   return (
-    components.length === 0 || components.some((name) => rel === `components/${name}/index.d.ts`)
+    components.length === 0 || components.some((name) => rel.startsWith(`components/${name}/`))
   );
 });
 const rootRefs = findMissingRootRefs(componentEntries, { checkRootless: components.length === 0 });

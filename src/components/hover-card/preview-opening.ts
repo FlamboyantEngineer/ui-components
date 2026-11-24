@@ -4,7 +4,7 @@
 // PreviewTrigger do, but through hooks: the trigger then renders the same providers and button with
 // or without a preview, so a preview that comes or goes never remounts the button.
 
-import { type RefObject, useMemo, useRef } from 'react';
+import { type HTMLAttributes, type RefObject, useMemo, useRef } from 'react';
 import {
   DialogContext,
   OverlayTriggerStateContext,
@@ -63,6 +63,37 @@ interface CardOpening {
   contexts: Array<[unknown, unknown]>;
 }
 
+interface HoverCardOpeningOptions {
+  triggerRef: RefObject<HTMLElement | null>;
+  /** The ref that hears hover events. An inactive preview can detach from its button. */
+  eventTriggerRef?: RefObject<HTMLElement | null> | undefined;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  delay?: number | undefined;
+  closeDelay?: number | undefined;
+  isDisabled?: boolean | undefined;
+}
+
+interface HoverCardOpening {
+  triggerProps: HTMLAttributes<HTMLElement>;
+  overlayState: {
+    isOpen: boolean;
+    open: () => void;
+    close: () => void;
+    setOpen: (isOpen: boolean) => void;
+    toggle: () => void;
+    point: null;
+    setPoint: () => void;
+  };
+  popover: {
+    trigger: 'PreviewTrigger';
+    triggerRef: RefObject<HTMLElement | null>;
+    ref: RefObject<HTMLElement | null>;
+    isNonModal: boolean;
+    shouldSkipAnimation: boolean;
+  };
+}
+
 function usePressOpening({ isActive, isOpen, setOpen, buttonRef }: OpeningOptions): Opening {
   const state = useOverlayTriggerState({ isOpen: isActive && isOpen, onOpenChange: setOpen });
   const { triggerProps, overlayProps } = useOverlayTrigger({ type: 'dialog' }, state, buttonRef);
@@ -76,58 +107,83 @@ function usePressOpening({ isActive, isOpen, setOpen, buttonRef }: OpeningOption
   };
 }
 
-function useHoverOpening({
-  isActive,
+/** Runs a delayed, non-modal preview and adapts its state to the popover's overlay context. */
+export function useHoverCardOpening({
+  triggerRef,
+  eventTriggerRef = triggerRef,
   isOpen,
-  setOpen,
-  buttonRef,
+  onOpenChange,
   delay = HOVER_CARD_DELAY,
   closeDelay = HOVER_CARD_CLOSE_DELAY,
-  isDisabled,
-}: OpeningOptions & Pick<CardOpeningOptions, 'delay' | 'closeDelay' | 'isDisabled'>): Opening {
+  isDisabled = false,
+}: HoverCardOpeningOptions): HoverCardOpening {
+  // Each card has its own preview state, so a tooltip inside it can open without closing the card.
   const state = usePreviewState({
-    isOpen: isActive && isOpen,
-    onOpenChange: setOpen,
+    isOpen: isOpen && !isDisabled,
+    onOpenChange,
     delay,
     closeDelay,
   });
-  const idleRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLElement>(null);
-  usePreviewEscape(state, { triggerRef: buttonRef, popoverRef });
+  usePreviewEscape(state, { triggerRef, popoverRef });
   const { triggerProps, popoverProps } = usePreviewTrigger(
-    {
-      isDisabled: Boolean(isDisabled) || !isActive,
-      triggerRef: isActive ? buttonRef : idleRef,
-      popoverRef,
-    },
+    { isDisabled, triggerRef: eventTriggerRef, popoverRef },
     state,
   );
-  // Popovers expect an overlay state; the tooltip state keeps the open and close delays.
-  const overlayState = useMemo(
+  const overlayState = useMemo<HoverCardOpening['overlayState']>(
     () => ({
       isOpen: state.isOpen,
       open: () => state.open(),
       close: () => state.close(),
       setOpen: (open: boolean) => (open ? state.open() : state.close()),
       toggle: () => (state.isOpen ? state.close() : state.open()),
+      point: null,
+      setPoint: () => {},
     }),
     [state],
   );
-  // The style only stops the touch callout of a long press, a visual style the hooks leave out.
-  const { style: _style, ...ariaProps } = triggerProps;
-  const continued = usePointerEntry(ariaProps, Boolean(isDisabled) || !isActive);
   return {
-    triggerProps: continued,
-    state: overlayState,
-    dialog: null,
+    triggerProps,
+    overlayState,
     popover: {
       trigger: 'PreviewTrigger',
-      triggerRef: buttonRef,
+      triggerRef,
       ref: popoverRef,
       isNonModal: true,
       shouldSkipAnimation: state.shouldSkipAnimation,
       ...popoverProps,
     },
+  };
+}
+
+function useHoverOpening({
+  isActive,
+  isOpen,
+  setOpen,
+  buttonRef,
+  delay,
+  closeDelay,
+  isDisabled,
+}: OpeningOptions & Pick<CardOpeningOptions, 'delay' | 'closeDelay' | 'isDisabled'>): Opening {
+  const idleRef = useRef<HTMLButtonElement>(null);
+  const disabled = Boolean(isDisabled) || !isActive;
+  const { triggerProps, overlayState, popover } = useHoverCardOpening({
+    triggerRef: buttonRef,
+    eventTriggerRef: isActive ? buttonRef : idleRef,
+    isOpen,
+    onOpenChange: setOpen,
+    delay,
+    closeDelay,
+    isDisabled: disabled,
+  });
+  // The style only stops the touch callout of a long press, a visual style the hooks leave out.
+  const { style: _style, ...ariaProps } = triggerProps;
+  const continued = usePointerEntry(ariaProps, disabled);
+  return {
+    triggerProps: continued,
+    state: overlayState,
+    dialog: null,
+    popover,
   };
 }
 

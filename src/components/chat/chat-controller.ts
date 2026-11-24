@@ -34,9 +34,7 @@ export type {
   ChatQuestionResponse,
   ChatReaderResponse,
 } from './chat-reply.js';
-export { isAwaitingReader } from './chat-reply.js';
 export type { ChatStreamContext, ChatStreamEvent, ChatStreamEventType } from './chat-stream.js';
-export { reduceChatStream } from './chat-stream.js';
 
 export interface ChatControllerOptions {
   /** Streams the assistant's reply to the conversation, which ends with the reader's message. */

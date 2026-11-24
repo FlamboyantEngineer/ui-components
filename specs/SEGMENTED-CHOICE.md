@@ -113,10 +113,10 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-2.4 - Multiple selection
 
-With `selectionMode="multiple"` the root shall be a `toolbar` (a `group` inside another toolbar) whose segments are buttons with `aria-pressed`, each pressed or released on its own. `value` and `defaultValue` are lists of values, and `onChange` receives the pressed values in option order. The root publishes `data-selection-mode` (`single` by default, or `multiple`). `isInherited` and `isClearable` apply to single selection only.
+With `selectionMode="multiple"` the root shall be a `toolbar` (a `group` inside another toolbar) whose segments are buttons with `aria-pressed`, each pressed or released on its own. Array values and callbacks require explicit `selectionMode="multiple"`. In that mode, `value` and `defaultValue` are lists of values, and `onChange` receives the pressed values in option order. The root publishes `data-selection-mode` (`single` by default, or `multiple`). `isInherited` and `isClearable` apply to single selection only.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/choice-selection.ts`
-Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`, `test/field-families.test.ts`
 
 ### UIC-SEGMENTED-CHOICE-2.5 - Form submission
 

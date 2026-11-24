@@ -40,12 +40,12 @@ function search(text: string) {
 describe('SelectField search', () => {
   it('UIC-SELECT-FIELD-5.1 searches once the query is long enough and typing pauses', async () => {
     const user = userEvent.setup();
-    const loadOptions = vi.fn<SelectFieldLoader>(async (query) => searchCatalogue(query));
+    const loadItems = vi.fn<SelectFieldLoader>(async (query) => searchCatalogue(query));
     render(
       <SelectField
         label="Files"
         options={[]}
-        loadOptions={loadOptions}
+        loadItems={loadItems}
         minSearchLength={3}
         searchDelay={100}
       />,
@@ -57,16 +57,16 @@ describe('SelectField search', () => {
     search('rep');
     search('repo');
     await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2']));
-    expect(loadOptions).toHaveBeenCalledTimes(1);
-    expect(loadOptions).toHaveBeenLastCalledWith('repo', expect.any(AbortSignal));
+    expect(loadItems).toHaveBeenCalledTimes(1);
+    expect(loadItems).toHaveBeenLastCalledWith('repo', expect.any(AbortSignal));
     search('report d');
     await waitFor(() => expect(optionKeys()).toEqual(['r2']));
-    expect(loadOptions).toHaveBeenLastCalledWith('report d', expect.any(AbortSignal));
+    expect(loadItems).toHaveBeenLastCalledWith('report d', expect.any(AbortSignal));
   });
 
   it('UIC-SELECT-FIELD-5.3 draws the latest loaded version of an option in its row, trigger and chip', async () => {
     const user = userEvent.setup();
-    const loadOptions: SelectFieldLoader = async () => [
+    const loadItems: SelectFieldLoader = async () => [
       { id: 'a', label: 'Fresh label' },
       { id: 'b', label: 'Blue', isDisabled: true },
     ];
@@ -79,7 +79,7 @@ describe('SelectField search', () => {
           { id: 'b', label: 'Blue' },
         ]}
         defaultValue={['b']}
-        loadOptions={loadOptions}
+        loadItems={loadItems}
         searchDelay={0}
       />,
     );
@@ -98,11 +98,11 @@ describe('SelectField search', () => {
     const user = userEvent.setup();
     const signals: AbortSignal[] = [];
     const pending: Array<(options: SelectFieldOption[]) => void> = [];
-    const loadOptions: SelectFieldLoader = (query, signal) => {
+    const loadItems: SelectFieldLoader = (query, signal) => {
       signals.push(signal);
       return new Promise((resolve) => pending.push(() => resolve(searchCatalogue(query))));
     };
-    render(<SelectField label="Files" options={[]} loadOptions={loadOptions} searchDelay={0} />);
+    render(<SelectField label="Files" options={[]} loadItems={loadItems} searchDelay={0} />);
     await user.click(trigger());
     search('b');
     await waitFor(() => expect(signals).toHaveLength(1));
@@ -121,7 +121,7 @@ describe('SelectField search', () => {
         selectionMode="multiple"
         options={[{ id: 'b1', label: 'Budget.xlsx' }]}
         defaultValue={['b1']}
-        loadOptions={async (query) => searchCatalogue(query)}
+        loadItems={async (query) => searchCatalogue(query)}
         searchDelay={0}
       />,
     );
@@ -134,14 +134,14 @@ describe('SelectField search', () => {
   it('UIC-SELECT-FIELD-5.2 reports a running search, a failure and an empty result', async () => {
     const user = userEvent.setup();
     let release: (options: SelectFieldOption[]) => void = () => {};
-    const loadOptions = vi.fn<SelectFieldLoader>(
+    const loadItems = vi.fn<SelectFieldLoader>(
       (query) =>
         new Promise((resolve, reject) => {
           if (query === 'fail') reject(new Error('offline'));
           else release = resolve;
         }),
     );
-    render(<SelectField label="Files" options={[]} loadOptions={loadOptions} searchDelay={0} />);
+    render(<SelectField label="Files" options={[]} loadItems={loadItems} searchDelay={0} />);
     await user.click(trigger());
     expect(screen.getByText('Type to search.')).toBeInTheDocument();
     search('r');
@@ -166,7 +166,7 @@ describe('SelectField search', () => {
         label="Files"
         selectionMode="multiple"
         options={[]}
-        loadOptions={async (query) => searchCatalogue(query)}
+        loadItems={async (query) => searchCatalogue(query)}
         searchDelay={0}
       />,
     );
@@ -194,7 +194,7 @@ describe('SelectField search', () => {
     );
     const user = userEvent.setup();
     let releasePage: () => void = () => {};
-    const loadOptions = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
+    const loadItems = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
       if (cursor === undefined) return { items: catalogue.slice(0, 2), cursor: 'page-2' };
       await new Promise<void>((resolve) => {
         releasePage = resolve;
@@ -205,18 +205,18 @@ describe('SelectField search', () => {
       <SelectField
         label="Files"
         options={[]}
-        loadOptions={loadOptions}
+        loadItems={loadItems}
         minSearchLength={0}
         searchDelay={0}
       />,
     );
     await user.click(trigger());
     await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2']));
-    expect(loadOptions).toHaveBeenCalledWith('', expect.any(AbortSignal));
+    expect(loadItems).toHaveBeenCalledWith('', expect.any(AbortSignal));
     const observe = observers.at(-1);
     act(() => observe?.([{ isIntersecting: true }]));
     await waitFor(() =>
-      expect(loadOptions).toHaveBeenLastCalledWith('', expect.any(AbortSignal), 'page-2'),
+      expect(loadItems).toHaveBeenLastCalledWith('', expect.any(AbortSignal), 'page-2'),
     );
     const more = await screen.findByText('Loading');
     expect(more).toHaveClass('ui-select-field__load-more');
@@ -225,7 +225,7 @@ describe('SelectField search', () => {
     await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2', 'b1']));
     expect(screen.queryByText('Loading')).not.toBeInTheDocument();
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
-    expect(loadOptions).toHaveBeenCalledTimes(2);
+    expect(loadItems).toHaveBeenCalledTimes(2);
     vi.unstubAllGlobals();
   });
 });

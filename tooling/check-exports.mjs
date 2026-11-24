@@ -4,16 +4,15 @@
 // Usage: ui-components-tooling check-exports [--fix]
 //   --fix  drops the `export` keyword of each flagged declaration that its own file still uses.
 //
-// A name counts as used outside its file when the same identifier appears in another library
-// module (a re-export included), in a test, or under labs/, e2e/, examples/, test/ or
-// scripts/. Matching by name may miss an unused export whose name another file also uses; it never
-// flags a used one.
+// The checker follows symbol references from library modules, tests and supporting scripts.
+// It also follows module namespaces and the types named in inferred declarations.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { loadConfig } from './config.mjs';
 import { flag, relativePosix, reportProblems, root, walk } from './lib/script.mjs';
+import { findPackageEntries } from './package-entries.mjs';
 
 const SOURCE = /\.(?:tsx?|mts)$/;
 const SCRIPT = /\.(?:tsx?|mts|mjs|js)$/;
@@ -34,70 +33,112 @@ function listFiles(dir) {
   });
 }
 
-/**
- * The source modules the package's `exports` map points at, `./dist/<path>.js` read as
- * `src/<path>.ts`, plus the configured `exports.entries`.
- * @param {string[]} extra
- */
-function entryPoints(extra) {
-  const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-  const targets = [];
-  const collect = (/** @type {unknown} */ value) => {
-    if (typeof value === 'string') targets.push(value);
-    else if (value && typeof value === 'object') Object.values(value).forEach(collect);
+/** Reads imports and re-exports without loading the supporting scripts into the type checker. */
+function readModuleReferences(source, visit) {
+  const read = (/** @type {import('typescript').Node} */ node) => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      const from = node.moduleSpecifier.text;
+      const { name, namedBindings } = node.importClause ?? {};
+      if (name) visit(from, 'default');
+      if (namedBindings && ts.isNamespaceImport(namedBindings)) visit(from);
+      if (namedBindings && ts.isNamedImports(namedBindings)) {
+        for (const item of namedBindings.elements)
+          visit(from, (item.propertyName ?? item.name).text);
+      }
+    } else if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      const from = node.moduleSpecifier.text;
+      if (!node.exportClause || ts.isNamespaceExport(node.exportClause)) visit(from);
+      else
+        for (const item of node.exportClause.elements)
+          visit(from, (item.propertyName ?? item.name).text);
+    } else if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+      if (ts.isStringLiteral(node.argument.literal)) {
+        let name = node.qualifier;
+        while (name && ts.isQualifiedName(name)) name = name.left;
+        visit(node.argument.literal.text, name?.text);
+      }
+    } else if (ts.isCallExpression(node)) {
+      const [argument] = node.arguments;
+      const { expression } = node;
+      const importsNamespace =
+        expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(expression) && expression.text === 'require');
+      if (importsNamespace && argument && ts.isStringLiteralLike(argument)) visit(argument.text);
+    }
+    ts.forEachChild(node, read);
   };
-  collect(manifest.exports);
-  const sources = listFiles(join(root, 'src')).filter((path) => SOURCE.test(path));
-  const entries = new Set(extra.map((path) => join(root, path)));
-  for (const target of targets) {
-    const base = /^\.\/dist\/(.+)\.(?:d\.ts|js)$/.exec(target)?.[1];
-    if (!base) continue;
-    const pattern = new RegExp(
-      `^src/${base.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]+')}\\.tsx?$`,
-    );
-    for (const path of sources) if (pattern.test(relativePosix(root, path))) entries.add(path);
-  }
-  return [...entries];
+  read(source);
 }
 
-/**
- * How often each identifier appears, per library module and in total outside library modules. A
- * module's emitted declarations count as its own text, since they name the types it infers.
- * @param {string[]} modules
- * @param {string[]} others
- * @param {Map<string, string>} declarations emitted declaration text by source module
- */
-function countNames(modules, others, declarations) {
-  /** @type {Map<string, Map<string, number>>} */
-  const inModules = new Map();
-  /** @type {Set<string>} */
-  const elsewhere = new Set();
-  const scan = (
-    /** @type {string} */ path,
-    /** @type {(name: string) => void} */ add,
-    text = readFileSync(path, 'utf8'),
-  ) => {
-    const kind = /x$/.test(path) ? ts.ScriptKind.TSX : undefined;
-    const visit = (/** @type {import('typescript').Node} */ node) => {
-      if (ts.isIdentifier(node) || ts.isPrivateIdentifier(node)) add(node.text);
-      ts.forEachChild(node, visit);
-    };
-    visit(ts.createSourceFile(path, text, ts.ScriptTarget.Latest, false, kind));
+/** Matches each import to the symbol its source module actually exports. */
+function readExternalUses(program, paths, entries) {
+  const checker = program.getTypeChecker();
+  const options = program.getCompilerOptions();
+  const resolution = ts.createModuleResolutionCache(root, (path) => path, options);
+  /** @type {Set<import('typescript').Symbol>} */
+  const external = new Set();
+  const useExports = (path, name) => {
+    const source = program.getSourceFile(path);
+    const module = source && checker.getSymbolAtLocation(source);
+    if (!module) return;
+    for (const symbol of checker.getExportsOfModule(module)) {
+      if (name === undefined || symbol.name === name) external.add(resolveAlias(checker, symbol));
+    }
   };
-  for (const path of modules) {
-    const add = (/** @type {string} */ name) => {
-      const files = inModules.get(name) ?? new Map();
-      files.set(path, (files.get(path) ?? 0) + 1);
-      inModules.set(name, files);
-    };
-    scan(path, add);
-    const declaration = declarations.get(path);
-    // Only the names a declaration adds through an inferred type: `import("./a").Name`.
-    if (declaration)
-      scan(`${path}.d.ts`, (name) => add(name), declaration.replace(/^(?!.*import\().*$/gm, ''));
+  const useReference = (path, from, name) => {
+    const { resolvedModule } = ts.resolveModuleName(from, path, options, ts.sys, resolution);
+    if (resolvedModule && resolvedModule.resolvedFileName !== path)
+      useExports(resolvedModule.resolvedFileName, name);
+  };
+  for (const path of entries) useExports(path, undefined);
+  for (const path of paths) {
+    const source =
+      program.getSourceFile(path) ??
+      ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
+    readModuleReferences(source, (from, name) => useReference(path, from, name));
   }
-  for (const path of others) scan(path, (name) => elsewhere.add(name));
-  return { inModules, elsewhere };
+  // Declarations can infer a reference the source never imported, e.g. `import("./shape").Shape`.
+  program.emit(undefined, (name, text, _bom, _onError, sources) => {
+    const path = sources?.[0]?.fileName;
+    if (path && text.includes('import(')) {
+      const source = ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true);
+      readModuleReferences(source, (from, imported) => useReference(path, from, imported));
+    }
+  });
+  return external;
+}
+
+/** @param {import('typescript').TypeChecker} checker @param {import('typescript').Symbol} symbol */
+function resolveAlias(checker, symbol) {
+  const target = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+  return checker.getExportSymbolOfSymbol(target);
+}
+
+/** Finds references in the exporting file so `--fix` knows when it can remove only the keyword. */
+function readLocalUses(checker, source, exports) {
+  const names = new Set(exports.map((symbol) => symbol.name));
+  /** @type {Set<import('typescript').Symbol>} */
+  const used = new Set();
+  const visit = (/** @type {import('typescript').Node} */ node) => {
+    if (ts.isIdentifier(node) && names.has(node.text)) {
+      const parent = node.parent;
+      const symbol =
+        ts.isShorthandPropertyAssignment(parent) && parent.name === node
+          ? checker.getShorthandAssignmentValueSymbol(parent)
+          : checker.getSymbolAtLocation(node);
+      if (symbol) {
+        const target = resolveAlias(checker, symbol);
+        if (!target.declarations?.some((declaration) => declaration === parent)) used.add(target);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return used;
 }
 
 /** The `export` keyword of a declaration statement, if it has one. */
@@ -139,42 +180,10 @@ const program = ts.createProgram(modules, {
   declarationMap: false,
   outDir: join(root, '.check-exports'),
 });
+const entries = findPackageEntries(root, join(root, 'src'), modules, 'source');
+entries.push(...entriesOption.map((path) => join(root, path)));
+const external = readExternalUses(program, [...modules, ...others], entries);
 const checker = program.getTypeChecker();
-/** @type {Map<string, string>} */
-const declarations = new Map();
-program.emit(undefined, (_name, text, _bom, _onError, sources) => {
-  if (sources?.[0]) declarations.set(resolve(sources[0].fileName), text);
-});
-const { inModules, elsewhere } = countNames(modules, others, declarations);
-
-/** @param {import('typescript').Symbol} symbol */
-const resolveAlias = (symbol) =>
-  symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
-/** Every export of a module, through its re-exports, counts as reached. */
-const reached = new Set();
-const reachModule = (/** @type {import('typescript').Symbol | undefined} */ moduleSymbol) => {
-  if (!moduleSymbol) return;
-  for (const exported of checker.getExportsOfModule(moduleSymbol))
-    reached.add(resolveAlias(exported));
-};
-for (const entry of entryPoints(entriesOption)) {
-  const source = program.getSourceFile(entry);
-  reachModule(source && checker.getSymbolAtLocation(source));
-}
-// A namespace import or `export * as` uses every export of its module, whatever names it reads.
-for (const path of modules) {
-  const source = program.getSourceFile(path);
-  for (const statement of source?.statements ?? []) {
-    const isImport = ts.isImportDeclaration(statement);
-    if (!isImport && !ts.isExportDeclaration(statement)) continue;
-    const bindings = isImport ? statement.importClause?.namedBindings : statement.exportClause;
-    const isNamespace =
-      bindings && (ts.isNamespaceImport(bindings) || ts.isNamespaceExport(bindings));
-    if (isNamespace && statement.moduleSpecifier) {
-      reachModule(checker.getSymbolAtLocation(statement.moduleSpecifier));
-    }
-  }
-}
 
 const problems = [];
 /** @type {Map<string, Array<{ start: number, end: number }>>} */
@@ -183,18 +192,23 @@ for (const path of modules) {
   const source = program.getSourceFile(path);
   const moduleSymbol = source && checker.getSymbolAtLocation(source);
   if (!source || !moduleSymbol) continue;
-  for (const exported of checker.getExportsOfModule(moduleSymbol)) {
-    if (exported.flags & ts.SymbolFlags.Alias || exported.name === 'default') continue;
+  const candidates = checker
+    .getExportsOfModule(moduleSymbol)
+    .filter(
+      (symbol) =>
+        !(symbol.flags & ts.SymbolFlags.Alias) &&
+        symbol.name !== 'default' &&
+        !external.has(symbol) &&
+        symbol.declarations?.[0]?.getSourceFile() === source,
+    );
+  if (candidates.length === 0) continue;
+  const local = readLocalUses(checker, source, candidates);
+  for (const exported of candidates) {
     const declaration = exported.declarations?.[0];
-    if (!declaration || declaration.getSourceFile() !== source || reached.has(exported)) continue;
-    if (elsewhere.has(exported.name)) continue;
-    const files = inModules.get(exported.name) ?? new Map();
-    const usedElsewhere = [...files.keys()].some((file) => file !== path);
-    if (usedElsewhere) continue;
-    const own = files.get(path) ?? 0;
+    if (!declaration) continue;
     const line = source.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
     const at = `${relativePosix(root, path)}:${line}`;
-    if (own <= 1) {
+    if (!local.has(exported)) {
       problems.push(`${at}: ${exported.name} is exported and used nowhere; delete it`);
       continue;
     }

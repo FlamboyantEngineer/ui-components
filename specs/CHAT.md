@@ -249,10 +249,10 @@ Verification: `src/components/chat/chat-send-options.test.tsx`, `e2e/chat-progre
 
 ### UIC-CHAT-3.15 - Effective composer hint
 
-`placeholder` shall accept a string or `(hint: ChatComposerHint) => string`. The formatter receives the actual submission action (`send`, `queue`, `steer`, `save`), first resolved `shortcut`, available `sendNowShortcut` and localized `text` from `chatComposerHint`. Shortcuts follow the same pointer, modifier, edit and pending rules as the keyboard handler. Key names follow provider localization and Command on macOS. Quotes steer when automatic steering is enabled. The host owns its empty-draft wording.
+`placeholder` shall accept a string or `(hint: ChatComposerHint) => string`. The formatter receives the actual submission action (`send`, `queue`, `steer`, `save`), first resolved `shortcut`, available `sendNowShortcut` and localized `text` from `chatComposerHint`. Shortcuts follow the same pointer, modifier, edit and pending rules as the keyboard handler. Key names follow provider localization and Command on macOS. Quotes steer when automatic steering is enabled. While a response runs with automatic steering off, a quote handled by `onReply` reports `send`, as the progress line does. The host owns its empty-draft wording.
 
-Implementation: `src/components/chat/chat-composer-hint.ts`, `src/components/chat/chat-composer.tsx`
-Verification: `src/components/chat/chat-native-options.test.tsx`, `e2e/chat-native.spec.ts`
+Implementation: `src/components/chat/chat-composer-hint.ts`, `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-submit.ts`
+Verification: `src/components/chat/chat-native-options.test.tsx`, `src/components/chat/chat-progress.test.tsx`, `e2e/chat-native.spec.ts`
 
 ## UIC-CHAT-4 - Activity and receipts
 

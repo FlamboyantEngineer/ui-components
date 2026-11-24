@@ -1,7 +1,10 @@
 'use client';
 
 import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { measureScale } from '../../utils/element-scale.js';
 import { measureInScroller } from '../../utils/scroll-geometry.js';
+import { useLatest } from '../../utils/use-latest.js';
+import { measurePdfScrollPosition, type PdfScrollPosition } from './page-scroll-position.js';
 import { type NearPages, useNearPages } from './use-near-pages.js';
 
 interface UsePdfPagesOptions {
@@ -35,6 +38,8 @@ export interface PdfPagesController {
   revealElement(element: HTMLElement): void;
   /** Call from the scroller's scroll handler. */
   handleScroll(): void;
+  /** Reports a shared scroll measurement once the view is measured. */
+  observePosition(report: (position: PdfScrollPosition) => void): () => void;
   /** Records the reader's position before the page sizes change. */
   captureAnchor(): void;
   /** Returns to the recorded position after the page sizes changed. */
@@ -50,35 +55,23 @@ interface ScrollAnchor {
   centre: number;
 }
 
-interface ScrollAnchorOptions extends Pick<UsePdfPagesOptions, 'scrollerRef' | 'document'> {
+interface ScrollAnchorOptions extends UsePdfPagesOptions {
   elements: NearPages['elements'];
+  nearPages: NearPages['nearPages'];
   /** Reports the page the reader is on whenever the anchor is recorded. */
   onPageChange(pageIndex: number): void;
 }
 
-function visibleHeight(element: HTMLElement, view: DOMRect): number {
-  const box = element.getBoundingClientRect();
-  return Math.max(0, Math.min(box.bottom, view.bottom) - Math.max(box.top, view.top));
-}
-
-function findMostVisiblePage(elements: ReadonlyMap<number, HTMLElement>, view: DOMRect): number {
-  let best = -1;
-  let bestHeight = 0;
-  for (const [pageIndex, element] of elements) {
-    const height = visibleHeight(element, view);
-    if (height > bestHeight || (height === bestHeight && height > 0 && pageIndex < best)) {
-      best = pageIndex;
-      bestHeight = height;
-    }
-  }
-  return best;
-}
-
-function measureAnchor(scroller: HTMLElement, page: HTMLElement, pageIndex: number): ScrollAnchor {
-  const box = measureInScroller(page, scroller);
+function measureAnchor(
+  scroller: HTMLElement,
+  view: DOMRect,
+  { box, pageIndex }: NonNullable<PdfScrollPosition['mostVisible']>,
+): ScrollAnchor {
+  // The fraction is the same in client and layout pixels, so it can use the measured page box.
+  const paddingTop = view.top + scroller.clientTop * measureScale(scroller).y;
   return {
     pageIndex,
-    fraction: box.height > 0 ? (scroller.scrollTop - box.top) / box.height : 0,
+    fraction: box.height > 0 ? (paddingTop - box.top) / box.height : 0,
     centre:
       scroller.scrollWidth > 0
         ? (scroller.scrollLeft + scroller.clientWidth / 2) / scroller.scrollWidth
@@ -115,9 +108,18 @@ function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
  * The reader's place: recorded on scroll (once per frame) and before a zoom, restored after it, and
  * reset to the top for a new document.
  */
-function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: ScrollAnchorOptions) {
+function useScrollAnchor({
+  scrollerRef,
+  document,
+  pageCount,
+  elements,
+  nearPages,
+  onPageChange,
+}: ScrollAnchorOptions) {
   const anchor = useRef<ScrollAnchor | null>(null);
   const frame = useRef<{ view: Window; id: number } | null>(null);
+  const reporter = useRef<((position: PdfScrollPosition) => void) | null>(null);
+  const nearPagesRef = useLatest(nearPages);
   const cancelFrame = useCallback(() => {
     const pending = frame.current;
     frame.current = null;
@@ -137,12 +139,17 @@ function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: Scro
 
   const captureAnchor = useCallback(() => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const pageIndex = findMostVisiblePage(elements.current, scroller.getBoundingClientRect());
-    const page = elements.current.get(pageIndex);
-    if (page) anchor.current = measureAnchor(scroller, page, pageIndex);
-    if (pageIndex >= 0) onPageChange(pageIndex);
-  }, [elements, onPageChange, scrollerRef]);
+    if (!scroller) return null;
+    const pages = elements.current;
+    const near = pages.size === pageCount ? nearPagesRef.current : null;
+    const position = measurePdfScrollPosition(scroller, pages, near);
+    const page = position.mostVisible;
+    if (page) {
+      anchor.current = measureAnchor(scroller, position.view, page);
+      onPageChange(page.pageIndex);
+    }
+    return position;
+  }, [elements, nearPagesRef, onPageChange, pageCount, scrollerRef]);
 
   const restoreAnchor = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -159,11 +166,23 @@ function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: Scro
     pending.id = view.requestAnimationFrame(() => {
       if (frame.current !== pending) return;
       frame.current = null;
-      captureAnchor();
+      const position = captureAnchor();
+      if (position) reporter.current?.(position);
     });
   }, [captureAnchor, scrollerRef]);
 
-  return { captureAnchor, restoreAnchor, handleScroll };
+  const observePosition = useCallback(
+    (report: (position: PdfScrollPosition) => void) => {
+      reporter.current = report;
+      handleScroll();
+      return () => {
+        if (reporter.current === report) reporter.current = null;
+      };
+    },
+    [handleScroll],
+  );
+
+  return { captureAnchor, restoreAnchor, handleScroll, observePosition };
 }
 
 /**
@@ -185,7 +204,14 @@ export function usePdfPages({
       ),
     [],
   );
-  const anchor = useScrollAnchor({ scrollerRef, document, elements, onPageChange: setCurrentPage });
+  const anchor = useScrollAnchor({
+    scrollerRef,
+    document,
+    pageCount,
+    elements,
+    nearPages,
+    onPageChange: setCurrentPage,
+  });
 
   // A page lands where the first page sits when the view is at the top. The position is recorded
   // at once, so a zoom applied before the scroll event keeps it.

@@ -48,10 +48,10 @@ Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-1.7 - Long documents
 
-The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only the pages near the view draw (UIC-PDF-VIEWER-2.1); the others keep empty canvases. The lab's 250-page report is built in the lab and times its opening; in the browser test it shows its first page, reaches its last page and finds a word on page 248.
+The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only the pages near the view draw (UIC-PDF-VIEWER-2.1); the others keep empty canvases. An ordinary scroll measures only the pages around the viewport when their measurements cover it. A jump or a layout change can measure the rest of the document when the nearby pages no longer cover the view. The lab's 250-page report is built in the lab and times its opening; in the browser test it shows its first page, measures only the pages around it during a short scroll, reaches its last page and finds a word on page 248.
 
-Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/map-bounded.ts`
-Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/components/pdf-viewer/map-bounded.test.ts`, `e2e/pdf-viewer.spec.ts`
+Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/map-bounded.ts`, `src/components/pdf-viewer/page-scroll-position.ts`
+Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/components/pdf-viewer/map-bounded.test.ts`, `src/components/pdf-viewer/page-scroll-position.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ## UIC-PDF-VIEWER-2 - Pages
 
@@ -120,7 +120,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/p
 A zoom change shall keep the reader's place: the page at the top of the view and the depth into it, and the horizontal centre of the view. Scrolls shall capture that position at most once per animation frame in the scroller's own window, including when the frame identifier is zero.
 
 Implementation: `src/components/pdf-viewer/use-pdf-pages.ts`, `src/components/pdf-viewer/use-pdf-zoom.ts`
-Verification: `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `e2e/pdf-viewer.spec.ts`
+Verification: `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `src/components/pdf-viewer/page-scroll-position.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-3.4 - Wheel zoom
 
@@ -438,10 +438,10 @@ Verification: `src/components/pdf-viewer/use-pdf-gestures.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-11.4 - Visible position
 
-With `onVisiblePositionChange`, the viewer shall report where the top edge of the view falls: the page there (the next page when the edge falls between two pages) and how far down it the edge falls, in points from the page's top as displayed, 0 above its first line of pixels. It shall measure at most once a frame, after a scroll, a zoom, a turn of the pages, a resize of the scroller and a new document, and report only a position that differs from the last one by at least a hundredth of a point; a new document reports its position even where the last one stood.
+With `onVisiblePositionChange`, the viewer shall report where the top edge of the view falls: the page there (the next page when the edge falls between two pages) and how far down it the edge falls, in points from the page's top as displayed, 0 above its first line of pixels. It shall measure at most once a frame, after a scroll, a zoom, a turn of the pages, a resize of the scroller and a new document, and report only a position that differs from the last one by at least a hundredth of a point; a new document reports its position even where the last one stood. The toolbar page and the top-edge report use the same measured boxes.
 
-Implementation: `src/components/pdf-viewer/use-pdf-visible-position.ts`
-Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `e2e/pdf-viewer.spec.ts`
+Implementation: `src/components/pdf-viewer/use-pdf-visible-position.ts`, `src/components/pdf-viewer/use-pdf-pages.ts`, `src/components/pdf-viewer/page-scroll-position.ts`
+Verification: `src/components/pdf-viewer/use-pdf-visible-position.test.tsx`, `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `src/components/pdf-viewer/page-scroll-position.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ## Hooks
 

@@ -198,6 +198,7 @@ function CodeSurfaceBody({ view }: { view: ReturnType<typeof useCodeSurface> }) 
           inputId={id ?? baseId}
           diagnostics={located}
           value={value}
+          lineCount={lines.length}
           wrap={wrap}
         />
       ) : null}

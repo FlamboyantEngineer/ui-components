@@ -26,7 +26,7 @@ export interface SelectConfig {
   placeholder?: string | undefined;
   emptyLabel?: string | undefined;
   filterable?: boolean | undefined;
-  loadOptions?: SelectFieldLoader | undefined;
+  loadItems?: SelectFieldLoader | undefined;
   minSearchLength?: number | undefined;
   searchDelay?: number | undefined;
   isClearable?: boolean | undefined;
@@ -80,7 +80,7 @@ function toChosenKeys(value: SelectKeysValue | undefined, known: readonly { id: 
 export function useSelectModel({ state, isMultiple, ...config }: SelectModelProps) {
   const emptyKey = useId();
   const search = useSelectSearch(config);
-  const isRemote = Boolean(config.loadOptions);
+  const isRemote = Boolean(config.loadItems);
   // The latest loader result of an option wins over earlier ones and over the seed `options`, so a
   // row, the trigger and a chip draw the same version of it.
   const known = mergeSelectOptions(search.seen, flattenPickerItems(config.options));

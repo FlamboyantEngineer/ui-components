@@ -78,6 +78,19 @@ export type Selection = 'all' | Set<Key>;
 
 export type SelectionMode = 'none' | 'single' | 'multiple';
 
+/** The selection modes supported by value pickers. */
+export type ValueSelectionMode = Exclude<SelectionMode, 'none'>;
+
+/** A scalar or none for one choice, an array of keys for multiple choices. */
+export type SelectionValue<K extends Key, M extends ValueSelectionMode> = M extends 'multiple'
+  ? K[]
+  : K | null;
+
+/** Single selection is the default. Multiple selection must be explicit to match its array value. */
+export type ValueSelectionModeProps<M extends ValueSelectionMode> = M extends 'multiple'
+  ? { selectionMode: 'multiple' }
+  : { selectionMode?: 'single' | undefined };
+
 /** Where an overlay opens relative to its anchor: a side, then an alignment along it. */
 export type Placement =
   | 'bottom'

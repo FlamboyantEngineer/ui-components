@@ -113,6 +113,71 @@ describe('SelectField native presentation', () => {
     expect(select).toHaveValue('');
   });
 
+  it('UIC-SELECT-FIELD-14.2 UIC-SELECT-FIELD-14.4 distinguishes a blank id from the required placeholder', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <form aria-label="Channel settings">
+        <SelectField
+          mode="native"
+          label="Channel"
+          name="channel"
+          options={[
+            { id: '', label: 'Unnumbered' },
+            { id: 'one', label: 'One' },
+          ]}
+          defaultValue=""
+          emptyLabel="None"
+          isRequired
+          validationBehavior="native"
+          onCommit={onCommit}
+        />
+      </form>,
+    );
+    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: 'Channel' });
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Channel settings' });
+    expect(select.selectedOptions[0]?.label).toBe('Unnumbered');
+    expect(select.validity.valid).toBe(true);
+    expect(new FormData(form).get('channel')).toBe('');
+    form.reset();
+    expect(select.selectedOptions[0]?.label).toBe('Unnumbered');
+    await user.selectOptions(select, 'None');
+    expect(onCommit).toHaveBeenLastCalledWith(null);
+    expect(select.selectedOptions[0]?.label).toBe('None');
+    expect(select.validity.valueMissing).toBe(true);
+    expect(select).toHaveAttribute('data-placeholder', 'true');
+    await user.selectOptions(select, 'Unnumbered');
+    expect(onCommit).toHaveBeenLastCalledWith('');
+    expect(select.selectedOptions[0]?.label).toBe('Unnumbered');
+    expect(select.validity.valid).toBe(true);
+  });
+
+  it('UIC-SELECT-FIELD-14.4 preserves a controlled blank choice when a change is refused', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SelectField
+        mode="native"
+        label="Channel"
+        options={[
+          { id: '', label: 'Unnumbered' },
+          { id: 'one', label: 'One' },
+        ]}
+        value=""
+        isRequired
+        validationBehavior="native"
+        onChange={onChange}
+      />,
+    );
+    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: 'Channel' });
+    expect(select.selectedOptions[0]?.label).toBe('Unnumbered');
+    expect(select.validity.valid).toBe(true);
+    await user.selectOptions(select, 'One');
+    expect(onChange).toHaveBeenLastCalledWith('one');
+    expect(select.selectedOptions[0]?.label).toBe('Unnumbered');
+    expect(select.validity.valid).toBe(true);
+  });
+
   it('UIC-SELECT-FIELD-14.3 keeps the choice while options change and shows a placeholder without it', () => {
     function Changing({ options }: { options: SelectFieldOption[] }) {
       const [value, setValue] = useState<Key | null>('medium');

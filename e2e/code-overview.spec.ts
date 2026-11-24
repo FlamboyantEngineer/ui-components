@@ -52,6 +52,8 @@ test('UIC-CODE-EDITOR-12.3 remeasures wrapped diagnostic lines and excerpt posit
   const field = page.locator('[data-lab-editor="overview"]');
   const input = field.getByRole('textbox', { name: 'Located diagnostics' });
   const mark = field.locator('.ui-code-editor__scroll-marker').first();
+  const horizontalTrack = field.locator('.ui-scroll-region__track[data-orientation="horizontal"]');
+  await expect(horizontalTrack).toHaveCount(0);
   const initial = await mark.evaluate((e) => {
     const track = e.parentElement;
     if (!track) throw new Error('The scroll marker has no track.');
@@ -63,7 +65,9 @@ test('UIC-CODE-EDITOR-12.3 remeasures wrapped diagnostic lines and excerpt posit
       ...Array.from({ length: 89 }, (_, i) => `const fruit${i + 2} = "Pear";`),
     ].join('\n'),
   );
+  await expect(horizontalTrack).toHaveCount(1);
   await field.getByRole('button', { name: 'Wrap diagnostics' }).click();
+  await expect(horizontalTrack).toHaveCount(0);
   await expect(field.locator('.ui-code-editor__line-number').first()).toHaveText('50');
   await page.setViewportSize({ width: 400, height: 900 });
   await expect(async () => {

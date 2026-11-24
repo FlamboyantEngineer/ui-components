@@ -58,7 +58,7 @@ export interface TranscriptRuntime {
   feed: RefObject<HTMLDivElement | null>;
   spacer: RefObject<HTMLDivElement | null>;
   /** The children's keys at the last commit; `null` before the first. */
-  keys: string[] | null;
+  keys: readonly string[] | null;
   indexOf: ReadonlyMap<string, number>;
   /** The keys of the children known to be parts between messages, at the last commit. */
   parts: ReadonlySet<string>;
@@ -150,7 +150,7 @@ export function findLastMessageKey(runtime: TranscriptRuntime): string | null {
 export function refreshMounted(runtime: TranscriptRuntime) {
   const keys: string[] = [];
   const elements: HTMLElement[] = [];
-  for (const key of runtime.keys ?? []) {
+  for (const key of runtime.mountedItems) {
     const element = runtime.registry.element(key);
     if (element) {
       keys.push(key);

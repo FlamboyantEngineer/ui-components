@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useContext, useMemo, useRef } from 'react';
+import { type ReactNode, useContext, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { OpenStateProps, OverlayPositionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
@@ -9,14 +9,11 @@ import {
   FocusableContext,
   OverlayTriggerStateContext,
   PopoverContext,
-  usePreviewTrigger,
 } from '../../primitives/index.js';
-import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_DELAY } from '../../utils/overlay-defaults.js';
 import { useCloseWhenLocked } from '../../utils/use-close-when-locked.js';
 import { usePointerEntry } from '../../utils/use-pointer-entry.js';
-import { usePreviewEscape } from '../../utils/use-preview-escape.js';
-import { usePreviewState } from '../../utils/use-preview-state.js';
 import { PopoverPanel } from '../popover/popover.js';
+import { useHoverCardOpening } from './preview-opening.js';
 
 /** A focusable trigger and the `HoverCard` it opens on hover and focus. */
 export interface HoverCardTriggerProps extends OpenStateProps {
@@ -70,8 +67,8 @@ function TriggerProps({ isEnabled, children }: { isEnabled: boolean; children: R
  */
 export function HoverCardTrigger({
   children,
-  delay = HOVER_CARD_DELAY,
-  closeDelay = HOVER_CARD_CLOSE_DELAY,
+  delay,
+  closeDelay,
   isDisabled = false,
   isOpen: isOpenProp,
   defaultOpen = false,
@@ -81,42 +78,15 @@ export function HoverCardTrigger({
   // A disabled trigger draws its card closed whatever its owner says, and closes an open card once,
   // through the ordinary close, so it stays closed when the trigger is enabled again.
   useCloseWhenLocked(isOpen, isDisabled, () => setOpen(false));
-  // React Aria's PreviewTrigger, with a state of the card's own (`usePreviewState`), so a tooltip
-  // inside the open card neither closes it nor is closed by it.
-  const state = usePreviewState({
-    isOpen: isOpen && !isDisabled,
+  const triggerRef = useRef<HTMLElement>(null);
+  const { triggerProps, overlayState, popover } = useHoverCardOpening({
+    triggerRef,
+    isOpen,
     onOpenChange: setOpen,
     delay,
     closeDelay,
+    isDisabled,
   });
-  const triggerRef = useRef<HTMLElement>(null);
-  const popoverRef = useRef<HTMLElement>(null);
-  usePreviewEscape(state, { triggerRef, popoverRef });
-  const { triggerProps, popoverProps } = usePreviewTrigger(
-    { isDisabled, triggerRef, popoverRef },
-    state,
-  );
-  // Popovers expect an overlay state; the preview state keeps the open and close delays.
-  const overlayState = useMemo(
-    () => ({
-      isOpen: state.isOpen,
-      open: () => state.open(),
-      close: () => state.close(),
-      setOpen: (open: boolean) => (open ? state.open() : state.close()),
-      toggle: () => (state.isOpen ? state.close() : state.open()),
-      point: null,
-      setPoint: () => {},
-    }),
-    [state],
-  );
-  const popover = {
-    trigger: 'PreviewTrigger',
-    triggerRef,
-    ref: popoverRef,
-    isNonModal: true,
-    shouldSkipAnimation: state.shouldSkipAnimation,
-    ...popoverProps,
-  };
   return (
     <OverlayTriggerStateContext value={overlayState}>
       <PopoverContext value={popover}>

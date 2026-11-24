@@ -38,7 +38,10 @@ function updateWindow(runtime: TranscriptRuntime, settings: TranscriptSettings) 
   const viewport = runtime.viewport.current;
   const feed = runtime.feed.current;
   if (!settings.virtualized || !viewport || !feed || !runtime.keys) return;
-  const next = runtime.windowModel.range(viewport, feed, runtime.keys);
+  const next = runtime.windowModel.range(viewport, feed, {
+    keys: runtime.keys,
+    indexOf: runtime.indexOf,
+  });
   settings.setRange((current) => (isShallowEqual(current, next) ? current : next));
 }
 

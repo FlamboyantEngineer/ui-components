@@ -54,6 +54,17 @@ export function ChatTranscriptVirtualizedCase() {
       >
         Receive 100 messages
       </Button>
+      <Button
+        size="sm"
+        onPress={() =>
+          chat.setMessages((list) => [
+            ...sampleMessages('long-older', list.length, list.length + 100),
+            ...list,
+          ])
+        }
+      >
+        Prepend 100 older messages
+      </Button>
       <p data-lab-mounted="virtualized">
         {mounted} of {chat.messages.length} messages mounted
       </p>

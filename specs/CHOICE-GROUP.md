@@ -96,10 +96,10 @@ Verification: `src/components/choice-group/choice-group.test.tsx`, `src/componen
 
 ### UIC-CHOICE-GROUP-4.1 - Field control
 
-`ChoiceGroup` shall render a `Field` around a checkbox group (`ui-choice-group__box`, role `group`, named by the field label), built with `useFieldControl`, holding one checkbox per `Choice` child, in order, named by its content and taking the field's `size`. Its root element is the field's root, which carries `ui-choice-group` beside `ui-field`. The value is the list of ticked values: a field given no value, committed value or default starts with none ticked, and Clear empties it. Toggling a box sets the new list and commits it. An option with `isDisabled` cannot be toggled.
+`ChoiceGroup` shall render a `Field` around a checkbox group (`ui-choice-group__box`, role `group`, named by the field label), built with `useFieldControl`, holding one checkbox per `Choice` child, in order, named by its content and taking the field's `size`. Its root element is the field's root, which carries `ui-choice-group` beside `ui-field`. Array values and callbacks require explicit `selectionMode="multiple"`. The value is the list of ticked values: a field given no value, committed value or default starts with none ticked, and Clear empties it. Toggling a box sets the new list and commits it. An option with `isDisabled` cannot be toggled.
 
 Implementation: `src/components/choice-group/choice-group.tsx`, `src/components/choice-group/choice-box.tsx`, `src/components/choice-group/choice.tsx`, `labs/reference/choice-group.css`
-Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e/choice-group-multiple.spec.ts`
+Verification: `src/components/choice-group/choice-group-multiple.test.tsx`, `e2e/choice-group-multiple.spec.ts`, `test/field-families.test.ts`
 
 ### UIC-CHOICE-GROUP-4.2 - Form value
 

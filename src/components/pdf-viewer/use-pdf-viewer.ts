@@ -81,7 +81,7 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
   usePdfAccess({ view, onDocumentChange: props.onDocumentChange });
   usePdfVisiblePosition({
     scrollerRef,
-    elements: pages.elements,
+    pages,
     scale,
     document: loaded,
     layout: view?.rotation,

@@ -31,7 +31,7 @@ function createScroller() {
 afterEach(() => document.querySelectorAll('iframe').forEach((frame) => frame.remove()));
 
 describe('usePdfPages', () => {
-  it('UIC-PDF-VIEWER-3.3 records one scroll per owning-window frame, including frame zero', () => {
+  it('UIC-PDF-VIEWER-3.3 UIC-PDF-VIEWER-11.4 shares one scroll measurement per owning-window frame', () => {
     const host = createScroller();
     const scrollerRef = { current: host.scroller };
     const loaded = {};
@@ -40,13 +40,17 @@ describe('usePdfPages', () => {
     );
     act(() => result.current.registerPage(1, host.page));
     host.scroller.scrollTop = 50;
+    const report = vi.fn();
     act(() => {
+      result.current.observePosition(report);
       result.current.handleScroll();
       result.current.handleScroll();
     });
     expect(host.request).toHaveBeenCalledTimes(1);
     act(() => host.callbacks[0]?.(0));
     expect(result.current.currentPage).toBe(1);
+    expect(host.measure).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledOnce();
 
     host.resize();
     Object.defineProperty(host.scroller, 'scrollWidth', { value: 400 });

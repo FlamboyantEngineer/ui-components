@@ -6,6 +6,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Spinner } from '../progress-bar/progress-bar.js';
 import { TranscriptItemContext } from './transcript-context.js';
+import type { TranscriptOrder } from './transcript-heights.js';
 import { transcriptHooks as hooks } from './transcript-hooks.js';
 import type { TranscriptItem } from './transcript-items.js';
 import type { WindowModel } from './transcript-window.js';
@@ -24,16 +25,22 @@ function renderItem(item: TranscriptItem) {
  * as each run of unmounted children between them.
  */
 export function renderTranscriptItems(
-  items: readonly TranscriptItem[],
-  mounted: readonly number[] | null,
+  {
+    items,
+    mounted,
+    order,
+  }: {
+    items: readonly TranscriptItem[];
+    mounted: readonly number[] | null;
+    order: TranscriptOrder;
+  },
   model: WindowModel,
 ): ReactNode[] {
   if (!mounted) return items.map(renderItem);
-  const keys = items.map((item) => item.key);
   const nodes: ReactNode[] = [];
   const pushGap = (start: number, end: number) => {
     if (end <= start) return;
-    const height = model.gapHeight(keys, start, end);
+    const height = model.gapHeight(order, start, end);
     nodes.push(<div key={`gap:${start}`} ref={model.spacerRef} style={{ height }} />);
   };
   let next = 0;

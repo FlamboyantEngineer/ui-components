@@ -393,15 +393,15 @@ describe('PeoplePicker', () => {
     const pages: PeoplePickerLoader = async (_query, _signal, cursor) =>
       cursor ? { items: people.slice(2) } : { items: people.slice(1, 2), cursor: 'next' };
 
-    function renderPicker<M extends 'single' | 'multiple'>(
-      selectionMode: M,
-      value: PeoplePickerProps<M>['value'],
+    function renderPicker(
+      selection:
+        | Pick<PeoplePickerProps<'single'>, 'selectionMode' | 'value'>
+        | Pick<PeoplePickerProps<'multiple'>, 'selectionMode' | 'value'>,
     ) {
       return (
-        <PeoplePicker<M>
+        <PeoplePicker
           label="Owner"
-          selectionMode={selectionMode}
-          value={value}
+          {...selection}
           loadItems={async (query) => people.filter((p) => p.name.toLowerCase().includes(query))}
           searchDelay={0}
         />
@@ -419,22 +419,22 @@ describe('PeoplePicker', () => {
 
     it('UIC-PEOPLE-PICKER-3.1 names a controlled single value found by an earlier search', async () => {
       const user = userEvent.setup();
-      const { rerender } = render(renderPicker('single', null));
+      const { rerender } = render(renderPicker({ selectionMode: 'single', value: null }));
       await searchAlexThenBlair(user);
-      rerender(renderPicker('single', 'a'));
+      rerender(renderPicker({ selectionMode: 'single', value: 'a' }));
       await user.keyboard('{Escape}');
       await user.tab();
       await waitFor(() => expect(input()).toHaveValue('Alex Lund'));
       // An id no search returned names nothing.
-      rerender(renderPicker('single', 'unknown'));
+      rerender(renderPicker({ selectionMode: 'single', value: 'unknown' }));
       await waitFor(() => expect(input()).toHaveValue(''));
     });
 
     it('UIC-PEOPLE-PICKER-3.1 draws chips for controlled values found by earlier searches only', async () => {
       const user = userEvent.setup();
-      const { rerender } = render(renderPicker('multiple', []));
+      const { rerender } = render(renderPicker({ selectionMode: 'multiple', value: [] }));
       await searchAlexThenBlair(user);
-      rerender(renderPicker('multiple', ['a', 'unknown']));
+      rerender(renderPicker({ selectionMode: 'multiple', value: ['a', 'unknown'] }));
       await user.keyboard('{Escape}');
       const chips = screen.getByRole('grid', { name: 'Owner selected values' });
       const alex = within(chips).getByRole('row', { name: 'Alex Lund' });

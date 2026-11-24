@@ -1,6 +1,10 @@
 import { type ReactNode, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
+import {
+  PdfViewer,
+  type PdfViewerProps,
+  type PdfVisiblePosition,
+} from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { LabOutput } from './lab-output.js';
@@ -42,6 +46,7 @@ const documentOptions = { httpHeaders: { 'X-Lab-Sample': 'seasonal-report' } };
 function LongDocument() {
   const [source, setSource] = useState<{ bytes: Uint8Array; start: number } | null>(null);
   const [openedIn, setOpenedIn] = useState<number | null>(null);
+  const [position, setPosition] = useState<PdfVisiblePosition | null>(null);
   return (
     <div data-lab-case="long">
       <Button
@@ -54,6 +59,9 @@ function LongDocument() {
       <LabOutput name="Opened in">
         {openedIn === null ? '—' : `${Math.round(openedIn)} ms`}
       </LabOutput>
+      <LabOutput name="Top of long report">
+        {position ? `Page ${position.pageIndex + 1}, ${position.top} pt` : '—'}
+      </LabOutput>
       {source ? (
         <div style={{ height: 480, maxWidth: 720 }}>
           <PdfViewer
@@ -61,6 +69,7 @@ function LongDocument() {
             source={source.bytes}
             loadEngine={loadEngine}
             workerSrc={workerSrc}
+            onVisiblePositionChange={setPosition}
             onDocumentChange={(document) => {
               if (document) setOpenedIn(performance.now() - source.start);
             }}
@@ -252,7 +261,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long document"
-      description={`A 250-page report built in the lab. The viewer asks for at most 8 pages or page texts at a time, renders only the pages near the view, and finds the word quinceberry on page ${longSampleMarkedPage}.`}
+      description={`A 250-page report built in the lab. The viewer asks for at most 8 pages or page texts at a time, renders only the pages near the view, and finds the word quinceberry on page ${longSampleMarkedPage}. The readout follows the page and offset at the top of the view.`}
     >
       <LongDocument />
     </LabSection>

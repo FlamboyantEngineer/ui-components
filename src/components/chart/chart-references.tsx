@@ -119,7 +119,7 @@ export function placeReferences<V>(
 }
 
 /** Each reference as text for the chart's summary: its label and value or range; one whose values cannot be read is left out. */
-export function describeReferences<V>(
+function describeReferences<V>(
   references: readonly ChartReference<V>[],
   axis: Pick<ReferenceAxis<V>, 'format'>,
   strings: {

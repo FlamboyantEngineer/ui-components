@@ -23,6 +23,7 @@ import {
   noteMessageChange,
   noteOlder,
 } from './transcript-commit.js';
+import type { TranscriptOrder } from './transcript-heights.js';
 import {
   collectTranscriptItems,
   diffTranscriptKeys,
@@ -57,6 +58,7 @@ type TranscriptOptions = Omit<
 export interface TranscriptModel {
   runtime: TranscriptRuntime;
   items: TranscriptItem[];
+  order: TranscriptOrder;
   /** The indices of the children to mount, or `null` to mount them all. */
   mounted: number[] | null;
   ui: TranscriptUi;
@@ -282,6 +284,7 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
   return {
     runtime,
     items,
+    order: { keys, indexOf },
     mounted,
     ui,
     unreadCount: countUnread(runtime, { keys, indexOf, parts }, options.firstUnreadId),

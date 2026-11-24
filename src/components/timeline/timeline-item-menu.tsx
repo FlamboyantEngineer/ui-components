@@ -3,15 +3,11 @@
 // An item's context menu: the host's entries for that item, opened from the item by a secondary
 // click, a long touch, Shift+F10 or the Context Menu key (specs/TIMELINE.md, UIC-TIMELINE-2.5).
 
-import { type KeyboardEvent, type Ref, useEffect, useRef } from 'react';
+import type { KeyboardEvent, Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import {
-  ContextMenu,
-  useContextMenuTarget,
-  useMenuController,
-} from '../context-menu/context-menu.js';
-import { Menu, type MenuEntry } from '../menu/menu.js';
+import { useItemContextMenu } from '../context-menu/context-menu.js';
+import type { MenuEntry } from '../menu/menu.js';
 import type { TimelineItem } from './timeline-geometry.js';
 
 /** The entries of an item's menu, or a function of the item that returns them. */
@@ -37,23 +33,13 @@ export function useItemMenu(
   },
 ) {
   const strings = useUiStrings();
-  const controller = useMenuController();
-  const targetRef = useRef<HTMLElement | null>(null);
   const { entries, onAction } = options;
   const listed = typeof entries === 'function' ? entries(item) : (entries ?? []);
-  const isDisabled = listed.length === 0;
-  const targetProps = useContextMenuTarget({ controller, isDisabled, own, targetRef });
-  useEffect(() => {
-    if (isDisabled) controller.close();
-  }, [isDisabled, controller]);
-  const menu = isDisabled ? null : (
-    <ContextMenu
-      controller={controller}
-      triggerRef={targetRef}
-      aria-label={strings.timelineItemActions(item.label)}
-    >
-      <Menu items={listed} onAction={(key) => onAction?.(key, item)} />
-    </ContextMenu>
-  );
+  const { targetProps, menu } = useItemContextMenu({
+    entries: listed,
+    getLabel: () => strings.timelineItemActions(item.label),
+    own,
+    onAction: (key) => onAction?.(key, item),
+  });
   return { targetProps, menu };
 }

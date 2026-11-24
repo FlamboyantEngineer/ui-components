@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 import { ClockGlyph } from '../../core/glyphs.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -15,7 +15,7 @@ import { chatHooks as hooks } from './chat-hooks.js';
  * What the reader did that the host has not accepted yet: sent a message, queued one while a reply
  * runs, steered with a queued one, saved an edit, or removed a queued message.
  */
-export type ChatProgressAction = 'send' | 'queue' | 'steer' | 'save' | 'remove';
+type ChatProgressAction = 'send' | 'queue' | 'steer' | 'save' | 'remove';
 
 /**
  * How long the host may take before the chat shows that it waits, so a quick answer never flashes;
@@ -24,7 +24,6 @@ export type ChatProgressAction = 'send' | 'queue' | 'steer' | 'save' | 'remove';
 export const chatProgressDelay = composerSubmittingDelay;
 
 interface Waiting {
-  key: number;
   action: ChatProgressAction;
   conversationId: string | undefined;
 }
@@ -42,19 +41,17 @@ export interface ChatProgress {
  */
 export function useChatProgress(conversationId: string | undefined): ChatProgress {
   const [waiting, setWaiting] = useState<readonly Waiting[]>([]);
-  const nextKey = useRef(0);
   const latestConversation = useLatest(conversationId);
   const track = useCallback(
     <T,>(action: ChatProgressAction, result: T): T => {
       if (!isThenable(result)) return result;
-      nextKey.current += 1;
-      const entry = { key: nextKey.current, action, conversationId: latestConversation.current };
+      const entry = { action, conversationId: latestConversation.current };
       setWaiting((list) => [...list, entry]);
       const settle = () => setWaiting((list) => list.filter((item) => item !== entry));
       result.then(settle, settle);
       return result;
     },
-    [latestConversation, nextKey],
+    [latestConversation],
   );
   const shown = waiting.findLast((entry) => entry.conversationId === conversationId);
   return { action: shown?.action, track };

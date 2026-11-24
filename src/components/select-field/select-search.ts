@@ -20,7 +20,7 @@ export type SelectFieldPage = RemotePage<SelectFieldOption>;
 export type SelectFieldLoader = RemoteLoader<SelectFieldOption>;
 
 interface SelectSearchOptions {
-  loadOptions?: SelectFieldLoader | undefined;
+  loadItems?: SelectFieldLoader | undefined;
   /** Shortest trimmed query that runs a search. Defaults to 1. */
   minSearchLength?: number | undefined;
   /** Milliseconds to wait after the last keystroke before searching. Defaults to 240. */
@@ -37,29 +37,29 @@ export interface SelectSearch extends RemoteSearch<SelectFieldOption> {
  * option a search returns. Another loader searches the latest query again from its first page.
  */
 export function useSelectSearch({
-  loadOptions,
+  loadItems,
   minSearchLength,
   searchDelay,
 }: SelectSearchOptions): SelectSearch {
   const [seen, setSeen] = useState<readonly SelectFieldOption[]>([]);
   const search = useRemoteSearch<SelectFieldOption>({
-    load: loadOptions
+    load: loadItems
       ? async (query, signal, cursor) => {
-          const page = await loadRemotePage(loadOptions, { query, signal, cursor });
+          const page = await loadRemotePage(loadItems, { query, signal, cursor });
           if (!signal.aborted) setSeen((previous) => mergeSelectOptions(page.items, previous));
           return page;
         }
       : undefined,
-    source: loadOptions,
+    source: loadItems,
     minSearchLength,
     searchDelay,
   });
-  const searchedWith = useRef(loadOptions);
+  const searchedWith = useRef(loadItems);
   // Searching reaches outside React, so a new loader searches once it renders.
   useEffect(() => {
-    if (searchedWith.current === loadOptions) return;
-    searchedWith.current = loadOptions;
-    if (loadOptions) search.searchNow(search.query);
+    if (searchedWith.current === loadItems) return;
+    searchedWith.current = loadItems;
+    if (loadItems) search.searchNow(search.query);
   });
   return { ...search, seen };
 }

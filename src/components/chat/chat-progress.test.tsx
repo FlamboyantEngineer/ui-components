@@ -105,17 +105,29 @@ describe('Chat progress', () => {
     expect(action()).toHaveAccessibleName('Stop');
   });
 
-  it('UIC-CHAT-3.13 reads Sending for a reply sent while a response runs', async () => {
+  it('UIC-CHAT-3.13 UIC-CHAT-3.15 hints and reports Sending for a quoted reply while a response runs', async () => {
     const replying = deferred();
-    const { user } = setup({
+    const onReply = vi.fn(() => replying.promise);
+    const { user, onSend } = setup({
       isPending: true,
       onStop: vi.fn(),
       onQueueChange: vi.fn(),
-      onReply: () => replying.promise,
+      onReply,
+      placeholder: (hint) => hint.text,
     });
+    expect(box().querySelector('[data-placeholder]')).toHaveAttribute(
+      'data-placeholder',
+      'Enter to queue',
+    );
     await user.hover(article('m1'));
     await user.click(within(article('m1')).getByRole('button', { name: 'Reply' }));
+    expect(box().querySelector('[data-placeholder]')).toHaveAttribute(
+      'data-placeholder',
+      'Enter to send',
+    );
     await user.keyboard('Still on!{Enter}');
+    expect(onReply).toHaveBeenCalledExactlyOnceWith('m1', 'Still on!', []);
+    expect(onSend).not.toHaveBeenCalled();
     wait(400);
     expect(line()).toHaveAttribute('data-action', 'send');
     expect(line()).toHaveTextContent('Sending…');

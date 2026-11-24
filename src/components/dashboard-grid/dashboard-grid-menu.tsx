@@ -13,6 +13,7 @@ import { getOwnerWindow } from '../../utils/owner-window.js';
 import {
   ContextMenu,
   useContextMenuTarget,
+  useItemContextMenu,
   useMenuController,
   useMenuControllerState,
 } from '../context-menu/context-menu.js';
@@ -90,8 +91,6 @@ export function useTileMenu(
 ) {
   const { handles, ownRef, findFallback } = tile;
   const strings = useUiStrings();
-  const controller = useMenuController();
-  const targetRef = useRef<HTMLElement | null>(null);
   const menu = grid?.menu;
   const listed = !grid || !menu ? [] : readEntries(menu, grid.item);
   const names: Record<DashboardTileAction, string> = {
@@ -104,18 +103,27 @@ export function useTileMenu(
     if (!grid?.isEditing) return [];
     return [{ id: entry, label: names[entry], icon: resolveActionIcon(menu?.icons, entry) }];
   });
-  const isDisabled = entries.length === 0;
-  const targetProps = useContextMenuTarget({
-    controller,
-    isDisabled,
-    own: { ref: ownRef },
-    targetRef,
-  });
-  useEffect(() => {
-    if (isDisabled) controller.close();
-  }, [isDisabled, controller]);
   // Move and Resize focus their handle once the menu has closed and given focus back.
   const pendingFocus = useRef<TileMoveKind | null>(null);
+  const {
+    controller,
+    targetProps,
+    menu: element,
+  } = useItemContextMenu({
+    entries,
+    getLabel: () => strings.tileActions(label),
+    own: { ref: ownRef },
+    onAction: (key, target) => {
+      if (!grid) return;
+      if (key === 'move' || key === 'resize') pendingFocus.current = key;
+      if (key === 'remove') {
+        if (target) focusAfterClose(findFallback(target));
+        grid.remove(grid.item.id);
+        grid.announce(strings.tileRemoved(label));
+      }
+      menu?.onAction?.(key, grid.item);
+    },
+  });
   const { isOpen } = useMenuControllerState(controller);
   useEffect(() => {
     const kind = pendingFocus.current;
@@ -126,26 +134,6 @@ export function useTileMenu(
     const frame = view.requestAnimationFrame(() => handle.focus());
     return () => view.cancelAnimationFrame(frame);
   }, [isOpen, handles]);
-  const onAction = (key: Key) => {
-    if (!grid) return;
-    if (key === 'move' || key === 'resize') pendingFocus.current = key;
-    if (key === 'remove') {
-      const tile = targetRef.current;
-      if (tile) focusAfterClose(findFallback(tile));
-      grid.remove(grid.item.id);
-      grid.announce(strings.tileRemoved(label));
-    }
-    menu?.onAction?.(key, grid.item);
-  };
-  const element = isDisabled ? null : (
-    <ContextMenu
-      controller={controller}
-      triggerRef={targetRef}
-      aria-label={strings.tileActions(label)}
-    >
-      <Menu items={entries} onAction={onAction} />
-    </ContextMenu>
-  );
   return { targetProps, menu: element };
 }
 

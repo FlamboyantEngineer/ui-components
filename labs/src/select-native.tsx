@@ -140,6 +140,38 @@ function NativeForm() {
   );
 }
 
+function EmptyIdForm() {
+  const [submitted, setSubmitted] = useState('Not submitted');
+  return (
+    <form
+      data-lab-demo="native-empty-id"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted(JSON.stringify(new FormData(event.currentTarget).get('channel')));
+      }}
+    >
+      <SelectField
+        mode="native"
+        label="Channel"
+        name="channel"
+        options={[
+          { id: '', label: 'Unnumbered' },
+          { id: 1, label: 'Numeric one' },
+          { id: '1', label: 'Text one' },
+        ]}
+        defaultValue=""
+        emptyLabel="None"
+        isRequired
+        validationBehavior="native"
+      />
+      <Button size="sm" type="submit">
+        Submit
+      </Button>
+      <LabOutput name="Channel entry">{submitted}</LabOutput>
+    </form>
+  );
+}
+
 /** A command elsewhere on the page that reads and focuses the native select through its ref. */
 function SelectRefField() {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -195,6 +227,12 @@ export const nativeChoices = (
       description="The button reads the native select's value and focuses it through its ref."
     >
       <SelectRefField />
+    </LabSection>
+    <LabSection
+      title="Native: Empty-string choice"
+      description="Unnumbered is a valid choice whose form entry is an empty string. None leaves this required field empty."
+    >
+      <EmptyIdForm />
     </LabSection>
   </div>
 );
