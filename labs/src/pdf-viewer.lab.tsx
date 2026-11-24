@@ -261,7 +261,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Long document"
-      description={`A 250-page report built in the lab. The viewer asks for at most 8 pages or page texts at a time, renders only the pages near the view, and finds the word quinceberry on page ${longSampleMarkedPage}. The readout follows the page and offset at the top of the view.`}
+      description={`A 250-page report built in the lab. Enter a distant page number and zoom to check the readout of the page and offset at the top of the view. Scroll the sidebar to draw its nearby thumbnails, or find quinceberry on page ${longSampleMarkedPage}.`}
     >
       <LongDocument />
     </LabSection>

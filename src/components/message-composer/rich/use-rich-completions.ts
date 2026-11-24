@@ -226,11 +226,12 @@ export function useRichCompletions(options: RichCompletionsOptions) {
     if (event.isComposing) return false;
     if (!isOpen) return isForwardTab(event) && reveal();
     if (event.key === 'Escape') return dismiss();
-    if (!shownRef.current || !activeItem) return event.key === 'Enter' || isForwardTab(event);
+    const isAccept = !event.shiftKey && (event.key === 'Enter' || event.key === 'Tab');
+    if (!shownRef.current || !activeItem) return isAccept;
     const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
     const count = matches.length;
     if (step !== undefined) setActive({ query, index: (activeIndex + step + count) % count });
-    else if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) choose(activeItem);
+    else if (isAccept) choose(activeItem);
     else return false;
     return true;
   };

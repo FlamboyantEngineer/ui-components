@@ -199,6 +199,31 @@ function SelectRefField() {
   );
 }
 
+const directions = ['ltr', 'rtl'] as const;
+
+function NarrowNativeFields() {
+  return directions.map((direction) => {
+    const isRtl = direction === 'rtl';
+    const options = [
+      {
+        id: 'fixed',
+        label: isRtl ? 'نقل البيانات بمعدل ثابت خلال كل فترة زمنية' : 'Transfer at a fixed rate',
+      },
+    ];
+    return (
+      <div key={direction} dir={direction} lang={isRtl ? 'ar' : 'en'} style={{ width: 140 }}>
+        <SelectField
+          mode="native"
+          label={isRtl ? 'معدل النقل' : 'Transfer rate'}
+          labelLayout="control-only"
+          options={options}
+          defaultValue="fixed"
+        />
+      </div>
+    );
+  });
+}
+
 export const nativeChoices = (
   <div data-lab-family="native">
     <LabSection
@@ -233,6 +258,9 @@ export const nativeChoices = (
       description="Unnumbered is a valid choice whose form entry is an empty string. None leaves this required field empty."
     >
       <EmptyIdForm />
+    </LabSection>
+    <LabSection title="Native: Narrow directions">
+      <NarrowNativeFields />
     </LabSection>
   </div>
 );

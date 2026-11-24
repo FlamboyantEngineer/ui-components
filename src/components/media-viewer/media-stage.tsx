@@ -45,14 +45,25 @@ function MediaImage({
   rotation,
   stage,
   request,
+  viewportRef,
   canvasRef,
-}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation' | 'request'> & {
+}: Pick<MediaStageProps, 'item' | 'zoom' | 'rotation' | 'request' | 'viewportRef'> & {
   stage: MediaSize | null;
   canvasRef: RefObject<HTMLDivElement | null>;
 }) {
   const [natural, setNatural] = useState<MediaSize | null>(null);
   const layout = natural && stage ? layoutMedia({ natural, stage, zoom, rotation }) : null;
-  if (request.status === 'failed') return <MediaImageError item={item} onRetry={request.retry} />;
+  if (request.status === 'failed') {
+    return (
+      <MediaImageError
+        item={item}
+        onRetry={() => {
+          viewportRef.current?.focus({ preventScroll: true });
+          request.retry();
+        }}
+      />
+    );
+  }
   const image = (
     <img
       {...hooks.slot('image')}
@@ -183,6 +194,7 @@ export function MediaStage(props: MediaStageProps) {
             rotation={props.rotation}
             stage={stage}
             request={request}
+            viewportRef={viewportRef}
             canvasRef={canvasRef}
           />
         ) : isEmptyNode(custom) ? (

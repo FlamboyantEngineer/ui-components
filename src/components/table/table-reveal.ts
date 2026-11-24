@@ -1,13 +1,11 @@
 'use client';
 
-import { type Ref, useRef } from 'react';
+import { type Ref, useMemo, useRef } from 'react';
 import type { CollectionHandle, CollectionRevealMiss } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { type RevealLayout, useCollectionHandle } from '../../utils/use-collection-handle.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import { listVisibleRows } from './table-groups.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableRow } from './table-rows.js';
 import type { TableChildRows, TableNode } from './table-tree.js';
@@ -34,19 +32,22 @@ function hasNode<T>(nodes: readonly TableNode<T>[], key: Key): boolean {
  */
 function locateTableRow<T extends TableRow>(
   key: Key,
-  parts: { rows: readonly T[]; getChildRows: TableChildRows<T>; grid: TableGrid<T> },
+  {
+    visibleKeys,
+    rows,
+    getChildRows,
+    grid,
+  }: TableHandleOptions<T> & {
+    visibleKeys: ReadonlySet<Key> | null;
+  },
 ): CollectionRevealMiss | null {
-  const { rows, getChildRows, grid } = parts;
+  if (visibleKeys?.has(key)) return null;
+  if (hasNode(grid.view.presentedNodes, key)) {
+    return hasNode(grid.view.nodes, key) ? 'collapsed' : 'paged';
+  }
   const children = (row: T) => getChildRows?.(row) ?? undefined;
-  let isKnown = false;
-  for (const row of walkTree(rows, children)) isKnown ||= row.id === key;
-  if (!isKnown) return 'missing';
-  if (!hasNode(grid.view.presentedNodes, key)) return 'filtered';
-  if (!hasNode(grid.view.nodes, key)) return 'paged';
-  const expanded = new Set([...grid.ariaProps.expandedKeys].map(fromCollectionKey));
-  return listVisibleRows(grid.body.nodes, expanded).some((row) => row.id === key)
-    ? null
-    : 'collapsed';
+  for (const row of walkTree(rows, children)) if (row.id === key) return 'filtered';
+  return 'missing';
 }
 
 /** The data cell of `columnId` in a drawn row; the row itself without a column or such a cell. */
@@ -80,8 +81,14 @@ export function useTableHandle<T extends TableRow>(
 ): { ref: Ref<HTMLDivElement>; layoutRef: Ref<RevealLayout> } {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutRef = useRef<RevealLayout>(null);
+  const { visibleRows } = grid;
+  const isEnabled = handleRef != null;
+  const visibleKeys = useMemo(
+    () => (isEnabled ? new Set(visibleRows.map((row) => row.id)) : null),
+    [isEnabled, visibleRows],
+  );
   useCollectionHandle(handleRef, {
-    locate: (key) => locateTableRow(key, { rows, getChildRows, grid }),
+    locate: (key) => locateTableRow(key, { visibleKeys, rows, getChildRows, grid }),
     getRoot: () => rootRef.current,
     virtual: virtualized
       ? {

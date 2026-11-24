@@ -1,12 +1,13 @@
 'use client';
 
+import { memo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useDateFormatter, useLocale } from '../../primitives/index.js';
 import type { TimeScaleUnit } from '../../utils/time-scale.js';
 import {
-  resolveScaleCells,
   type TimelineAxis,
   type TimelineScale,
+  type TimelineScaleCells,
   timelineScales,
   toInlineStart,
 } from './timeline-geometry.js';
@@ -15,6 +16,7 @@ import { timelineHooks as hooks } from './timeline-hooks.js';
 interface TimelineHeaderProps {
   axis: TimelineAxis;
   scale: TimelineScale;
+  cells: TimelineScaleCells;
 }
 
 /** Whether a header row names the larger unit above or the scale's own unit below it. */
@@ -48,7 +50,11 @@ function useScaleLabel(
  * The time scale above the rows, pinned to the top of the viewport while the rows scroll: a row of
  * the larger unit (months or years) over a row of the scale's unit.
  */
-export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
+export const TimelineHeader = memo(function TimelineHeader({
+  axis,
+  scale,
+  cells,
+}: TimelineHeaderProps) {
   const isRtl = useLocale().direction === 'rtl';
   const label = useScaleLabel(scale);
   const plan = timelineScales[scale];
@@ -68,7 +74,7 @@ export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
           {...hooks.slot('scale-row', { tier, unit })}
           style={{ position: 'relative' }}
         >
-          {resolveScaleCells(axis, unit).map((cell) => (
+          {cells[tier].map((cell) => (
             <span
               key={cell.start}
               {...hooks.slot('scale-cell')}
@@ -85,4 +91,4 @@ export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
       ))}
     </div>
   );
-}
+});

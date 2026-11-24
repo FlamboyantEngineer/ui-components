@@ -3,6 +3,7 @@
 
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { createTriggerCompletions } from '../../src/components/completion-list/completion-list.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import {
   type MessageComposerHandle,
@@ -60,7 +61,14 @@ function RowBounds() {
   );
 }
 
-/** A plain composer that accepts at most 40 characters, typed or pasted. */
+const shortMentions = createTriggerCompletions([
+  {
+    character: '@',
+    getCompletions: () => [{ label: 'Alexandra Lee', insertText: '@Alexandra ' }],
+  },
+]);
+
+/** A plain composer that applies its length limit to typing, pasting and completions. */
 function LengthLimit() {
   const [value, setValue] = useState('');
   const [sent, setSent] = useState<string | null>(null);
@@ -69,6 +77,7 @@ function LengthLimit() {
       <MessageComposer
         aria-label="Short message"
         maxLength={40}
+        completions={shortMentions}
         value={value}
         onChange={setValue}
         onSubmit={(text) => {
@@ -159,7 +168,7 @@ export function ComposerHandleSections() {
       </LabSection>
       <LabSection
         title="Length limit"
-        description="maxLength 40 on the plain composer: typing or pasting stops at 40 characters, and Enter sends what was accepted."
+        description="Typing, pasting and mention completions respect the 40-character limit. Try @a before a long line of text: the mention uses the space available and leaves the rest of the line in place."
       >
         <LengthLimit />
       </LabSection>

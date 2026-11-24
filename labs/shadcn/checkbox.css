@@ -15,7 +15,7 @@
 }
 
 .ui-checkbox__box {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
   border-radius: var(--ref-radius-xs);
   background: transparent;
   color: var(--primary-foreground);
@@ -35,7 +35,7 @@
 }
 
 .ui-checkbox[data-hovered]:not([data-selected], [data-indeterminate]) .ui-checkbox__box {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
 }
 
 .ui-checkbox[data-focus-visible] .ui-checkbox__box {

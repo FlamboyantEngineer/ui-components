@@ -1068,6 +1068,17 @@ test.describe('PDF Viewer lab', () => {
     expect(reads).toBeLessThan(12);
     await expect(top).toHaveText(/^Page 1, [1-9]/);
 
+    const sidebar = long.getByRole('button', { name: 'Sidebar' });
+    await sidebar.click();
+    const panel = long.getByRole('tabpanel', { name: 'Pages' });
+    const thumbnails = panel.locator('.ui-pdf-viewer__thumbnail-canvas');
+    await expect(thumbnails.first()).not.toHaveAttribute('width', '0');
+    await expect(thumbnails.last()).toHaveAttribute('width', '0');
+    await panel.evaluate((element) => (element.scrollTop = element.scrollHeight));
+    await expect(thumbnails.last()).not.toHaveAttribute('width', '0');
+    await expect(thumbnails.first()).toHaveAttribute('width', '0');
+    await sidebar.click();
+
     const field = long.getByLabel('Page', { exact: true });
     const scrollStart = Date.now();
     await field.fill('250');

@@ -1,8 +1,8 @@
 'use client';
 
-import { type ReactNode, useDeferredValue, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { mergeClassNames } from '../../core/hooks.js';
-import { Field, FieldFormValue, type FieldInputProps, useFieldControl } from '../field/field.js';
+import { Field, type FieldInputProps, useFieldControl } from '../field/field.js';
 import type { RichTextBlockMarker } from './block-markers.js';
 import {
   createEditorPlugins,
@@ -16,6 +16,7 @@ import { EditorSurface, useSyncedEditorState, withEditorHistory } from './editor
 import { getRichTextKit } from './engine-schema.js';
 import { richTextEditorHooks as hooks } from './rich-text-context.js';
 import { isRichTextEqual, type RichTextDocument } from './rich-text-document.js';
+import { RichTextFormValue } from './rich-text-form-value.js';
 import { getDefaultRichTextSchema, type RichTextSchema } from './rich-text-schema.js';
 
 // The engine glue the rich composer shares (`message-composer/rich`), kept out of the entry point.
@@ -38,26 +39,6 @@ export interface RichTextEditorProps extends FieldInputProps<RichTextDocument> {
    * surface scrolls, its place in the scroll track. The editor checks nothing itself.
    */
   blockMarkers?: readonly RichTextBlockMarker[] | undefined;
-}
-
-/**
- * The document in its form, under the field's `name`: a hidden input holding the document's JSON,
- * which `JSON.parse` turns back into the value. It reads the field's value, so it keeps no copy.
- */
-function DocumentFormValue({
-  name,
-  value,
-  isDisabled,
-}: {
-  name: string;
-  value: RichTextDocument;
-  isDisabled: boolean;
-}) {
-  // The whole document per keystroke: deferring lets typing render first and skips the values a
-  // fast typist leaves behind.
-  const deferred = useDeferredValue(value);
-  const json = useMemo(() => JSON.stringify(deferred), [deferred]);
-  return <FieldFormValue name={name} value={json} isDisabled={isDisabled} />;
 }
 
 /**
@@ -108,7 +89,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
             {rest.children}
           </EditorSurface>
           {rest.name ? (
-            <DocumentFormValue
+            <RichTextFormValue
               name={rest.name}
               value={fieldControl.state.value}
               isDisabled={state.isDisabled}

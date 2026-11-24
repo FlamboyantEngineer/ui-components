@@ -155,4 +155,16 @@ describe('Tree filtering as items arrive', () => {
     rerender(<Branches filterText="Match one" />);
     expect(rowNames()).toEqual(['First', 'Match one']);
   });
+
+  it('UIC-TREE-6.1 forgets a collapse when an intervening query has no expansion changes', async () => {
+    const { rerender } = render(<Branches />);
+    await toggle('First', 'Collapse');
+    expect(rowNames()).toEqual(['First']);
+
+    rerender(<Branches filterText="Other" />);
+    expect(rowNames()).toEqual(['Second', 'Other']);
+    rerender(<Branches filterText="Match" />);
+    expect(rowNames()).toEqual(['First', 'Match one']);
+    expect(row('First')).toHaveAttribute('aria-expanded', 'true');
+  });
 });

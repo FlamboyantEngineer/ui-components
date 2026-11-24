@@ -15,9 +15,9 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.2 - Lifetime
 
-A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown, and its lifetime starts once, the first time it is shown: a toast that is displaced by newer ones beyond `maxVisibleToasts`, or whose region or list remounts, keeps the time that remained and runs on with it when it is shown again. Only a new toast, or an update that gives a new lifetime ([UIC-TOAST-1.5](#uic-toast-15---in-place-update)), starts a lifetime over. Hovering the region or moving focus into it (onto the region itself or into a toast) shall pause every visible toast's timer, also a timer that starts or restarts meanwhile (a toast added, updated with a new lifetime or settled from a promise while the reader points at the region), and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
+A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown, and its lifetime starts once, the first time it is shown: a toast that is displaced by newer ones beyond `maxVisibleToasts`, or whose region or list remounts, keeps the time that remained and runs on with it when it is shown again. Only a new toast, or an update that gives a new lifetime ([UIC-TOAST-1.5](#uic-toast-15---in-place-update)), starts a lifetime over. Hovering the region or moving focus into it (onto the region itself or into a toast) shall pause every visible toast's timer, also a timer that starts or restarts meanwhile (a toast added, updated with a new lifetime or settled from a promise while the reader points at the region), and leaving resumes each with the time that remained. A timed toast whose deadline passed before the browser could run its callback is due as soon as it resumes. Closing a toast calls its `onClose`.
 
-Implementation: `src/components/toast/toast.tsx`, `src/components/toast/use-toast-lifecycle.ts`
+Implementation: `src/components/toast/toast-timer.ts`, `src/components/toast/toast-queue.ts`, `src/components/toast/use-toast-lifecycle.ts`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.3 - Replacement
@@ -96,10 +96,10 @@ Verification: `src/components/toast/toast.test.tsx`
 
 ### UIC-TOAST-3.3 - Action
 
-An `action` shall render a [Button](BUTTON.md) in the `ui-toast__action` slot named by its `label`; pressing it runs `onAction` and then closes the toast.
+An `action` shall render a [Button](BUTTON.md) in the `ui-toast__action` slot named by its `label`; the first press while the toast is open runs `onAction` and then closes the toast. A press on a closing toast runs no action, even while its exit animation is visible. A focused action retains focus for the region's normal restoration when the toast leaves.
 
-Implementation: `src/components/toast/toast.tsx`
-Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+Implementation: `src/components/toast/toast.tsx`, `src/components/toast/toast-queue.ts`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`, `e2e/toast-coverage.spec.ts`
 
 ### UIC-TOAST-3.4 - Dismiss
 
@@ -142,8 +142,10 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`, `src/u
 
 Each toast shall publish its place in the stack as `--ui-toast-index` (0 for the newest visible toast, unitless) and `--ui-toast-offset` (the summed measured height of the newer visible toasts, in pixels), so the stylesheet can pile toasts and spread them out. A `ToastRegion` publishes `data-expanded` while the pointer is over it or focus is inside it (the region element included), the same moments its timers pause, so the stylesheet can spread a pile while the reader works with it. Once hovered, the pointer counts as over the region anywhere in the box around the region and its toasts as they are drawn, so crossing the gaps of a spread stack toward an older toast keeps it expanded and paused, whatever the toasts' heights, direction or viewport width. That box covers nothing: presses in a gap reach the page under it. Moving out of the box, or out of the page, ends the hover. When the toast under the pointer or holding focus leaves, the region stops being hovered or focused as the pointer or focus moves elsewhere, and a region whose last toast has left is neither, so the next toast starts collapsed and running.
 
-Implementation: `src/components/toast/toast-stack.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`
-Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+The reference and shadcn styles shall keep an expanded stack within the viewport. When the toasts exceed its height, the list scrolls and focus moving through toast actions and dismissal controls brings each into view.
+
+Implementation: `src/components/toast/toast-stack.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`, `labs/shadcn/toast.css`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`, `e2e/toast-coverage.spec.ts`
 
 ## Hooks
 

@@ -47,6 +47,14 @@ test.describe('Table handle', () => {
     await expect(result).toHaveText('not found (collapsed)');
     await section.getByRole('button', { name: 'Reveal stop 999' }).click();
     await expect(result).toHaveText('not found (missing)');
+
+    const pinned = table.getByRole('row', { name: /Stop 300\b/ });
+    await expect(pinned).toHaveCount(0);
+    const revealPinned = section.getByRole('button', { name: 'Reveal pinned stop 300' });
+    await revealPinned.press('Enter');
+    await expect(result).toHaveText('found');
+    await expect(pinned).toHaveAttribute('data-pinned', 'bottom');
+    await expect(revealPinned).toBeFocused();
     await lab.expectAccessible();
   });
 
@@ -61,10 +69,11 @@ test.describe('Table handle', () => {
     await expect(section.locator('[data-lab-output="Right-to-left reveal result"]')).toHaveText(
       'found',
     );
-    const cell = section
+    const row = section
       .getByRole('grid', { name: 'Stops, right to left' })
-      .getByRole('row', { name: /Stop 40\b/ })
-      .locator('[data-column="note"]');
+      .getByRole('row', { name: /Stop 40\b/ });
+    await expect(row).toHaveAttribute('data-pinned', 'top');
+    const cell = row.locator('[data-column="note"]');
     await expect(cell).toBeFocused();
     expect(await isInView(cell, scroller)).toBe(true);
   });

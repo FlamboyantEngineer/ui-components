@@ -41,6 +41,13 @@ export interface FilePartition {
   rejections: FileRejection[];
 }
 
+type FileDecision = { file: File; reason?: undefined } | FileRejection;
+
+interface FileIntakeCapacity {
+  readRemaining(): number;
+  report(result: FilePartition): void;
+}
+
 /** A dragged item as the browser reports it before the drop: its kind and MIME type only. */
 export interface DraggedItem {
   kind: string;
@@ -76,42 +83,62 @@ const unchecked = Symbol('unchecked');
 function checkValidator(
   validate: FileValidator | undefined,
   file: File,
-  accepted: readonly File[],
+  getAccepted: () => File[],
 ): ReturnType<FileValidator> | undefined | typeof unchecked {
   try {
-    return validate?.(file, [...accepted]);
+    return validate?.(file, getAccepted());
   } catch {
     return unchecked;
   }
 }
 
+/** Applies the current count limit after every other check has answered. */
+function settleFiles(decisions: readonly FileDecision[], remaining: number): FilePartition {
+  const partition: FilePartition = { accepted: [], rejections: [] };
+  for (const decision of decisions) {
+    if (decision.reason) partition.rejections.push(decision);
+    else if (partition.accepted.length >= remaining) {
+      partition.rejections.push({ file: decision.file, reason: 'count' });
+    } else partition.accepted.push(decision.file);
+  }
+  return partition;
+}
+
 /**
  * Sorts offered files into the accepted ones and the refusals, keeping their order: a file must
- * match the types, fit the size limits, pass `validate` and fit within `maxFiles`, where `held`
- * files are already listed. The result is immediate unless `validate` answers with a promise; a
- * `validate` that throws, or answers with a promise that rejects, refuses its file as `unchecked`
- * and the other files are still sorted, so the result never throws or rejects.
+ * match the types, fit the size limits, pass `validate` and fit within `maxFiles`, counting held
+ * files. An upload supplies its live capacity and receives the verdict as soon as it is settled.
+ * A validator failure refuses its file as `unchecked` and the other files are still sorted.
  */
 export function partitionFiles(
   files: readonly File[],
   rules: FileRules,
-  held = 0,
+  capacity: number | FileIntakeCapacity = 0,
 ): FilePartition | Promise<FilePartition> {
-  const partition: FilePartition = { accepted: [], rejections: [] };
+  const approved: File[] = [];
+  const decisions: FileDecision[] = [];
+  const remaining =
+    typeof capacity === 'number'
+      ? () => (rules.maxFiles ?? Infinity) - capacity
+      : capacity.readRemaining;
+  const getAccepted = () => approved.slice(0, Math.max(0, Math.ceil(remaining())));
   const admit = (file: File, message: string | null | undefined) => {
-    const isFull =
-      rules.maxFiles !== undefined && held + partition.accepted.length >= rules.maxFiles;
-    if (message) partition.rejections.push({ file, reason: 'invalid', message });
-    else if (isFull) partition.rejections.push({ file, reason: 'count' });
-    else partition.accepted.push(file);
+    if (message) decisions.push({ file, reason: 'invalid', message });
+    else {
+      approved.push(file);
+      decisions.push({ file });
+    }
   };
   const sortFrom = (index: number): FilePartition | Promise<FilePartition> => {
     for (let at = index; at < files.length; at += 1) {
       const file = files[at] as File;
       const reason = checkFileRules(file, rules);
-      if (reason) partition.rejections.push({ file, reason });
-      const verdict = reason ? null : checkValidator(rules.validate, file, partition.accepted);
-      if (verdict === unchecked) partition.rejections.push({ file, reason: 'unchecked' });
+      if (reason) {
+        decisions.push({ file, reason });
+        continue;
+      }
+      const verdict = checkValidator(rules.validate, file, getAccepted);
+      if (verdict === unchecked) decisions.push({ file, reason: 'unchecked' });
       else if (isThenable(verdict)) {
         return verdict.then(
           (message) => {
@@ -119,13 +146,15 @@ export function partitionFiles(
             return sortFrom(at + 1);
           },
           () => {
-            partition.rejections.push({ file, reason: 'unchecked' });
+            decisions.push({ file, reason: 'unchecked' });
             return sortFrom(at + 1);
           },
         );
-      } else if (!reason) admit(file, verdict);
+      } else admit(file, verdict);
     }
-    return partition;
+    const result = settleFiles(decisions, remaining());
+    if (typeof capacity !== 'number') capacity.report(result);
+    return result;
   };
   return sortFrom(0);
 }

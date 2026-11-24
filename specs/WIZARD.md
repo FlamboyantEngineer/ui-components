@@ -20,7 +20,7 @@ Verification: `src/components/wizard/wizard.test.tsx`
 
 ### UIC-WIZARD-1.3 - Buttons
 
-The footer shall hold [Buttons](BUTTON.md) in the `ui-wizard__action` slot, each publishing `data-action`: `cancel` (the provider's `cancel` string) when `onCancel` is set, which it calls; `back` (`back`) on every step but the first; `skip` (`skip`) on an optional step that is not the last; and the primary submit button, `next` (`next`) or on the last step `finish` (`finishLabel`, else `finish`).
+The footer shall hold [Buttons](BUTTON.md) in the `ui-wizard__action` slot, each publishing `data-action`: `cancel` (the provider's `cancel` string) when `onCancel` is set, which it calls; `back` (`back`) on every step but the first; `skip` (`skip`) on an optional step that is not the last; and the primary submit button, `next` (`next`) or on the last step `finish` (`finishLabel`, else `finish`). With no steps, the footer only offers Cancel if supplied.
 
 Implementation: `src/components/wizard/wizard.tsx`, `src/core/strings/common.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
@@ -71,7 +71,7 @@ Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`
 
 ### UIC-WIZARD-2.5 - Skipping
 
-Skip shall move to the next step without checking the shown one and mark it `skipped` in the list of steps, until it later passes through Next.
+Skip shall move to the next step without checking the shown one and mark it `skipped` in the list of steps until it later passes through Next. Skip marks belong to the workflow (the ordered step IDs). Equivalent renders and moves within the workflow preserve them. Replacing the workflow clears them, including when a replacement step reuses a previous ID. A required step never shows as skipped.
 
 Implementation: `src/components/wizard/wizard.tsx`, `src/components/wizard/wizard-navigation.ts`
 Verification: `src/components/wizard/wizard.test.tsx`, `e2e/wizard.spec.ts`

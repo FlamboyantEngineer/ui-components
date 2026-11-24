@@ -178,6 +178,33 @@ describe('ToastQueue', () => {
     expect(titles()).toEqual([]);
   });
 
+  it('UIC-TOAST-1.2 expires a due timer when focus leaves the region', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue();
+    const onClose = vi.fn();
+    render(
+      <>
+        <button type="button">Outside</button>
+        <ToastRegion queue={queue} />
+      </>,
+    );
+    act(() => {
+      queue.add({ title: 'Persistent' }, { timeout: 0 });
+      queue.add({ title: 'Expiring' }, { timeout: 200, onClose });
+    });
+    await advance(100);
+    // An input task can run after the deadline but before the due timeout callback.
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 150);
+    act(() => screen.getByRole('region').focus());
+    clock.mockRestore();
+    await advance(1000);
+    expect(titles()).toEqual(['Expiring', 'Persistent']);
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    await advance(1);
+    expect(titles()).toEqual(['Persistent']);
+    expect(onClose).toHaveBeenCalledExactlyOnceWith();
+  });
+
   it('UIC-TOAST-1.2 UIC-TOAST-4.3 stops pausing once a focused toast is dismissed', async () => {
     const user = useFakeClock();
     const queue = createToastQueue();
@@ -776,6 +803,38 @@ describe('Toast updates and motion', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it.each(['action', 'programmatic close'] as const)(
+    'UIC-TOAST-3.3 UIC-TOAST-4.1 refuses action presses during exit after %s',
+    async (closing) => {
+      const user = userEvent.setup();
+      const queue = createToastQueue({ defaultTimeout: 0 });
+      const onAction = vi.fn();
+      const onClose = vi.fn();
+      const key = queue.add(
+        { title: 'Changes saved', action: { label: 'Undo', onAction } },
+        { onClose },
+      );
+      render(<ToastRegion queue={queue} />);
+      const toast = screen.getByRole('alertdialog', { name: 'Changes saved' });
+      const undo = within(toast).getByRole('button', { name: 'Undo' });
+      act(() => undo.focus());
+      const exit = holdAnimations();
+      exit.start();
+      if (closing === 'action') await user.keyboard('{Enter}');
+      else act(() => queue.close(key));
+      expect(toast).toHaveAttribute('data-exiting', 'true');
+      expect(undo).toHaveFocus();
+      expect(undo).toHaveAttribute('aria-disabled', 'true');
+      await user.keyboard('{Enter}');
+      await user.click(undo);
+      expect(onAction).toHaveBeenCalledTimes(closing === 'action' ? 1 : 0);
+      expect(onClose).not.toHaveBeenCalled();
+      await exit.finish();
+      expect(toast).not.toBeInTheDocument();
+      expect(onClose).toHaveBeenCalledExactlyOnceWith();
+    },
+  );
 
   it('UIC-TOAST-4.1 removes a toast that is not shown at once', () => {
     const onClose = vi.fn();

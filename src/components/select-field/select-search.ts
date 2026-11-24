@@ -28,6 +28,8 @@ interface SelectSearchOptions {
 }
 
 export interface SelectSearch extends RemoteSearch<SelectFieldOption> {
+  /** The field currently searches through a loader. */
+  isRemote: boolean;
   /** Every option a search has returned while the field is mounted, so chosen ones keep labels. */
   seen: readonly SelectFieldOption[];
 }
@@ -61,5 +63,5 @@ export function useSelectSearch({
     searchedWith.current = loadItems;
     if (loadItems) search.searchNow(search.query);
   });
-  return { ...search, seen };
+  return { ...search, isRemote: Boolean(loadItems), seen };
 }

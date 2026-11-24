@@ -304,15 +304,16 @@ export function useCompletions(options: CompletionsOptions): CompletionsModel {
    * screen, Enter and Tab wait for it, so neither inserts an option the reader has not seen.
    */
   const choose = (key: string, shiftKey: boolean): boolean => {
+    const isAccept = !shiftKey && (key === 'Enter' || key === 'Tab');
     if (!session.shownRef.current) {
       if (key === 'Escape') close();
-      return key === 'Escape' || key === 'Enter' || (key === 'Tab' && !shiftKey);
+      return key === 'Escape' || isAccept;
     }
     const option = state.options[state.activeIndex];
     const count = state.options.length;
     if (key === 'ArrowDown') setActiveIndex(step(state.activeIndex, 1, count));
     else if (key === 'ArrowUp') setActiveIndex(step(state.activeIndex, -1, count));
-    else if ((key === 'Enter' || (key === 'Tab' && !shiftKey)) && option) apply(option);
+    else if (isAccept && option) apply(option);
     else if (key === 'Escape') close();
     else return false;
     return true;

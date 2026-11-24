@@ -439,6 +439,18 @@ test.describe('Combobox lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.3 merges overlapping remote pages on an initially open list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    await page.getByRole('button', { name: 'Mount remote combobox' }).click();
+    const list = page.getByRole('group', { name: 'Matching cities' });
+    await expect(list.getByRole('option')).toHaveText(['Lima', 'Lisbon']);
+    await list.getByRole('option', { name: 'Lisbon' }).click();
+    await expect(page.getByRole('combobox', { name: 'City pages' })).toHaveValue('Lisbon');
+  });
+
   test('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.2 UIC-COMBOBOX-5.4 says why a remote list is empty', async ({
     page,
     lab,

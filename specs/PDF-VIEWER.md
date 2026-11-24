@@ -48,10 +48,10 @@ Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-1.7 - Long documents
 
-The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only the pages near the view draw (UIC-PDF-VIEWER-2.1); the others keep empty canvases. An ordinary scroll measures only the pages around the viewport when their measurements cover it. A jump or a layout change can measure the rest of the document when the nearby pages no longer cover the view. The lab's 250-page report is built in the lab and times its opening; in the browser test it shows its first page, measures only the pages around it during a short scroll, reaches its last page and finds a word on page 248.
+The viewer shall open documents of at least 250 pages. It keeps at most 8 page requests (`getPage`) in flight while opening a document, and at most 8 page-text requests while extracting the text for a search, and starts no further request once the document's lifetime ends. Only pages near the view draw (UIC-PDF-VIEWER-2.1), and other pages keep empty canvases. An ordinary scroll measures only the pages around the viewport when their bounds cover it. When that range is stale or unavailable and the page column has mounted, a logarithmic search of live page bounds finds the first page in view. Both the current page and the reported position at the top edge use the same measurement. The browser test measures the geometry reads during a short scroll in the 250-page lab report, reaches the last page and finds a word on page 248.
 
-Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/map-bounded.ts`, `src/components/pdf-viewer/page-scroll-position.ts`
-Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/components/pdf-viewer/map-bounded.test.ts`, `src/components/pdf-viewer/page-scroll-position.test.ts`, `e2e/pdf-viewer.spec.ts`
+Implementation: `src/components/pdf-viewer/use-pdf-document.ts`, `src/components/pdf-viewer/use-pdf-search.ts`, `src/components/pdf-viewer/map-bounded.ts`, `src/components/pdf-viewer/page-scroll-position.ts`, `src/components/pdf-viewer/use-pdf-pages.ts`
+Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `src/components/pdf-viewer/map-bounded.test.ts`, `src/components/pdf-viewer/page-scroll-position.test.ts`, `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ## UIC-PDF-VIEWER-2 - Pages
 
@@ -392,9 +392,9 @@ Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-
 
 ### UIC-PDF-VIEWER-10.2 - Thumbnails
 
-The thumbnails shall be a React Aria `ListBox` (`ui-pdf-viewer__thumbnails`) named with the `pages` string, with one single-selection option per page (`ui-pdf-viewer__thumbnail`, named with the `pageNumber` string) holding the page drawn in a `ui-pdf-viewer__thumbnail-canvas` and its number in `ui-pdf-viewer__thumbnail-label`. The page the reader is on is selected; choosing another goes to it. The canvas takes the content width of its option, which the host stylesheet sets, and the height of the page at that width, inline; its bitmap is drawn at the device pixel ratio while the option is within a sidebar's height of the view, at the reader's rotation.
+The thumbnails shall be a React Aria `ListBox` (`ui-pdf-viewer__thumbnails`) named with the `pages` string, with one single-selection option per page (`ui-pdf-viewer__thumbnail`, named with the `pageNumber` string) holding the page drawn in a `ui-pdf-viewer__thumbnail-canvas` and its number in `ui-pdf-viewer__thumbnail-label`. The page the reader is on is selected; choosing another goes to it. The canvas takes the content width of its option, which the host stylesheet sets, and the height of the page at that width, inline; its bitmap is drawn at the device pixel ratio while the option is within a sidebar's height of the view, at the reader's rotation. A single active intersection observer rooted at the tab panel watches the thumbnails, and its range follows the panel's height as it resizes.
 
-Implementation: `src/components/pdf-viewer/pdf-viewer-thumbnails.tsx`
+Implementation: `src/components/pdf-viewer/pdf-viewer-sidebar.tsx`, `src/components/pdf-viewer/pdf-viewer-thumbnails.tsx`, `src/components/pdf-viewer/use-near-pages.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer-sidebar.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-10.3 - Outline

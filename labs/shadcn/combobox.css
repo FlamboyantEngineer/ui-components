@@ -1,17 +1,15 @@
 /*
  * shadcn/ui stylesheet: comboboxes, after the combobox of shadcn/ui's "nova" style. The field is an
- * input group: a 32 pixel frame with the input border and 10 pixel corners, transparent (the input
+ * input group: a frame at the control's size with the input border and 10 pixel corners (the input
  * tint in the dark), taking the ring under focus and the destructive ring when invalid, with a
- * 24 pixel ghost button for the list. The list is a popover's ringed panel with the medium shadow,
- * at most 288 pixels high, 4 pixels of padding and 28 pixel rows with 6 pixel padding, 8 pixel
+ * ghost button for the list. The list is a popover's ringed panel with the medium shadow,
+ * at most 288 pixels high, 4 pixels of padding and rows at the control's size with 8 pixel
  * gaps and the accent fill while highlighted. Group labels are 12 pixel muted text; the empty
  * message is centred.
  */
 
 .ui-combobox__field {
-  min-height: var(--ref-control-height-md);
   padding-inline: 10px 3px;
-  border-color: var(--input);
   border-radius: var(--ref-radius);
   background: transparent;
   transition:
@@ -40,9 +38,13 @@
   line-height: calc(1.25 / 0.875);
 }
 
+.ui-combobox:not(:has(.ui-combobox__chips)) .ui-combobox__entry {
+  flex-wrap: nowrap;
+}
+
 .ui-combobox :is(.ui-combobox__clear.ui-button[data-content='icon'], .ui-combobox__button) {
-  width: var(--ref-control-height-xs);
-  height: var(--ref-control-height-xs);
+  width: min(var(--ref-control-height-xs), calc(var(--ref-control-height) - 6px));
+  height: min(var(--ref-control-height-xs), calc(var(--ref-control-height) - 6px));
 }
 
 .ui-combobox__button {
@@ -106,8 +108,7 @@
 .ui-combobox__option,
 .ui-combobox__create {
   column-gap: 8px;
-  min-height: var(--ref-control-height-sm);
-  padding: 4px 6px;
+  padding-inline: 6px;
   border-radius: calc(var(--radius) * 0.8);
 }
 
@@ -119,7 +120,6 @@
 
 .ui-combobox__empty {
   justify-content: center;
-  padding: 8px;
 }
 
 /* A selected option keeps the room for its check at its end, where the check sits 8 pixels in. */

@@ -1,5 +1,4 @@
-// A table lab case: revealing and focusing rows and cells by id through the table's handle, in a
-// virtualized table and a right-to-left table with pinned columns. Lab-only layout is inline.
+// The table handle reveals regular and pinned rows in virtualized and right-to-left tables.
 
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
@@ -101,6 +100,7 @@ export function RevealRows() {
           },
           { label: 'Reveal stop 1A', run: call('revealKey', 'stop-1a') },
           { label: 'Reveal stop 999', run: call('revealKey', 'stop-999') },
+          { label: 'Reveal pinned stop 300', run: call('revealKey', 'stop-300') },
         ]}
       />
       <div data-lab="reveal-virtualized" style={{ height: 240 }}>
@@ -109,6 +109,7 @@ export function RevealRows() {
           rows={stops}
           columns={columns}
           getChildRows={(stop) => stop.stops}
+          pinnedRows={{ bottom: ['stop-300'] }}
           virtualized
           rowHeight={32}
           size="sm"
@@ -129,6 +130,7 @@ export function RevealRows() {
           aria-label="Stops, right to left"
           rows={stops.slice(0, 60)}
           columns={wideColumns}
+          pinnedRows={{ top: ['stop-40'] }}
           size="sm"
           handleRef={wideRef}
         />

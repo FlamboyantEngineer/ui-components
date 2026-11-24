@@ -30,7 +30,7 @@ export function encodeComboboxItems(items: Iterable<ComboboxItem>): ComboboxItem
     isPickerSection(item)
       ? {
           ...item,
-          id: toCollectionKey(item.id),
+          id: `section-${toCollectionKey(item.id)}`,
           options: item.options.map((option) => ({ ...option, id: toCollectionKey(option.id) })),
         }
       : { ...item, id: toCollectionKey(item.id) },

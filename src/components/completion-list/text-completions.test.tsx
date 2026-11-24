@@ -77,6 +77,7 @@ const input = () => screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'No
 const optionTexts = () => screen.queryAllByRole('option').map((option) => option.textContent);
 
 afterEach(() => {
+  Reflect.deleteProperty(document, 'execCommand');
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
@@ -429,6 +430,37 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('banana');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     Reflect.deleteProperty(document, 'execCommand');
+  });
+
+  it('UIC-COMPLETION-LIST-2.4 reports a browser edit once when the field rewrites it', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    Object.defineProperty(document, 'execCommand', {
+      configurable: true,
+      value: (_command: string, _ui: boolean, text: string) => {
+        const control = document.activeElement as HTMLInputElement;
+        control.setRangeText(text, control.selectionStart ?? 0, control.selectionEnd ?? 0, 'end');
+        control.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+      },
+    });
+    render(
+      <TextField
+        label="Fruit"
+        defaultValue="ap"
+        completions={fruit}
+        maxLength={4}
+        transformInput={(value) => value.toUpperCase()}
+        onChange={onChange}
+      />,
+    );
+    const field = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.click(field);
+    await user.keyboard('{End}{Control>} {/Control}');
+    await screen.findByRole('option', { name: 'apple' });
+    await user.keyboard('{Enter}');
+    expect(field).toHaveValue('APPLE PIE');
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('APPLE PIE');
   });
 
   it.each<TextFieldType>(['email', 'url', 'tel', 'search', 'password', 'text'])(

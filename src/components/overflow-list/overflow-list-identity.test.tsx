@@ -23,10 +23,12 @@ function Row({
   items,
   collapseFrom = 'end',
   room = 60,
+  isIndicatorInteractive = true,
 }: {
   items: readonly Fruit[];
   collapseFrom?: 'start' | 'end';
   room?: number;
+  isIndicatorInteractive?: boolean;
 }) {
   return (
     <OverflowList
@@ -42,7 +44,13 @@ function Row({
           <input />
         </label>
       )}
-      renderOverflow={(hidden) => <button type="button">+{hidden.length}</button>}
+      renderOverflow={(hidden) =>
+        isIndicatorInteractive ? (
+          <button type="button">+{hidden.length}</button>
+        ) : (
+          `+${hidden.length}`
+        )
+      }
     />
   );
 }
@@ -100,6 +108,55 @@ describe('OverflowList item identity', () => {
     rerender(<Row items={[ab, cd, ef]} />);
     expect(draft('Ab')).toHaveValue('one');
     expect(draft('Cd')).toHaveValue('');
+  });
+
+  it.each([
+    { collapseFrom: 'end' as const, removed: gh.name, indicator: true, next: '+2' },
+    { collapseFrom: 'end' as const, removed: gh.name, indicator: false, next: cd.name },
+    { collapseFrom: 'start' as const, removed: ab.name, indicator: false, next: ef.name },
+  ])(
+    'UIC-OVERFLOW-LIST-1.8 recovers focus from $removed to $next after narrowing from the $collapseFrom',
+    async ({ collapseFrom, removed, indicator, next }) => {
+      const user = userEvent.setup();
+      const row = (room: number) => (
+        <Row
+          items={[ab, cd, ef, gh]}
+          collapseFrom={collapseFrom}
+          room={room}
+          isIndicatorInteractive={indicator}
+        />
+      );
+      const { rerender } = render(row(500));
+      await user.click(draft(removed));
+      rerender(row(60));
+      expect(screen.queryByRole('textbox', { name: removed })).not.toBeInTheDocument();
+      const target = next === '+2' ? screen.getByRole('button', { name: next }) : draft(next);
+      expect(target).toHaveFocus();
+    },
+  );
+
+  it('UIC-OVERFLOW-LIST-1.8 leaves focus outside the row when a previously focused item collapses', async () => {
+    const user = userEvent.setup();
+    const content = (room: number) => (
+      <>
+        <Row items={[ab, cd, ef, gh]} room={room} />
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { rerender } = render(content(500));
+    await user.click(draft('Gh'));
+    const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+    await user.click(elsewhere);
+    rerender(content(60));
+    expect(elsewhere).toHaveFocus();
+  });
+
+  it('UIC-OVERFLOW-LIST-1.8 moves focus to a newly shown item when the only overflow control leaves', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Row items={[ab, cd, ef]} room={20} />);
+    await user.click(screen.getByRole('button', { name: '+3' }));
+    rerender(<Row items={[ab, cd, ef]} room={500} />);
+    expect(draft('Ab')).toHaveFocus();
   });
 
   it('UIC-OVERFLOW-LIST-1.8 tells a numeric key from the string of its digits', async () => {

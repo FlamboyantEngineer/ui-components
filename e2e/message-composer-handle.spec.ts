@@ -6,6 +6,25 @@ const scrolls = (input: Locator) =>
   input.evaluate((element) => element.scrollHeight > element.clientHeight + 1);
 
 test.describe('Message Composer rows, length and handle', () => {
+  test('UIC-MESSAGE-COMPOSER-1.1 preserves the suffix and native undo of a length-limited mention', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const limited = demo(page, 'max-length');
+    const input = limited.getByRole('textbox', { name: 'Short message' });
+    const suffix = ' A crate of ripe pears for the market';
+    await input.fill(suffix);
+    await input.press('Home');
+    await input.pressSequentially('@a');
+    await expect(page.getByRole('option', { name: 'Alexandra Lee' })).toBeVisible();
+    await input.press('Enter');
+    await expect(input).toHaveValue(`@Al${suffix}`);
+    await expect(limited.locator('[data-lab-output="length"]')).toHaveText('40 of 40 characters');
+    await input.press('ControlOrMeta+Z');
+    await expect(input).toHaveValue(`@a${suffix}`);
+  });
+
   test('UIC-MESSAGE-COMPOSER-1.3 bounds the rows of both composers and limits the plain length', async ({
     page,
     lab,

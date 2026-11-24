@@ -7,9 +7,8 @@
  */
 
 .ui-toast-region {
-  inset-block-end: 24px;
-  inset-inline-end: 24px;
-  width: min(356px, calc(100vw - 32px));
+  --ref-toast-edge: 24px;
+  width: min(356px, calc(100vw - 2 * var(--ref-toast-edge)));
 }
 
 .ui-toast {

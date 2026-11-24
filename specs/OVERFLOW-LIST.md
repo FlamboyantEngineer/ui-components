@@ -57,7 +57,9 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `src/components/breadcrum
 
 `getKey(item)` shall be an item's identity, unique in `items`; a number and the string of its digits are different items. A kept item keeps its element, and so its state and focus, while the list reorders, inserts or removes items around it, from either collapsing end, including through the commit that measures the new list. An item that leaves for the indicator is unmounted and loses its state; when it is kept again it mounts afresh.
 
-Implementation: `src/components/overflow-list/overflow-list.tsx`
+If a focused item leaves, focus shall move to the next surviving focusable item, the overflow control, or the previous surviving focusable item, in that order. If those are absent, the first newly shown focusable item receives focus. This also restores focus when the focused overflow control disappears as the row widens. Focus already outside the list stays where it is.
+
+Implementation: `src/components/overflow-list/overflow-list.tsx`, `src/utils/use-overflow-focus.ts`
 Verification: `src/components/overflow-list/overflow-list-identity.test.tsx`, `e2e/overflow-list.spec.ts`
 
 ## UIC-OVERFLOW-LIST-2 - Composition

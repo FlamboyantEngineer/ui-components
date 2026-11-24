@@ -34,7 +34,7 @@
 }
 
 .ui-disclosure__trigger[data-focus-visible] {
-  border-color: var(--ring);
+  border-color: var(--ref-focus);
   outline: none;
   box-shadow: var(--ref-focus-halo);
 }

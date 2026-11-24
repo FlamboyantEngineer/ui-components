@@ -1,6 +1,6 @@
 import type { Key } from '../../core/props.js';
 import type { PickerItem, PickerOption, PickerSection } from '../field/field.js';
-import { flattenPickerItems } from '../field/field-picker-items.js';
+import { flattenPickerItems, isPickerSection } from '../field/field-picker-items.js';
 import { foldMatchCase } from '../text-match/match-ranges.js';
 
 /** One suggestion; its label is written to the input when chosen. */
@@ -90,4 +90,47 @@ export function withKnownOptions(
   if (known.length === 0) return [...items];
   const listed = new Set(flattenPickerItems(items).map((option) => option.id));
   return [...items, ...known.filter((option) => !listed.has(option.id))];
+}
+
+type MergedOption = { option: ComboboxOption };
+type MergedSection = { section: ComboboxSection; options: MergedOption[] };
+
+function mergeOption(
+  option: ComboboxOption,
+  options: Map<Key, MergedOption>,
+  ordered: Array<MergedOption | MergedSection>,
+) {
+  const existing = options.get(option.id);
+  if (existing) existing.option = option;
+  else {
+    const entry = { option };
+    options.set(option.id, entry);
+    ordered.push(entry);
+  }
+}
+
+/** An overlapping page updates metadata at the first position of each section and option. */
+export function mergeComboboxResults(items: readonly ComboboxItem[]): ComboboxItem[] {
+  const ordered: Array<MergedOption | MergedSection> = [];
+  const options = new Map<Key, MergedOption>();
+  const sections = new Map<Key, MergedSection>();
+  for (const item of items) {
+    if (!isPickerSection(item)) {
+      mergeOption(item, options, ordered);
+      continue;
+    }
+    const existing = sections.get(item.id);
+    const entry = existing ?? { section: item, options: [] };
+    entry.section = item;
+    if (!existing) {
+      sections.set(item.id, entry);
+      ordered.push(entry);
+    }
+    for (const option of item.options) mergeOption(option, options, entry.options);
+  }
+  return ordered.map((entry) =>
+    'section' in entry
+      ? { ...entry.section, options: entry.options.map(({ option }) => option) }
+      : entry.option,
+  );
 }
