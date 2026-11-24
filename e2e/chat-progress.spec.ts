@@ -25,6 +25,9 @@ test.describe('Chat progress', () => {
     await openSlowHost(page);
     await expect(line(page)).toBeEmpty();
     await expect(line(page)).toBeHidden();
+    // A host that takes 6 s keeps the line up long enough to read under load; at 1.5 s an
+    // overdue delay timer and the send can fire back to back, and the line clears at once.
+    await choose(page, 'In 6 s');
     await composer(page).click();
     await page.keyboard.type('Plan a picnic');
     await page.keyboard.press('Enter');
@@ -35,7 +38,9 @@ test.describe('Chat progress', () => {
       'data-pending',
       'true',
     );
-    await expect(demo(page).locator('article', { hasText: 'Plan a picnic' })).toBeVisible();
+    await expect(demo(page).locator('article', { hasText: 'Plan a picnic' })).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(line(page)).toBeEmpty();
   });
 
