@@ -24,7 +24,7 @@ function NativeDemo() {
   ]);
   const [isLoading, setLoading] = useState(false);
   const [isOther, setOther] = useState(false);
-  const sendNow = (text: string, tokens?: readonly ChatTextToken[], replyTo?: string) => {
+  const appendSentMessage = (text: string, tokens?: readonly ChatTextToken[], replyTo?: string) => {
     const message: ChatMessageData = {
       id: `sent-${messages.length}`,
       authorId: readerId,
@@ -110,18 +110,13 @@ function NativeDemo() {
                 { id: `queued-${messages.length}-${current.length}`, text, tokens },
               ])
             }
-            onSendNow={sendNow}
+            onSendNow={appendSentMessage}
             onSteer={(id) => {
               const entry = queue.find((item) => item.id === id);
-              if (entry) sendNow(entry.text, entry.tokens, entry.replyTo);
+              if (entry) appendSentMessage(entry.text, entry.tokens, entry.replyTo);
               setQueue((current) => current.filter((item) => item.id !== id));
             }}
-            onReply={(_id, text, tokens) =>
-              setQueue((current) => [
-                ...current,
-                { id: `quote-${current.length}`, text, tokens, replyTo: _id },
-              ])
-            }
+            onReply={(replyTo, text, tokens) => appendSentMessage(text, tokens, replyTo)}
             onAnswerQuestion={() => undefined}
             onDeny={() => undefined}
             placeholder={(hint) => `Write a follow-up · ${hint.text}`}

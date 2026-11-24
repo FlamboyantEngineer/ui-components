@@ -3,15 +3,11 @@
 // An event's context menu: the built-in Edit, which requests host editing, and the host's own
 // entries (specs/CALENDAR-VIEW.md, UIC-CALENDAR-VIEW-5).
 
-import { type KeyboardEvent, type Ref, useEffect, useRef } from 'react';
+import type { KeyboardEvent, Ref } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import {
-  ContextMenu,
-  useContextMenuTarget,
-  useMenuController,
-} from '../context-menu/context-menu.js';
-import { Menu, type MenuEntry } from '../menu/menu.js';
+import { useItemContextMenu } from '../context-menu/context-menu.js';
+import type { MenuEntry } from '../menu/menu.js';
 import { type MenuActionIcons, resolveActionIcon } from '../menu/menu-action-icons.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 
@@ -55,42 +51,21 @@ export function useEventMenu(
   ownRef: Ref<HTMLElement>,
 ) {
   const strings = useUiStrings();
-  const controller = useMenuController();
-  const targetRef = useRef<HTMLElement | null>(null);
   const listed = menu ? readEntries(menu, event) : [];
   const entries = listed.flatMap((entry): MenuEntry[] => {
     if (entry !== 'edit') return [entry];
     if (!menu?.isEditable(event)) return [];
     return [{ id: 'edit', label: strings.edit, icon: resolveActionIcon(menu.icons, 'edit') }];
   });
-  const isDisabled = entries.length === 0;
   const {
-    onKeyDown,
-    onKeyDownCapture: _capture,
-    ...targetProps
-  } = useContextMenuTarget({
-    controller,
-    isDisabled,
+    targetProps: { onKeyDown, onKeyDownCapture: _capture, ...targetProps },
+    menu: element,
+  } = useItemContextMenu({
+    entries,
+    getLabel: () => strings.eventActions(event.title),
     own: { ref: ownRef },
-    targetRef,
+    onAction: (key) => menu?.onAction?.(key, event),
   });
-  useEffect(() => {
-    if (isDisabled) controller.close();
-  }, [isDisabled, controller]);
-  const element = isDisabled ? null : (
-    <ContextMenu
-      controller={controller}
-      triggerRef={targetRef}
-      aria-label={strings.eventActions(event.title)}
-    >
-      <Menu
-        items={entries}
-        onAction={(key) => {
-          menu?.onAction?.(key, event);
-        }}
-      />
-    </ContextMenu>
-  );
   return {
     targetProps: {
       ...targetProps,

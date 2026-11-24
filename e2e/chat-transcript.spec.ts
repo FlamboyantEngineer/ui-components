@@ -213,7 +213,10 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
     await expect(unread.getByRole('button', { name: '2 new messages' })).toBeVisible();
   });
 
-  test('UIC-CHAT-TRANSCRIPT-1.6 virtualizes five thousand messages', async ({ page, lab }) => {
+  test('UIC-CHAT-TRANSCRIPT-1.6 virtualizes five thousand messages and keeps the place on prepend', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('chat-transcript');
     const long = transcript(page, 'virtualized');
     const viewport = viewportOf(page, 'virtualized');
@@ -231,19 +234,37 @@ test.describe('Chat Transcript lab: transcript behaviour', () => {
     await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
     await viewport.evaluate((node) => node.scrollTo({ top: node.scrollHeight / 2 }));
     // The message drawn across the middle of the view is mounted.
-    await expect(async () => {
-      const id = await viewport.evaluate((node) => {
+    const middleMessage = () =>
+      viewport.evaluate((node) => {
         const box = node.getBoundingClientRect();
         const middle = box.top + box.height / 2;
-        const hit = [...node.querySelectorAll('article')].find((article) => {
+        for (const article of node.querySelectorAll('article')) {
           const rect = article.getBoundingClientRect();
-          return rect.top <= middle && rect.bottom >= middle;
-        });
-        return hit?.id ?? '';
+          if (rect.top <= middle && rect.bottom >= middle) {
+            return { id: article.id, offset: rect.top - box.top };
+          }
+        }
+        return null;
       });
-      expect(Number(id.replace('long-m', ''))).toBeGreaterThan(1500);
+    await expect(async () => {
+      const message = await middleMessage();
+      expect(Number(message?.id.replace('long-m', ''))).toBeGreaterThan(1500);
     }).toPass();
     expect(await long.getByRole('article').count()).toBeLessThan(80);
+
+    const before = await middleMessage();
+    if (!before) throw new Error('A message must sit at the middle of the viewport.');
+    const section = page.locator('[data-lab-section="Virtualized history"]');
+    await section.getByRole('button', { name: 'Prepend 100 older messages' }).press('Enter');
+    await expect(section.locator('[data-lab-mounted="virtualized"]')).toHaveText(
+      /^\d+ of 5100 messages mounted$/,
+    );
+    await expect(async () => {
+      expect(
+        Math.abs((await offsetInView(long.locator(`#${before.id}`))) - before.offset),
+      ).toBeLessThanOrEqual(1);
+      expect(await long.getByRole('article').count()).toBeLessThan(80);
+    }).toPass();
   });
 
   for (const isAway of [false, true]) {

@@ -86,7 +86,7 @@ function TranscriptFeed({
         onFocus={(event) => handleTranscriptFocus(event, navigation)}
         onBlur={(event) => handleTranscriptBlur(event, navigation)}
       >
-        {renderTranscriptItems(model.items, model.mounted, windowModel)}
+        {renderTranscriptItems(model, windowModel)}
       </div>
     </TranscriptContext>
   );

@@ -2,7 +2,13 @@
 
 import type { Ref } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type {
+  BaseProps,
+  Key,
+  SelectionValue,
+  ValueSelectionMode,
+  ValueSelectionModeProps,
+} from '../../core/props.js';
 import {
   Field,
   type FieldInputProps,
@@ -19,15 +25,16 @@ import { isNoSelection, type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 
-export type SelectFieldSelectionMode = 'single' | 'multiple';
+export type SelectFieldSelectionMode = ValueSelectionMode;
 
 /** Where a multiple select draws its chips: on a row `below` its trigger, or `inside` its frame. */
 type SelectFieldChipPlacement = 'below' | 'inside';
 
 /** One key or none for a single select, a list of keys for a multiple select. */
-export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M extends 'multiple'
-  ? Key[]
-  : Key | null;
+export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = SelectionValue<
+  Key,
+  M
+>;
 
 interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   extends
@@ -49,10 +56,10 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   /** Draws a filter input in the open list. Defaults to on for more than 10 options or a search. */
   filterable?: boolean | undefined;
   /** Searches options as the reader types in the filter, instead of filtering `options`. */
-  loadOptions?: SelectFieldLoader | undefined;
-  /** Shortest query that runs `loadOptions`. Defaults to 1. */
+  loadItems?: SelectFieldLoader | undefined;
+  /** Shortest query that runs `loadItems`. Defaults to 1. */
   minSearchLength?: number | undefined;
-  /** Milliseconds to wait after a keystroke before running `loadOptions`. Defaults to 240. */
+  /** Milliseconds to wait after a keystroke before running `loadItems`. Defaults to 240. */
   searchDelay?: number | undefined;
   /** Draws a button after the trigger that clears the value in one press. */
   isClearable?: boolean | undefined;
@@ -130,10 +137,18 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
 }
 
 export type SelectFieldMode = 'list' | 'tree' | 'native';
+
+type SelectFieldChoices<T extends TreeItemData, M extends SelectFieldSelectionMode> = {
+  [Mode in M]: (SelectListFieldProps<Mode> | SelectTreeFieldProps<T, Mode>) &
+    ValueSelectionModeProps<Mode>;
+}[M];
+
 export type SelectFieldProps<
   M extends SelectFieldSelectionMode = 'single',
   T extends TreeItemData = TreeItemData,
-> = SelectListFieldProps<M> | SelectTreeFieldProps<T, M> | SelectNativeFieldProps;
+> =
+  | ({ selectionMode?: M | undefined } & SelectFieldChoices<T, M>)
+  | ('single' extends M ? SelectNativeFieldProps & { selectionMode?: undefined } : never);
 
 /**
  * A field choosing one or several values from a list, icon choices or a searchable tree, or one
@@ -143,9 +158,9 @@ export function SelectField<
   M extends SelectFieldSelectionMode = 'single',
   T extends TreeItemData = TreeItemData,
 >(props: SelectFieldProps<M, T>) {
-  if (props.mode === 'tree') return <SelectTreeField {...props} />;
+  if (props.mode === 'tree') return <SelectTreeField<T, M> {...props} />;
   if (props.mode === 'native') return <SelectNativeField {...props} />;
-  return <SelectListField {...props} />;
+  return <SelectListField<M> {...props} />;
 }
 
 export type { SelectKeysValue } from './select-control.js';

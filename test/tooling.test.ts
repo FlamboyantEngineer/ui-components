@@ -195,10 +195,19 @@ describe('shared tooling', () => {
     const dir = scratch('export default { exports: { entries: [] } };\n', {
       'package.json': JSON.stringify({
         type: 'module',
-        exports: { '.': { types: './dist/index.d.ts', import: './dist/index.js' } },
+        exports: {
+          '.': { types: './dist/index.d.ts', import: './dist/index.js' },
+          './*': './dist/components/*/index.js',
+        },
       }),
       'tsconfig.json': JSON.stringify({
-        compilerOptions: { module: 'nodenext', strict: true, skipLibCheck: true },
+        compilerOptions: {
+          module: 'nodenext',
+          strict: true,
+          skipLibCheck: true,
+          lib: ['es2022'],
+          types: [],
+        },
         include: ['src'],
       }),
       'src/index.ts':
@@ -221,6 +230,9 @@ describe('shared tooling', () => {
       ].join('\n'),
       'src/shape.test.ts': "import { tested } from './shape.js';\nvoid tested;\n",
       'src/tables.ts': 'export const table = 1;\n',
+      'src/components/editor/rich/index.ts': 'export const rich = 1;\n',
+      'labs/same-name.ts': 'const helper = 1;\nvoid helper;\n',
+      'scripts/probe.mjs': "import { twice as run } from '../src/shape.js';\nrun();\n",
     });
     symlinkSync(join(repository, 'node_modules'), join(dir, 'node_modules'), 'dir');
     const result = run(dir, 'check-exports');
@@ -233,9 +245,8 @@ describe('shared tooling', () => {
     );
     expect(result.stderr).toContain('src/shape.ts:4: local is used only in this file');
     expect(result.stderr).toContain('src/maker.ts:2: Options is used only in this file');
-    expect(result.stderr).toContain('src/shape.ts:5: twice is exported and used nowhere');
     // Shape names the type make infers through another module; tables is a namespace export.
-    for (const used of ['Shape', 'shape', 'tested', 'make', 'table']) {
+    for (const used of ['Shape', 'shape', 'tested', 'make', 'table', 'twice', 'rich']) {
       expect(result.stderr).not.toContain(` ${used} is`);
     }
 

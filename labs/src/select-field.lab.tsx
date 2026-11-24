@@ -1,10 +1,13 @@
 import { useCallback, useState } from 'react';
-import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
+import type {
+  FieldLabelLayout,
+  FieldMenuEntry,
+  FieldStateOptions,
+} from '../../src/components/field/field.js';
 import {
   SelectField,
   type SelectFieldItem,
   type SelectFieldOption,
-  type SelectFieldProps,
   type SelectFieldSelectionMode,
 } from '../../src/components/select-field/select-field.js';
 import { MinusGlyph, PlusGlyph } from '../../src/core/glyphs.js';
@@ -97,18 +100,11 @@ const numbered: SelectFieldOption[] = Array.from({ length: 5000 }, (_, index) =>
   label: `Item ${index + 1}`,
 }));
 
-function stateProps(
-  state: FieldStateName,
-  multiple: boolean,
-): Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>> {
-  const value = multiple ? ['apple', 'fig'] : 'apple';
-  const props: Record<
-    FieldStateName,
-    Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>>
-  > = {
+function stateProps<T>(state: FieldStateName, value: T, committedValue: T): FieldStateOptions<T> {
+  const props: Record<FieldStateName, FieldStateOptions<T>> = {
     resting: { defaultValue: value },
     required: { isRequired: true },
-    dirty: { committedValue: multiple ? ['apple', 'pear'] : 'pear', defaultValue: value },
+    dirty: { committedValue },
     invalid: {
       defaultValue: value,
       validate: () => ({ severity: 'error', message: 'Choose a fruit in season.' }),
@@ -137,20 +133,29 @@ function MatrixField({
   mode: SelectFieldSelectionMode | 'chips-inside';
   layout: FieldLabelLayout;
 }) {
-  const multiple = mode !== 'single';
-  const { defaultValue, ...props } = stateProps(state, multiple);
-  const [value, setValue] = useState(defaultValue);
-  const controlled = state === 'dirty' ? { value, onChange: setValue } : { defaultValue };
+  const [value, setValue] = useState<Key | Key[] | null>(
+    mode === 'single' ? 'apple' : ['apple', 'fig'],
+  );
+  const selection =
+    mode === 'single'
+      ? {
+          selectionMode: 'single' as const,
+          ...stateProps<Key | null>(state, 'apple', 'pear'),
+          ...(state === 'dirty' && !Array.isArray(value) ? { value, onChange: setValue } : {}),
+        }
+      : {
+          selectionMode: 'multiple' as const,
+          ...stateProps<Key[]>(state, ['apple', 'fig'], ['apple', 'pear']),
+          ...(state === 'dirty' && Array.isArray(value) ? { value, onChange: setValue } : {}),
+        };
   return (
     <SelectField
       label="Fruit"
       labelLayout={layout}
-      selectionMode={multiple ? 'multiple' : 'single'}
       chipPlacement={mode === 'chips-inside' ? 'inside' : undefined}
       showRestoreButton
       options={fruit}
-      {...props}
-      {...controlled}
+      {...selection}
     />
   );
 }
@@ -210,7 +215,7 @@ function Search() {
   const [calls, setCalls] = useState(0);
   // A stable loader: a new one would be a new search source, which searches the query again, and
   // its own counter update would then create another, searching forever.
-  const loadOptions = useCallback(async (query: string) => {
+  const loadItems = useCallback(async (query: string) => {
     setCalls((count) => count + 1);
     await new Promise((resolve) => setTimeout(resolve, 300));
     return cities.filter((city) => city.label.toLowerCase().includes(query.toLowerCase()));
@@ -221,7 +226,7 @@ function Search() {
         label="Cities"
         selectionMode="multiple"
         options={[]}
-        loadOptions={loadOptions}
+        loadItems={loadItems}
         minSearchLength={2}
         placeholder="Search cities"
         data-lab-field="search"

@@ -41,7 +41,7 @@ import type { ChatMessageData, ChatTextToken } from './chat-parts.js';
 import { ChatProgressLine, useChatProgress } from './chat-progress.js';
 import { ChatQueue, useChatQueueRemovals } from './chat-queue.js';
 import { type ChatSendOptionsProps, useChatSendOptions } from './chat-send-options.js';
-import { sendFromComposer, sendMessageNow } from './chat-submit.js';
+import { resolveChatSubmission, sendFromComposer } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
 
 /** The chat props the composer reads. */
@@ -300,7 +300,13 @@ export function ChatComposer(given: ChatComposerProps) {
   const progress = useChatProgress(options.conversationId);
   const removals = useChatQueueRemovals();
   const sendOptions = useChatSendOptions(options);
-  const hint = useChatComposerHint(props, sendOptions);
+  const submission = resolveChatSubmission(props, sendOptions.steers);
+  const hint = useChatComposerHint(options, sendOptions.shortcuts, submission.action);
+  const sendContext = {
+    track: progress.track,
+    readQueue: () => removals.without(options.queue ?? []),
+    readShown: () => composerRef.current?.getValue(),
+  };
   const reportDraft = useChatComposerHandle({
     handleRef: options.composerHandleRef,
     composerRef,
@@ -349,21 +355,11 @@ export function ChatComposer(given: ChatComposerProps) {
         startControls={renderStartControls(props)}
         endControls={options.composerEndControls}
         onKeyDown={(event) => cancelReplyOnEscape(event, state)}
-        onSubmit={(message) =>
-          sendFromComposer(props, message, {
-            steers: sendOptions.steers,
-            track: progress.track,
-            readQueue: () => removals.without(options.queue ?? []),
-            readShown: () => composerRef.current?.getValue(),
-          })
-        }
+        onSubmit={(message) => sendFromComposer(props, message, { ...sendContext, submission })}
         onSubmitNow={
           options.onSendNow &&
           ((message) =>
-            progress.track(
-              'steer',
-              sendMessageNow(props, message, () => composerRef.current?.getValue()),
-            ))
+            sendFromComposer(props, message, { ...sendContext, submission: { action: 'steer' } }))
         }
         onSubmitError={options.onSendError}
       />

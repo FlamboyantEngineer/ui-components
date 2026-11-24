@@ -20,7 +20,13 @@ import {
   type RootMenuTriggerState,
   RootMenuTriggerStateContext,
 } from '../../primitives/index.js';
-import { Menu, MenuOverlay, type MenuPopoverProps, prefixMenuDataSlots } from '../menu/menu.js';
+import {
+  Menu,
+  type MenuEntry,
+  MenuOverlay,
+  type MenuPopoverProps,
+  prefixMenuDataSlots,
+} from '../menu/menu.js';
 import { type ContextMenuTargetProps, useContextMenuTarget } from './context-menu-target.js';
 import { useMenuAnchor } from './menu-anchor.js';
 import {
@@ -75,6 +81,25 @@ export interface ContextMenuTriggerProps extends Omit<
   opensInsideText?: boolean | undefined;
 }
 
+interface ContextMenuTriggerOptions {
+  isDisabled: boolean;
+  opensInsideText?: boolean | undefined;
+  own: ContextMenuTargetProps;
+}
+
+interface ItemContextMenuOptions {
+  entries: readonly MenuEntry[];
+  getLabel: () => string;
+  own: ContextMenuTargetProps;
+  onAction: (key: Key, target: HTMLElement | null) => void;
+}
+
+interface ItemContextMenu {
+  controller: MenuController;
+  targetProps: ReturnType<typeof useContextMenuTarget>;
+  menu: ReactNode;
+}
+
 /**
  * The root menu state React Aria reads for submenus and to close a whole menu tree, for a menu
  * whose open state lives elsewhere. `close` empties the submenu stack, then calls `onClose`.
@@ -112,6 +137,22 @@ function useRootMenuState(isOpen: boolean, onClose: () => void): RootMenuTrigger
     }),
     [isOpen, close, expandedKeysStack],
   );
+}
+
+function useContextMenuTrigger({ isDisabled, opensInsideText, own }: ContextMenuTriggerOptions) {
+  const controller = useMenuController();
+  const targetRef = useRef<HTMLElement | null>(null);
+  const targetProps = useContextMenuTarget({
+    controller,
+    isDisabled,
+    opensInsideText,
+    own,
+    targetRef,
+  });
+  useEffect(() => {
+    if (isDisabled) controller.close();
+  }, [isDisabled, controller]);
+  return { controller, targetRef, targetProps };
 }
 
 /**
@@ -174,22 +215,15 @@ export function ContextMenuTrigger({
   opensInsideText = false,
   ...rest
 }: ContextMenuTriggerProps) {
-  const controller = useMenuController();
-  const targetRef = useRef<HTMLElement | null>(null);
   const [target, ...menu] = Children.toArray(children);
   const own: ContextMenuTargetProps = isValidElement<ContextMenuTargetProps>(target)
     ? target.props
     : {};
-  const targetProps = useContextMenuTarget({
-    controller,
+  const { controller, targetRef, targetProps } = useContextMenuTrigger({
     isDisabled,
     opensInsideText,
     own,
-    targetRef,
   });
-  useEffect(() => {
-    if (isDisabled) controller.close();
-  }, [isDisabled, controller]);
   if (!isValidElement<ContextMenuTargetProps>(target)) {
     throw new Error('ContextMenuTrigger needs a target element as its first child.');
   }
@@ -204,4 +238,21 @@ export function ContextMenuTrigger({
       )}
     </>
   );
+}
+
+/** Binds a menu to an existing target and leaves the browser menu in place when it has no entries. */
+export function useItemContextMenu({
+  entries,
+  getLabel,
+  own,
+  onAction,
+}: ItemContextMenuOptions): ItemContextMenu {
+  const isDisabled = entries.length === 0;
+  const { controller, targetRef, targetProps } = useContextMenuTrigger({ isDisabled, own });
+  const menu = isDisabled ? null : (
+    <ContextMenu controller={controller} triggerRef={targetRef} aria-label={getLabel()}>
+      <Menu items={entries} onAction={(key) => onAction(key, targetRef.current)} />
+    </ContextMenu>
+  );
+  return { controller, targetProps, menu };
 }

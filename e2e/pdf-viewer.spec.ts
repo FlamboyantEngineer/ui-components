@@ -31,6 +31,28 @@ function expectNear(actual: number, expected: number, tolerance = 1.5) {
   expect(Math.abs(actual - expected), `${actual} is near ${expected}`).toBeLessThan(tolerance);
 }
 
+/** Counts fresh page geometry reads made by a small scroll in an already visible page. */
+function countScrollPageReads(document: Locator) {
+  return document.evaluate(async (scroller) => {
+    const pages = [...scroller.querySelectorAll('.ui-pdf-viewer__page')];
+    const read = Element.prototype.getBoundingClientRect;
+    let reads = 0;
+    try {
+      for (const page of pages) {
+        page.getBoundingClientRect = () => {
+          reads++;
+          return read.call(page);
+        };
+      }
+      scroller.scrollTop += 32;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return reads;
+    } finally {
+      for (const page of pages) Reflect.deleteProperty(page, 'getBoundingClientRect');
+    }
+  });
+}
+
 /** Selects a text run with the pointer, from its first to its last character. */
 async function selectRun(page: Page, run: Locator) {
   await run.scrollIntoViewIfNeeded();
@@ -1016,7 +1038,7 @@ test.describe('PDF Viewer lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-PDF-VIEWER-1.7 opens, scrolls and searches a 250-page document', async ({
+  test('UIC-PDF-VIEWER-1.7 UIC-PDF-VIEWER-11.4 opens, scrolls and searches a 250-page document', async ({
     page,
     lab,
   }, testInfo) => {
@@ -1038,12 +1060,20 @@ test.describe('PDF Viewer lab', () => {
           (canvases) => canvases.filter((canvas) => (canvas as HTMLCanvasElement).width > 0).length,
         );
     expect(await drawnPages()).toBeLessThan(10);
+    const top = long.locator('[data-lab-output="Top of long report"]');
+    await expect(top).toHaveText('Page 1, 0 pt');
+    const document = long.getByRole('document', { name: 'Long report' });
+    const reads = await countScrollPageReads(document);
+    expect(reads).toBeGreaterThan(0);
+    expect(reads).toBeLessThan(12);
+    await expect(top).toHaveText(/^Page 1, [1-9]/);
 
     const field = long.getByLabel('Page', { exact: true });
     const scrollStart = Date.now();
     await field.fill('250');
     await field.press('Enter');
     await expect(field).toHaveValue('250');
+    await expect(top).toHaveText(/^Page 250,/);
     await expect(long.locator('.ui-pdf-viewer__page').last().locator('canvas')).not.toHaveAttribute(
       'width',
       '0',

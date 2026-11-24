@@ -29,17 +29,13 @@ export interface PlacedMarker {
   message: string;
 }
 
-/** The start position of each top-level block, and the document's size after the last. */
-function blockStarts(doc: DocNode): number[] {
-  return [...readBlockStarts(doc), doc.content.size];
-}
-
 /** The markers whose first block is in `doc`, with their blocks clamped to it. */
 export function placeMarkers(
   doc: DocNode,
   markers: readonly RichTextBlockMarker[],
 ): PlacedMarker[] {
-  const starts = blockStarts(doc);
+  if (markers.length === 0) return [];
+  const starts = readBlockStarts(doc);
   const lastIndex = doc.childCount - 1;
   return markers.flatMap((marker) => {
     if (!Number.isInteger(marker.block) || marker.block < 0 || marker.block > lastIndex) return [];

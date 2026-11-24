@@ -32,7 +32,7 @@ type PassedProps = Omit<
   | 'mode'
   | 'selectionMode'
   | 'emptyLabel'
-  | 'loadOptions'
+  | 'loadItems'
   | 'minSearchLength'
   | 'searchDelay'
   | 'chipPlacement'

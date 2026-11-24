@@ -168,4 +168,25 @@ test.describe('Chat native embedded controls', () => {
       expect(queue && input && Math.abs(queue.y + queue.height - input.y)).toBeLessThan(1);
     }).toPass();
   });
+
+  test('UIC-CHAT-3.15 hints Send for a quoted reply while a response runs', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const demo = page.locator('[data-lab-demo="native-chat"]');
+    await demo.scrollIntoViewIfNeeded();
+    const composer = demo.getByRole('textbox', { name: 'Message', exact: true });
+    const hint = composer.locator('[data-placeholder]');
+    await expect(hint).toHaveAttribute('data-placeholder', 'Write a follow-up · Enter to queue');
+    const quoted = demo.locator('article[data-message-id="long-999"]');
+    await quoted.hover();
+    await quoted.getByRole('button', { name: 'Reply', exact: true }).click();
+    await expect(hint).toHaveAttribute('data-placeholder', 'Write a follow-up · Enter to send');
+    await composer.fill('Which market stalls are open?');
+    await page.keyboard.press('Enter');
+    const sent = demo.getByRole('article').filter({ hasText: 'Which market stalls are open?' });
+    await expect(sent.locator('.ui-chat-quote')).toContainText('Is there a market on Sunday?');
+    await expect(demo.getByRole('list', { name: '2 queued messages' })).toBeVisible();
+  });
 });

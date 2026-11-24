@@ -189,6 +189,7 @@ function useDecorations(
   return useCallback(
     (current: EditorState) => {
       const empty = decoratePlaceholder(current, placeholder, placeholderClass);
+      if (markers.length === 0) return empty;
       const marked = decorateMarkers(current.doc, placeMarkers(current.doc, markers));
       if (marked === DecorationSet.empty) return empty;
       return marked.add(current.doc, empty.find());

@@ -1,4 +1,5 @@
 import { readOffset } from './transcript-geometry.js';
+import { createTranscriptHeights, type TranscriptOrder } from './transcript-heights.js';
 
 /** The run of children near the viewport, by their first and last keys. */
 export interface WindowRange {
@@ -15,20 +16,25 @@ export interface WindowModel {
   /** Measures the mounted children, given their keys in order. */
   measure(feed: HTMLElement, mounted: readonly string[]): void;
   /** The children within one viewport height of the visible area. */
-  range(viewport: HTMLElement, feed: HTMLElement, keys: readonly string[]): WindowRange | null;
+  range(viewport: HTMLElement, feed: HTMLElement, order: TranscriptOrder): WindowRange | null;
   /**
    * The height that stands in for the unmounted children from `start` up to `end`, in whole pixels,
    * so the scroll position, which browsers keep in whole pixels, can follow a change exactly.
    */
-  gapHeight(keys: readonly string[], start: number, end: number): number;
+  gapHeight(order: TranscriptOrder, start: number, end: number): number;
   /** Forgets every measurement, for another conversation. */
   reset(): void;
 }
 
-/** What an unmeasured child is taken to be before anything is measured, in pixels. */
-const fallbackHeight = 64;
 /** How many children the window holds before the viewport can be measured. */
 const initialWindow = 30;
+
+interface WindowEdges {
+  first: number;
+  last: number;
+  outerFirst: number;
+  outerLast: number;
+}
 
 /** The last `initialWindow` children, where a transcript starts. */
 export function resolveTailRange(keys: readonly string[]): WindowRange | null {
@@ -39,34 +45,27 @@ export function resolveTailRange(keys: readonly string[]): WindowRange | null {
 
 /** A wider retention band prevents measured boundary rows repeatedly entering and leaving. */
 function retainWindowRange(
-  keys: readonly string[],
+  { keys, indexOf }: TranscriptOrder,
   previous: WindowRange | null,
-  { desired, retained }: { desired: WindowRange; retained: WindowRange },
+  { first, last, outerFirst, outerLast }: WindowEdges,
 ): WindowRange {
-  if (!previous) return desired;
-  const first = keys.indexOf(previous.first);
-  const last = keys.indexOf(previous.last);
-  if (first < 0 || last < 0) return desired;
+  const oldFirst = previous === null ? undefined : indexOf.get(previous.first);
+  const oldLast = previous === null ? undefined : indexOf.get(previous.last);
+  if (oldFirst === undefined || oldLast === undefined) {
+    return { first: keys[first] as string, last: keys[last] as string };
+  }
   return {
-    first: keys[
-      Math.min(keys.indexOf(desired.first), Math.max(first, keys.indexOf(retained.first)))
-    ] as string,
-    last: keys[
-      Math.max(keys.indexOf(desired.last), Math.min(last, keys.indexOf(retained.last)))
-    ] as string,
+    first: keys[Math.min(first, Math.max(oldFirst, outerFirst))] as string,
+    last: keys[Math.max(last, Math.min(oldLast, outerLast))] as string,
   };
 }
 
 /** Creates the model; children it has not measured count as the measured average. */
 export function createWindowModel(): WindowModel {
-  const heights = new Map<string, number>();
+  const heights = createTranscriptHeights();
   const spacers = new WeakSet<Element>();
   let gap = 0;
-  let total = 0;
   let previousRange: WindowRange | null = null;
-
-  const estimate = (key: string) =>
-    heights.get(key) ?? (heights.size > 0 ? total / heights.size : fallbackHeight);
 
   return {
     spacerRef(element) {
@@ -74,8 +73,7 @@ export function createWindowModel(): WindowModel {
     },
     isSpacer: (element) => spacers.has(element),
     reset() {
-      heights.clear();
-      total = 0;
+      heights.reset();
       gap = 0;
       previousRange = null;
     },
@@ -86,14 +84,11 @@ export function createWindowModel(): WindowModel {
       const style = feed.ownerDocument.defaultView?.getComputedStyle(feed);
       gap = Number.parseFloat(style?.rowGap ?? '') || 0;
       elements.forEach((element, index) => {
-        const key = mounted[index] as string;
-        total -= heights.get(key) ?? 0;
-        const height = element.getBoundingClientRect().height;
-        heights.set(key, height);
-        total += height;
+        heights.set(mounted[index] as string, element.getBoundingClientRect().height);
       });
     },
-    range(viewport, feed, keys) {
+    range(viewport, feed, order) {
+      const { keys } = order;
       // A viewport the stylesheet left unbounded is seen through the window at most.
       const view = Math.min(
         viewport.clientHeight,
@@ -103,29 +98,28 @@ export function createWindowModel(): WindowModel {
       const feedTop = readOffset(feed, viewport);
       const top = -feedTop - view;
       const bottom = -feedTop + 2 * view;
-      let offset = 0;
-      let first: string | undefined;
-      let last: string | undefined;
-      let retainedFirst: string | undefined;
-      let retainedLast: string | undefined;
-      for (const key of keys) {
-        const height = estimate(key);
-        if (first === undefined && offset + height > top) first = key;
-        if (offset < bottom) last = key;
-        if (retainedFirst === undefined && offset + height > top - view / 2) retainedFirst = key;
-        if (offset < bottom + view / 2) retainedLast = key;
-        offset += height + gap;
-      }
-      if (first === undefined || last === undefined) return resolveTailRange(keys);
-      previousRange = retainWindowRange(keys, previousRange, {
-        desired: { first, last },
-        retained: { first: retainedFirst ?? first, last: retainedLast ?? last },
+      const { findPrefix } = heights.inOrder(order);
+      // A first row's bottom is the end of its prefix, before the gap to the next row.
+      const findFirst = (edge: number) =>
+        findPrefix((end, height) => height + (end - 1) * gap <= edge);
+      const findLast = (edge: number) => {
+        if (edge <= 0) return -1;
+        const end = findPrefix((count, height) => height + count * gap < edge);
+        return Math.min(keys.length - 1, end);
+      };
+      const first = findFirst(top);
+      const last = findLast(bottom);
+      if (first >= keys.length || last < 0) return resolveTailRange(keys);
+      previousRange = retainWindowRange(order, previousRange, {
+        first,
+        last,
+        outerFirst: findFirst(top - view / 2),
+        outerLast: findLast(bottom + view / 2),
       });
       return previousRange;
     },
-    gapHeight(keys, start, end) {
-      let height = 0;
-      for (let index = start; index < end; index += 1) height += estimate(keys[index] as string);
+    gapHeight(order, start, end) {
+      const height = heights.inOrder(order).heightBetween(start, end);
       return Math.round(height + Math.max(0, end - start - 1) * gap);
     },
   };

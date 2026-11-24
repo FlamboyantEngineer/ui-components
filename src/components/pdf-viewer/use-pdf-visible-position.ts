@@ -2,7 +2,8 @@
 
 import { type RefObject, useEffect, useRef } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
-import { measurePageFrame } from './page-geometry.js';
+import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import type { PdfPagesController } from './use-pdf-pages.js';
 
 /** Where the top edge of the view falls in the document. */
 export interface PdfVisiblePosition {
@@ -14,7 +15,7 @@ export interface PdfVisiblePosition {
 
 interface UsePdfVisiblePositionOptions {
   scrollerRef: RefObject<HTMLElement | null>;
-  elements: RefObject<ReadonlyMap<number, HTMLElement>>;
+  pages: Pick<PdfPagesController, 'handleScroll' | 'observePosition'>;
   /** CSS pixels per point. */
   scale: number;
   /** The open document: a new one reports its position even where the last one stood. */
@@ -27,66 +28,38 @@ interface UsePdfVisiblePositionOptions {
 /** Positions closer than this, in points, are the same position. */
 const precision = 100;
 
-/** The page under the scroller's top edge and how far down it the edge is. */
-function measureVisiblePosition(
-  scroller: HTMLElement,
-  elements: ReadonlyMap<number, HTMLElement>,
-  scale: number,
-): PdfVisiblePosition | null {
-  const edge = scroller.getBoundingClientRect().top;
-  const ordered = [...elements].sort(([a], [b]) => a - b);
-  const found =
-    ordered.find(([, page]) => page.getBoundingClientRect().bottom > edge) ?? ordered.at(-1);
-  if (!found) return null;
-  const [pageIndex, page] = found;
-  const frame = measurePageFrame(page, scale);
-  const top = Math.max(0, (edge - frame.origin.top) / (scale > 0 ? scale : 1));
-  return { pageIndex, top: Math.round(top * precision) / precision };
-}
-
 /**
  * Reports where the top edge of the view falls as the reader scrolls, zooms, turns the pages or
  * resizes the viewer: measured once per frame and reported only when it moves.
  */
 export function usePdfVisiblePosition({
   scrollerRef,
-  elements,
+  pages,
   scale,
   document,
   layout,
   onVisiblePositionChange,
 }: UsePdfVisiblePositionOptions): void {
-  const latest = useLatest({ elements, scale, onVisiblePositionChange });
+  const { handleScroll, observePosition } = pages;
+  const latest = useLatest({ scale, onVisiblePositionChange });
   const reported = useRef('');
   useEffect(() => {
     reported.current = '';
   }, [document]);
   const isWatching = onVisiblePositionChange !== undefined;
+  useResizeObserver([isWatching ? scrollerRef : null], handleScroll);
   useEffect(() => {
-    const scroller = scrollerRef.current;
-    const view = scroller?.ownerDocument.defaultView;
-    if (!scroller || !view || !isWatching) return undefined;
-    let frame: number | undefined;
-    const measure = () => {
-      frame = undefined;
-      const current = latest.current;
-      const position = measureVisiblePosition(scroller, current.elements.current, current.scale);
-      const key = position ? `${position.pageIndex} ${position.top}` : '';
-      if (!position || key === reported.current) return;
+    if (!isWatching) return undefined;
+    return observePosition(({ view, atTop }) => {
+      const { scale, onVisiblePositionChange } = latest.current;
+      if (!atTop || !onVisiblePositionChange) return;
+      const { pageIndex, box, element } = atTop;
+      const depth = Math.max(0, (view.top - box.top - element.clientTop) / (scale > 0 ? scale : 1));
+      const top = Math.round(depth * precision) / precision;
+      const key = `${pageIndex} ${top}`;
+      if (reported.current === key) return;
       reported.current = key;
-      current.onVisiblePositionChange?.(position);
-    };
-    const schedule = () => {
-      frame ??= view.requestAnimationFrame(measure);
-    };
-    schedule();
-    scroller.addEventListener('scroll', schedule, { passive: true });
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
-    resize?.observe(scroller);
-    return () => {
-      if (frame !== undefined) view.cancelAnimationFrame(frame);
-      scroller.removeEventListener('scroll', schedule);
-      resize?.disconnect();
-    };
-  }, [document, isWatching, latest, layout, scale, scrollerRef]);
+      onVisiblePositionChange({ pageIndex, top });
+    });
+  }, [document, isWatching, latest, layout, observePosition, scale]);
 }

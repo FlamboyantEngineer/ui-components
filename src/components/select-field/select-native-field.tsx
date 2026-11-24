@@ -1,9 +1,19 @@
 'use client';
 
-import { type ChangeEvent, Fragment, type KeyboardEvent, type MouseEvent, type Ref } from 'react';
+import {
+  type ChangeEvent,
+  Fragment,
+  type KeyboardEvent,
+  type MouseEvent,
+  type Ref,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ChevronDownGlyph } from '../../core/glyphs.js';
 import type { Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
 import {
   Field,
@@ -18,7 +28,7 @@ import {
   useFieldFormOwner,
 } from '../field/field.js';
 import { selectFieldHooks as hooks } from './select-field-hooks.js';
-import type { SelectFieldItem, SelectFieldOption } from './select-options.js';
+import { isNoSelection, type SelectFieldItem, type SelectFieldOption } from './select-options.js';
 
 export interface SelectNativeFieldProps
   extends
@@ -75,9 +85,10 @@ function refusePicker(event: MouseEvent<HTMLSelectElement>) {
 
 function NativeOptions({ items }: { items: readonly SelectFieldItem[] }) {
   return items.map((item) => {
+    const key = toKeyIdentity(item.id);
     if (!isPickerSection(item)) {
       return (
-        <option key={item.id} value={String(item.id)} disabled={item.isDisabled}>
+        <option key={key} value={String(item.id)} disabled={item.isDisabled}>
           {item.label}
         </option>
       );
@@ -85,13 +96,80 @@ function NativeOptions({ items }: { items: readonly SelectFieldItem[] }) {
     const options = <NativeOptions items={item.options} />;
     // An optgroup needs a text label; any other group lists its options in place.
     return typeof item.label === 'string' && item.label ? (
-      <optgroup key={item.id} label={item.label}>
+      <optgroup key={key} label={item.label}>
         {options}
       </optgroup>
     ) : (
-      <Fragment key={item.id}>{options}</Fragment>
+      <Fragment key={key}>{options}</Fragment>
     );
   });
+}
+
+function findOptionPosition(
+  options: readonly SelectFieldOption[],
+  option: SelectFieldOption | null,
+  hasPlaceholder: boolean,
+): number {
+  if (!option) return hasPlaceholder ? 0 : -1;
+  const index = options.findIndex(({ id }) => String(id) === String(option.id));
+  return index + Number(hasPlaceholder);
+}
+
+/** A real empty-string choice and the placeholder submit the same text but have different validity. */
+function useNativeSelection(position: { chosen: number; initial: number } | null) {
+  const selectPositionRef = useRef<HTMLSelectElement>(null);
+  const currentPositionRef = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    currentPositionRef.current = position?.chosen ?? null;
+    const select = selectPositionRef.current;
+    if (!position || !select) return;
+    for (const option of select.options) {
+      const isDefault = option.index === position.initial;
+      if (option.defaultSelected !== isDefault) option.defaultSelected = isDefault;
+    }
+    if (select.selectedIndex !== position.chosen) select.selectedIndex = position.chosen;
+  });
+  return { selectPositionRef, currentPositionRef };
+}
+
+function useNativeSelectValue(
+  options: readonly SelectFieldOption[],
+  {
+    state,
+    chosen,
+    hasPlaceholder,
+  }: { state: FieldState<Key | null>; chosen: SelectFieldOption | null; hasPlaceholder: boolean },
+) {
+  const [initialValue] = useState(state.value);
+  const usesPosition = options.some(({ id }) => id === '');
+  const { selectPositionRef, currentPositionRef } = useNativeSelection(
+    usesPosition
+      ? {
+          chosen: findOptionPosition(options, chosen, hasPlaceholder),
+          initial: findOptionPosition(options, findOption(options, initialValue), hasPlaceholder),
+        }
+      : null,
+  );
+  const onChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const select = event.currentTarget;
+    if (!state.isReadOnly && !state.isDisabled) {
+      const option = options[select.selectedIndex - Number(hasPlaceholder)];
+      state.setValue(option ? option.id : null);
+      state.commit();
+    }
+    // React restores controlled values. Restore by index when two options share the empty value.
+    const position = currentPositionRef.current;
+    if (position !== null) select.selectedIndex = position;
+  };
+  const nativeValue = chosen ? String(chosen.id) : '';
+  return {
+    selectPositionRef,
+    selection: {
+      onChange,
+      value: usesPosition ? undefined : nativeValue,
+      defaultValue: usesPosition ? nativeValue : undefined,
+    },
+  };
 }
 
 interface NativeSelectProps extends Omit<SelectNativeFieldProps, 'mode' | 'label'> {
@@ -115,19 +193,20 @@ function NativeSelect({
 }: NativeSelectProps) {
   const strings = useUiStrings();
   const form = useFieldFormOwner();
-  const ref = useMergedRefs(control.ref, selectRef);
   const flat = flattenPickerItems(options);
   const chosen = findOption(flat, state.value);
   const previous = state.isDirty ? findOption(flat, state.committedValue) : null;
-  const hasEmptyOption = emptyLabel !== undefined || !chosen;
-  const isMissing = !chosen && state.value !== null && state.value !== '';
-  const onChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    // A refused change leaves the value, and React puts the select back on it.
-    if (state.isReadOnly || state.isDisabled) return;
-    const option = flat[event.currentTarget.selectedIndex - (hasEmptyOption ? 1 : 0)];
-    state.setValue(option ? option.id : null);
-    state.commit();
-  };
+  const isRequired = state.isRequired && state.validationBehavior === 'native';
+  const showsPlaceholder = emptyLabel !== undefined || !chosen;
+  // A required select treats its first direct option as the placeholder when its value is empty.
+  const hasPlaceholder = showsPlaceholder || (isRequired && flat[0]?.id === '');
+  const { selectPositionRef, selection } = useNativeSelectValue(flat, {
+    state,
+    chosen,
+    hasPlaceholder,
+  });
+  const ref = useMergedRefs(control.ref, selectRef, selectPositionRef);
+  const isMissing = !chosen && !isNoSelection(state.value, false);
   return (
     <div {...hooks.slot('frame')}>
       {previous ? (
@@ -146,18 +225,17 @@ function NativeSelect({
         aria-invalid={control['aria-invalid']}
         aria-required={control['aria-required']}
         aria-readonly={control.readOnly || undefined}
-        required={state.isRequired && state.validationBehavior === 'native'}
+        required={isRequired}
         disabled={control.disabled}
         name={name}
         form={form}
         autoComplete={autoComplete}
-        value={chosen ? String(chosen.id) : ''}
-        onChange={onChange}
+        {...selection}
         onKeyDown={control.readOnly ? refuseChangingKey : undefined}
         onMouseDown={control.readOnly ? refusePicker : undefined}
       >
-        {hasEmptyOption ? (
-          <option value="" disabled={emptyLabel === undefined}>
+        {hasPlaceholder ? (
+          <option value="" disabled={emptyLabel === undefined} hidden={!showsPlaceholder}>
             {emptyLabel ?? placeholder ?? strings.selectPlaceholder}
           </option>
         ) : null}

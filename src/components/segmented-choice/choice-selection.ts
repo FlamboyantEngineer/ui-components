@@ -1,13 +1,13 @@
 'use client';
 
-import type { Key } from '../../core/props.js';
+import type { Key, SelectionValue, ValueSelectionMode } from '../../core/props.js';
 import { type PendingChangeHandler, usePendingChange } from './pending-change.js';
 
-export type SegmentedChoiceSelectionMode = 'single' | 'multiple';
+export type SegmentedChoiceSelectionMode = ValueSelectionMode;
 
 /** One value or none for a single choice, the pressed values for a multiple one. */
 export type SegmentedChoiceValue<M extends SegmentedChoiceSelectionMode = 'single'> =
-  M extends 'multiple' ? string[] : string | null;
+  SelectionValue<string, M>;
 
 interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> {
   options: readonly { value: string }[];

@@ -325,6 +325,12 @@ export function ScrollRegion({
   );
 }
 
+export {
+  EditorScrollbars,
+  measureScrollTrackMark,
+  type ScrollTrackMark,
+  useEditorScrollbars,
+} from './editor-scrollbars.js';
 export { OverlayScrollbars } from './overlay-scrollbars.js';
 export {
   DEFAULT_SCROLLBAR_HIDE_DELAY,

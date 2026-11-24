@@ -1,3 +1,4 @@
+import type { TranscriptOrder } from './transcript-heights.js';
 import {
   isTranscriptMessage,
   resolveMessageKey,
@@ -5,9 +6,7 @@ import {
 } from './transcript-runtime.js';
 
 /** A render's children: their keys in order, each one's index, and the keys known to be parts. */
-export interface TranscriptKeys {
-  keys: string[];
-  indexOf: ReadonlyMap<string, number>;
+export interface TranscriptKeys extends TranscriptOrder {
   parts: ReadonlySet<string>;
 }
 

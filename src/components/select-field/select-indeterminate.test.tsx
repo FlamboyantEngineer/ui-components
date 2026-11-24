@@ -240,7 +240,7 @@ describe('SelectField mixed membership', () => {
         label="Produce"
         selectionMode="multiple"
         options={[]}
-        loadOptions={async () => [mixed]}
+        loadItems={async () => [mixed]}
         minSearchLength={0}
         searchDelay={0}
       />,

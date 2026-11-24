@@ -57,9 +57,9 @@ Verification: `test/tooling.test.ts`
 
 ### UIC-TOOLING-2.4 - Needless exports
 
-`check-exports` shall fail on a declaration that a library module in `src/` exports when no entry point reaches it (the `./dist/` targets of the package's `exports` map, read as `src/` modules, and `exports.entries`) and its name appears in no other library module (a re-export included), test or file under `labs/`, `e2e/`, `examples/`, `test/` or `scripts/`. A name another module's declarations infer, a namespace import or an `export * as` counts as a use. It shall parse with the repository's own TypeScript. `--fix` drops the `export` keyword of each flagged declaration its own file still uses; one used nowhere is reported for deletion.
+`check-exports` shall fail on a declaration that a library module in `src/` exports when no entry point reaches it and no other library module, test or file under `labs/`, `e2e/`, `examples/`, `test/` or `scripts/` references its symbol. Entry points are the `./dist/` targets of the package's `exports` map, read as `src/` modules, and `exports.entries`. An export wildcard shall match nested paths. A type another module's declarations infer, a re-export, or a module namespace reference counts as a use. It shall resolve references with the repository's own TypeScript. `--fix` drops the `export` keyword of each flagged declaration its own file still uses. One used nowhere is reported for deletion.
 
-Implementation: `tooling/check-exports.mjs`
+Implementation: `tooling/check-exports.mjs`, `tooling/package-entries.mjs`
 Verification: `test/tooling.test.ts`
 
 ## UIC-TOOLING-3 - Shared configuration

@@ -1,7 +1,13 @@
 'use client';
 
 import type { AriaLabellingProps } from '../../core/events.js';
-import type { BaseProps, ControlSize, Orientation, RefProps } from '../../core/props.js';
+import type {
+  BaseProps,
+  ControlSize,
+  Orientation,
+  RefProps,
+  ValueSelectionModeProps,
+} from '../../core/props.js';
 import { ToggleButtonGroup } from '../../primitives/index.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
@@ -52,12 +58,10 @@ export interface SegmentedChoiceRenderState {
   isDisabled: boolean;
 }
 
-export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = 'single'>
+interface SegmentedChoiceOptions<M extends SegmentedChoiceSelectionMode>
   extends BaseProps, AriaLabellingProps, RefProps<HTMLDivElement> {
   /** The segments, in order. */
   options: readonly SegmentedChoiceOption[];
-  /** `single` (the default) picks one value; `multiple` presses any number of segments. */
-  selectionMode?: M | undefined;
   /** The value in effect (controlled): one value or `null`, or a list with `multiple`. */
   value?: SegmentedChoiceValue<M> | undefined;
   /** The initial value when uncontrolled. */
@@ -106,6 +110,13 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
   render?: ElementRender<'div', SegmentedChoiceRenderState> | undefined;
 }
+
+/** One choice by default, or independent toggles with `selectionMode="multiple"`. */
+export type SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = 'single'> = {
+  selectionMode?: M | undefined;
+} & {
+  [Mode in M]: SegmentedChoiceOptions<Mode> & ValueSelectionModeProps<Mode>;
+}[M];
 
 interface GroupState {
   /** The group is a `radiogroup`, the one group role that allows `aria-readonly`. */

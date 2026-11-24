@@ -15,7 +15,7 @@ const locks = [
 
 type Lock = { isDisabled?: true; isReadOnly?: true };
 
-function Fruit(props: Partial<ComboboxProps<'single' | 'multiple'>> & Lock) {
+function Fruit(props: ComboboxProps<'single' | 'multiple'> & Lock) {
   return <Combobox label="Fruit" defaultItems={items} {...props} />;
 }
 

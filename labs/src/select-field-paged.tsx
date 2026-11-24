@@ -22,7 +22,7 @@ export function Paged() {
   const [place, setPlace] = useState<Place>('town');
   const [pages, setPages] = useState(0);
   const [request, setRequest] = useState('none');
-  const loadOptions = useMemo<SelectFieldLoader>(
+  const loadItems = useMemo<SelectFieldLoader>(
     () => async (query, _signal, cursor) => {
       setPages((count) => count + 1);
       setRequest(`${place}s: "${query}" from ${cursor ?? 'the start'}`);
@@ -45,7 +45,7 @@ export function Paged() {
       <SelectField
         label="Place"
         options={[]}
-        loadOptions={loadOptions}
+        loadItems={loadItems}
         minSearchLength={0}
         searchDelay={0}
         description='Twenty places a page; scrolling to the end loads the next page. Searching "offline" fails, and the failed search offers no page of the search before it. Switching lists searches the new list from its first page.'

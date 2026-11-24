@@ -28,17 +28,11 @@ function pendingLoader(name: string, pending: Map<string, (page: Page) => void>)
   );
 }
 
-function renderField(loadOptions: SelectFieldLoader | undefined) {
+function renderField(loadItems: SelectFieldLoader | undefined) {
   const field = (load: SelectFieldLoader | undefined) => (
-    <SelectField
-      label="Words"
-      options={[]}
-      loadOptions={load}
-      minSearchLength={0}
-      searchDelay={0}
-    />
+    <SelectField label="Words" options={[]} loadItems={load} minSearchLength={0} searchDelay={0} />
   );
-  const view = render(field(loadOptions));
+  const view = render(field(loadItems));
   return { replace: (next: SelectFieldLoader | undefined) => view.rerender(field(next)) };
 }
 
