@@ -196,7 +196,7 @@ test.describe('Math Preview lab', () => {
     const image = await read();
     expect(image['image/png']).toBe('48x64 inked true');
     expect(image['text/html']).toMatch(
-      /<img src="data:image\/png;base64,[^"]+" width="24" height="32"/,
+      /<img src="data:image\/png;base64,[^"]+" width="24" height="32" alt="\\frac\{a\}\{b\}" data-latex="\\frac\{a\}\{b\}">/,
     );
   });
 });

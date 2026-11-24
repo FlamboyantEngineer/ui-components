@@ -5,6 +5,7 @@ export {
   type MathCopyOptions,
   type MathImageCopyOptions,
   mathMarkup,
+  readMathImage,
 } from './math-copy.js';
 export {
   type MathElementOptions,

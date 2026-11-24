@@ -94,6 +94,7 @@ export type {
   PivotValue,
 } from './pivot.js';
 export { pivot } from './pivot.js';
+export { readPngText, withPngText } from './png-text.js';
 export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { renderElement } from './render-element.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';

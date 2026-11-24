@@ -2,6 +2,7 @@
 // and painted on a canvas at a pixel density above the screen's, so it stays sharp when pasted.
 
 import { getOwnerDocument } from './owner-window.js';
+import { withPngText } from './png-text.js';
 
 export interface SvgImageOptions {
   /** The image's width in CSS pixels. Defaults to the element's drawn width, else its `width`. */
@@ -17,6 +18,8 @@ export interface SvgImageOptions {
   color?: string | undefined;
   /** A color painted under the drawing. Defaults to none: the image is transparent. */
   background?: string | undefined;
+  /** Text the PNG carries, by keyword, such as the source the drawing was made from. */
+  text?: Record<string, string> | undefined;
 }
 
 /** The size `drawSvgImage` draws at: `width` and `height`, else the drawn size, else the attributes. */
@@ -42,7 +45,7 @@ function decode(image: HTMLImageElement, source: string): Promise<boolean> {
 
 /**
  * The SVG element drawn as a PNG, at its drawn size (or `width` and `height`) times `scale`, with
- * `currentColor` painted in `color`. Rejects when the element has no size or the browser cannot
+ * `currentColor` painted in `color`, carrying `text` as PNG text chunks. Rejects when the element has no size or the browser cannot
  * decode or encode it. Only the element is drawn: page styles do not reach it, so its paint must
  * be its own attributes, as a typeset or icon drawing's is.
  */
@@ -77,5 +80,5 @@ export async function drawSvgImage(
   canvas.width = 0;
   canvas.height = 0;
   if (!png) throw new Error('The drawing could not be encoded.');
-  return png;
+  return options.text ? withPngText(png, options.text) : png;
 }
