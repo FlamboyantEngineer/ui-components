@@ -37,7 +37,7 @@ export interface TablePagination {
   onPageChange?: ((page: number) => void) | undefined;
   /**
    * The number of rows across every page, for rows paged by the caller (on a server): `rows` is
-   * then the current page, shown as given.
+   * then the current page. Set controlled sort and filter props when the caller applies those too.
    */
   rowCount?: number | undefined;
 }

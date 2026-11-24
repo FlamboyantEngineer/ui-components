@@ -1,7 +1,7 @@
 'use client';
 
 // Keeps keyboard focus in a row of items that can leave it or collapse into an overflow menu at its
-// end. Shared by Action Row and Toolbar Row.
+// end.
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { getComposedActiveElement, isFocusLost } from './focus-target.js';
@@ -10,7 +10,7 @@ import { isNode } from './is-element.js';
 interface OverflowFocusSelectors {
   /** Matches each item of the row that can hold focus or contain it. */
   item: string;
-  /** Matches the overflow menu's button, where focus goes when the focused item collapses. */
+  /** Matches the overflow indicator or its button. */
   overflow: string;
 }
 
@@ -54,7 +54,8 @@ function toFocusable(item: Element | null | undefined): HTMLElement | null {
 
 /**
  * Where focus goes when the focused item leaves: the next item still there, else the overflow
- * menu's button (the item may have moved into it), else the previous item.
+ * control (the item may have moved into it), else the previous item. If none are left, it can
+ * fall back to a newly shown item, such as when the whole row was in the overflow menu.
  */
 function findSuccessor(
   root: HTMLElement,
@@ -62,17 +63,18 @@ function findSuccessor(
   selectors: OverflowFocusSelectors,
 ): HTMLElement | null {
   const isPresent = (item: Element) => item.isConnected && toFocusable(item) !== null;
-  return toFocusable(
-    previous.following.find(isPresent) ??
-      root.querySelector(selectors.overflow) ??
-      previous.preceding.find(isPresent),
+  return (
+    toFocusable(previous.following.find(isPresent)) ??
+    toFocusable(root.querySelector(selectors.overflow)) ??
+    toFocusable(previous.preceding.find(isPresent)) ??
+    toFocusable([...root.querySelectorAll(selectors.item)].find(isPresent))
   );
 }
 
 /**
  * Keeps focus in a row when the item holding it leaves or moves into the overflow menu: focus moves
- * to the next item, else the overflow menu's button, else the previous item, so it never falls to
- * the page. Returns the row's ref. `selectors` must stay the same for the row's life.
+ * to a control that still shows, keeping it in the row. Returns the row's ref. `selectors` must stay
+ * the same for the row's life.
  */
 export function useOverflowFocus(selectors: OverflowFocusSelectors) {
   const root = useRef<HTMLElement | null>(null);

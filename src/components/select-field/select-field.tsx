@@ -1,6 +1,6 @@
 'use client';
 
-import type { Ref } from 'react';
+import { type Ref, useMemo } from 'react';
 import type { OpenStateProps } from '../../core/events.js';
 import type {
   BaseProps,
@@ -22,7 +22,7 @@ import { selectFieldHooks as hooks } from './select-field-hooks.js';
 import { SelectNativeField, type SelectNativeFieldProps } from './select-native-field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
 import { isNoSelection, type SelectFieldItem } from './select-options.js';
-import type { SelectFieldLoader } from './select-search.js';
+import { type SelectFieldLoader, useSelectSearch } from './select-search.js';
 import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 
 export type SelectFieldSelectionMode = ValueSelectionMode;
@@ -89,21 +89,24 @@ interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
  * base's label, validation, dirty state, restore, undo and menu. A multiple select shows its
  * choices as removable chips; a long list or a searched one filters inside the open list.
  */
-function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
-  props: SelectListFieldProps<M>,
-) {
+function SelectListField<M extends SelectFieldSelectionMode = 'single'>({
+  loadItems,
+  minSearchLength,
+  searchDelay,
+  ...props
+}: SelectListFieldProps<M>) {
   const isMultiple = props.selectionMode === 'multiple';
   const empty = (isMultiple ? [] : null) as SelectFieldValue<M>;
+  const search = useSelectSearch({ loadItems, minSearchLength, searchDelay });
+  const options = useMemo(() => flattenPickerItems(props.options), [props.options]);
+  const hasEmptyId =
+    options.some((option) => option.id === '') || search.seen.some((option) => option.id === '');
   const { state, field, rest } = useFieldControl<SelectFieldValue<M>, SelectListFieldProps<M>>(
     props,
     {
       initialValue: empty,
       emptyValue: empty,
-      isEmpty: (value) =>
-        isNoSelection(
-          value,
-          flattenPickerItems(props.options).some((option) => option.id === ''),
-        ),
+      isEmpty: (value) => isNoSelection(value, hasEmptyId),
     },
   );
   const { mode = 'list', selectionMode = 'single', chipPlacement = 'below', ...config } = rest;
@@ -117,7 +120,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
           mode,
           selectionMode,
           chipPlacement: isMultiple ? chipPlacement : null,
-          icons: flattenPickerItems(config.options).some((option) => Boolean(option.icon)),
+          icons: options.some((option) => Boolean(option.icon)),
         },
       })}
       state={state}
@@ -125,6 +128,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
       {(control) => (
         <SelectControl
           {...config}
+          search={search}
           control={control}
           state={state}
           label={field.label}

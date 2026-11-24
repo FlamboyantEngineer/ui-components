@@ -185,7 +185,7 @@ mountLab(
   <>
     <LabSection
       title="Sets"
-      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer), a text file and an archive without a preview and a photo whose thumbnail fails to load, a single photo, and two photos with distinct numeric and text keys of the same spelling, opened at the first or last item."
+      description="Photos of three shapes, a mixed set, a single photo, and two photos with distinct numeric and text keys of the same spelling. In the mixed set, focus the PDF pages to use Page Up and Page Down within the document. Focus the outer viewport to use those keys to move between files."
     >
       <StateMatrix
         axes={{ set: Object.keys(sets) as SetName[], opens: ['first', 'last'] }}
@@ -212,7 +212,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Loading and failure"
-      description="An expired link and a missing file: each shows why it failed with Retry, and the zoom and rotate controls wait for a loaded image. The page answers the expired link's failure with a fresh URL."
+      description="An expired link and a missing file: each explains why it failed, and the page answers the expired link with a fresh URL. Press Retry to focus the viewport during loading. Move from the missing image to the text file and back to request the image again."
     >
       <FailingImages />
     </LabSection>

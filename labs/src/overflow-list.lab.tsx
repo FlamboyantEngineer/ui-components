@@ -106,7 +106,7 @@ function ToolRow() {
   const [last, setLast] = useState('none');
   return (
     <div data-lab-demo="toolbar">
-      <Frame width={330}>
+      <div style={{ width: 330, maxWidth: '100%' }}>
         <OverflowList
           items={tools}
           getKey={(tool) => tool}
@@ -135,7 +135,7 @@ function ToolRow() {
             />
           )}
         />
-      </Frame>
+      </div>
       <p data-lab-output="last">Last tool: {last}</p>
     </div>
   );
@@ -179,7 +179,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Rendered as a toolbar"
-      description="The render prop swaps the root for a ToolbarRow, with itemContainerRef on its stripRef so the controls are measured: arrow keys move between the visible tools and the menu of the others."
+      description="Arrow keys move between visible tools and the menu. Focus a tool and narrow the window to collapse it into the menu."
     >
       <ToolRow />
     </LabSection>

@@ -36,17 +36,18 @@ const outline: PdfOutlineNode[] = [
 
 /** Reports every observed element in view and its content 96 pixels wide. */
 function stubObservers() {
-  vi.stubGlobal(
-    'IntersectionObserver',
-    vi.fn(function (callback: IntersectionObserverCallback) {
-      return {
-        observe: (target: Element) =>
-          callback([{ target, isIntersecting: true } as IntersectionObserverEntry], {} as never),
-        unobserve: vi.fn(),
-        disconnect: vi.fn(),
-      };
-    }),
-  );
+  const intersection = vi.fn(function (
+    callback: IntersectionObserverCallback,
+    _options?: IntersectionObserverInit,
+  ) {
+    return {
+      observe: (target: Element) =>
+        callback([{ target, isIntersecting: true } as IntersectionObserverEntry], {} as never),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    };
+  });
+  vi.stubGlobal('IntersectionObserver', intersection);
   vi.stubGlobal(
     'ResizeObserver',
     vi.fn(function (callback: ResizeObserverCallback) {
@@ -61,6 +62,7 @@ function stubObservers() {
       };
     }),
   );
+  return intersection;
 }
 
 describe('PdfViewer sidebar', () => {
@@ -125,11 +127,15 @@ describe('PdfViewer sidebar', () => {
 
   it('UIC-PDF-VIEWER-10.2 lists the pages as thumbnails and goes to the one chosen', async () => {
     stubLayout();
-    stubObservers();
+    const intersection = stubObservers();
     const engine = createEngine();
     const { container } = await renderReady({ defaultZoom: 100, defaultSidebarOpen: true }, engine);
     const list = screen.getByRole('listbox', { name: 'Pages' });
     expect(list).toHaveClass('ui-pdf-viewer__thumbnails');
+    const sidebarPanel = screen.getByRole('tabpanel', { name: 'Pages' });
+    expect(
+      intersection.mock.calls.filter(([, options]) => options?.root === sidebarPanel),
+    ).toHaveLength(1);
     const options = within(list).getAllByRole('option');
     expect(options.map((option) => option.getAttribute('aria-label'))).toEqual([
       'Page 1',

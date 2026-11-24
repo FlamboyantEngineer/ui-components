@@ -1,6 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, type RefObject, useId, useLayoutEffect, useRef } from 'react';
+import { fitText } from '../../utils/fit-text.js';
 import { isFocused } from '../../utils/focus-target.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import {
@@ -11,6 +12,11 @@ import {
 } from './use-completions.js';
 
 type TextControl = HTMLInputElement | HTMLTextAreaElement;
+
+interface CompletionEdit extends CompletionRange {
+  insertion: string;
+  value: string;
+}
 
 interface TextCompletionsOptions {
   completions: Completions | undefined;
@@ -74,20 +80,29 @@ function hasCaret(input: TextControl): boolean {
  * Inserts text through the browser's own editing, which keeps it on the undo stack and reports it
  * as input; `false` when the control has no focus or the browser offers no such editing.
  */
-function insertNatively(input: TextControl, range: CompletionRange, text: string): boolean {
-  const next = `${input.value.slice(0, range.start)}${text}${input.value.slice(range.end)}`;
+function insertNatively(input: TextControl, edit: CompletionEdit): boolean {
+  const before = input.value;
   const doc = input.ownerDocument;
   if (!isFocused(input) || typeof doc.execCommand !== 'function') return false;
   const caret = hasCaret(input);
   // Without a caret only the whole value can be selected, so the edit replaces all of it.
-  if (caret) input.setSelectionRange(range.start, range.end);
+  if (caret) input.setSelectionRange(edit.start, edit.end);
   else input.select();
+  // An input handler can rewrite the edited value. Once a browser edit has reached the control,
+  // replaying the fallback would report the same edit twice or replace that rewrite.
+  let didInput = false;
+  const onInput = () => {
+    didInput = true;
+  };
+  input.addEventListener('input', onInput);
   try {
-    doc.execCommand('insertText', false, caret ? text : next);
+    doc.execCommand('insertText', false, caret ? edit.insertion : edit.value);
   } catch {
-    return false;
+    // Some browsers expose the command but cannot run it for this control.
+  } finally {
+    input.removeEventListener('input', onInput);
   }
-  return input.value === next;
+  return didInput || input.value !== before;
 }
 
 /**
@@ -114,11 +129,23 @@ export function useTextCompletions(options: TextCompletionsOptions): TextComplet
     insert: (completion, range) => {
       const input = inputRef.current;
       if (!input) return;
+      const before = input.value;
       const text = completion.insertText ?? completion.label;
+      const normalized =
+        input.localName === 'textarea' ? text.replace(/\r\n?/g, '\n') : text.replace(/[\r\n]/g, '');
       const end = Math.max(range.end, input.selectionStart ?? range.end);
-      if (insertNatively(input, { start: range.start, end }, text)) return;
-      const value = `${input.value.slice(0, range.start)}${text}${input.value.slice(end)}`;
-      pendingCaret.current = { value, caret: range.start + text.length };
+      const room =
+        input.maxLength < 0 ? Infinity : input.maxLength - before.length + end - range.start;
+      const insertion = fitText(normalized, room);
+      if (insertion === '' && text !== '') return;
+      const value = `${before.slice(0, range.start)}${insertion}${before.slice(end)}`;
+      const caret = range.start + insertion.length;
+      if (value === before) {
+        if (hasCaret(input)) input.setSelectionRange(caret, caret);
+        return;
+      }
+      if (insertNatively(input, { start: range.start, end, insertion, value })) return;
+      pendingCaret.current = { value, caret };
       setValue(value);
     },
   });

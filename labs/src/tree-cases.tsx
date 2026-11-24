@@ -229,7 +229,8 @@ export function LoadingTree() {
         }}
       >
         Finish East&apos;s loads
-      </Button>
+      </Button>{' '}
+      <Button onPress={() => setRegions((current) => [...current])}>Refresh regions</Button>
       <p>
         East asked <output data-lab-output="east-requests">{eastRequests}</output> times
       </p>

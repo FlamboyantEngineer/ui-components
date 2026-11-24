@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, ContainerProps, Key } from '../../core/props.js';
 import { type ElementRender, renderElement } from '../../utils/render-element.js';
 import { useMergedRefs } from '../../utils/use-merged-refs.js';
+import { useOverflowFocus } from '../../utils/use-overflow-focus.js';
 import { type OverflowCollapseFrom, useOverflowItems } from '../../utils/use-overflow-items.js';
 
 /** The state an `OverflowList`'s `render` receives. */
@@ -34,6 +35,10 @@ export interface OverflowListProps<T> extends Omit<ContainerProps<'div'>, 'child
 }
 
 const hooks = createHooks('overflow-list', ['item', 'overflow']);
+const focusSelectors = {
+  item: `.${hooks.slotClass('item')}`,
+  overflow: `.${hooks.slotClass('overflow')}`,
+};
 
 /** A React key that keeps a number apart from the string of its digits. */
 function toElementKey(key: Key): string {
@@ -44,6 +49,7 @@ function toElementKey(key: Key): string {
 function useOverflowRefs(
   containerRef: RefCallback<HTMLElement>,
   callerRef: Ref<HTMLDivElement> | undefined,
+  focusRef: RefCallback<HTMLElement>,
 ) {
   const root = useRef<HTMLElement | null>(null);
   const itemContainer = useRef<HTMLElement | null>(null);
@@ -61,7 +67,7 @@ function useOverflowRefs(
     },
     [containerRef],
   );
-  const rootRef = useMergedRefs(setRoot, callerRef);
+  const rootRef = useMergedRefs(setRoot, callerRef, focusRef);
   return { rootRef, itemContainerRef };
 }
 
@@ -85,7 +91,8 @@ export function OverflowList<T>({
     collapseFrom,
     getKey,
   });
-  const { rootRef, itemContainerRef } = useOverflowRefs(containerRef, ref);
+  const focusRef = useOverflowFocus(focusSelectors);
+  const { rootRef, itemContainerRef } = useOverflowRefs(containerRef, ref, focusRef);
   const isOverflowing = hiddenItems.length > 0;
   const offset = collapseFrom === 'start' ? items.length - visibleItems.length : 0;
   const indicator = isOverflowing ? (

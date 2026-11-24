@@ -119,16 +119,6 @@ function splitTreeProps<T extends TreeItemData>({
   return { row, expansion, state, features, rename: { onRename, canRename }, root, aria };
 }
 
-function findTreeItem<T extends TreeItemData>(
-  items: readonly T[],
-  { key, getChildren }: { key: Key; getChildren: (item: T) => readonly T[] | undefined },
-): T | undefined {
-  for (const item of walkTree(items, getChildren)) {
-    if (item.id === key) return item;
-  }
-  return undefined;
-}
-
 /** Loading children through `onLoadChildren`, while the owner sets it. */
 function useOwnerLoads<T extends TreeItemData>(
   items: readonly T[],
@@ -139,14 +129,26 @@ function useOwnerLoads<T extends TreeItemData>(
     getChildren: (item: T) => readonly T[] | undefined;
   },
 ) {
+  const hasLoader = onLoadChildren !== undefined;
+  const itemsByKey = useMemo(() => {
+    if (!hasLoader) return null;
+    const index = new Map<Key, T>();
+    for (const item of walkTree(items, getChildren)) index.set(item.id, item);
+    return index;
+  }, [items, getChildren, hasLoader]);
   const isListed = useCallback(
-    (key: Key) => findTreeItem(items, { key, getChildren }) !== undefined,
-    [items, getChildren],
+    (key: Key) => {
+      if (itemsByKey) return itemsByKey.has(key);
+      // The owner may turn loading off while the tree still holds branch requests.
+      for (const item of walkTree(items, getChildren)) if (item.id === key) return true;
+      return false;
+    },
+    [items, getChildren, itemsByKey],
   );
   const loads = useTreeLoads(
     onLoadChildren &&
       ((key) => {
-        const item = findTreeItem(items, { key, getChildren });
+        const item = itemsByKey?.get(key);
         return item ? onLoadChildren(item) : undefined;
       }),
     isListed,

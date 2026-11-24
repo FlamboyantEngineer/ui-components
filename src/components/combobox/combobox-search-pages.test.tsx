@@ -29,6 +29,59 @@ async function replaceText(user: UserEvent, text: string) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Combobox pages of replaced searches', () => {
+  it('UIC-COMBOBOX-5.3 merges overlapping pages at the first positions of typed options and sections', async () => {
+    const observers = stubObservers();
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const loadItems: ComboboxLoader = async (_query, _signal, cursor) =>
+      cursor === undefined
+        ? {
+            items: [
+              { id: 1, label: 'Numeric one' },
+              { id: '1', label: 'Section', options: [{ id: '1', label: 'Text one' }] },
+            ],
+            cursor: 'next',
+          }
+        : {
+            items: [
+              {
+                id: '1',
+                label: 'Latest section',
+                options: [
+                  { id: '1', label: 'Updated text one' },
+                  { id: 1, label: 'Updated numeric one' },
+                  { id: 2, label: 'Numeric two' },
+                ],
+              },
+              { id: '2', label: 'Text two' },
+            ],
+          };
+    render(
+      <Combobox
+        label="Word"
+        defaultOpen
+        minSearchLength={0}
+        loadItems={loadItems}
+        onChange={onChange}
+      />,
+    );
+    expect(await screen.findByRole('option', { name: 'Text one' })).toBeInTheDocument();
+    act(() => observers.at(-1)?.([{ isIntersecting: true }]));
+    await waitFor(() =>
+      expect(optionLabels()).toEqual([
+        'Updated numeric one',
+        'Updated text one',
+        'Numeric two',
+        'Text two',
+      ]),
+    );
+    expect(screen.getByRole('group', { name: 'Latest section' })).toHaveTextContent(
+      'Updated text oneNumeric two',
+    );
+    await user.click(screen.getByRole('option', { name: 'Updated text one' }));
+    expect(onChange).toHaveBeenCalledWith('1', { reason: 'select' });
+  });
+
   it('UIC-COMBOBOX-5.3 offers no next page after a replacing search fails', async () => {
     const observers = stubObservers();
     const user = userEvent.setup();

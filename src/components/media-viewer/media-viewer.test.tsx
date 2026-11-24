@@ -432,6 +432,27 @@ describe('MediaViewer', () => {
       expect(title()).toBe('Text file');
       expect(screen.getByRole('group', { name: /Text file/ })).toHaveFocus();
     });
+
+    it('UIC-MEDIA-VIEWER-1.4 leaves native keys to a focused document inside the preview', async () => {
+      const user = userEvent.setup();
+      const onSelectionChange = vi.fn();
+      render(
+        <Viewer
+          defaultSelectedKey="guide"
+          onSelectionChange={onSelectionChange}
+          renderItem={() => <div role="document" aria-label="Guide pages" tabIndex={0} />}
+        />,
+      );
+      const document = screen.getByRole('document', { name: 'Guide pages' });
+      document.focus();
+      await user.keyboard('{PageUp}{ArrowLeft}');
+      expect(document).toHaveFocus();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      screen.getByRole('group', { name: 'Guide.pdf, viewer' }).focus();
+      await user.keyboard('{PageUp}');
+      expect(title()).toBe('Bridge.png');
+      expect(onSelectionChange).toHaveBeenLastCalledWith('bridge');
+    });
   });
 
   describe('open state across an empty list', () => {
@@ -532,6 +553,47 @@ describe('MediaViewer', () => {
       loadImage(400, 300);
       await user.click(screen.getByRole('button', { name: 'Previous' }));
       expect(stage()).toHaveAttribute('data-status', 'loading');
+      loadImage(800, 600);
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+    });
+
+    it('UIC-MEDIA-VIEWER-2.4 retries on return to a failed image and keeps keyboard focus during Retry', async () => {
+      const user = userEvent.setup();
+      const onImageError = vi.fn();
+      render(
+        <Viewer
+          items={[requireDefined(items[0]), requireDefined(items[2])]}
+          onImageError={onImageError}
+        />,
+      );
+      const first = screen.getByRole('img', { name: 'Harbour.jpg' });
+      fireEvent.error(first);
+      const retry = screen.getByRole('button', { name: 'Retry' });
+      retry.focus();
+      await user.keyboard('{Enter}');
+      const viewport = screen.getByRole('group', { name: 'Harbour.jpg, viewer' });
+      expect(viewport).toHaveFocus();
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      loadImage(0, 0);
+      expect(viewport).toHaveFocus();
+      expect(onImageError).toHaveBeenCalledTimes(2);
+
+      await user.keyboard('{PageDown}{PageUp}');
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      fireEvent.error(first);
+      expect(onImageError).toHaveBeenCalledTimes(2);
+      expect(loadImage(800, 600)).toHaveAttribute('src', '/media/harbour.jpg');
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+    });
+
+    it('UIC-MEDIA-VIEWER-2.4 waits for the image to load again after reopening', () => {
+      const { rerender } = render(<Viewer />);
+      loadImage(800, 600);
+      expect(stage()).toHaveAttribute('data-status', 'loaded');
+      rerender(<Viewer isOpen={false} />);
+      rerender(<Viewer isOpen />);
+      expect(stage()).toHaveAttribute('data-status', 'loading');
+      expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toBeDisabled();
       loadImage(800, 600);
       expect(stage()).toHaveAttribute('data-status', 'loaded');
     });

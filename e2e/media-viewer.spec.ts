@@ -200,6 +200,42 @@ test.describe('Media Viewer lab', () => {
     );
   });
 
+  test('UIC-MEDIA-VIEWER-1.4 leaves page keys to a focused PDF at each zoom', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="mixed-first"]').click();
+    await settled(page);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    const viewer = page.getByRole('dialog', { name: 'Seasonal report.pdf' });
+    const document = viewer.getByRole('document', { name: 'Seasonal report.pdf' });
+    const firstPage = document.locator('.ui-pdf-viewer__canvas').first();
+    await expect(firstPage).not.toHaveAttribute('width', '0');
+    const scrollTop = () => document.evaluate((element) => element.scrollTop);
+    await document.focus();
+    await page.keyboard.press('PageDown');
+    await expect.poll(scrollTop).toBeGreaterThan(0);
+    await expect(document).toBeFocused();
+    await page.keyboard.press('PageUp');
+    await expect.poll(scrollTop).toBe(0);
+
+    await viewer.getByRole('button', { name: 'Fit whole page' }).click();
+    await document.focus();
+    await page.keyboard.press('PageDown');
+    await expect(viewer.getByLabel('Page', { exact: true })).toHaveValue('2');
+
+    await viewer.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    await document.focus();
+    const start = await scrollTop();
+    await page.keyboard.press('PageDown');
+    await expect.poll(scrollTop).toBeGreaterThan(start);
+    await expect(document).toBeFocused();
+    await viewer.getByRole('group', { name: 'Seasonal report.pdf, viewer' }).focus();
+    await page.keyboard.press('PageDown');
+    await expect(title(page)).toHaveText('Notes.txt');
+  });
+
   test('UIC-MEDIA-VIEWER-4.1 passes axe open in the dark theme', async ({ page, lab }) => {
     await lab.open('media-viewer', { theme: 'dark' });
     await page.locator('[data-lab-open="mixed-last"]').click();
@@ -355,6 +391,42 @@ test.describe('Media Viewer lab', () => {
     );
     await expect(page.getByRole('button', { name: 'Previous' })).toBeEnabled();
     await lab.expectAccessible('.ui-dialog');
+  });
+
+  test('UIC-MEDIA-VIEWER-2.4 keeps focus during Retry and requests the image again on return', async ({
+    page,
+    lab,
+  }) => {
+    let attempts = 0;
+    await page.route(/expired-link\.svg|missing\.svg/, (route) => {
+      if (route.request().url().endsWith('/missing.svg')) attempts += 1;
+      return route.fulfill({
+        contentType: 'image/svg+xml',
+        body:
+          attempts < 3
+            ? 'not an image'
+            : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" />',
+      });
+    });
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="failing"]').click();
+    await settled(page);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Missing.svg' });
+    const retry = dialog.getByRole('button', { name: 'Retry' });
+    const stage = dialog.locator('.ui-media-viewer__stage');
+    const viewport = dialog.getByRole('group', { name: 'Missing.svg, viewer' });
+    await retry.focus();
+    await page.keyboard.press('Enter');
+    await expect(stage).toHaveAttribute('data-status', 'failed');
+    await expect(viewport).toBeFocused();
+    expect(attempts).toBe(2);
+
+    await page.keyboard.press('PageDown');
+    await expect(title(page)).toHaveText('Notes.txt');
+    await page.keyboard.press('PageUp');
+    await expect(stage).toHaveAttribute('data-status', 'loaded');
+    expect(attempts).toBe(3);
   });
 
   test('UIC-MEDIA-VIEWER-3.1 keeps the caller rendering of each file apart', async ({

@@ -23,5 +23,5 @@
 .ui-chat-question__options
   .ui-choice__button[data-invalid]:not([data-selected])
   .ui-choice__indicator {
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
 }

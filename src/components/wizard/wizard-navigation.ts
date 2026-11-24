@@ -7,6 +7,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRetainedKey } from '../../utils/use-retained-key.js';
 import { useStableArray } from '../../utils/use-stable-array.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import { runPendingAction } from '../button/button.js';
 import type { StepsStatus } from '../steps/steps.js';
 import type { WizardProps, WizardStep } from './wizard.js';
@@ -44,7 +45,10 @@ function toFailure(result: boolean | string | void): WizardNavigation['failure']
   return typeof result === 'string' && result !== '' ? { message: result } : null;
 }
 
+const noSkippedSteps: ReadonlySet<Key> = new Set();
+
 function withMark(keys: ReadonlySet<Key>, key: Key, isMarked: boolean): ReadonlySet<Key> {
+  if (keys.has(key) === isMarked) return keys;
   const next = new Set(keys);
   if (isMarked) next.add(key);
   else next.delete(key);
@@ -66,7 +70,7 @@ function toStatuses(
   return steps.map((step, position) => {
     if (position > index) return 'upcoming';
     if (position === index && !isFinished) return hasFailed ? 'error' : 'current';
-    return skipped.has(step.id) ? 'skipped' : 'complete';
+    return step.isOptional && skipped.has(step.id) ? 'skipped' : 'complete';
   });
 }
 
@@ -144,7 +148,6 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     options.defaultCurrentKey ?? steps[0]?.id,
     (id) => (id === undefined ? undefined : options.onCurrentKeyChange?.(id)),
   );
-  const [skipped, setSkipped] = useState<ReadonlySet<Key>>(() => new Set());
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedRef = useRef(false);
   const isStep = (id: Key) => steps.some((step) => step.id === id);
@@ -158,6 +161,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     steps[index]?.id,
     steps.map((step) => step.id),
   );
+  const [skipped, setSkipped] = useStateFor(workflow, noSkippedSteps);
   const [failure, setFailure] = useStepFailure(steps[index]?.id, workflow);
   const [isFinished, markFinished] = useFinished(steps[index]?.id, workflow);
 
@@ -179,7 +183,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     const stay = toFailure(await step.validate?.(signal));
     if (signal.aborted) return;
     if (stay) return setFailure(stay);
-    setSkipped((keys) => withMark(keys, step.id, false));
+    if (skipped.has(step.id)) setSkipped(withMark(skipped, step.id, false));
     const next = steps[index + 1];
     if (next) return goTo(next.id);
     await onFinish?.();
@@ -211,7 +215,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
     const step = steps[index];
     const next = steps[index + 1];
     if (!step || !next) return;
-    setSkipped((keys) => withMark(keys, step.id, true));
+    setSkipped(withMark(skipped, step.id, true));
     goTo(next.id);
   };
   const statuses = toStatuses(steps, { index, skipped, hasFailed: failure !== null, isFinished });

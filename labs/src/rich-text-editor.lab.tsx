@@ -76,7 +76,7 @@ mountLab(
     <RichTextFieldSections />
     <LabSection
       title="Toolbar, selection toolbar, slash menu and block handle"
-      description="Type a slash and a command label or keyword; equally good matches keep their menu order."
+      description="Type a slash and a command label or keyword. Only choices that fit the current block are shown. Undo restores the slash query in one step."
     >
       <FullEditor />
     </LabSection>
@@ -138,7 +138,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Form"
-      description="A named editor submits its document as JSON with the form, which JSON.parse turns back into the value. Reset puts the first note back. Applying a link with Enter or Apply stays in the link editor and submits nothing."
+      description="The form shows its values immediately after each edit. Both notes and a revision label share the same name, even though Extra note is outside the form. Reset restores both notes. Applying a link stays in the link editor."
     >
       <FormEditor />
     </LabSection>

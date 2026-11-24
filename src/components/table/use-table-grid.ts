@@ -41,6 +41,8 @@ export interface TableGrid<T> {
     onExpandedChange: (keys: Set<Key>) => void;
   };
   view: TableRowsView<T>;
+  /** Data rows on the current page, with pins and expanded descendants. */
+  visibleRows: readonly T[];
   structure: TableStructure<T>;
   layout: ColumnLayout<T>;
   widths: ReturnType<typeof useColumnWidths>;
@@ -270,6 +272,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
       }),
     },
     view,
+    visibleRows,
     structure,
     layout,
     widths,

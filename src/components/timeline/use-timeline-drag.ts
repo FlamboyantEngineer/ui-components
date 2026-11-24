@@ -32,6 +32,7 @@ interface Drag {
   edge: TimelineDragEdge;
   origin: ReadItem;
   days: number;
+  change: TimelineItemChange | null;
 }
 
 /** Pointer travel, in pixels, past which a press becomes a drag and does not select. */
@@ -41,6 +42,11 @@ function readEdge(target: EventTarget, kind: ReadItem['kind']): TimelineDragEdge
   if (kind === 'milestone' || !isElement(target)) return 'move';
   const edge = target.closest('[data-edge]')?.getAttribute('data-edge');
   return edge === 'start' || edge === 'end' ? edge : 'move';
+}
+
+function resolveDraft({ origin, edge, days }: Drag): TimelineItemChange | null {
+  const next = resolveDragChange(origin, edge, days);
+  return next.start === origin.start && next.end === origin.end ? null : next;
 }
 
 /**
@@ -87,7 +93,10 @@ export function useTimelineDrag({
     const days = Math.round(travel / (dayWidth * active.scale));
     if (days === active.days) return;
     active.days = days;
-    showDraft(resolveDragChange(active.origin, active.edge, days));
+    const change = resolveDraft(active);
+    if (change?.start === active.change?.start && change?.end === active.change?.end) return;
+    active.change = change;
+    showDraft(change);
   };
   const handlers = usePointerDrag<HTMLElement, Drag>({
     isDisabled: !isEditable,
@@ -108,6 +117,7 @@ export function useTimelineDrag({
         edge: readEdge(event.target, read.kind),
         origin: read,
         days: 0,
+        change: null,
       };
     },
     onMove: move,
@@ -117,9 +127,7 @@ export function useTimelineDrag({
       // would swallow the next Enter or Space on the item.
       if (event.type !== 'pointerup') moved.current = false;
       setDragging(false);
-      if (!isCancelled && active.days !== 0) {
-        onCommit(resolveDragChange(active.origin, active.edge, active.days));
-      }
+      if (!isCancelled && active.change) onCommit(active.change);
       showDraft(null);
     },
   });

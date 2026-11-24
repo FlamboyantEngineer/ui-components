@@ -12,16 +12,15 @@ import { type RefObject, useState } from 'react';
 import { measureScale, toLocalPoint } from '../../utils/element-scale.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isShallowEqual } from '../../utils/is-shallow-equal.js';
-import { toEngineCommand } from './engine-commands.js';
+import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { type InsertMenuItem, matchInsertItems } from './insert-items.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
-
-/** The text a slash command replaces: the slash and the query typed after it. */
-interface SlashRange {
-  from: number;
-  to: number;
-  query: string;
-}
+import {
+  canRunSlash,
+  createSlashTransaction,
+  previewSlash,
+  type SlashRange,
+} from './slash-commands.js';
 
 /** The caret marker's place in the surface, in pixels. */
 interface CaretPlace {
@@ -53,6 +52,13 @@ function placeCaret(view: EditorView, surface: HTMLElement | null, pos: number):
   };
 }
 
+function findMatches(state: EditorState, range: SlashRange, items: readonly InsertMenuItem[]) {
+  const matches = matchInsertItems(items, range.query);
+  if (matches.length === 0) return matches;
+  const preview = previewSlash(state, state.tr.delete(range.from, range.to));
+  return matches.filter(({ command }) => canRunSlash(command, preview, state));
+}
+
 /**
  * The slash menu's state: open while the editor has focus and a slash query sits before the caret
  * (until Escape closes it for that slash), its matching items, the active one, and the caret
@@ -65,32 +71,44 @@ export function useSlashMenu(
   const { isEditable } = useRichTextEditorContext('InsertMenu');
   const state = useEditorState();
   const range = isEditable ? findSlashRange(state) : null;
-  const matches = range ? matchInsertItems(items, range.query) : [];
   const [hasFocus, setFocus] = useState(false);
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
   const [active, setActive] = useState({ query: '', index: 0 });
   const [caret, setCaret] = useState<CaretPlace | null>(null);
   if (!range && dismissedAt !== null) setDismissedAt(null);
-  const isOpen = Boolean(range) && hasFocus && dismissedAt !== range?.from && matches.length > 0;
+  const matches =
+    range && hasFocus && dismissedAt !== range.from ? findMatches(state, range, items) : [];
+  const openPosition = matches.length > 0 ? range?.from : undefined;
+  const isOpen = openPosition !== undefined;
   const activeIndex =
-    active.query === range?.query ? Math.min(active.index, matches.length - 1) : 0;
+    active.query === range?.query ? Math.max(0, Math.min(active.index, matches.length - 1)) : 0;
 
   useEditorEventListener('focus', () => (setFocus(true), false));
   useEditorEventListener('blur', () => (setFocus(false), false));
+  const measure = useEditorEventCallback((view, position: number) => {
+    const place = placeCaret(view, surfaceRef.current, position);
+    setCaret((current) => (isShallowEqual(current, place) ? current : place));
+  });
+  useEditorEffect(() => {
+    if (openPosition !== undefined) measure(openPosition);
+  }, [measure, openPosition, state]);
   useEditorEffect(
     (view) => {
-      const place = range ? placeCaret(view, surfaceRef.current, range.from) : null;
-      setCaret((current) => (isShallowEqual(current, place) ? current : place));
+      if (openPosition === undefined) return;
+      return autoUpdateOverlay({ anchor: view.dom, update: () => measure(openPosition) });
     },
-    [range?.from, state],
+    [measure, openPosition],
   );
 
   const choose = useEditorEventCallback((view, item: InsertMenuItem) => {
-    if (!isEditable) return;
+    if (!isOpen || !matches.includes(item)) return false;
     const current = findSlashRange(view.state);
-    if (current) view.dispatch(view.state.tr.delete(current.from, current.to));
-    toEngineCommand(item.command)(view.state, view.dispatch, view);
+    if (!current || current.from !== range?.from || current.query !== range.query) return false;
+    const tr = createSlashTransaction(view.state, current, item.command);
+    if (!tr) return false;
+    view.dispatch(tr);
     view.focus();
+    return true;
   });
 
   useEditorEventListener('keydown', (_view, event) => {
@@ -101,7 +119,7 @@ export function useSlashMenu(
       setActive({ query: range?.query ?? '', index: (activeIndex + step + count) % count });
     else if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) {
       const item = matches[activeIndex];
-      if (item) choose(item);
+      if (!item || !choose(item)) return false;
     } else if (event.key === 'Escape') setDismissedAt(range?.from ?? null);
     else return false;
     event.preventDefault();

@@ -309,7 +309,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Composing"
-      description="Enter sends and Shift+Enter breaks the line (or, with the option, only Ctrl+Enter sends and Enter breaks the line); @ mentions a person; files come from the attach button, a drop on the composer or a paste, and alone can be sent; the emoji button inserts at the caret. The text area grows up to eight rows."
+      description="Enter sends and Shift+Enter breaks the line, even while @ mentions are shown. Enter chooses an open suggestion. With the option enabled, Ctrl+Enter sends and Enter breaks the line. Attach or drop files, paste them, or insert an emoji at the caret."
     >
       <Composing />
     </LabSection>

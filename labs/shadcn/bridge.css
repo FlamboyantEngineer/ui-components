@@ -7,6 +7,19 @@
  * data-theme), since a custom property that names another is resolved where it is declared.
  */
 
+/* Theme boundaries inherit the scale of their surrounding layout. */
+:root {
+  --ref-font-size-xs: 0.75rem;
+  --ref-font-size-sm: 0.8rem;
+  --ref-font-size-md: 0.875rem;
+
+  /* Control heights: 24, 28, 32 and 36 pixels at the default font size. */
+  --ref-control-height-xs: 1.5rem;
+  --ref-control-height-sm: 1.75rem;
+  --ref-control-height-md: 2rem;
+  --ref-control-height-lg: 2.25rem;
+}
+
 :root,
 .dark,
 [data-theme] {
@@ -21,9 +34,6 @@
     Consolas,
     monospace
   );
-  --ref-font-size-xs: 0.75rem;
-  --ref-font-size-sm: 0.8rem;
-  --ref-font-size-md: 0.875rem;
 
   /* Surfaces and text */
   --ref-text: var(--foreground);
@@ -75,23 +85,18 @@
   --ref-radius-lg: calc(var(--radius) + 4px);
   --ref-radius-xl: calc(var(--radius) + 8px);
 
-  /* Control heights: 24, 28, 32 and 36 pixels at the default font size. */
-  --ref-control-height-xs: 1.5rem;
-  --ref-control-height-sm: 1.75rem;
-  --ref-control-height-md: 2rem;
-  --ref-control-height-lg: 2.25rem;
-
   /* Field frames */
   --ref-field-border: var(--input);
   --ref-field-fill: var(--background);
   --ref-field-fill-inactive: var(--muted);
 
-  /* Focus: the ring color as a border, with a wide translucent ring around it. */
-  --ref-focus: var(--ring);
-  --ref-focus-ring: 3px solid color-mix(in oklab, var(--ring) 50%, transparent);
-  --ref-focus-ring-thin: 3px solid color-mix(in oklab, var(--ring) 50%, transparent);
-  --ref-focus-halo: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
-  --ref-focus-inset: inset 0 0 0 2px var(--ring);
+  /* The solid edge keeps its contrast against the canvas through the translucent outer halo. */
+  --ref-focus: color-mix(in oklab, var(--ring) 70%, var(--foreground));
+  --ref-focus-ring: 2px solid var(--ref-focus);
+  --ref-focus-ring-thin: 1px solid var(--ref-focus);
+  --ref-focus-halo:
+    0 0 0 1px var(--ref-focus), 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+  --ref-focus-inset: inset 0 0 0 2px var(--ref-focus);
 
   --ref-disabled-opacity: 0.5;
 }
@@ -167,6 +172,7 @@
   .dark,
   [data-theme] {
     --ref-border: var(--ref-border-strong);
+    --ref-field-border: var(--ref-border-strong);
   }
 }
 

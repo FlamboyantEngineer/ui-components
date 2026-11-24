@@ -200,6 +200,22 @@ describe('Form', () => {
     expect(screen.getByRole('button', { name: /^Month/ })).toHaveFocus();
   });
 
+  it('UIC-FORM-1.5 prevents later native invalid events from overriding the first field focus', () => {
+    render(
+      <Form aria-label="Trip">
+        <PeriodField label="Month" isRequired />
+        <input aria-label="Note" required />
+        <input aria-label="Contact" required />
+      </Form>,
+    );
+    const events: Event[] = [];
+    const inputs = screen.getAllByRole('textbox');
+    for (const input of inputs) input.addEventListener('invalid', (event) => events.push(event));
+    act(() => screen.getByRole<HTMLFormElement>('form', { name: 'Trip' }).requestSubmit());
+    expect(events.map((event) => event.defaultPrevented)).toEqual([true, true]);
+    expect(screen.getByRole('button', { name: /^Month/ })).toHaveFocus();
+  });
+
   it('UIC-FORM-1.5 UIC-FORM-1.7 reveals each field once for one native validation pass', async () => {
     const reveal = vi.fn();
     function Probe({ index }: { index: number }) {

@@ -139,6 +139,15 @@ describe('RichMessageComposer', () => {
     });
   });
 
+  it('UIC-MESSAGE-COMPOSER-4.4 writes a line break with Shift+Enter while suggestions are open', async () => {
+    const { user, onSubmit } = renderComposer();
+    await user.click(box());
+    await user.keyboard('@ma');
+    await screen.findByRole('option', { name: 'Maria Santos Design' });
+    await user.keyboard('{Shift>}{Enter}{/Shift}next{Enter}');
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith({ text: '@ma\nnext', tokens: [] });
+  });
+
   it('UIC-MESSAGE-COMPOSER-5.3 inserts a pill and text from the menu at the caret and gives focus back after them', async () => {
     const { user, onSubmit } = renderComposer({
       startControls: (

@@ -171,7 +171,6 @@
 
 .ui-button[data-variant='destructive'][data-focus-visible] {
   border-color: color-mix(in oklab, var(--destructive) 40%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 20%, transparent);
 }
 
 .ui-button[data-variant='ghost']:is([data-hovered], [data-pressed], [aria-expanded='true']) {
@@ -254,14 +253,10 @@
   background: color-mix(in oklab, var(--muted) 50%, transparent);
 }
 
-/* In the dark, the outline keeps its input border under focus and the destructive ring deepens. */
+/* In the dark, the outline keeps its input border under focus. */
 :where(.dark, [data-theme='dark'])
   .ui-button:is([data-variant='tertiary'], [data-variant='outline'])[data-focus-visible]:not(
     [aria-pressed]
   ) {
   border-color: var(--input);
-}
-
-:where(.dark, [data-theme='dark']) .ui-button[data-variant='destructive'][data-focus-visible] {
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 40%, transparent);
 }

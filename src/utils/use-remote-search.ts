@@ -32,6 +32,8 @@ interface RemoteSearchOptions<T> {
   minSearchLength?: number | undefined;
   /** Milliseconds to wait after the last keystroke before searching. Defaults to 240. */
   searchDelay?: number | undefined;
+  /** Searches the empty query on mount unless the caller runs its own initial search. */
+  searchOnMount?: boolean | undefined;
 }
 
 export interface RemoteSearch<T> {
@@ -53,6 +55,8 @@ export interface RemoteSearch<T> {
   search(query: string): void;
   /** Searches `query` at once, as when a list opens or the source changes. */
   searchNow(query: string): void;
+  /** Stops pending work and keeps the results already shown. */
+  cancel(): void;
   /** Loads the next page of the latest results. */
   loadMore(): void;
 }
@@ -134,12 +138,19 @@ export function useRemoteSearch<T>({
   source,
   minSearchLength = 1,
   searchDelay = defaultSearchDelay,
+  searchOnMount = true,
 }: RemoteSearchOptions<T>): RemoteSearch<T> {
   const { state, current, commit } = useSearchState<T>(source);
   const loader = useLatest(load);
   const latestSource = useLatest(source);
   const isCurrent = (scope: AbortController) =>
     current.current.scope === scope && !scope.signal.aborted;
+  const cancel = () => {
+    const from = current.current;
+    if (from.status !== 'loading' && from.status !== 'loadingMore') return;
+    from.scope.abort();
+    commit(createState(from.query, from.source, from.items));
+  };
   const start = async (query: string, isImmediate: boolean) => {
     if (!load) return;
     current.current.scope.abort();
@@ -180,7 +191,7 @@ export function useRemoteSearch<T>({
   };
   // Like a list that loads as it mounts, the empty query searches at once where it is long enough.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the first search runs once
-  useEffect(() => void start('', false), []);
+  useEffect(() => (searchOnMount ? void start('', false) : undefined), []);
   // A search belongs to the source it ran against: another source ends it and its paging.
   useEffect(() => {
     const from = current.current;
@@ -201,6 +212,7 @@ export function useRemoteSearch<T>({
     minSearchLength,
     search: (query) => void start(query, false),
     searchNow: (query) => void start(query, true),
+    cancel,
     loadMore: () => void loadMore(),
   };
 }

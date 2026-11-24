@@ -4,6 +4,28 @@ import { cellSelector, expect, familySelector, test } from './fixtures.js';
 const cell = (id: string) => `${cellSelector(id)} .ui-wizard`;
 
 test.describe('Wizard lab', () => {
+  test('UIC-WIZARD-1.3 waits for steps before offering progression', async ({ page, lab }) => {
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="arriving-steps"]');
+    await expect(demo.getByRole('button', { name: 'Finish' })).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Load steps' }).press('Enter');
+    await expect(demo.getByRole('heading', { name: 'Title' })).toBeVisible();
+    await expect(demo.getByRole('button', { name: 'Next' })).toBeEnabled();
+  });
+
+  test('UIC-WIZARD-2.5 keeps skip marks within their workflow', async ({ page, lab }) => {
+    await lab.open('wizard');
+    const demo = page.locator('[data-lab-demo="replace-workflow"]');
+    const details = demo.locator('.ui-steps__item').first();
+    await demo.getByRole('button', { name: 'Skip' }).press('Enter');
+    await expect(demo.getByRole('heading', { name: 'Review draft' })).toBeFocused();
+    await expect(details).toHaveAttribute('data-status', 'skipped');
+    await demo.getByRole('button', { name: 'Show report review' }).press('Enter');
+    await expect(demo.getByRole('heading', { name: 'Publish report' })).toBeVisible();
+    await expect(details).toHaveText(/Report details/);
+    await expect(details).toHaveAttribute('data-status', 'complete');
+  });
+
   test('UIC-WIZARD-1.1 UIC-WIZARD-1.3 UIC-WIZARD-1.4 shows each step with its buttons and layout', async ({
     page,
     lab,
@@ -214,8 +236,12 @@ test.describe('Wizard lab', () => {
     const attempts = demo.locator('[data-lab-output="attempts"]');
     const street = demo.getByRole('textbox', { name: 'Street' });
     await street.fill('12 Harbour Road');
+    const clockStart = Date.now();
+    await page.clock.install({ time: clockStart });
+    await page.clock.pauseAt(clockStart + 10_000);
     await demo.getByRole('button', { name: 'Next' }).click();
     await expect(wizard).toHaveAttribute('data-pending', 'true');
+    await page.clock.runFor(400);
     await expect(demo.locator('.ui-wizard__error')).toHaveText(
       'The address service is unreachable.',
     );
@@ -225,16 +251,20 @@ test.describe('Wizard lab', () => {
 
     await demo.getByRole('switch', { name: 'Fail the address check' }).press('Space');
     await demo.getByRole('button', { name: 'Next' }).click();
+    await page.clock.runFor(400);
     await expect(demo.getByText('Deliver to 12 Harbour Road.')).toBeVisible();
     await expect(demo.locator('.ui-wizard__error')).toHaveCount(0);
 
     await demo.getByRole('button', { name: 'Place order' }).click();
+    await page.clock.runFor(400);
     await expect(demo.locator('.ui-wizard__error')).toHaveText('The order could not be placed.');
     await expect(wizard).not.toHaveAttribute('data-finished');
     await demo.getByRole('switch', { name: 'Fail the finish' }).press('Space');
     await demo.getByRole('button', { name: 'Place order' }).click();
+    await page.clock.runFor(400);
     await expect(wizard).toHaveAttribute('data-finished', 'true');
     await expect(attempts).toHaveText('check failed, check passed, finish failed, finished');
+    await page.clock.resume();
     await lab.expectAccessible(familySelector('wizard-failure-cases'));
   });
 });

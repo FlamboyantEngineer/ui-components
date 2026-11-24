@@ -46,6 +46,50 @@ function Controlled(props: Omit<MessageComposerProps, 'value' | 'onChange'>) {
 }
 
 describe('MessageComposer', () => {
+  it('UIC-MESSAGE-COMPOSER-1.1 fits a completion to the native limit without changing the suffix', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const completions = createTriggerCompletions([
+      {
+        character: '@',
+        getCompletions: () => [{ label: 'Alexandra', insertText: '@Al👩‍🌾 ' }],
+      },
+    ]);
+    render(
+      <MessageComposer
+        defaultValue="@a tail"
+        maxLength={10}
+        completions={completions}
+        onChange={onChange}
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{Home}{ArrowRight}{ArrowRight}');
+    await user.click(await screen.findByRole('option', { name: 'Alexandra' }));
+    expect(input()).toHaveValue('@Al tail');
+    expect(input().selectionStart).toBe(3);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('@Al tail');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-1.2 leaves Shift+Enter to the draft and keeps send from its host', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onHostEnter = vi.fn();
+    render(
+      <div onKeyDown={(event) => event.key === 'Enter' && onHostEnter(event.shiftKey)}>
+        <MessageComposer completions={people} onSubmit={onSubmit} />
+      </div>,
+    );
+    await user.type(input(), 'mar');
+    await screen.findByRole('option', { name: 'Maria Santos' });
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(input()).toHaveValue('mar\n');
+    expect(onHostEnter).toHaveBeenCalledExactlyOnceWith(true);
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('mar\n');
+    expect(onHostEnter).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-COMPLETION-LIST-2.6 drops completions for a draft the host replaced', async () => {
     const { source, answer } = createDeferredCompletions();
     const changes: string[] = [];

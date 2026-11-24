@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ListBox, ListBoxItem, type Selection } from '../../primitives/index.js';
 import { useDevicePixelRatio } from '../../utils/use-device-pixel-ratio.js';
 import { useElementSize } from '../../utils/use-element-size.js';
-import { useInView } from '../../utils/use-in-view.js';
 import { capCanvasPixels, drawPage } from './page-bitmap.js';
 import { toPageRotation } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
+import { type NearPages, useNearPages } from './use-near-pages.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
 interface PdfViewerThumbnailsProps<
@@ -20,11 +20,14 @@ interface PdfViewerThumbnailsProps<
   view: LoadedPdf<V, C>;
   currentPage: number;
   onPageChange(pageIndex: number): void;
+  scrollerRef: RefObject<HTMLElement | null>;
 }
 
 interface PdfThumbnailProps<V extends PdfViewport, C extends PdfTextContent> {
   view: LoadedPdf<V, C>;
   pageIndex: number;
+  isNear: boolean;
+  registerPage: NearPages['registerPage'];
 }
 
 const noSize = { width: 0, height: 0 };
@@ -42,16 +45,23 @@ function readSelectedPage(keys: Selection): number | null {
 function PdfThumbnailCanvas<V extends PdfViewport, C extends PdfTextContent>({
   view,
   pageIndex,
+  isNear,
+  registerPage,
 }: PdfThumbnailProps<V, C>) {
   // The item mounts with the canvas, inside React Aria's collection, so both are held in state.
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  const item = canvas?.parentElement ?? null;
-  const isInView = useInView(item, { scrollOffset: 1 });
-  const width = useElementSize(item)?.width ?? 0;
+  const attachCanvas = useCallback(
+    (element: HTMLCanvasElement | null) => {
+      setCanvas(element);
+      registerPage(pageIndex, element?.parentElement ?? null);
+    },
+    [pageIndex, registerPage],
+  );
+  const width = useElementSize(canvas?.parentElement)?.width ?? 0;
   const page = view.sizes[pageIndex] ?? noSize;
   const height = page.width > 0 ? (width * page.height) / page.width : 0;
   const ratio = useDevicePixelRatio(canvas);
-  const pixels = isInView ? capCanvasPixels(width, height, ratio) : noSize;
+  const pixels = isNear ? capCanvasPixels(width, height, ratio) : noSize;
 
   useEffect(() => {
     const pdfPage = view.pages[pageIndex];
@@ -64,7 +74,7 @@ function PdfThumbnailCanvas<V extends PdfViewport, C extends PdfTextContent>({
   return (
     <canvas
       {...hooks.slot('thumbnail-canvas')}
-      ref={setCanvas}
+      ref={attachCanvas}
       width={pixels.width}
       height={pixels.height}
       style={{ width, height }}
@@ -78,8 +88,10 @@ export function PdfViewerThumbnails<V extends PdfViewport, C extends PdfTextCont
   view,
   currentPage,
   onPageChange,
+  scrollerRef,
 }: PdfViewerThumbnailsProps<V, C>) {
   const strings = useUiStrings();
+  const { nearPages, registerPage } = useNearPages(scrollerRef);
   return (
     <ListBox
       aria-label={strings.pages}
@@ -100,7 +112,12 @@ export function PdfViewerThumbnails<V extends PdfViewport, C extends PdfTextCont
           aria-label={strings.pageNumber(pageIndex + 1)}
           className={hooks.slotClass('thumbnail')}
         >
-          <PdfThumbnailCanvas view={view} pageIndex={pageIndex} />
+          <PdfThumbnailCanvas
+            view={view}
+            pageIndex={pageIndex}
+            isNear={nearPages?.has(pageIndex) ?? false}
+            registerPage={registerPage}
+          />
           <span {...hooks.slot('thumbnail-label')}>{pageIndex + 1}</span>
         </ListBoxItem>
       ))}

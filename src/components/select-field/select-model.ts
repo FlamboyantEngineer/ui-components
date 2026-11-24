@@ -1,6 +1,6 @@
 'use client';
 
-import { type KeyboardEvent, type Ref, useId, useState } from 'react';
+import { type KeyboardEvent, type Ref, useId, useMemo, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
@@ -16,7 +16,7 @@ import {
   type SelectFieldItem,
   toSelectKeys,
 } from './select-options.js';
-import { type SelectFieldLoader, useSelectSearch } from './select-search.js';
+import type { SelectSearch } from './select-search.js';
 
 /** A select field's value with its selection mode erased. */
 export type SelectKeysValue = Key | Key[] | null;
@@ -26,9 +26,7 @@ export interface SelectConfig {
   placeholder?: string | undefined;
   emptyLabel?: string | undefined;
   filterable?: boolean | undefined;
-  loadItems?: SelectFieldLoader | undefined;
-  minSearchLength?: number | undefined;
-  searchDelay?: number | undefined;
+  search?: SelectSearch | undefined;
   isClearable?: boolean | undefined;
   maxValues?: number | undefined;
   renderOption?: SelectFieldOptionRenderer | undefined;
@@ -57,13 +55,17 @@ function isSeedKey(event: KeyboardEvent<HTMLElement>): boolean {
 // One empty set for every list that blocks nothing, so the rows that depend on it stay cached.
 const noBlockedKeys: ReadonlySet<Key> = new Set();
 
+function isAtSelectionLimit(count: number, maxValues = Infinity): boolean {
+  return count >= maxValues;
+}
+
 /** The options a multiple select at its `maxValues` blocks: every one it has not chosen. */
 function findBlockedKeys(
   keys: readonly Key[],
   known: readonly { id: Key }[],
   maxValues: number | undefined,
 ): ReadonlySet<Key> {
-  if (maxValues === undefined || keys.length < maxValues) return noBlockedKeys;
+  if (!isAtSelectionLimit(keys.length, maxValues)) return noBlockedKeys;
   const chosen = new Set(keys);
   return new Set(known.map((option) => option.id).filter((key) => !chosen.has(key)));
 }
@@ -79,11 +81,15 @@ function toChosenKeys(value: SelectKeysValue | undefined, known: readonly { id: 
  */
 export function useSelectModel({ state, isMultiple, ...config }: SelectModelProps) {
   const emptyKey = useId();
-  const search = useSelectSearch(config);
-  const isRemote = Boolean(config.loadItems);
+  const { options, search } = config;
+  const seen = search?.seen;
+  const remote = search?.isRemote ? search : null;
   // The latest loader result of an option wins over earlier ones and over the seed `options`, so a
   // row, the trigger and a chip draw the same version of it.
-  const known = mergeSelectOptions(search.seen, flattenPickerItems(config.options));
+  const known = useMemo(
+    () => mergeSelectOptions(seen ?? [], flattenPickerItems(options)),
+    [seen, options],
+  );
   const keys = toChosenKeys(state.value, known);
   const chosen = resolveSelectOptions(keys, known);
   const diff = state.isDirty
@@ -93,11 +99,11 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
     config.emptyLabel && !isMultiple
       ? { id: emptyKey, label: config.emptyLabel, isMissing: false }
       : null;
-  const listed = isRemote ? mergeSelectOptions(chosen, search.results) : config.options;
+  const listed = remote ? mergeSelectOptions(chosen, remote.results) : options;
   const removed = resolveSelectOptions(diff.removed, known);
   const blockedKeys = isMultiple ? findBlockedKeys(keys, known, config.maxValues) : noBlockedKeys;
   return {
-    search: isRemote ? search : null,
+    search: remote,
     known,
     keys,
     chosen,
@@ -106,7 +112,7 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
     removed,
     blockedKeys,
     /** A multiple select holds `maxValues` keys or more, whatever options are known. */
-    isFull: isMultiple && config.maxValues !== undefined && keys.length >= config.maxValues,
+    isFull: isMultiple && isAtSelectionLimit(keys.length, config.maxValues),
     listed: empty ? [empty, ...listed] : listed,
     /** A single select's chosen option, the empty option standing for no value. */
     single: isMultiple ? null : (chosen[0] ?? empty),

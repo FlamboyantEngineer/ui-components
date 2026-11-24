@@ -107,6 +107,20 @@ describe('Wizard', () => {
     expect(screen.getByRole('heading', { name: 'City' }).tagName).toBe('H5');
   });
 
+  it('UIC-WIZARD-1.3 offers no progression until there is a step', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    const { rerender } = render(<Wizard steps={[]} onCancel={onCancel} />);
+    expect(screen.queryByRole('button', { name: 'Finish' })).not.toBeInTheDocument();
+    await user.click(action('Cancel'));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+
+    rerender(<Wizard steps={tripSteps()} />);
+    expect(action('Next')).toBeEnabled();
+    rerender(<Wizard steps={[]} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('UIC-WIZARD-1.3 shows the buttons each step allows', async () => {
     const onCancel = vi.fn();
     const { container } = renderWizard({ onCancel, finishLabel: 'Book trip' });
@@ -613,6 +627,28 @@ describe('Wizard', () => {
     expect(statuses()).toEqual(['complete', 'skipped', 'current']);
     await userEvent.click(screen.getByRole('button', { name: 'Note Skipped Optional' }));
     await userEvent.click(action('Next'));
+    expect(statuses()).toEqual(['complete', 'complete', 'current']);
+  });
+
+  it('UIC-WIZARD-2.5 keeps skipped steps on equivalent renders and clears them for a new workflow', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderWizard({ defaultCurrentKey: 'note' });
+    await user.click(action('Skip'));
+    expect(statuses()).toEqual(['complete', 'skipped', 'current']);
+
+    rerender(<Wizard steps={tripSteps()} defaultCurrentKey="note" />);
+    expect(statuses()).toEqual(['complete', 'skipped', 'current']);
+
+    const report = tripSteps({
+      note: { label: 'Required note', isOptional: false },
+      summary: { id: 'report' },
+    });
+    rerender(<Wizard steps={report} currentKey="report" />);
+    expect(statuses()).toEqual(['complete', 'complete', 'current']);
+    await user.click(action('Finish'));
+    expect(statuses()).toEqual(['complete', 'complete', 'complete']);
+
+    rerender(<Wizard steps={tripSteps()} currentKey="summary" />);
     expect(statuses()).toEqual(['complete', 'complete', 'current']);
   });
 

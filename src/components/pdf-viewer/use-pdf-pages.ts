@@ -140,9 +140,8 @@ function useScrollAnchor({
   const captureAnchor = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return null;
-    const pages = elements.current;
-    const near = pages.size === pageCount ? nearPagesRef.current : null;
-    const position = measurePdfScrollPosition(scroller, pages, near);
+    const query = { pageCount, nearPages: nearPagesRef.current };
+    const position = measurePdfScrollPosition(scroller, elements.current, query);
     const page = position.mostVisible;
     if (page) {
       anchor.current = measureAnchor(scroller, position.view, page);

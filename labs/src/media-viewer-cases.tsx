@@ -45,7 +45,14 @@ export function FailingImages() {
       name: 'Expired link.svg',
       type: 'image/svg+xml',
     },
-    { id: 'missing', src: 'build/samples/missing.svg', name: 'Missing.svg', type: 'image/svg+xml' },
+    {
+      id: 'missing',
+      src: 'build/samples/missing.svg',
+      name: 'Missing.svg',
+      type: 'image/svg+xml',
+      thumbnailUrl: landscape('thumbnail=missing'),
+    },
+    { id: 'notes', src: 'notes.txt', name: 'Notes.txt', type: 'text/plain' },
   ];
   return (
     <>

@@ -34,6 +34,26 @@ async function width(locator: Locator): Promise<number> {
 }
 
 test.describe('Select Field lab', () => {
+  test('UIC-SELECT-FIELD-1.2 UIC-SELECT-FIELD-1.3 accepts a remote empty-text ID as a required choice', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const form = page.getByRole('form', { name: 'Required category' });
+    const trigger = form.getByRole('button', { name: /Category/ });
+    const submit = form.getByRole('button', { name: 'Save category' });
+    const status = form.locator('[data-lab-output="Category submission"]');
+    await trigger.click();
+    await page.getByRole('option', { name: 'Unassigned' }).click();
+    await submit.click();
+    await expect(status).toHaveText('Saved');
+    await trigger.click();
+    await page.getByRole('option', { name: 'No selection' }).click();
+    await submit.click();
+    await expect(status).toHaveText('Not saved');
+    await expect(form.getByText('A value is required.')).toBeVisible();
+  });
+
   test('UIC-SELECT-FIELD-3.4 mixed summaries retain checked common options', async ({
     page,
     lab,

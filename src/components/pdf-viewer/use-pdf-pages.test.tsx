@@ -59,6 +59,44 @@ describe('usePdfPages', () => {
     expect(host.scroller.scrollLeft).toBe(50);
   });
 
+  it('UIC-PDF-VIEWER-1.7 UIC-PDF-VIEWER-3.3 finds a distant scroll jump and restores its zoom anchor', () => {
+    const host = createScroller();
+    const scrollerRef = { current: host.scroller };
+    const loaded = {};
+    const pageCount = 1000;
+    const { result } = renderHook(() => usePdfPages({ scrollerRef, document: loaded, pageCount }));
+    let scale = 1;
+    let reads = 0;
+    act(() => {
+      for (let index = 0; index < pageCount; index += 1) {
+        const page = host.scroller.ownerDocument.createElement('div');
+        page.getBoundingClientRect = () => {
+          reads += 1;
+          return DOMRect.fromRect({
+            y: index * 240 * scale - host.scroller.scrollTop,
+            width: 100,
+            height: 200 * scale,
+          });
+        };
+        result.current.registerPage(index, page);
+      }
+    });
+
+    const pageIndex = pageCount - 1;
+    const position = pageIndex * 240 + 50;
+    host.scroller.scrollTop = position;
+    act(() => {
+      result.current.handleScroll();
+      host.callbacks[0]?.(0);
+    });
+    expect(result.current.currentPage).toBe(pageIndex);
+    expect(reads).toBeLessThan(25);
+
+    scale = 2;
+    result.current.restoreAnchor();
+    expect(host.scroller.scrollTop).toBe(position * 2);
+  });
+
   it('UIC-PDF-VIEWER-2.3 cancels frame zero on unmount and ignores a late callback', () => {
     const host = createScroller();
     const scrollerRef = { current: host.scroller };

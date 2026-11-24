@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useToday } from '../../core/clock.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps, SelectionProps } from '../../core/events.js';
@@ -17,10 +17,10 @@ import type {
 } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import type { TimelineItemMenu } from './timeline-item-menu.js';
-import { layoutTimeline } from './timeline-layout.js';
 import type { TimelineRowColumnEntry } from './timeline-row-columns.js';
-import { collectGroupKeys, flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
+import { collectGroupKeys, type TimelineRow } from './timeline-rows.js';
 import { TimelineTable } from './timeline-table.js';
+import { useTimelineChart } from './use-timeline-chart.js';
 
 export type {
   TimelineDependency,
@@ -153,13 +153,20 @@ function useRowExpansion(props: ExpansionProps, rows: readonly TimelineRow[]) {
   const { expandedKeys, defaultExpandedKeys, onExpandedChange } = props;
   const followsGroups = expandedKeys === undefined && defaultExpandedKeys === undefined;
   const [collapsed, setCollapsed] = useState<ReadonlySet<Key>>(() => new Set());
+  const controlled = useMemo(
+    () => (expandedKeys === undefined ? undefined : new Set(expandedKeys)),
+    [expandedKeys],
+  );
   const [stored, setStored] = useControllableState<ReadonlySet<Key>>(
-    expandedKeys === undefined ? undefined : new Set(expandedKeys),
+    controlled,
     new Set(defaultExpandedKeys),
     onExpandedChange ? (keys) => onExpandedChange(new Set(keys)) : undefined,
   );
-  const groups = collectGroupKeys(rows);
-  const expanded = followsGroups ? new Set(groups.filter((key) => !collapsed.has(key))) : stored;
+  const expanded = useMemo(
+    () =>
+      followsGroups ? new Set(collectGroupKeys(rows).filter((key) => !collapsed.has(key))) : stored,
+    [rows, followsGroups, collapsed, stored],
+  );
   const change = (id: Key, isExpanded: boolean) => {
     const next = new Set(expanded);
     if (isExpanded) next.add(id);
@@ -178,13 +185,7 @@ function useRowExpansion(props: ExpansionProps, rows: readonly TimelineRow[]) {
 }
 
 const noColumns: readonly TimelineRowColumnEntry[] = [];
-
-/** Each row's own items, in item order. */
-function groupByRow(items: readonly TimelineItem[]) {
-  const byRow = new Map<Key, TimelineItem[]>();
-  for (const item of items) byRow.set(item.rowId, [...(byRow.get(item.rowId) ?? []), item]);
-  return byRow;
-}
+const noDependencies: readonly TimelineDependency[] = [];
 
 /** How the chart selects, edits and expands, from the timeline's state and callbacks. */
 function toChartActions(
@@ -213,7 +214,7 @@ function toChartActions(
 export function Timeline({
   rows,
   items,
-  dependencies = [],
+  dependencies = noDependencies,
   scale = 'week',
   range,
   today,
@@ -244,9 +245,10 @@ export function Timeline({
     onDraft: setDraft,
     itemMenu: { entries: itemMenu, onAction: onItemMenuAction },
   });
-  const visibleRows = flattenTimelineRows(rows, expansion.expanded);
-  const laidOut = layoutTimeline({
-    rows: visibleRows,
+  const chart = useTimelineChart({
+    view,
+    rows,
+    expanded: expansion.expanded,
     items,
     draft,
     dependencies,
@@ -255,6 +257,7 @@ export function Timeline({
     today: day,
     locale,
     rowHeight,
+    hasRowColumns: rowColumns.length > 0,
   });
   return (
     <div
@@ -262,7 +265,7 @@ export function Timeline({
       aria-label={named ? undefined : strings.timeline}
       {...elementProps}
       {...hooks.root({ className, props: elementProps, data: { scale, view } })}
-      aria-busy={(view === 'chart' && !laidOut) || undefined}
+      aria-busy={(view === 'chart' && !chart) || undefined}
     >
       {view === 'table' ? (
         <TimelineTable
@@ -274,17 +277,14 @@ export function Timeline({
           selectedKeys={selection.selected}
           onSelectionChange={selection.replace}
         />
-      ) : laidOut ? (
+      ) : chart ? (
         <TimelineChart
-          axis={laidOut.axis}
+          {...chart}
           scale={scale}
-          rows={visibleRows}
-          layout={laidOut.layout}
           rowHeight={rowHeight}
           today={day}
           actions={actions}
           rowColumns={rowColumns}
-          itemsByRow={groupByRow(items)}
         />
       ) : null}
     </div>

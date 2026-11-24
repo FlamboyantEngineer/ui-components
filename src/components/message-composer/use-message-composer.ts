@@ -2,6 +2,7 @@
 
 import { type RefObject, type TextareaHTMLAttributes, useRef } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { fitText } from '../../utils/fit-text.js';
 import { useAutoGrow } from '../../utils/use-auto-grow.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { type TextCompletions, useTextCompletions } from '../completion-list/completion-list.js';
@@ -46,17 +47,6 @@ export function toComposerLabelling(props: MessageComposerSharedProps, fallback:
     'aria-describedby': props['aria-describedby'],
     'aria-details': props['aria-details'],
   };
-}
-
-/** The longest start of `text`, in whole characters, that fits in `room` UTF-16 units. */
-function fitText(text: string, room: number): string {
-  if (text.length <= room) return text;
-  let fitted = '';
-  for (const character of text) {
-    if (fitted.length + character.length > room) break;
-    fitted += character;
-  }
-  return fitted;
 }
 
 /**
@@ -141,6 +131,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
       if (model?.handleKeyDown(event) || model?.revealOnTab(event)) return;
       if (!runComposerKey(event.nativeEvent, actions)) return props.onKeyDown?.(event);
       event.preventDefault();
+      event.stopPropagation();
     },
     onKeyUp: (event) => {
       model?.handleKeyUp(event);

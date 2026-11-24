@@ -27,7 +27,7 @@ import { ChevronDownGlyph, MoreVerticalGlyph, PlusGlyph } from '../../src/core/g
 import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, mountLab, StateMatrix } from './chrome/index.js';
 import { ChipDescenders } from './control-sizes-chips.js';
-import { PeoplePickerSizes, PinCellGeometry } from './control-sizes-more.js';
+import { PeoplePickerSizes, PinCellGeometry, ScopedControlDensity } from './control-sizes-more.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
 const contents = ['short', 'long', 'large type'] as const;
@@ -275,5 +275,6 @@ mountLab(
     <PeoplePickerSizes />
     <PinCellGeometry />
     <ChipDescenders />
+    <ScopedControlDensity />
   </>,
 );

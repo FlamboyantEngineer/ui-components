@@ -120,6 +120,22 @@ test.describe('Form lab', () => {
     await expect(output(page, 'Newsletter')).toHaveText('email=ada@example.com');
   });
 
+  test('UIC-FORM-1.5 retains focus on the first invalid field in a mixed native form', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('form');
+    const form = page.getByRole('form', { name: 'Schedule a visit' });
+    const firstDateSegment = form.getByRole('spinbutton').first();
+    const submit = form.getByRole('button', { name: 'Schedule' });
+    await submit.click();
+    await expect(firstDateSegment).toBeFocused();
+    await expect(output(page, 'Visit')).toHaveText('none');
+    await page.keyboard.type('04122026');
+    await submit.click();
+    await expect(form.getByRole('textbox', { name: 'Contact name' })).toBeFocused();
+  });
+
   test('UIC-FIELD-10.1 UIC-FIELD-10.2 disables a fieldset whose fields then never block', async ({
     page,
     lab,

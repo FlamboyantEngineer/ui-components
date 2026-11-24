@@ -283,6 +283,7 @@ test.describe('Timeline lab', () => {
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Shift+ArrowRight');
+    await expect(end.getByRole('status')).toHaveText('1');
     const moved = requireDefined(await wrap.boundingBox());
     expect(Math.round(moved.x - before.x)).toBe(32);
     expect(Math.round(moved.width)).toBe(3 * 32);
@@ -295,6 +296,47 @@ test.describe('Timeline lab', () => {
     });
     await page.mouse.up();
     expect(requireDefined(await wrap.boundingBox()).x).toBeCloseTo(moved.x, 0);
+    await expect(end.getByRole('status')).toHaveText('1');
+  });
+
+  test('UIC-TIMELINE-1.3 keeps the five-year day scale through selection changes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('timeline');
+    const demo = page.locator('[data-lab-demo="long-range"]');
+    await demo.getByRole('button', { name: 'Show five-year plan' }).click();
+    await expect(demo.locator('.ui-timeline__gridline')).toHaveCount(1826);
+    const bar = demo.getByRole('button', { name: 'Shopping' });
+    const formats = await bar.evaluate(async (element) => {
+      const prototype = Intl.DateTimeFormat.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, 'format');
+      const getFormat = descriptor?.get;
+      if (!descriptor || !getFormat || !(element instanceof HTMLButtonElement)) {
+        throw new Error('The date formatter or timeline button is unavailable');
+      }
+      let calls = 0;
+      Object.defineProperty(prototype, 'format', {
+        ...descriptor,
+        get(this: Intl.DateTimeFormat) {
+          const format = getFormat.call(this) as Intl.DateTimeFormat['format'];
+          return (date?: number | Date) => {
+            const options = this.resolvedOptions();
+            if (!options.dateStyle && options.timeZone === 'UTC') calls += 1;
+            return format(date);
+          };
+        },
+      });
+      try {
+        element.click();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        return calls;
+      } finally {
+        Object.defineProperty(prototype, 'format', descriptor);
+      }
+    });
+    await expect(bar).toHaveAttribute('aria-pressed', 'true');
+    expect(formats).toBe(0);
   });
 
   test('UIC-TIMELINE-2.2 UIC-TIMELINE-2.4 edits by keyboard and selects items', async ({

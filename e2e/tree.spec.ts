@@ -318,6 +318,9 @@ test.describe('Tree lab', () => {
     const field = area.getByRole('searchbox', { name: 'Filter places' });
     await field.fill('ghana');
     expect(await names()).toEqual(['Africa', 'Ghana']);
+    await field.fill('os');
+    await expect(tree.getByRole('row', { name: 'Oslo' })).toBeVisible();
+    await field.fill('ghana');
     await tree.getByRole('row', { name: 'Ghana' }).focus();
     await page.keyboard.press('ArrowRight');
     expect(await names()).toEqual(['Africa', 'Ghana', 'Accra']);
@@ -367,6 +370,9 @@ test.describe('Tree lab', () => {
     await area.getByRole('button', { name: "Finish East's loads" }).click();
     await expect(tree.getByRole('row', { name: 'East town 3' })).toBeVisible();
     await expect(tree.getByRole('status')).toHaveCount(0);
+    await area.getByRole('button', { name: 'Refresh regions' }).press('Enter');
+    await expect(tree.getByRole('row', { name: 'East town 3' })).toBeVisible();
+    await expect(requests).toHaveText('2');
   });
 
   test('UIC-TREE-5.2 UIC-TREE-6.1 filters and selects through nested branches', async ({

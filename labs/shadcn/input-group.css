@@ -8,7 +8,7 @@
 
 .ui-input-group {
   gap: 0;
-  border-color: var(--input);
+  border-color: var(--ref-field-border);
   border-radius: var(--ref-radius);
   background: transparent;
   transition:

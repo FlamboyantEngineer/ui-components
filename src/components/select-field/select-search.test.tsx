@@ -1,9 +1,11 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import type { FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { EditGlyph } from '../../core/glyphs.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { Form } from '../form/form.js';
 import { SelectField, type SelectFieldLoader, type SelectFieldOption } from './select-field.js';
 
 const catalogue: SelectFieldOption[] = [
@@ -38,6 +40,45 @@ function search(text: string) {
 }
 
 describe('SelectField search', () => {
+  it('UIC-SELECT-FIELD-1.2 UIC-SELECT-FIELD-1.3 UIC-SELECT-FIELD-5.3 distinguishes a remote empty-text id from the empty choice', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+    const loadItems: SelectFieldLoader = async (query) =>
+      'unassigned'.includes(query) ? [{ id: '', label: 'Unassigned' }] : [];
+    render(
+      <Form aria-label="Choose a category" onSubmit={onSubmit}>
+        <SelectField
+          label="Category"
+          isRequired
+          name="category"
+          emptyLabel="No selection"
+          options={[]}
+          loadItems={loadItems}
+          minSearchLength={0}
+          searchDelay={0}
+        />
+        <button type="submit">Save</button>
+      </Form>,
+    );
+    const submit = screen.getByRole('button', { name: 'Save' });
+    await user.click(trigger(/Category/));
+    await user.click(await screen.findByRole('option', { name: 'Unassigned' }));
+    await user.click(submit);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(new FormData(screen.getByRole<HTMLFormElement>('form')).get('category')).toBe('');
+
+    await user.click(trigger(/Category/));
+    search('missing');
+    expect(await screen.findByRole('option', { name: 'Unassigned' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await user.click(screen.getByRole('option', { name: 'No selection' }));
+    await user.click(submit);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('A value is required.')).toBeInTheDocument();
+  });
+
   it('UIC-SELECT-FIELD-5.1 searches once the query is long enough and typing pauses', async () => {
     const user = userEvent.setup();
     const loadItems = vi.fn<SelectFieldLoader>(async (query) => searchCatalogue(query));

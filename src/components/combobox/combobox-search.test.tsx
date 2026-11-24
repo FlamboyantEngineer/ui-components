@@ -51,6 +51,40 @@ function createDeferredLoader() {
 afterEach(() => vi.useRealTimers());
 
 describe('Combobox remote search', () => {
+  it('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.6 searches the initially open text after Strict Mode replays effects', async () => {
+    const { calls, loadItems } = createDeferredLoader();
+    render(<Combobox label="City" defaultInputValue="par" defaultOpen loadItems={loadItems} />, {
+      reactStrictMode: true,
+    });
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(calls.map(({ query, signal }) => [query, signal.aborted])).toEqual([
+      ['par', true],
+      ['par', false],
+    ]);
+    act(() => calls.at(-1)?.resolve(findCities('par')));
+    expect(await screen.findByRole('option', { name: 'Paris' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMBOBOX-5.1 aborts a pending search when the reader closes the list and searches again on opening', async () => {
+    const user = userEvent.setup();
+    const { calls, loadItems } = createDeferredLoader();
+    render(<Combobox label="City" loadItems={loadItems} searchDelay={0} />);
+    await user.click(input());
+    await setText(user, 'par');
+    await waitFor(() => expect(calls).toHaveLength(1));
+    await user.keyboard('{Escape}');
+    expect(input()).toHaveAttribute('aria-expanded', 'false');
+    expect(calls[0]?.signal.aborted).toBe(true);
+    await act(async () => calls[0]?.resolve(findCities('lis')));
+    await user.click(screen.getByRole('button', { name: /Show suggestions/ }));
+    await setText(user, 'par');
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(calls[1]?.query).toBe('par');
+    expect(screen.queryByRole('option', { name: 'Lisbon' })).not.toBeInTheDocument();
+    act(() => calls[1]?.resolve(findCities('par')));
+    expect(await screen.findByRole('option', { name: 'Paris' })).toBeInTheDocument();
+  });
+
   it('UIC-COMBOBOX-3.1 UIC-COMBOBOX-5.1 retains typed search text while a controlled multiple selection stays unchanged', async () => {
     const user = userEvent.setup();
     const value: Key[] = [];

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
@@ -464,31 +464,70 @@ export function ControlledEditor() {
  * puts the note back. Applying a link from the toolbar submits nothing.
  */
 export function FormEditor() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [value, setValue] = useState(shortNote);
+  const [extra, setExtra] = useState<RichTextDocument>(() => ({
+    type: 'doc',
+    content: [paragraph(text('Bring a basket.'))],
+  }));
+  const [snapshot, setSnapshot] = useState('');
   const [submitted, setSubmitted] = useState('none');
   const [submits, setSubmits] = useState(0);
+  useLayoutEffect(() => {
+    const form = formRef.current;
+    // Read the native form at this commit, before returning to the browser.
+    if (form) setSnapshot(JSON.stringify(new FormData(form).getAll('notes')));
+  }, [extra, value]);
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        setSubmitted(String(new FormData(event.currentTarget).get('notes')));
-        setSubmits((count) => count + 1);
-      }}
-    >
+    <>
+      <form
+        id="rich-text-form"
+        ref={formRef}
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSubmitted(String(new FormData(event.currentTarget).get('notes')));
+          setSubmits((count) => count + 1);
+        }}
+      >
+        <RichTextEditor
+          label="Notes"
+          name="notes"
+          defaultValue={shortNote}
+          value={value}
+          onChange={setValue}
+          data-lab-editor="form"
+          toolbar={<FormatToolbar />}
+        />
+        <input name="notes" type="hidden" value="revision note" />
+        <button type="submit">Submit</button> <button type="reset">Reset</button>
+        <button
+          type="button"
+          onClick={() => {
+            setValue({ type: 'doc', content: [paragraph(text('Pick the plums on Saturday.'))] });
+            setExtra({ type: 'doc', content: [paragraph(text('Bring two baskets.'))] });
+          }}
+        >
+          Replace both notes
+        </button>
+        <p>
+          Submitted: <output data-lab-output="form">{submitted}</output>
+        </p>
+        <p>
+          Submits: <output data-lab-output="form-submits">{submits}</output>
+        </p>
+        <p>
+          Form values after the latest edit:{' '}
+          <output data-lab-output="form-snapshot">{snapshot}</output>
+        </p>
+      </form>
       <RichTextEditor
-        label="Notes"
+        label="Extra note"
         name="notes"
-        defaultValue={shortNote}
-        data-lab-editor="form"
-        toolbar={<FormatToolbar />}
+        form="rich-text-form"
+        value={extra}
+        onChange={setExtra}
       />
-      <button type="submit">Submit</button> <button type="reset">Reset</button>
-      <p>
-        Submitted: <output data-lab-output="form">{submitted}</output>
-      </p>
-      <p>
-        Submits: <output data-lab-output="form-submits">{submits}</output>
-      </p>
-    </form>
+    </>
   );
 }
 

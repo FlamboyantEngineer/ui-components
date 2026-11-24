@@ -1,18 +1,16 @@
 'use client';
 
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useLocale } from '../../primitives/index.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import {
-  resolveScaleCells,
   type TimelineAxis,
   type TimelineItem,
   type TimelineItemChange,
   type TimelineScale,
-  timelineScales,
   toInlineStart,
 } from './timeline-geometry.js';
 import { TimelineHeader } from './timeline-header.js';
@@ -26,6 +24,7 @@ import {
   TimelineRowValues,
 } from './timeline-row-columns.js';
 import type { VisibleRow } from './timeline-rows.js';
+import type { TimelineChartModel } from './use-timeline-chart.js';
 
 /** How the chart selects items, edits them and expands groups. */
 export interface TimelineChartActions {
@@ -39,18 +38,14 @@ export interface TimelineChartActions {
   itemMenu: TimelineItemMenuOptions;
 }
 
-interface TimelineChartProps {
-  axis: TimelineAxis;
+interface TimelineChartProps extends TimelineChartModel {
   scale: TimelineScale;
-  rows: readonly VisibleRow[];
-  layout: TimelineLayout;
   rowHeight: number;
   /** The day the today marker marks, or `null` for no marker. */
   today: string | null;
   actions: TimelineChartActions;
-  /** The row properties beside the row names, and each row's own items they read. */
+  /** The row properties beside the row names. */
   rowColumns: readonly TimelineRowColumnEntry[];
-  itemsByRow: ReadonlyMap<Key, readonly TimelineItem[]>;
 }
 
 interface RowListProps extends Pick<TimelineChartProps, 'rowColumns' | 'itemsByRow'> {
@@ -95,7 +90,7 @@ function TimelineRowList({
           </span>
           <TimelineRowValues
             columns={rowColumns}
-            context={{ row, items: itemsByRow.get(row.id) ?? [], isGroup: hasChildren }}
+            context={{ row, items: itemsByRow?.get(row.id) ?? [], isGroup: hasChildren }}
             predecessors={layout.predecessors}
           />
         </div>
@@ -105,18 +100,17 @@ function TimelineRowList({
 }
 
 /** Gridlines at the starts of the scale's units and the today marker, behind the rows. */
-function TimelineGuides({
+const TimelineGuides = memo(function TimelineGuides({
   axis,
-  scale,
+  cells,
   today,
-}: Pick<TimelineChartProps, 'axis' | 'scale' | 'today'>) {
+}: Pick<TimelineChartProps, 'axis' | 'cells' | 'today'>) {
   const isRtl = useLocale().direction === 'rtl';
-  const plan = timelineScales[scale];
-  const majorStarts = new Set(resolveScaleCells(axis, plan.major).map((cell) => cell.start));
+  const majorStarts = new Set(cells.major.map((cell) => cell.start));
   const isTodayShown = today !== null && today >= axis.range.start && today <= axis.range.end;
   return (
     <>
-      {resolveScaleCells(axis, plan.minor).map((cell) => (
+      {cells.minor.map((cell) => (
         <span
           key={cell.start}
           {...hooks.slot('gridline', { major: majorStarts.has(cell.start) })}
@@ -138,7 +132,7 @@ function TimelineGuides({
       ) : null}
     </>
   );
-}
+});
 
 /** The dependency connectors, drawn behind the items. */
 function TimelineConnectors({
@@ -181,6 +175,7 @@ function TimelineConnectors({
  */
 export function TimelineChart({
   axis,
+  cells,
   scale,
   rows,
   layout,
@@ -202,7 +197,7 @@ export function TimelineChart({
         >
           <TimelineRowHeadings columns={rowColumns} />
         </div>
-        <TimelineHeader axis={axis} scale={scale} />
+        <TimelineHeader axis={axis} scale={scale} cells={cells} />
         <TimelineRowList
           rows={rows}
           layout={layout}
@@ -221,7 +216,7 @@ export function TimelineChart({
             height: rows.length * rowHeight,
           }}
         >
-          <TimelineGuides axis={axis} scale={scale} today={today} />
+          <TimelineGuides axis={axis} cells={cells} today={today} />
           <TimelineConnectors axis={axis} layout={layout} height={rows.length * rowHeight} />
           {rows.map(({ row }, index) => (
             <div
