@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as core from '../core/index.js';
-import { type ClipboardWriter, copyRichText, copyText } from './clipboard.js';
+import { type ClipboardWriter, copyImage, copyRichText, copyText } from './clipboard.js';
 
 interface CopyCapture {
   data: Record<string, string>;
@@ -222,5 +222,60 @@ describe('clipboard entry', () => {
   it('UIC-CLIPBOARD-1.6 is exported from the core entry', () => {
     expect(core.copyText).toBe(copyText);
     expect(core.copyRichText).toBe(copyRichText);
+  });
+});
+
+describe('copyImage', () => {
+  class Item {
+    constructor(readonly values: Record<string, Blob | Promise<Blob>>) {}
+  }
+
+  it('UIC-CLIPBOARD-1.7 writes a pending image at once, with a sized HTML image', async () => {
+    const writes: Array<Record<string, Blob | Promise<Blob>>> = [];
+    const clipboard = {
+      write: vi.fn(async (items: never[]) => {
+        writes.push((items[0] as unknown as Item).values);
+      }),
+    };
+    let finish: (blob: Blob) => void = () => undefined;
+    const image = new Promise<Blob>((resolve) => (finish = resolve));
+    const copied = copyImage(image, {
+      clipboard,
+      ClipboardItem: Item,
+      size: { width: 24.4, height: 32 },
+      alt: 'a "b" <c>',
+    });
+    expect(clipboard.write).toHaveBeenCalledTimes(1);
+    finish(new Blob(['png'], { type: 'image/png' }));
+    await expect(copied).resolves.toBe(true);
+    const formats = writes[0] ?? {};
+    expect(Object.keys(formats)).toEqual(['image/png', 'text/html']);
+    await expect((await formats['image/png'])?.text()).resolves.toBe('png');
+    await expect((await formats['text/html'])?.text()).resolves.toBe(
+      '<img src="data:image/png;base64,cG5n" width="24" height="32" alt="a &quot;b&quot; &lt;c>">',
+    );
+    expect(core.copyImage).toBe(copyImage);
+  });
+
+  it('UIC-CLIPBOARD-1.7 resolves false without the API, once withdrawn, or when refused', async () => {
+    const image = new Blob(['png'], { type: 'image/png' });
+    await expect(copyImage(image, { clipboard: null, ClipboardItem: Item })).resolves.toBe(false);
+    vi.stubGlobal('ClipboardItem', undefined);
+    await expect(copyImage(image, { clipboard: { write: vi.fn() } })).resolves.toBe(false);
+    vi.unstubAllGlobals();
+    const controller = new AbortController();
+    controller.abort();
+    const write = vi.fn(async () => undefined);
+    await expect(
+      copyImage(image, { clipboard: { write }, ClipboardItem: Item, signal: controller.signal }),
+    ).resolves.toBe(false);
+    expect(write).not.toHaveBeenCalled();
+    const refused = { write: vi.fn(async () => Promise.reject(new Error('denied'))) };
+    await expect(copyImage(image, { clipboard: refused, ClipboardItem: Item })).resolves.toBe(
+      false,
+    );
+    await expect(
+      copyImage(Promise.reject(new Error('no image')), { clipboard: refused, ClipboardItem: Item }),
+    ).resolves.toBe(false);
   });
 });

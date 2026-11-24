@@ -145,4 +145,58 @@ test.describe('Math Preview lab', () => {
       await expect(math).toHaveAttribute('data-overflowing', 'true');
     }
   });
+
+  test('UIC-MATH-PREVIEW-4.1 UIC-MATH-PREVIEW-4.2 UIC-CLIPBOARD-1.8 copies an equation, its source and its drawing', async ({
+    page,
+    lab,
+    baseURL,
+  }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: new URL(baseURL ?? 'http://127.0.0.1/').origin,
+    });
+    await lab.open('math-preview');
+    const demo = page.locator('[data-lab-demo="copy"]');
+    const result = demo.locator('[data-lab-output="Copy result"]');
+    const read = () =>
+      page.evaluate(async () => {
+        const formats: Record<string, string> = {};
+        for (const item of await navigator.clipboard.read())
+          for (const type of item.types) {
+            const blob = await item.getType(type);
+            if (type !== 'image/png') formats[type] = await blob.text();
+            else {
+              const image = await createImageBitmap(blob);
+              const ink = new OffscreenCanvas(image.width, image.height).getContext('2d');
+              ink?.drawImage(image, 0, 0);
+              const pixels = ink?.getImageData(0, 0, image.width, image.height).data ?? [];
+              let dark = 0;
+              for (let index = 3; index < pixels.length; index += 4)
+                if ((pixels[index] ?? 0) > 200 && (pixels[index - 1] ?? 255) < 60) dark += 1;
+              formats[type] =
+                `${String(image.width)}x${String(image.height)} inked ${String(dark > 20)}`;
+            }
+          }
+        return formats;
+      });
+    await demo.getByRole('button', { name: 'Copy equation' }).click();
+    await expect(result).toHaveText('equation: rich');
+    const equation = await read();
+    expect(equation['text/plain']).toMatch(
+      /^<math xmlns="http:\/\/www.w3.org\/1998\/Math\/MathML"/,
+    );
+    expect(equation['text/plain']).toContain(
+      '<annotation encoding="application/x-tex">\\frac{a}{b}</annotation>',
+    );
+    expect(equation['text/html']).toContain('<mfrac>');
+    await demo.getByRole('button', { name: 'Copy LaTeX' }).click();
+    await expect(result).toHaveText('source: true');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('\\frac{a}{b}');
+    await demo.getByRole('button', { name: 'Copy as image' }).click();
+    await expect(result).toHaveText('image: true');
+    const image = await read();
+    expect(image['image/png']).toBe('48x64 inked true');
+    expect(image['text/html']).toMatch(
+      /<img src="data:image\/png;base64,[^"]+" width="24" height="32"/,
+    );
+  });
 });

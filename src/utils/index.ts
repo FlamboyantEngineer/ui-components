@@ -1,8 +1,14 @@
 export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { createBandScale } from './band-scale.js';
 export { clamp } from './clamp.js';
-export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
-export { copyRichText, copyText } from './clipboard.js';
+export type {
+  ClipboardWriter,
+  CopyOptions,
+  ImageCopyOptions,
+  RichCopyOptions,
+  RichCopyResult,
+} from './clipboard.js';
+export { copyImage, copyRichText, copyText } from './clipboard.js';
 export { getColorIndex, placeColorIndexes } from './color-index.js';
 export type {
   BlockChange,
@@ -102,6 +108,7 @@ export type { SlotRef, SlotRegistry } from './slot-registry.js';
 export { createSlotRegistry } from './slot-registry.js';
 export type { KeyedValue } from './stable-keys.js';
 export { assignOccurrenceKeys, toOccurrenceKey } from './stable-keys.js';
+export { drawSvgImage, type SvgImageOptions } from './svg-image.js';
 export type { MergeChunk, MergeChunkKind } from './three-way-merge.js';
 export { mergeThreeWay } from './three-way-merge.js';
 export type {
