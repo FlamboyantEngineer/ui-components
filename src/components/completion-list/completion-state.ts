@@ -45,6 +45,8 @@ export type CompletionReason = 'input' | 'move' | 'explicit';
 export interface CompletionState extends CompletionRange {
   caret: number;
   options: readonly Completion[];
+  /** Whether the options were matched against the typed text, rather than shown as given. */
+  isFiltered: boolean;
   activeIndex: number;
   isOpen: boolean;
   revision: number;
@@ -62,6 +64,7 @@ export const closed: CompletionState = {
   end: 0,
   caret: 0,
   options: [],
+  isFiltered: true,
   activeIndex: 0,
   isOpen: false,
   revision: 0,
@@ -77,11 +80,12 @@ export function toState(
   const start = result.from ?? lookup.caret - lookup.query.length;
   const end = Math.max(result.to ?? lookup.caret, lookup.caret);
   const typed = lookup.value.slice(start, lookup.caret);
-  const matched =
-    result.filter === false ? [...result.options] : matchCompletions(result.options, typed);
+  const isFiltered = result.filter !== false;
+  const matched = isFiltered ? matchCompletions(result.options, typed) : [...result.options];
   const options = lookup.reason === 'move' && !typed ? [] : matched;
   const { caret } = lookup;
-  return { start, end, caret, options, activeIndex: 0, isOpen: options.length > 0, revision };
+  const isOpen = options.length > 0;
+  return { start, end, caret, options, isFiltered, activeIndex: 0, isOpen, revision };
 }
 
 /** What to look up: a list completes a typed word (any word when asked); a source decides itself. */
@@ -99,14 +103,16 @@ export function hideCompletionState(state: CompletionState): CompletionState {
 
 /**
  * The open list while a source's answer to an edit is pending: it stays open, narrowed to the
- * options that still match the typed text, with its range following the caret, so it does not
- * blink shut on every keystroke. A caret move, or an edit before the list's start, hides it.
+ * options that still match the typed text (or as given, when the source does its own matching),
+ * with its range following the caret, so it does not blink shut on every keystroke. A caret move,
+ * or an edit before the list's start, hides it.
  */
 export function toPendingState(state: CompletionState, lookup: Lookup): CompletionState {
   if (!state.isOpen || lookup.reason === 'move' || lookup.caret < state.start) {
     return hideCompletionState(state);
   }
-  const options = matchCompletions(state.options, lookup.value.slice(state.start, lookup.caret));
+  const typed = lookup.value.slice(state.start, lookup.caret);
+  const options = state.isFiltered ? matchCompletions(state.options, typed) : state.options;
   const active = options.indexOf(state.options[state.activeIndex] as Completion);
   return {
     ...state,

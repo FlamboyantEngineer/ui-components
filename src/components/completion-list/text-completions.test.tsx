@@ -208,6 +208,29 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('apricot');
   });
 
+  it('UIC-COMPLETION-LIST-2.2 keeps a list a source matched itself as given while it answers a later edit', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    // Replaces from the start, so the typed text never matches the labels: as a trigger's `@`.
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve)).then((options) => ({
+        options,
+        from: 0,
+        filter: false,
+      }));
+    render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('@');
+    await act(async () => answers.at(-1)?.(fruit));
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot', 'banana']));
+    const list = screen.getByRole('listbox');
+    await user.keyboard('a');
+    expect(screen.getByRole('listbox')).toBe(list);
+    expect(optionTexts()).toEqual(['apple', 'apricot', 'banana']);
+    await act(async () => answers.at(-1)?.(fruit.slice(0, 2)));
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+  });
+
   it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.3 keeps the option the reader moved to when the pending answer comes', async () => {
     const user = userEvent.setup();
     const answers: Array<(options: Completion[]) => void> = [];

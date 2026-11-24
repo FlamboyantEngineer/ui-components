@@ -287,6 +287,11 @@ test.describe('Completion List lab', () => {
     const list = page.getByRole('listbox', { name: 'Suggestions' });
     await expect(list.getByRole('option')).toHaveCount(1);
     await expect(list.getByRole('option')).toContainText('Jon Berg');
+    // Enter picks the active option, so wait until the settled list has made it active.
+    await expect(list.getByRole('option', { name: /Jon Berg/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await page.keyboard.press('Enter');
     await expect(note).toHaveValue('Ask @jon ');
     await note.pressSequentially('about #1');
