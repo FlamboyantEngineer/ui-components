@@ -1,6 +1,7 @@
 import { act, createElement, createRef, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import * as core from '../core/index.js';
 import { requireDefined } from './require-defined.js';
 import { type ResizeObserverTargets, useResizeObserver } from './use-resize-observer.js';
 
@@ -175,4 +176,8 @@ test('UIC-MEASUREMENT-1.3 watches one element in two boxes with one observer per
     [{ box: 'border-box' }],
     [{ box: 'content-box' }],
   ]);
+});
+
+test('UIC-MEASUREMENT-1.4 is exported from the core entry', () => {
+  expect(core.useResizeObserver).toBe(useResizeObserver);
 });
