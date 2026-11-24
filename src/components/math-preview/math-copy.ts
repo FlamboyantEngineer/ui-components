@@ -8,6 +8,7 @@ import {
   type RichCopyOptions,
   type RichCopyResult,
 } from '../../utils/clipboard.js';
+import { readPngText } from '../../utils/png-text.js';
 import { drawSvgImage, type SvgImageOptions, svgImageSize } from '../../utils/svg-image.js';
 
 const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
@@ -55,19 +56,51 @@ export function copyMath(math: Element, options: MathCopyOptions = {}): Promise<
   return copyRichText({ text: markup, html: markup }, copy);
 }
 
-export interface MathImageCopyOptions extends Omit<ImageCopyOptions, 'size'>, SvgImageOptions {}
+export interface MathImageCopyOptions
+  extends Omit<ImageCopyOptions, 'size' | 'attributes'>, Omit<SvgImageOptions, 'text'> {
+  /** The LaTeX source, carried in the image so it can become math again (`readMathImage`). */
+  source?: string | undefined;
+  /** Whether the math is display math. Defaults to false. */
+  display?: boolean | undefined;
+}
+
+/** The PNG text keyword that holds the LaTeX source of a copied math image. */
+const MATH_IMAGE_SOURCE_KEY = 'LaTeX';
+/** The PNG text keyword that holds `display` for display math. */
+const MATH_IMAGE_DISPLAY_KEY = 'LaTeX display';
 
 /**
  * Copies math's SVG drawing as a PNG (`drawSvgImage`), with an HTML image showing it at the
  * drawing's size; its ink is black on a transparent ground unless `color` or `background` say
- * otherwise, so it reads on a white page whatever the reader's theme.
+ * otherwise, so it reads on a white page whatever the reader's theme. With `source`, the PNG
+ * carries the LaTeX as text chunks and the HTML image as `data-latex` (with `data-math-display`
+ * for display math), so an editor that reads either can paste the math back as math.
  */
 export function copyMathImage(
   drawing: SVGSVGElement,
   options: MathImageCopyOptions = {},
 ): Promise<boolean> {
-  const { width, height, scale, color = '#000000', background, ...copy } = options;
+  const { width, height, scale, color = '#000000', background, source, display, ...copy } = options;
   const size = svgImageSize(drawing, { width, height });
-  const image = drawSvgImage(drawing, { ...size, scale, color, background });
-  return copyImage(image, { owner: drawing, size, ...copy });
+  const text = source
+    ? {
+        [MATH_IMAGE_SOURCE_KEY]: source,
+        ...(display ? { [MATH_IMAGE_DISPLAY_KEY]: 'display' } : {}),
+      }
+    : undefined;
+  const attributes = source
+    ? { 'data-latex': source, ...(display ? { 'data-math-display': 'display' } : {}) }
+    : undefined;
+  const image = drawSvgImage(drawing, { ...size, scale, color, background, text });
+  return copyImage(image, { owner: drawing, size, alt: source, attributes, ...copy });
+}
+
+/** The math a copied math image carries (`copyMathImage` with `source`), or `null`. */
+export async function readMathImage(
+  image: Blob,
+): Promise<{ source: string; display: boolean } | null> {
+  if (image.type !== 'image/png') return null;
+  const text = await readPngText(image).catch(() => ({}) as Record<string, string>);
+  const source = text[MATH_IMAGE_SOURCE_KEY]?.trim();
+  return source ? { source, display: text[MATH_IMAGE_DISPLAY_KEY] === 'display' } : null;
 }

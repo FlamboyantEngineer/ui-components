@@ -1,9 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readPngText } from '../../utils/png-text.js';
 import * as entry from './index.js';
-import { copyMath, copyMathImage, mathMarkup } from './math-copy.js';
+import { copyMath, copyMathImage, mathMarkup, readMathImage } from './math-copy.js';
 import { sanitizeMathMarkup } from './math-sanitize.js';
 
 const MATHML = 'http://www.w3.org/1998/Math/MathML';
+
+// A 1x1 transparent PNG.
+const PIXEL =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+const pixel = () =>
+  new Blob([Uint8Array.from(atob(PIXEL), (char) => char.charCodeAt(0))], { type: 'image/png' });
 
 class Item {
   constructor(readonly values: Record<string, Blob | Promise<Blob>>) {}
@@ -87,18 +94,54 @@ describe('copyMathImage', () => {
       if (tag === 'canvas')
         Object.assign(element, {
           getContext: () => ({ drawImage: () => undefined }),
-          toBlob: (done: (blob: Blob) => void) => done(new Blob(['png'], { type: 'image/png' })),
+          toBlob: (done: (blob: Blob) => void) => done(pixel()),
         });
       return element;
     });
     const { writes, clipboard } = recorder();
-    await expect(copyMathImage(svg, { clipboard, ClipboardItem: Item, alt: 'a' })).resolves.toBe(
-      true,
-    );
+    await expect(copyMathImage(svg, { clipboard, ClipboardItem: Item })).resolves.toBe(true);
     expect(markup).toContain('style="color: #000000"');
     const formats = writes[0] ?? {};
     await expect((await formats['text/html'])?.text()).resolves.toMatch(
-      /^<img src="data:image\/png;base64,cG5n" width="30" height="20" alt="a">$/,
+      /^<img src="data:image\/png;base64,[^"]+" width="30" height="20" alt="">$/,
     );
+    await expect(readPngText(await (formats['image/png'] ?? pixel()))).resolves.toEqual({});
+  });
+});
+
+describe('math images', () => {
+  it('UIC-MATH-PREVIEW-4.3 carries the source in the PNG and the HTML image, and reads it back', async () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '30');
+    svg.setAttribute('height', '20');
+    document.body.append(svg);
+    const create = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const element = create(tag);
+      if (tag === 'img')
+        Object.defineProperty(element, 'src', {
+          set: () => queueMicrotask(() => element.dispatchEvent(new Event('load'))),
+        });
+      if (tag === 'canvas')
+        Object.assign(element, {
+          getContext: () => ({ drawImage: () => undefined }),
+          toBlob: (done: (blob: Blob) => void) => done(pixel()),
+        });
+      return element;
+    });
+    const { writes, clipboard } = recorder();
+    const source = String.raw`\frac{a}{b} < "c"`;
+    await expect(
+      copyMathImage(svg, { clipboard, ClipboardItem: Item, source, display: true }),
+    ).resolves.toBe(true);
+    const formats = writes[0] ?? {};
+    const png = await (formats['image/png'] ?? pixel());
+    await expect(readMathImage(png)).resolves.toEqual({ source, display: true });
+    await expect((await formats['text/html'])?.text()).resolves.toMatch(
+      /alt="\\frac\{a\}\{b\} &lt; &quot;c&quot;" data-latex="\\frac\{a\}\{b\} &lt; &quot;c&quot;" data-math-display="display">$/,
+    );
+    await expect(readMathImage(pixel())).resolves.toBeNull();
+    await expect(readMathImage(new Blob(['x'], { type: 'image/jpeg' }))).resolves.toBeNull();
+    expect(entry.readMathImage).toBe(readMathImage);
   });
 });

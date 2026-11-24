@@ -91,10 +91,17 @@ Verification: `src/components/math-preview/math-copy.test.ts`
 
 ### UIC-MATH-PREVIEW-4.2 - Copying an equation as an image
 
-`copyMathImage(drawing, options)` shall copy math's SVG drawing as a PNG through `drawSvgImage` and `copyImage` (UIC-CLIPBOARD-1.7, 1.8), with the HTML image shown at the drawing's size, its ink black (`#000000`) on a transparent ground unless `color` or `background` say otherwise, so the image reads on a white page whatever theme the reader sees the math in. `width`, `height` and `scale` size the image, and the copy runs in the drawing's window.
+`copyMathImage(drawing, options)` shall copy math's SVG drawing as a PNG through `drawSvgImage` and `copyImage` (UIC-CLIPBOARD-1.7, 1.8), with the HTML image shown at the drawing's size, its ink black (`#000000`) on a transparent ground unless `color` or `background` say otherwise, so the image reads on a white page whatever theme the reader sees the math in. `width`, `height` and `scale` size the image, and the copy runs in the drawing's window. With `source`, the math stays recoverable: the PNG carries the LaTeX as the text chunk `LaTeX`, and `LaTeX display` with the value `display` for display math (`display: true`), and the HTML image carries it as `alt` and `data-latex`, with `data-math-display="display"` for display math.
 
 Implementation: `src/components/math-preview/math-copy.ts`
 Verification: `src/components/math-preview/math-copy.test.ts`, `e2e/math-preview.spec.ts`
+
+### UIC-MATH-PREVIEW-4.3 - Math back from an image
+
+`readMathImage(image)` shall resolve `{ source, display }` for a PNG that carries the `LaTeX` text chunk `copyMathImage` writes (UIC-MATH-PREVIEW-4.2), `display` true when its `LaTeX display` chunk says `display`, and `null` for any other image, so a host can paste or drop such an image as math rather than as a picture.
+
+Implementation: `src/components/math-preview/math-copy.ts`
+Verification: `src/components/math-preview/math-copy.test.ts`
 
 ## Hooks
 

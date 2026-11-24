@@ -188,6 +188,8 @@ export interface ImageCopyOptions extends CopyOptions {
   size?: { width: number; height: number } | undefined;
   /** The HTML image's text alternative. */
   alt?: string | undefined;
+  /** More attributes for the HTML image, such as `data-*` ones that say what it shows. */
+  attributes?: Record<string, string> | undefined;
 }
 
 function readDataUrl(blob: Blob): Promise<string> {
@@ -203,9 +205,17 @@ const escapeAttribute = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 /** The image as an HTML `<img>` shown at `size`. */
-async function imageHtml(image: Promise<Blob>, size: { width: number; height: number }, alt = '') {
+async function imageHtml(
+  image: Promise<Blob>,
+  size: { width: number; height: number },
+  { alt = '', attributes = {} }: Pick<ImageCopyOptions, 'alt' | 'attributes'>,
+) {
   const source = await readDataUrl(await image);
-  const html = `<img src="${source}" width="${String(Math.round(size.width))}" height="${String(Math.round(size.height))}" alt="${escapeAttribute(alt)}">`;
+  const more = Object.entries(attributes)
+    .filter(([name]) => /^[a-z][a-z0-9-]*$/.test(name))
+    .map(([name, value]) => ` ${name}="${escapeAttribute(value)}"`)
+    .join('');
+  const html = `<img src="${source}" width="${String(Math.round(size.width))}" height="${String(Math.round(size.height))}" alt="${escapeAttribute(alt)}"${more}>`;
   return new Blob([html], { type: 'text/html' });
 }
 
@@ -232,7 +242,7 @@ export async function copyImage(
   try {
     const type = image instanceof Blob && image.type ? image.type : 'image/png';
     const formats: Record<string, Promise<Blob>> = { [type]: blob };
-    if (options.size) formats['text/html'] = imageHtml(blob, options.size, options.alt);
+    if (options.size) formats['text/html'] = imageHtml(blob, options.size, options);
     await clipboard.write([new Item(formats) as never]);
     return true;
   } catch {

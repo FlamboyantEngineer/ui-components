@@ -189,7 +189,9 @@ function CopyDemo() {
       <Button
         onPress={() => {
           if (drawing.current)
-            void copyMathImage(drawing.current).then((done) => setResult(`image: ${String(done)}`));
+            void copyMathImage(drawing.current, { source: copied }).then((done) =>
+              setResult(`image: ${String(done)}`),
+            );
         }}
       >
         Copy as image
