@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   ProseTable,
@@ -9,8 +10,10 @@ import {
   type ProseTableRow,
 } from '../prose-table/prose-table.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
-import type { ChartPlacement } from './chart-placement.js';
+import { type ChartPlacement, getChartMarks } from './chart-placement.js';
+import { ChartPositionEdit } from './chart-position-edit.js';
 import type { ChartReferenceLine } from './chart-references.js';
+import { CursorRowMenu } from './cursor-row-menu.js';
 import type { LinkedChartPoint } from './linked-channel.js';
 import { type DrawnChannel, readCursors, readDisplayedSample } from './linked-model.js';
 
@@ -20,6 +23,7 @@ interface ReadingPosition {
   x: number;
   point?: { lane: DrawnChannel; value: LinkedChartPoint };
   fixed?: boolean;
+  mark?: ReturnType<typeof getChartMarks>[number];
 }
 
 function getPositions(
@@ -34,10 +38,13 @@ function getPositions(
     fixed,
   });
   return [
-    { key: 'a', label: 'A', x: placement.cursors[0] },
-    { key: 'b', label: 'B', x: placement.cursors[1] },
+    ...getChartMarks(placement).map((mark) => ({
+      key: mark.id,
+      label: mark.label,
+      x: mark.x,
+      mark,
+    })),
     ...references.filter((r) => Number.isFinite(r.value)).map((r) => named(r, true)),
-    ...placement.markers.map((m) => named(m, false)),
     ...lanes.flatMap((lane) =>
       lane.points.map((value) => ({
         key: JSON.stringify([toKeyIdentity(lane.channel.id), toKeyIdentity(value.id)]),
@@ -67,18 +74,46 @@ function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: numb
   );
 }
 
+function positionName(mark: ReadingPosition, fixedLabel: string) {
+  return (
+    <>
+      {mark.mark ? (
+        <span
+          {...hooks.slot('mark-name', { 'mark-id': mark.mark.id })}
+          tabIndex={0}
+          aria-haspopup="menu"
+        >
+          {mark.label}
+        </span>
+      ) : (
+        mark.label
+      )}
+      {mark.fixed && (
+        <>
+          {' '}
+          <small {...hooks.slot('fixed-label')}>{fixedLabel}</small>
+        </>
+      )}
+    </>
+  );
+}
+
 export function LinkedReadings({
   lanes,
   placement,
   references,
   formatX,
   xLabel,
+  extent,
+  xUnits,
 }: {
   lanes: readonly DrawnChannel[];
   placement: ChartPlacement;
   references: readonly ChartReferenceLine[];
   formatX: (x: number) => string;
   xLabel: string;
+  extent: ScaleInterval;
+  xUnits?: Readonly<Record<string, number>> | undefined;
 }) {
   const s = useUiStrings();
   const header: ProseTableColumn[] = [
@@ -99,35 +134,38 @@ export function LinkedReadings({
     });
   const rows = getPositions(placement, references, lanes).map((mark) =>
     readingRow(mark.key, [
-      <>
-        {mark.label}
-        {mark.fixed && (
-          <>
-            {' '}
-            <small {...hooks.slot('fixed-label')}>{s.chartFixed}</small>
-          </>
-        )}
-      </>,
-      formatX(mark.x),
+      positionName(mark, s.chartFixed),
+      mark.mark ? (
+        <ChartPositionEdit
+          label={mark.mark.kind === 'cursor' ? s.chartCursor(mark.label) : mark.label}
+          x={mark.x}
+          move={mark.mark.move}
+          format={{ extent, formatX, units: xUnits }}
+        />
+      ) : (
+        formatX(mark.x)
+      ),
       ...lanes.map((lane) => sampleCell(lane, mark, formatX) ?? s.noData),
     ]),
   );
   return (
-    <div {...hooks.slot('measurements')}>
+    <CursorRowMenu marks={getChartMarks(placement)}>
       <ProseTable
         aria-label={s.chartReadings}
         caption={
           <>
-            {s.chartReadings} <small>|Δx| = {formatX(readout.deltaX)}</small>
+            {s.chartReadings} {placement.hasPair && <small>|Δx| = {formatX(readout.deltaX)}</small>}
           </>
         }
         header={header}
         rows={rows}
         footer={[
-          readingRow('delta', ['B − A', formatX(b - a), ...totals('deltaY')]),
+          ...(placement.hasPair
+            ? [readingRow('delta', ['B − A', formatX(b - a), ...totals('deltaY')])]
+            : []),
           readingRow('p2p', [s.chartPeakAmplitude, s.chartVisibleRange, ...totals('peakToPeak')]),
         ]}
       />
-    </div>
+    </CursorRowMenu>
   );
 }

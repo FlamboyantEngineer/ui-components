@@ -93,7 +93,7 @@ interface ViewportSurfaceProps {
   label: string;
   children: ReactNode | ((draggedMark: string | undefined) => ReactNode);
   /** Additional placement actions at the context pointer or the keyboard's focused coordinate. */
-  getItems?: ((x: number) => MenuEntry[]) | undefined;
+  getItems?: ((x: number, target?: string) => MenuEntry[]) | undefined;
   /** Starts a marker drag from the element under the pointer. Other drags pan the plot. */
   startMark?: ((target: EventTarget) => PlotGesture | undefined) | undefined;
 }
@@ -201,7 +201,9 @@ export function ViewportSurface({
   startMark,
 }: ViewportSurfaceProps) {
   const { rootRef, hint } = usePlotPointer(view);
-  const [location, setLocation] = useState<number | null>(null);
+  const [location, setLocation] = useState<{ x: number; target?: string | undefined }>();
+  const locate = (target: EventTarget, x: number) =>
+    setLocation({ x, target: startMark?.(target)?.id });
   const strings = useUiStrings();
   const { axis } = view;
   const middle = axis.invert((axis.range[0] + axis.range[1]) / 2);
@@ -210,7 +212,7 @@ export function ViewportSurface({
     if (isContextMenuKey(event)) {
       const target = event.target as Element;
       const value = target.closest('[data-coordinate]')?.getAttribute('data-coordinate');
-      setLocation(value ? Number(value) : middle);
+      locate(event.target, value ? Number(value) : middle);
     }
     navigateByKey(event, view);
   };
@@ -230,10 +232,10 @@ export function ViewportSurface({
         onKeyDown={keyDown}
         onPointerDownCapture={(event) => {
           if (event.pointerType === 'touch')
-            setLocation(readPointerX(event.currentTarget, event.clientX, view));
+            locate(event.target, readPointerX(event.currentTarget, event.clientX, view));
         }}
         onContextMenu={(event) =>
-          setLocation(readPointerX(event.currentTarget, event.clientX, view))
+          locate(event.target, readPointerX(event.currentTarget, event.clientX, view))
         }
       >
         {typeof children === 'function' ? children(active?.markId) : children}
@@ -251,7 +253,7 @@ export function ViewportSurface({
       <Menu
         aria-label={label}
         items={[
-          ...(getItems?.(location ?? middle) ?? []),
+          ...(getItems?.(location?.x ?? middle, location?.target) ?? []),
           { id: 'reset', label: strings.chartResetView, onAction: view.reset },
         ]}
       />

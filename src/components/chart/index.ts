@@ -33,3 +33,4 @@ export type { ScatterChartPoint, ScatterChartProps, ScatterChartSeries } from '.
 export { ScatterChart } from './scatter-chart.js';
 export type { SparklineMarker, SparklineProps, SparklineVariant } from './sparkline.js';
 export { Sparkline } from './sparkline.js';
+export type { ChartCursorProps, LinkedChartCursor } from './use-chart-cursors.js';

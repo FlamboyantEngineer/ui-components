@@ -3,35 +3,29 @@
 import { useMemo } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
 import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useIdFactory } from '../../utils/use-id-factory.js';
-import { Button } from '../button/button.js';
-import { Disclosure } from '../disclosure/disclosure.js';
-import { NumberField } from '../number-field/number-field.js';
 import { Chart, type ChartProps } from './chart.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
-import { type ChartPlacement, getChartMarks } from './chart-placement.js';
+import type { ChartPlacement } from './chart-placement.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import { useChartViewport } from './chart-viewport.js';
 import type { LinkedChartChannel } from './linked-channel.js';
 import { LinkedLane } from './linked-lane.js';
-import {
-  drawChannel,
-  getCaptureDomain,
-  type LinkedChartReadout,
-  prepareChannel,
-  readCursors,
-} from './linked-model.js';
+import { drawChannel, getCaptureDomain, prepareChannel } from './linked-model.js';
 import { LinkedReadings } from './linked-readings.js';
 import type { ChartViewportProps } from './numeric-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
+import { type ChartCursorProps, useChartCursors } from './use-chart-cursors.js';
 
 export interface LinkedLineChartProps
   extends
     Omit<ChartProps, 'children' | 'summary' | 'table' | 'legend' | 'isEmpty'>,
-    ChartViewportProps {
+    ChartViewportProps,
+    ChartCursorProps {
+  /** Accepted entry suffixes and their multipliers in source x units. */
+  xUnits?: Readonly<Record<string, number>> | undefined;
   channels: readonly LinkedChartChannel[];
   /** Height in pixels of each channel including its axes. */
   channelHeight?: number | undefined;
@@ -41,16 +35,10 @@ export interface LinkedLineChartProps
   markers?: readonly ChartReferenceLine[] | undefined;
   defaultMarkers?: readonly ChartReferenceLine[] | undefined;
   onMarkersChange?: ((markers: readonly ChartReferenceLine[]) => void) | undefined;
-  /** Coordinates in A, B order. The two cursors may cross. */
-  cursors?: ScaleInterval | undefined;
-  defaultCursors?: ScaleInterval | undefined;
-  /** Requested cursor coordinates and the matching samples in the current drawing. */
-  onCursorsChange?: ((cursors: ScaleInterval, readout: LinkedChartReadout) => void) | undefined;
   summary?: string | undefined;
 }
 
 const noMarkers: readonly ChartReferenceLine[] = [];
-const numberFormat = { maximumSignificantDigits: 17, useGrouping: false } as const;
 
 function usePlacement(
   props: LinkedLineChartProps,
@@ -63,13 +51,7 @@ function usePlacement(
     props.defaultMarkers ?? noMarkers,
     props.onMarkersChange,
   );
-  const [held, set] = useControllableState(props.cursors, props.defaultCursors);
-  const cursors = held ?? model.extent;
-  const setCursors = (next: ScaleInterval) => {
-    if (!next.every(Number.isFinite) || (cursors[0] === next[0] && cursors[1] === next[1])) return;
-    set(next);
-    props.onCursorsChange?.(next, readCursors(model.lanes, next));
-  };
+  const cursorState = useChartCursors(props, model);
   const addMarker = (x: number) => {
     const id = makeId(markers.map((m) => String(m.id)))();
     let index = markers.length + 1;
@@ -79,48 +61,12 @@ function usePlacement(
   };
   const placement: ChartPlacement = {
     markers,
-    cursors,
-    setCursors,
+    ...cursorState,
     addMarker,
     setMarker: (key, x) => setMarkers(markers.map((m) => (m.id === key ? { ...m, value: x } : m))),
     removeMarker: (key) => setMarkers(markers.filter((m) => m.id !== key)),
   };
   return placement;
-}
-
-function PositionInputs({
-  placement,
-  extent,
-}: {
-  placement: ChartPlacement;
-  extent: ScaleInterval;
-}) {
-  const strings = useUiStrings();
-  return (
-    <div {...hooks.slot('readout')}>
-      {getChartMarks(placement).map((m) => (
-        <div key={m.id}>
-          <NumberField
-            label={m.kind === 'cursor' ? strings.chartCursor(m.label) : m.label}
-            value={m.x}
-            minValue={extent[0]}
-            maxValue={extent[1]}
-            formatOptions={numberFormat}
-            commitBehavior="validate"
-            onChange={(value) => {
-              if (value !== null && Number.isFinite(value) && value === clamp(value, ...extent))
-                m.move(value);
-            }}
-          />
-          {m.remove ? (
-            <Button aria-label={strings.remove + ' ' + m.label} onPress={m.remove}>
-              {strings.remove}
-            </Button>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  );
 }
 
 function useLinkedModel(props: LinkedLineChartProps) {
@@ -180,11 +126,15 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
     channels,
     channelHeight,
     xReferences = noMarkers,
+    xUnits,
     visibleRange,
     defaultVisibleRange,
     onVisibleRangeChange,
     cursors,
     defaultCursors,
+    cursorList,
+    defaultCursorList,
+    onCursorListChange,
     onCursorsChange,
     markers,
     defaultMarkers,
@@ -236,10 +186,9 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
             references={xReferences}
             formatX={formatX}
             xLabel={axisLabel}
+            extent={extent}
+            xUnits={xUnits}
           />
-          <Disclosure title={strings.chartEditPositions}>
-            <PositionInputs placement={placement} extent={extent} />
-          </Disclosure>
         </>
       ) : (
         strings.noData

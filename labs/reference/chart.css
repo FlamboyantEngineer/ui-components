@@ -464,13 +464,6 @@
   fill: var(--ref-success);
 }
 
-.ui-linked-line-chart__readout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: 8px;
-}
-
 .ui-chart__viewport {
   position: relative;
   min-width: 0;
@@ -617,4 +610,21 @@
   paint-order: stroke;
   stroke: var(--ref-canvas);
   stroke-width: 3px;
+}
+
+.ui-linked-line-chart__mark-name:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-edit__read {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  width: 100%;
+  padding-inline-end: 0;
+  text-align: end;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-edit__control {
+  min-width: 6em;
 }

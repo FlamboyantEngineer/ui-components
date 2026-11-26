@@ -4,7 +4,9 @@ interface DashboardStrings {
   chartReadings: string;
   chartFixed: string;
   chartVisibleRange: string;
-  chartEditPositions: string;
+  chartPositionError: (low: string, high: string) => string;
+  chartInsertCursor: string;
+  chartDeleteCursor: string;
   chartPeakAmplitude: string;
   chartZoomCursors: string;
   chartResetView: string;
@@ -100,6 +102,7 @@ interface DashboardStrings {
 /** The module's text, with the message values each text function reads its arguments as. */
 export const dashboardStrings = defineStrings<DashboardStrings>({
   chartCursor: (name) => ({ name }),
+  chartPositionError: (low, high) => ({ low, high }),
   chartMarker: (name) => ({ name }),
   chartSummary: (summary) => ({ ...summary }),
   chartValue: (series, at, value) => ({ series, at, value }),

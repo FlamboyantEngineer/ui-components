@@ -2,6 +2,8 @@
 
 Import both views and their types from `@flamboyantengineer/ui-components/chart`. Load the package reference stylesheet or style the hooks in the chart spec. The chart family supplies the figure, axes, keyboard navigation, measurements, and table view.
 
+Plot and readout menus open in the document body by default. When customizing the reference theme, set the menu surface (`--ref-raised`), text, hover, and focus colors on the document root so nested menus inherit the chart palette. For a chart themed inside one panel, wrap it in a `PortalHost` inside that panel. [Portal host reference](../specs/PORTAL.md#uic-portal-13---portal-host)
+
 ## Replace a multi-channel plot
 
 Keep the capture in its original numeric units. Map each trace to a stable channel id and an array of samples. A null amplitude marks a gap. Reference points can use a different x grid. Lower and upper limits belong to the measurement's x coordinate. Pass the same array identities across renders while the capture is unchanged.
@@ -10,6 +12,7 @@ Keep the capture in its original numeric units. Map each trace to a stable chann
 <LinkedLineChart
   label="Capture"
   xLabel="Time (ns)"
+  xUnits={{ s: 1, ms: 1e-3, µs: 1e-6, ns: 1e-9 }}
   formatX={(seconds) => (seconds * 1e9).toFixed(2) + ' ns'}
   channels={[
     { id: 'v', label: 'Voltage', unit: 'V', samples: voltage, reference, threshold: 1 },
@@ -28,9 +31,11 @@ Keep the capture in its original numeric units. Map each trace to a stable chann
 />
 ```
 
-Supply `defaultVisibleRange`, `defaultCursors` or `defaultMarkers` for initial positions the chart then owns. For automatic placement by a host algorithm, update the corresponding controlled values in source units. Drag to pan, Shift+drag to select an x interval, or Ctrl+wheel to zoom about the pointer. Right-click the plot and choose **Reset view** to restore the full extent. Keyboard users can press Home on the focused plot or open the same menu with Shift+F10. A channel's menu offers manual, nearest-sample, extrema, threshold, band and peak-to-peak placement. Position fields take source units. For example, a cursor at 160 ns has a position of 0.00000016 when the capture uses seconds.
+Supply `defaultVisibleRange`, `defaultCursors` or `defaultMarkers` for initial positions the chart then owns. For automatic placement by a host algorithm, update the corresponding controlled values in source units. Drag to pan, Shift+drag to select an x interval, or Ctrl+wheel to zoom about the pointer. Right-click the plot and choose **Reset view** to restore the full extent. Keyboard users can press Home on the focused plot or open the same menu with Shift+F10. A channel's menu offers manual, nearest-sample, extrema, threshold, band and peak-to-peak placement. Click a movable position in the readout to edit it. A bare number uses source units, and suffixes in `xUnits` convert to source units. For example, a cursor at 160 ns has a position of 0.00000016 when the capture uses seconds.
 
 Use `xReferences` for a shared fixed coordinate such as a trigger. For a channel-specific measurement, supply `points: [{ id, label, x, y }]` on that channel. For example, the capture lab scans each original sample array for its highest valid amplitude and supplies that sample as a fixed point. Both types appear alongside A and B in the readout.
+
+For a host-controlled set of movable cursors, pass `cursorList` and `onCursorListChange`. Each item has a unique stable `name` and numeric `x`. The A/B tuple remains available for hosts that only control those two positions. Insert a cursor from the plot menu, or delete it from its line or readout row.
 
 For frequency data, set `xScale="log"`, supply frequencies in Hz and format labels as desired. A channel can independently set `yScale="log"`. A logarithmic axis needs positive coordinates. Supply linear y values for a linear dB axis when the host already expresses amplitude in decibels.
 

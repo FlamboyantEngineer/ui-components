@@ -172,3 +172,46 @@ test('UIC-CHART-14.1 clears pointer feedback on cancellation and modifier releas
   await plot.hover();
   await expect(plot).toHaveCSS('cursor', 'default');
 });
+
+test('UIC-CHART-15.2 UIC-CHART-15.3 edits a cursor in units and deletes targeted cursors from a line or row', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const chart = page.getByRole('figure', { name: 'Captured signals' });
+  const plot = chart.getByRole('group', { name: 'Voltage', exact: true });
+  for (const name of ['C', 'D']) {
+    await plot.click({ button: 'right', position: { x: 100, y: 50 } });
+    await page.getByRole('menuitem', { name: 'Insert cursor' }).click();
+    await expect(plot.getByRole('slider', { name, exact: true })).toBeVisible();
+  }
+  await chart.getByRole('button', { name: /^Edit Cursor C / }).click();
+  const field = chart.getByRole('textbox', { name: 'Cursor C', exact: true });
+  await field.fill('820 V');
+  await field.press('Enter');
+  await expect(field).toBeVisible();
+  await field.fill('820 ns');
+  await field.press('Enter');
+  const row = chart.getByRole('row', { name: /^C / });
+  await expect(row).toContainText('820.00 ns');
+  const line = plot.getByRole('slider', { name: 'C', exact: true });
+  expect(Number(await line.getAttribute('data-coordinate'))).toBeCloseTo(820e-9, 15);
+  await line.click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Delete cursor' }).click();
+  await expect(row).toHaveCount(0);
+  const remaining = chart.getByRole('row', { name: /^D / });
+  await remaining.getByRole('cell').last().click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Delete cursor' }).click();
+  await expect(remaining).toHaveCount(0);
+  await expect(plot.getByRole('slider', { name: 'A', exact: true })).toBeVisible();
+  await expect(chart.getByRole('row', { name: /^Trigger/ }).getByRole('button')).toHaveCount(0);
+});
+
+test('UIC-CHART-15.1 links magnitude and phase at the low-pass cutoff', async ({ page, lab }) => {
+  await lab.open('chart');
+  const figure = page.getByRole('figure', { name: 'Frequency response' });
+  const row = figure.getByRole('row', { name: /^Cutoff/ });
+  await expect(row.getByRole('cell', { name: '-3.01', exact: true })).toBeVisible();
+  await expect(row.getByRole('cell', { name: '-90.00', exact: true })).toBeVisible();
+  await expect(figure.getByRole('slider', { name: 'B', exact: true })).toHaveCount(2);
+});

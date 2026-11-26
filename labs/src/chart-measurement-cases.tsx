@@ -9,7 +9,7 @@ import {
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { LabSection } from './chrome/index.js';
 
-const count = 16384;
+const count = 24576;
 const samples = Array.from({ length: count }, (_, i) => {
   const reference = Math.sin(i / 1000) * 2;
   const y =
@@ -54,15 +54,40 @@ const current = withPeak({
     .filter((_, i) => i % 3 === 0)
     .map((p) => ({ x: p.x, y: p.y === null ? null : 22 + p.y * 4 })),
 });
+// Unit-gain second-order Butterworth low-pass response, sampled uniformly in log frequency.
+const timeUnits = { s: 1, ms: 1e-3, µs: 1e-6, μs: 1e-6, us: 1e-6, ns: 1e-9, ps: 1e-12 };
+const frequencyUnits = { Hz: 1, kHz: 1e3, MHz: 1e6 };
+const cutoff = 1000;
+const response = Array.from({ length: 601 }, (_, i) => {
+  const x = 10 ** (1 + (4 * i) / 600);
+  const ratio = x / cutoff;
+  const real = 1 - ratio * ratio;
+  const imaginary = Math.SQRT2 * ratio;
+  return {
+    x,
+    magnitude: -20 * Math.log10(Math.hypot(real, imaginary)),
+    phase: (-Math.atan2(imaginary, real) * 180) / Math.PI,
+  };
+});
 const frequencies: LinkedChartChannel[] = [
   {
-    id: 'response',
-    label: 'Response',
-    unit: 'V',
-    yScale: 'log',
-    samples: [1, 10, 100, 1000, 10000, 100000].map((x) => ({ x, y: 1 / Math.sqrt(x) })),
+    id: 'magnitude',
+    label: 'Magnitude',
+    unit: 'dB',
+    yRange: [-90, 0],
+    samples: response.map(({ x, magnitude }) => ({ x, y: magnitude })),
+    formatY: (v) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2),
+  },
+  {
+    id: 'phase',
+    label: 'Phase',
+    unit: '°',
+    yRange: [-180, 0],
+    samples: response.map(({ x, phase }) => ({ x, y: phase })),
+    formatY: (v) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2),
   },
 ];
+const frequencyReferences = [{ id: 'cutoff', label: 'Cutoff', value: cutoff }];
 const events: EventChartItem[] = Array.from({ length: 36 }, (_, i) => ({
   id: i,
   label: 'Observation ' + (i + 1),
@@ -93,6 +118,7 @@ function CaptureExample() {
         label="Captured signals"
         xLabel="Time (ns)"
         formatX={ns}
+        xUnits={timeUnits}
         channels={channels}
         xReferences={fixed}
         visibleRange={range}
@@ -111,20 +137,22 @@ export function ChartMeasurementCases() {
     <>
       <LabSection
         title="Linked measurements"
-        description="Compare A, B, the fixed Trigger and each trace’s highest acquired sample in the readout. Both peaks occur at 324 ns. Drag a cursor to compare readings or open Edit positions to enter an exact coordinate in seconds. Shift-drag to zoom and right-click for Reset view."
+        description="Compare A, B, the fixed Trigger and each trace’s highest acquired sample in the readout. Both peaks occur at 324 ns. Drag a cursor to compare readings or click its time in the table to enter a value such as 820 ns. Shift-drag to zoom and right-click for Reset view."
       >
         <CaptureExample />
       </LabSection>
       <LabSection
         title="Logarithmic axes"
-        description="Frequency and amplitude use positive logarithmic scales. Ctrl+wheel zooms around the pointer. Right-click the plot to reset the view."
+        description="Magnitude in dB and phase in degrees share a logarithmic frequency axis. A second-order Butterworth low-pass filter reaches −3.01 dB and −90° at its 1 kHz cutoff. Right-click to insert another cursor."
       >
         <LinkedLineChart
           label="Frequency response"
           xLabel="Frequency (Hz)"
           channels={frequencies}
           xScale="log"
-          defaultCursors={[10, 1000]}
+          xUnits={frequencyUnits}
+          xReferences={frequencyReferences}
+          defaultCursors={[100, 1000]}
         />
       </LabSection>
       <LabSection

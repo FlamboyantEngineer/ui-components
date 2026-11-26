@@ -5,7 +5,6 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
-import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
@@ -13,11 +12,10 @@ import type { ChartReferenceLine } from './chart-references.js';
 import type { NumericViewport } from './chart-viewport.js';
 import { findNearestSample } from './linked-channel.js';
 import type { DrawnChannel } from './linked-model.js';
+import type { useChartCursors } from './use-chart-cursors.js';
 
-export interface ChartPlacement {
-  cursors: ScaleInterval;
+export interface ChartPlacement extends ReturnType<typeof useChartCursors> {
   markers: readonly ChartReferenceLine[];
-  setCursors: (values: ScaleInterval) => void;
   addMarker: (x: number) => void;
   setMarker: (key: Key, x: number) => void;
   removeMarker: (key: Key) => void;
@@ -34,22 +32,16 @@ interface MovableMark {
 }
 
 export function getChartMarks(placement: ChartPlacement): MovableMark[] {
-  const { cursors, markers, setCursors, setMarker, removeMarker } = placement;
+  const { cursorList, moveCursor, deleteCursor, markers, setMarker, removeMarker } = placement;
   return [
-    {
-      id: 'a',
-      label: 'A',
-      x: cursors[0],
-      kind: 'cursor',
-      move: (x) => setCursors([x, cursors[1]]),
-    },
-    {
-      id: 'b',
-      label: 'B',
-      x: cursors[1],
-      kind: 'cursor',
-      move: (x) => setCursors([cursors[0], x]),
-    },
+    ...cursorList.map((c) => ({
+      id: 'cursor:' + c.name,
+      label: c.name,
+      x: c.x,
+      kind: 'cursor' as const,
+      move: (x: number) => moveCursor(c.name, x),
+      remove: () => deleteCursor(c.name),
+    })),
     ...markers.map((m) => ({
       id: toKeyIdentity(m.id),
       label: m.label,
@@ -157,7 +149,7 @@ export function usePlacementMenu(
   view: NumericViewport,
 ) {
   const s = useUiStrings();
-  return (at: number): MenuEntry[] => {
+  return (at: number, target?: string): MenuEntry[] => {
     const { measurements: m } = lane;
     const sources = [
       ['position', s.chartHere, at],
@@ -177,17 +169,27 @@ export function usePlacementMenu(
           if (value !== undefined) move(value);
         },
       }));
+    const hit = placement.cursorList.find((c) => 'cursor:' + c.name === target);
     return [
+      ...(hit
+        ? [
+            {
+              id: 'delete-cursor',
+              label: s.chartDeleteCursor,
+              onAction: () => placement.deleteCursor(hit.name),
+            },
+          ]
+        : []),
       {
-        id: 'cursor-a',
-        label: s.chartCursor('A'),
-        items: entries('a', (x) => placement.setCursors([x, placement.cursors[1]])),
+        id: 'insert-cursor',
+        label: s.chartInsertCursor,
+        onAction: () => placement.insertCursor(at),
       },
-      {
-        id: 'cursor-b',
-        label: s.chartCursor('B'),
-        items: entries('b', (x) => placement.setCursors([placement.cursors[0], x])),
-      },
+      ...placement.cursorList.map((c) => ({
+        id: 'place:' + c.name,
+        label: s.chartCursor(c.name),
+        items: entries('place:' + c.name, (x) => placement.moveCursor(c.name, x)),
+      })),
       { id: 'marker', label: s.chartAddMarker, items: entries('marker', placement.addMarker) },
       ...placement.markers.map((marker) => ({
         id: 'edit-' + toKeyIdentity(marker.id),
@@ -199,7 +201,7 @@ export function usePlacementMenu(
       {
         id: 'zoom-cursors',
         label: s.chartZoomCursors,
-        isDisabled: placement.cursors[0] === placement.cursors[1],
+        isDisabled: !placement.hasPair || placement.cursors[0] === placement.cursors[1],
         onAction: () =>
           view.change([Math.min(...placement.cursors), Math.max(...placement.cursors)]),
       },

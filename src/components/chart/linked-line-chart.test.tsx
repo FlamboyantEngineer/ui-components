@@ -85,8 +85,9 @@ it('UIC-CHART-15.3 places peak-to-peak cursors and an out-of-band marker through
   expect(change).toHaveBeenCalledWith([expect.objectContaining({ value: 2 })]);
   expect(screen.getByRole('slider', { name: 'Marker 1' })).toHaveAttribute('data-coordinate', '2');
   expect(screen.getByRole('rowheader', { name: 'Marker 1' })).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'Edit positions' }));
-  await user.click(screen.getByRole('button', { name: 'Remove Marker 1' }));
+  screen.getByText('Marker 1', { selector: '[data-mark-id]' }).focus();
+  await user.keyboard('{Shift>}{F10}{/Shift}');
+  await user.click(await screen.findByRole('menuitem', { name: 'Remove Marker 1' }));
   expect(change).toHaveBeenLastCalledWith([]);
 });
 
@@ -115,16 +116,19 @@ it('UIC-CHART-15.3 places a marker at an exact sub-microsecond coordinate from i
           ],
         },
       ]}
+      xUnits={{ ns: 1e-9 }}
+      formatX={(x) => String(x * 1e9) + ' ns'}
       defaultMarkers={[{ id: 'm', label: 'Probe', value: 2e-7 }]}
       onMarkersChange={change}
     />,
   );
-  await user.click(screen.getByRole('button', { name: 'Edit positions' }));
+  await user.click(screen.getByRole('button', { name: /^Edit Probe / }));
   const field = screen.getByLabelText('Probe', { selector: 'input' });
   await user.clear(field);
-  await user.type(field, '0.000000325');
+  expect(field).toHaveAttribute('type', 'text');
+  await user.type(field, '820 ns');
   await user.tab();
-  expect(change).toHaveBeenLastCalledWith([{ id: 'm', label: 'Probe', value: 3.25e-7 }]);
+  expect(change).toHaveBeenLastCalledWith([{ id: 'm', label: 'Probe', value: 820 * 1e-9 }]);
 });
 
 it('UIC-CHART-15.2 keeps the latest controlled B when a host updates it during a drag of A', async () => {
@@ -179,4 +183,29 @@ it('UIC-CHART-15.2 lists coincident fixed points and references separately from 
   expect(table.getByRole('row', { name: /^Current peak/ })).toHaveTextContent('499');
   const currentLane = screen.getByRole('region', { name: 'Current' });
   expect(currentLane.querySelectorAll('.ui-linked-line-chart__point')).toHaveLength(0);
+});
+
+it('UIC-CHART-15.3 requests insertion after Z without mutating a controlled list', async () => {
+  const user = userEvent.setup();
+  const cursorList = Array.from({ length: 26 }, (_, i) => ({
+    name: String.fromCharCode(65 + i),
+    x: 1,
+  }));
+  const change = vi.fn();
+  render(
+    <LinkedLineChart
+      label="Signals"
+      channels={[voltage]}
+      cursorList={cursorList}
+      onCursorListChange={change}
+    />,
+  );
+  const plot = within(screen.getByRole('region', { name: 'Voltage' })).getByRole('group', {
+    name: 'Voltage',
+  });
+  plot.focus();
+  await user.keyboard('{Shift>}{F10}{/Shift}');
+  await user.click(await screen.findByRole('menuitem', { name: 'Insert cursor' }));
+  expect(change).toHaveBeenCalledWith([...cursorList, { name: 'AA', x: 2 }]);
+  expect(screen.queryByRole('slider', { name: 'AA' })).not.toBeInTheDocument();
 });
