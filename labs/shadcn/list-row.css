@@ -117,3 +117,64 @@
 .ui-list-row-content:has(.ui-list-row-content__meta) .ui-label__icon {
   margin-block-start: 2px;
 }
+
+/* Header and footer lines: full-width rows of the row text, ends apart, 10 pixels from the content. */
+.ui-list-row:has(> :is(.ui-list-row__header, .ui-list-row__footer)) {
+  row-gap: 0;
+}
+
+.ui-list-row__header,
+.ui-list-row__footer {
+  justify-content: space-between;
+  padding-inline: 12px;
+  color: inherit;
+  font-size: var(--ref-font-size-md);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-list-row__header {
+  padding-block-start: 10px;
+}
+
+.ui-list-row__footer {
+  padding-block-end: 10px;
+}
+
+.ui-list-row[data-size='xs'] > :is(.ui-list-row__header, .ui-list-row__footer) {
+  padding-inline: 10px;
+}
+
+.ui-list-row[data-size='xs'] > .ui-list-row__header {
+  padding-block-start: 8px;
+}
+
+.ui-list-row[data-size='xs'] > .ui-list-row__footer {
+  padding-block-end: 8px;
+}
+
+/* Leading media: a bare 16 pixel glyph, or a thumbnail with the small radius. */
+.ui-list-row-content__leading[data-variant='icon'] {
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+}
+
+.ui-list-row-content__leading[data-variant='icon'] svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-list-row-content__leading[data-variant='image'] {
+  border-radius: calc(var(--radius) * 0.6);
+}
+
+.ui-list-row-content:has(.ui-list-row-content__meta) > .ui-list-row-content__leading {
+  align-self: flex-start;
+  margin-block-start: 2px;
+}
+
+.ui-list__separator {
+  margin-block: 8px;
+  background: var(--border);
+}

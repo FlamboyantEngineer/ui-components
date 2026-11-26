@@ -1,0 +1,48 @@
+/*
+ * shadcn/ui stylesheet: PIN input, after the input OTP of shadcn/ui's "nova" style. Each group of
+ * cells is one joined box: square cells as tall as the field's controls (32 pixels by default) of
+ * 14 pixel text sharing their borders, the group's outer corners rounded. A focused cell takes the
+ * ring color and the 3 pixel ring over its neighbours. Between groups sits nova's minus glyph, a 9
+ * pixel stroke in the text color centred in 16 pixels, 8 pixels from each group.
+ */
+
+.ui-pin-input__group {
+  gap: 0;
+}
+
+.ui-pin-input__cell {
+  position: relative;
+  width: var(--ref-control-height);
+  height: var(--ref-control-height);
+  border-inline-start-width: 0;
+  border-radius: 0;
+  font-size: var(--ref-font-size-md);
+}
+
+.ui-pin-input__cell:first-child,
+.ui-pin-input__separator + .ui-pin-input__cell {
+  border-inline-start-width: 1px;
+  border-start-start-radius: var(--ref-radius);
+  border-end-start-radius: var(--ref-radius);
+}
+
+.ui-pin-input__cell:last-child,
+.ui-pin-input__cell:has(+ .ui-pin-input__separator) {
+  border-start-end-radius: var(--ref-radius);
+  border-end-end-radius: var(--ref-radius);
+}
+
+.ui-pin-input__cell[data-focused] {
+  z-index: 1;
+  border-color: var(--ring);
+  outline: 0;
+  box-shadow: var(--ref-focus-halo);
+}
+
+.ui-pin-input__separator {
+  width: 9px;
+  height: 1.5px;
+  margin-inline: 11.5px;
+  border-radius: 1px;
+  background: var(--foreground);
+}
