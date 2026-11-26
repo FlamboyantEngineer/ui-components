@@ -21,6 +21,10 @@ export interface ProseTableColumn extends ProseTableCell {
 }
 
 export interface ProseTableRow {
+  /** DOM id for linking to this row from another view. */
+  id?: string | undefined;
+  /** Identifies the current row in a linked view. */
+  'aria-current'?: NativeProps<'tr'>['aria-current'];
   /** Stable within the table. */
   key: string;
   cells: readonly ProseTableCell[];
@@ -65,7 +69,7 @@ function ProseTableBodyCell({
 
 function renderRows(rows: readonly ProseTableRow[], header: readonly ProseTableColumn[]) {
   return rows.map((row) => (
-    <tr key={row.key}>
+    <tr key={row.key} id={row.id} aria-current={row['aria-current']}>
       {row.cells.map((cell, index) => (
         <ProseTableBodyCell key={cell.key} column={header[index]}>
           {cell.content}

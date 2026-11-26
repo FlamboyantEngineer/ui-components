@@ -6,7 +6,7 @@
 
 ### UIC-PROSE-TABLE-1.1 - Headings and rows
 
-`ProseTable` shall render a `<table>` root with one `<thead>` row of `<th scope="col">` headings from `header` and one `<tbody>` row of `<td>` cells per entry of `rows`, each cell showing its `content` as given (inline markup, links, controls). Keys come from the caller's cell and row `key`s.
+`ProseTable` shall render a `<table>` root with one `<thead>` row of `<th scope="col">` headings from `header` and one `<tbody>` row of `<td>` cells per entry of `rows`, each cell showing its `content` as given (inline markup, links, controls). Keys come from the caller's cell and row `key`s. Each `ProseTableRow` may supply an HTML `id` for links and `aria-current` to identify the current row in a related view. Both apply to its native table row.
 
 Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
 Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
