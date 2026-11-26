@@ -356,12 +356,37 @@ Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.sp
 
 ### UIC-CHART-14.1 - Shared pan, zoom and numeric scales
 
-`EventChart` accepts `ChartViewportProps`. A positive, increasing `visibleRange` on a logarithmic axis, or any finite increasing range on a linear axis, controls the view in original x units. `defaultVisibleRange` initializes an uncontrolled view. The view intersects the data extent and falls back to the capture extent when the intersection is empty. `onVisibleRangeChange` reports requested changes. The initial extent includes the capture, and reset restores that extent. `xScale` defaults to `linear`. With `log`, equal ratios occupy equal distances and only positive x values draw. `xLabel` names the axis and `formatX` formats its ticks.
+`LinkedLineChart` and `EventChart` accept `ChartViewportProps`. A positive, increasing `visibleRange` on a logarithmic axis, or any finite increasing range on a linear axis, controls the view in original x units. `defaultVisibleRange` initializes an uncontrolled view. The view intersects the data extent and falls back to the capture extent when the intersection is empty. `onVisibleRangeChange` reports requested changes. The initial extent includes the capture, and reset restores that extent. `xScale` defaults to `linear`. With `log`, equal ratios occupy equal distances and only positive x values draw. `xLabel` names the axis and `formatX` formats its ticks.
 
 The plot supports Shift+drag to preview and zoom to a horizontal interval, double-click to reset, drag to pan, Ctrl+wheel to zoom around the coordinate beneath the pointer, and ordinary wheel scrolling by the browser. Navigation buttons and the plot context menu provide pan, zoom and reset. On the focused viewport, Left/Right pan one fifth of the visible span, +/− zoom at the center and Home resets. All moves operate in the displayed scale and remain within the capture extent. Secondary click, long touch, Shift+F10 and the Context Menu key open the existing ContextMenu.
 
 Implementation: `src/components/chart/numeric-axis.ts`, `src/components/chart/chart-viewport.tsx`, `labs/reference/chart.css`
 Verification: `src/components/chart/numeric-axis.test.ts`, `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
+## UIC-CHART-15 - Linked line chart
+
+### UIC-CHART-15.1 - Aligned channels and dense captures
+
+`LinkedLineChart` accepts keyed `channels` with a label and `samples` of numeric x and numeric or null y. Each channel accepts `unit`, `formatY`, `yRange`, `yScale`, a separately sampled dashed `reference` trace, and a numeric `threshold`. Samples may carry `lower` and `upper` error limits. A valid pair shades a band at that coordinate. Channels share an x scale and margin, with independent linear or positive logarithmic y scales and a common `channelHeight` in pixels. Named `xReferences` stay fixed across channels. Axis limits and reference styling use the existing chart conventions.
+
+Within each uninterrupted run the line retains first, lowest, highest and last samples per pixel column, in source x order. A missing measurement breaks the line. Missing or reversed bounds break the band. Zooming and resizing recompute the drawing from source values with a neighbor across each viewport edge. The table exposes full-resolution measurements, reference samples and band bounds. Each component also accepts the Chart frame's name, summary, table-view controls and root props.
+
+Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-model.ts`, `src/components/chart/linked-lane.tsx`, `labs/src/chart-measurement-cases.tsx`
+Verification: `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+
+### UIC-CHART-15.2 - Cursor coordinates and readout
+
+`cursors` and `defaultCursors` are pairs in A, B order. Each mark identifies its nearest displayed sample with a dot. Its slider expresses position as a percentage and announces the coordinate and reading in host units. Each cursor is a named slider and also has a numeric position field in x units. Drag or use arrow keys to move a cursor, Shift+arrow for a larger move, and Home/End for the visible edges. Cursors can cross. `onCursorsChange(pair, readout)` reports the requested positions, absolute x separation, and each channel's nearest displayed source samples and signed B minus A amplitude. A cursor outside the view or an empty channel reports a null sample. Proximity is measured along the displayed axis. A tie between two distinct coordinates picks the earlier sample. Peak-to-peak is the maximum minus minimum of the channel's full-resolution measurements in the visible x range.
+
+Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-model.ts`, `src/components/chart/chart-placement.tsx`
+Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+
+### UIC-CHART-15.3 - Manual and automatic measurement placement
+
+Each channel menu places A, B, a new marker or an existing marker at the pointer coordinate (keyboard uses the focused mark or viewport midpoint), the nearest displayed sample, the first full-resolution minimum or maximum, first rising or falling threshold crossing, or first sample strictly outside its supplied band. Crossings linearly interpolate consecutive valid source values in data units. Samples exactly on a band limit pass. Unavailable measurements disable their actions. Peak-to-peak places A at the minimum and B at the maximum together. Zoom between cursors fits their span. `markers`, `defaultMarkers` and `onMarkersChange` use the existing named reference-line shape. Move a marker by drag, keyboard, or numeric entry and remove it by its button or Delete key. Placement only changes marker or cursor coordinates.
+
+Implementation: `src/components/chart/chart-placement.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-line-chart.tsx`
+Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
 
 ## UIC-CHART-16 - Event chart
 
@@ -455,7 +480,19 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-chart__viewport`                 | slot      |                                                   | Focusable plot and context menu target.                                             |
 | `ui-event-chart`                     | root      |                                                   | Numeric event figure.                                                               |
 | `ui-event-chart__event`              | slot      |                                                   | Individually focusable point or interval.                                           |
+| `ui-linked-line-chart`               | root      |                                                   | Linked numeric channels.                                                            |
+| `ui-linked-line-chart__channel`      | slot      |                                                   | Named channel region.                                                               |
+| `ui-linked-line-chart__line`         | slot      |                                                   | Measured trace.                                                                     |
+| `ui-linked-line-chart__comparison`   | slot      |                                                   | Reference trace.                                                                    |
+| `ui-linked-line-chart__envelope`     | slot      |                                                   | Sampled error band.                                                                 |
+| `ui-linked-line-chart__cursor`       | slot      |                                                   | Movable cursor.                                                                     |
+| `ui-linked-line-chart__marker`       | slot      |                                                   | Movable marker.                                                                     |
+| `ui-linked-line-chart__readout`      | slot      |                                                   | Coordinate editors and measured values.                                             |
+| `data-mark-id`                       | attribute |                                                   | Internal typed identity on a movable mark.                                          |
+| `data-coordinate`                    | attribute |                                                   | Source x of a movable measurement mark.                                             |
 | `data-range-start`                   | attribute |                                                   | First visible x coordinate on the viewport.                                         |
 | `data-range-end`                     | attribute |                                                   | Last visible x coordinate on the viewport.                                          |
 | `ui-chart__selection`                | slot      |                                                   | Preview of a horizontal zoom selection.                                             |
 | `data-x-scale`                       | attribute | `linear`, `log`                                   | Numeric x scale on the event or linked chart root.                                  |
+| `data-y-scale`                       | attribute | `linear`, `log`                                   | Amplitude scale of a linked channel.                                                |
+| `data-key`                           | attribute |                                                   | Host key on a linked channel.                                                       |

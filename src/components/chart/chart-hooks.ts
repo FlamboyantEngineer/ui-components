@@ -48,3 +48,12 @@ export const chartAxisHooks = createHooks('chart-axis', ['line', 'tick', 'label'
 export const chartLegendHooks = createHooks('chart-legend', ['item', 'swatch', 'label']);
 
 export const eventChartHooks = createHooks('event-chart', ['event']);
+export const linkedChartHooks = createHooks('linked-line-chart', [
+  'channel',
+  'line',
+  'comparison',
+  'envelope',
+  'cursor',
+  'marker',
+  'readout',
+]);
