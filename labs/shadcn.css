@@ -206,6 +206,7 @@
 @import url('shadcn/menubar.css') layer(ui-shadcn);
 @import url('shadcn/navigation-rail.css') layer(ui-shadcn);
 @import url('shadcn/pagination.css') layer(ui-shadcn);
+@import url('shadcn/pin-input.css') layer(ui-shadcn);
 @import url('shadcn/popover.css') layer(ui-shadcn);
 @import url('shadcn/progress-bar.css') layer(ui-shadcn);
 @import url('shadcn/scroll-region.css') layer(ui-shadcn);

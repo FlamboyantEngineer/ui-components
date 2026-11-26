@@ -260,3 +260,31 @@
   ) {
   border-color: var(--input);
 }
+
+/* Group parts: a separator in the input color, inset 1 pixel at its ends; a muted text box. */
+.ui-button-group[data-orientation] > .ui-button-group__separator {
+  background: var(--input);
+}
+
+.ui-button-group > .ui-button-group__separator[data-orientation='vertical'] {
+  margin-block: 1px;
+}
+
+.ui-button-group > .ui-button-group__separator[data-orientation='horizontal'] {
+  margin-inline: 1px;
+}
+
+.ui-button-group__text {
+  gap: 8px;
+  padding-inline: 10px;
+  border-color: var(--border);
+  background: var(--muted);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
+  line-height: calc(1.25 / 0.875);
+}
+
+.ui-button-group__text svg {
+  width: 16px;
+  height: 16px;
+}
