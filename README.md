@@ -66,6 +66,8 @@ Build an assistant thread with `/message-scroller`, `/message`, `/bubble`, and a
 
 Other focused family entries are `/button/group`, `/badge/status-light`, `/chart/sparkline`, `/text-diff/inline`, `/dialog/controller`, `/tooltip/truncation` and `/scroll-region/overview`. The button group entry includes the group, separator and text parts. The sparkline entry loads its small SVG renderer independently of the chart engine; scroll overview accepts an external `scrollRef` and keeps its draggable thumb.
 
+For numeric captures and elapsed events, import `LinkedLineChart` and `EventChart` from `/chart`. The [chart integration guide](docs/CHART-INTEGRATION.md) shows how to supply samples, error bands, units and host-controlled measurements.
+
 Then style the hooks in the host stylesheet:
 
 ```css

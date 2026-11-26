@@ -352,6 +352,65 @@ The image shall be described by a `<desc>` that reads its lowest, highest and la
 Implementation: `src/components/chart/sparkline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.spec.ts`
 
+## UIC-CHART-14 - Numeric viewport
+
+### UIC-CHART-14.1 - Shared pan, zoom and numeric scales
+
+`LinkedLineChart` and `EventChart` accept `ChartViewportProps`. A positive, increasing `visibleRange` on a logarithmic axis, or any finite increasing range on a linear axis, controls the view in original x units. `defaultVisibleRange` initializes an uncontrolled view. The view intersects the data extent and falls back to the capture extent when the intersection is empty. `onVisibleRangeChange` reports requested changes. The initial extent includes the capture, and reset restores that extent. `xScale` defaults to `linear`. With `log`, equal ratios occupy equal distances and only positive x values draw. `xLabel` names the axis and `formatX` formats its ticks.
+
+Drag a zoomed plot to pan, Shift+drag to preview and zoom to a horizontal interval, or Ctrl+wheel to zoom around the pointer. Ordinary wheel input scrolls the page. Choose **Reset view** in the plot context menu to restore the full extent.
+
+The viewport’s `data-gesture` identifies the interaction as `idle`, `pan`, `panning`, `select`, `selecting`, `zoom-in`, `zoom-out` or `move-mark`. The reference styles show a grab hand when panning is available, a closed hand during a pan, a magnifier for zoom, a crosshair during interval selection and a horizontal resize cursor on movable marks.
+
+On the focused viewport, Left/Right pan one fifth of the visible span, +/− zoom at the center and Home resets. All moves operate in the displayed scale and remain within the capture extent. Secondary click, long touch, Shift+F10 and the Context Menu key open the existing ContextMenu.
+
+Implementation: `src/components/chart/numeric-axis.ts`, `src/components/chart/chart-viewport.tsx`, `src/components/chart/use-plot-pointer.ts`, `labs/reference/chart.css`
+Verification: `src/components/chart/numeric-axis.test.ts`, `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
+## UIC-CHART-15 - Linked line chart
+
+### UIC-CHART-15.1 - Aligned channels and dense captures
+
+`LinkedLineChart` accepts keyed `channels` with a label and `samples` of numeric x and numeric or null y. Each channel accepts `unit`, `formatY`, `yRange`, `yScale`, a separately sampled dashed `reference` trace, and a numeric `threshold`. Samples may carry `lower` and `upper` error limits. A valid pair shades a band at that coordinate. Channels share an x scale and margin, with independent linear or positive logarithmic y scales and a common `channelHeight` in pixels. Named `xReferences` stay fixed across channels. Axis limits and reference styling use the existing chart conventions.
+
+Within each uninterrupted run the line retains first, lowest, highest and last samples per pixel column, in source x order. A missing measurement breaks the line. Missing or reversed bounds break the band. Zooming and resizing recompute the drawing from source values with a neighbor across each viewport edge. The table exposes full-resolution measurements, reference samples and band bounds. Each component also accepts the Chart frame's name, summary, table-view controls and root props.
+
+Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-model.ts`, `src/components/chart/linked-lane.tsx`, `labs/src/chart-measurement-cases.tsx`
+Verification: `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+
+### UIC-CHART-15.2 - Cursor coordinates and readout
+
+`cursors` and `defaultCursors` are pairs in A, B order. Each mark identifies its nearest displayed sample with a dot. Its slider expresses position as a percentage and announces the coordinate and reading in host units. Each cursor is a named slider with an editable position in the readout table. Drag or use arrow keys to move a cursor, Shift+arrow for a larger move, and Home/End for the visible edges. Cursors can cross. `onCursorsChange(pair, readout)` reports the requested positions, absolute x separation, and each channel's nearest displayed source samples and signed B minus A amplitude. A cursor outside the view or an empty channel reports a null sample. Proximity is measured along the displayed axis. A tie between two distinct coordinates picks the earlier sample. Peak-to-peak is the maximum minus minimum of the channel's full-resolution measurements in the visible x range.
+
+The plot menu inserts a cursor at the pointer or focused coordinate. New cursors take the first unused alphabetic name (A through Z, then AA, AB and so on). Existing names stay stable. The menu on a movable cursor or anywhere on its readout row offers Delete cursor. Focus the row name and press Shift+F10 for keyboard access. Fixed references and channel points are read-only. B minus A measurements and zoom between cursors require both A and B. Peak-to-peak placement restores both.
+
+`ChartCursorProps` accepts a controlled `cursorList`, an initial `defaultCursorList`, and `onCursorListChange(next)` for all insertions, moves, renames and deletions. Each `LinkedChartCursor` has a unique stable string `name` and a finite source coordinate `x`. Its optional `label` is the editable display name and defaults to `name`. Renaming preserves identity, position and the roles of A and B in measurements. A controlled list takes precedence over the legacy A/B coordinate pair.
+
+The cursor readings table has a row for each A/B cursor, named movable marker and fixed x reference, plus each host-supplied channel point. Each channel has its own column with its amplitude unit. The table shows the nearest displayed sample’s x coordinate when it differs from the cursor position. The footer gives signed B minus A differences and visible-range peak-to-peak amplitudes. Absolute x separation appears in the caption. Click or keyboard-activate a movable position to edit it as text. Enter or blur commits a valid position and Escape cancels. Bare numbers use source units. The optional `xUnits` map supplies accepted case-sensitive suffixes and their multipliers in source units. Invalid, unknown-unit or out-of-extent entries keep the editor open with an error. Fixed coordinates remain labels. Click or keyboard-activate a cursor name to rename it across the plots, readout, difference row and menus. Names are trimmed, nonempty and unique among displayed cursor names. Time and name editors occupy the saved label’s space while editing, including when validation is shown.
+
+The optional `measurements` prop accepts ready-made rows or a pure function of `LinkedChartMeasurementContext`. It receives all named cursors with their source positions and editable labels, movable markers, fixed x references, the visible range, original channels, the A/B readout (null when either is missing), and a nearest-displayed-sample lookup by channel id and coordinate. Results follow pointer, keyboard, table edits and host prop updates. Each `LinkedChartMeasurementRow` has a stable `id`, `label`, optional scalar `value` and optional `valuesByChannel` map. Cells accept host-rendered content with its own units. The table appends rows in caller order and leaves missing values empty.
+
+A channel accepts optional `points: readonly LinkedChartPoint[]`. Each point has a channel-local `id`, a `label`, and numeric `x` and `y` in source units. Points are fixed annotations. The plot draws a labeled point within its axes and the table retains its supplied coordinates when zoomed away. A point annotates one channel. It does not contribute samples to the capture or to measurements.
+
+Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-model.ts`, `src/components/chart/chart-placement.tsx`
+Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+
+### UIC-CHART-15.3 - Manual and automatic measurement placement
+
+Each channel menu places A, B, a new marker or an existing marker at the pointer coordinate (keyboard uses the focused mark or viewport midpoint), the nearest displayed sample, the first full-resolution minimum or maximum, first rising or falling threshold crossing, or first sample strictly outside its supplied band. Crossings linearly interpolate consecutive valid source values in data units. Samples exactly on a band limit pass. Unavailable measurements disable their actions. Peak-to-peak places A at the minimum and B at the maximum together. Zoom between cursors fits their span. `markers`, `defaultMarkers` and `onMarkersChange` use the existing named reference-line shape. Move a marker by drag, keyboard, or numeric entry and remove it from its reading row’s context menu or with the Delete key. The dragged mark carries `data-dragging` until release or cancellation. The reference styles thicken the active line from 1 to 2 pixels during a drag or keyboard focus. The transparent hit area keeps its width. Placement only changes marker or cursor coordinates.
+
+Implementation: `src/components/chart/chart-placement.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-line-chart.tsx`
+Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+
+## UIC-CHART-16 - Event chart
+
+### UIC-CHART-16.1 - Exact numeric points and intervals
+
+`EventChart` accepts `events` with stable `id`, `label`, numeric `start` and optional inclusive `end`. A zero-length interval draws as a point. Valid events sort by start and retain input order at ties. Visible marks share a roving tab stop with Left/Right and Home/End navigation. Hover and keyboard focus reveal event details. `renderDetails(event)` receives the original item. Names and table rows include the numeric endpoints alongside a differing `formatX` result so rounded labels preserve distinguishable details. Coincident events have separate identities and table rows. The chart supports the shared numeric viewport and Chart frame.
+
+Implementation: `src/components/chart/event-chart.tsx`, `src/components/chart/chart-points.tsx`, `labs/src/chart-measurement-cases.tsx`
+Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values / Meaning                                  |
@@ -431,3 +490,30 @@ Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.sp
 | `data-variant`                       | attribute | `line`, `area`                                    | Line or filled area.                                                                |
 | `data-marker`                        | attribute | `min`, `max`, `last`                              | Which value a marker marks.                                                         |
 | `data-empty`                         | state     | `true`                                            | The series has no finite value.                                                     |
+| `ui-chart__viewport`                 | slot      |                                                   | Focusable plot and context menu target.                                             |
+| `ui-event-chart`                     | root      |                                                   | Numeric event figure.                                                               |
+| `ui-event-chart__event`              | slot      |                                                   | Individually focusable point or interval.                                           |
+| `ui-linked-line-chart`               | root      |                                                   | Linked numeric channels.                                                            |
+| `ui-linked-line-chart__channel`      | slot      |                                                   | Named channel region.                                                               |
+| `ui-linked-line-chart__line`         | slot      |                                                   | Measured trace.                                                                     |
+| `ui-linked-line-chart__comparison`   | slot      |                                                   | Reference trace.                                                                    |
+| `ui-linked-line-chart__envelope`     | slot      |                                                   | Sampled error band.                                                                 |
+| `ui-linked-line-chart__cursor`       | slot      |                                                   | Movable cursor.                                                                     |
+| `ui-linked-line-chart__marker`       | slot      |                                                   | Movable marker.                                                                     |
+| `ui-linked-line-chart__measurements` | slot      |                                                   | Scrollable table of cursor, reference and point readings.                           |
+| `ui-linked-line-chart__position`     | slot      |                                                   | In-place movable position editor.                                                   |
+| `data-display-value`                 | attribute |                                                   | Saved cursor name or formatted position that sizes the readout cell.                |
+| `ui-linked-line-chart__mark-name`    | slot      |                                                   | Keyboard context menu target for a cursor reading row.                              |
+| `ui-linked-line-chart__point`        | slot      |                                                   | Named fixed channel point.                                                          |
+| `ui-linked-line-chart__fixed-label`  | slot      |                                                   | Fixed annotation label in the readout.                                              |
+| `ui-linked-line-chart__sample-x`     | slot      |                                                   | Nearest sample coordinate when it differs from the mark.                            |
+| `data-mark-id`                       | attribute |                                                   | Internal typed identity on a movable mark.                                          |
+| `data-coordinate`                    | attribute |                                                   | Source x of a movable measurement mark.                                             |
+| `data-dragging`                      | state     | `true`                                            | The movable cursor or marker being dragged in this channel.                         |
+| `data-gesture`                       | attribute |                                                   | Available or active pointer gesture on a numeric viewport.                          |
+| `data-range-start`                   | attribute |                                                   | First visible x coordinate on the viewport.                                         |
+| `data-range-end`                     | attribute |                                                   | Last visible x coordinate on the viewport.                                          |
+| `ui-chart__selection`                | slot      |                                                   | Preview of a horizontal zoom selection.                                             |
+| `data-x-scale`                       | attribute | `linear`, `log`                                   | Numeric x scale on the event or linked chart root.                                  |
+| `data-y-scale`                       | attribute | `linear`, `log`                                   | Amplitude scale of a linked channel.                                                |
+| `data-key`                           | attribute |                                                   | Host key on a linked channel.                                                       |

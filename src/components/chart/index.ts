@@ -16,6 +16,7 @@ export { ChartLegend } from './chart-legend.js';
 export type { ChartReference, ChartReferenceBand, ChartReferenceLine } from './chart-references.js';
 export type { DonutChartProps, DonutChartSegment } from './donut-chart.js';
 export { DonutChart } from './donut-chart.js';
+export { EventChart, type EventChartItem, type EventChartProps } from './event-chart.js';
 export type {
   LineChartPoint,
   LineChartProps,
@@ -24,7 +25,17 @@ export type {
   LineChartX,
 } from './line-chart.js';
 export { LineChart } from './line-chart.js';
+export type { LinkedChartChannel, LinkedChartPoint, LinkedChartSample } from './linked-channel.js';
+export { LinkedLineChart, type LinkedLineChartProps } from './linked-line-chart.js';
+export type {
+  LinkedChartMeasurementContext,
+  LinkedChartMeasurementRow,
+  LinkedChartMeasurements,
+} from './linked-measurements.js';
+export type { LinkedChartReading, LinkedChartReadout } from './linked-model.js';
+export type { ChartAxisScale, ChartViewportProps } from './numeric-axis.js';
 export type { ScatterChartPoint, ScatterChartProps, ScatterChartSeries } from './scatter-chart.js';
 export { ScatterChart } from './scatter-chart.js';
 export type { SparklineMarker, SparklineProps, SparklineVariant } from './sparkline.js';
 export { Sparkline } from './sparkline.js';
+export type { ChartCursorProps, LinkedChartCursor } from './use-chart-cursors.js';
