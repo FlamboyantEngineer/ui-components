@@ -2,9 +2,12 @@ import { defineStrings } from '../message-format.js';
 /** Strings of charts and dashboard grids. */
 interface DashboardStrings {
   chartReadings: string;
+  chartMeasurement: string;
   chartFixed: string;
   chartVisibleRange: string;
   chartPositionError: (low: string, high: string) => string;
+  chartCursorName: string;
+  chartCursorNameError: string;
   chartInsertCursor: string;
   chartDeleteCursor: string;
   chartPeakAmplitude: string;

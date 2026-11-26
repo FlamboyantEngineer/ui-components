@@ -3,6 +3,10 @@ import { userEvent } from '@testing-library/user-event';
 import { expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { LinkedLineChart } from './linked-line-chart.js';
+import type {
+  LinkedChartMeasurementContext,
+  LinkedChartMeasurements,
+} from './linked-measurements.js';
 
 const voltage = {
   id: 'v',
@@ -208,4 +212,98 @@ it('UIC-CHART-15.3 requests insertion after Z without mutating a controlled list
   await user.click(await screen.findByRole('menuitem', { name: 'Insert cursor' }));
   expect(change).toHaveBeenCalledWith([...cursorList, { name: 'AA', x: 2 }]);
   expect(screen.queryByRole('slider', { name: 'AA' })).not.toBeInTheDocument();
+});
+
+it('UIC-CHART-15.2 validates cursor names and preserves a controlled cursor’s key and label across moves', async () => {
+  const user = userEvent.setup();
+  const change = vi.fn();
+  const view = (label: string) => (
+    <LinkedLineChart
+      label="Signals"
+      channels={[voltage]}
+      cursorList={[
+        { name: 'A', label, x: 1 },
+        { name: 'B', x: 3 },
+      ]}
+      onCursorListChange={change}
+    />
+  );
+  const { rerender } = render(view('Start'));
+  await user.click(screen.getByRole('button', { name: 'Edit Cursor name Cursor Start' }));
+  const input = screen.getByRole('textbox', { name: 'Cursor name' });
+  await user.clear(input);
+  await user.type(input, 'B{Enter}');
+  expect(await screen.findByText(/unique among the cursors/)).toBeVisible();
+  expect(change).not.toHaveBeenCalled();
+  await user.clear(input);
+  await user.type(input, '  Rise  {Enter}');
+  expect(change).toHaveBeenLastCalledWith([
+    { name: 'A', label: 'Rise', x: 1 },
+    { name: 'B', x: 3 },
+  ]);
+  expect(screen.getByRole('slider', { name: 'Start' })).toBeVisible();
+  rerender(view('Rise'));
+  screen.getByRole('slider', { name: 'Rise' }).focus();
+  await user.keyboard('{End}');
+  expect(change).toHaveBeenLastCalledWith([
+    { name: 'A', label: 'Rise', x: 4 },
+    { name: 'B', x: 3 },
+  ]);
+});
+
+it('UIC-CHART-15.2 supplies original data and live positions for host measurements and accepts static results', async () => {
+  const user = userEvent.setup();
+  const channels = [
+    { ...voltage, id: 1 },
+    { ...current, id: '1' },
+  ];
+  const calculated = vi.fn((context: LinkedChartMeasurementContext) => [
+    {
+      id: 'window',
+      label: 'Selected interval',
+      value: context.cursors.map((c) => c.x).join(' to '),
+      valuesByChannel: new Map<string | number, string>([
+        [1, 'first'],
+        ['1', 'second'],
+      ]),
+    },
+  ]);
+  const chart = (measurements: LinkedChartMeasurements) => (
+    <LinkedLineChart
+      label="Signals"
+      channels={channels}
+      defaultCursors={[1, 3]}
+      defaultMarkers={[{ id: 'probe', label: 'Probe', value: 1 }]}
+      xReferences={[{ id: 'trigger', label: 'Trigger', value: 2 }]}
+      measurements={measurements}
+    />
+  );
+  const { rerender } = render(chart(calculated));
+  const table = within(screen.getByRole('table', { name: 'Cursor readings' }));
+  const row = within(table.getByRole('row', { name: /^Selected interval/ }));
+  expect(row.getAllByRole('cell').map((cell) => cell.textContent)).toEqual([
+    '1 to 3',
+    'first',
+    'second',
+  ]);
+  const context = calculated.mock.lastCall?.[0];
+  expect(context?.channels[0]?.samples).toBe(voltage.samples);
+  expect(context?.visibleRange).toEqual([0, 4]);
+  expect(context?.markers[0]?.id).toBe('probe');
+  expect(context?.xReferences[0]?.id).toBe('trigger');
+  expect(context?.nearestDisplayedSample(1, 2)).toBe(voltage.samples[1]);
+  expect(context?.nearestDisplayedSample('missing', 2)).toBeNull();
+  const cursor = within(screen.getByRole('region', { name: 'Voltage' })).getByRole('slider', {
+    name: 'B',
+  });
+  cursor.focus();
+  await user.keyboard('{End}');
+  expect(row.getByRole('cell', { name: '1 to 4' })).toBeVisible();
+  await user.keyboard('{Delete}');
+  expect(calculated.mock.lastCall?.[0].pair).toBeNull();
+  rerender(chart([{ id: 1, label: 'Acquisition count', value: 0 }]));
+  expect(table.queryByRole('row', { name: /^Selected interval/ })).not.toBeInTheDocument();
+  expect(
+    within(table.getByRole('row', { name: /^Acquisition count/ })).getByRole('cell', { name: '0' }),
+  ).toBeVisible();
 });

@@ -3,6 +3,7 @@
 import { useUiStrings } from '../../core/provider.js';
 import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { InlineEdit } from '../inline-edit/inline-edit.js';
+import { linkedChartHooks as hooks } from './chart-hooks.js';
 
 interface PositionFormat {
   extent: ScaleInterval;
@@ -42,6 +43,7 @@ export function ChartPositionEdit({
   };
   return (
     <InlineEdit
+      {...hooks.slot('position', { 'display-value': shown })}
       label={label}
       value={draft}
       renderValue={() => shown}

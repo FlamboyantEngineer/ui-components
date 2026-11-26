@@ -192,14 +192,18 @@ test('UIC-CHART-15.2 UIC-CHART-15.3 edits a cursor in units and deletes targeted
   await expect(field).toBeVisible();
   await field.fill('820 ns');
   await field.press('Enter');
-  const row = chart.getByRole('row', { name: /^C / });
+  const row = chart
+    .getByRole('row')
+    .filter({ has: page.getByRole('button', { name: 'Edit Cursor name Cursor C', exact: true }) });
   await expect(row).toContainText('820.00 ns');
   const line = plot.getByRole('slider', { name: 'C', exact: true });
   expect(Number(await line.getAttribute('data-coordinate'))).toBeCloseTo(820e-9, 15);
   await line.click({ button: 'right' });
   await page.getByRole('menuitem', { name: 'Delete cursor' }).click();
   await expect(row).toHaveCount(0);
-  const remaining = chart.getByRole('row', { name: /^D / });
+  const remaining = chart
+    .getByRole('row')
+    .filter({ has: page.getByRole('button', { name: 'Edit Cursor name Cursor D', exact: true }) });
   await remaining.getByRole('cell').last().click({ button: 'right' });
   await page.getByRole('menuitem', { name: 'Delete cursor' }).click();
   await expect(remaining).toHaveCount(0);
@@ -214,4 +218,80 @@ test('UIC-CHART-15.1 links magnitude and phase at the low-pass cutoff', async ({
   await expect(row.getByRole('cell', { name: '-3.01', exact: true })).toBeVisible();
   await expect(row.getByRole('cell', { name: '-90.00', exact: true })).toBeVisible();
   await expect(figure.getByRole('slider', { name: 'B', exact: true })).toHaveCount(2);
+});
+
+for (const width of [1280, 375]) {
+  test(`UIC-CHART-15.2 keeps the readout in place while editing at ${width}px`, async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width, height: 820 });
+    await lab.open('chart');
+    const chart = page.getByRole('figure', { name: 'Captured signals' });
+    const table = chart.getByRole('table', { name: 'Cursor readings' });
+    await table.scrollIntoViewIfNeeded();
+    await page.evaluate(() => document.fonts.ready);
+    const geometry = () =>
+      table.evaluate((el) => {
+        const origin = el.getBoundingClientRect();
+        return [el, ...el.querySelectorAll('tr,th,td')].map((cell) => {
+          const box = cell.getBoundingClientRect();
+          return [box.x - origin.x, box.y - origin.y, box.width, box.height];
+        });
+      });
+    const original = await geometry();
+    const time = table.getByRole('button', { name: /^Edit Cursor A / });
+    await time.click();
+    const input = table.getByRole('textbox', { name: 'Cursor A', exact: true });
+    await expect(input).toBeFocused();
+    expect(await geometry()).toEqual(original);
+    await input.fill('1234567890123456789 V');
+    await input.press('Enter');
+    await expect(table.getByText(/Enter a position/)).toBeVisible();
+    expect(await geometry()).toEqual(original);
+    await input.press('Escape');
+    await expect(time).toBeFocused();
+    expect(await geometry()).toEqual(original);
+
+    await table
+      .getByRole('button', { name: 'Edit Cursor name Cursor A', exact: true })
+      .press('Enter');
+    const name = table.getByRole('textbox', { name: 'Cursor name' });
+    await name.fill('Rising edge');
+    expect(await geometry()).toEqual(original);
+    await name.press('Enter');
+    await expect(
+      table.getByRole('button', { name: 'Edit Cursor name Cursor Rising edge' }),
+    ).toBeFocused();
+    await expect(chart.getByRole('slider', { name: 'Rising edge', exact: true })).toHaveCount(2);
+    await expect(table.getByRole('rowheader', { name: 'B − Rising edge' })).toBeVisible();
+    const cursor = chart.getByRole('slider', { name: 'Rising edge', exact: true }).first();
+    await cursor.press('Shift+F10');
+    await expect(
+      page.getByRole('menuitem', { name: 'Cursor Rising edge', exact: true }),
+    ).toBeVisible();
+  });
+}
+
+test('UIC-CHART-15.2 reports host-calculated peak and peak-to-peak over the interval between live cursors', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const table = page
+    .getByRole('table', { name: 'Cursor readings' })
+    .filter({ has: page.getByRole('rowheader', { name: 'Peak between cursors' }) });
+  const peak = table.getByRole('row', { name: /^Peak between cursors/ });
+  const span = table.getByRole('row', { name: /^Peak-to-peak between cursors/ });
+  const rise = table.getByRole('row', { name: /^Rise time/ });
+  const fixedRise = await rise.innerText();
+  await expect(peak.getByRole('cell', { name: '5 V', exact: true })).toHaveCount(0);
+  await table.getByRole('button', { name: /^Edit Cursor B / }).click();
+  const time = table.getByRole('textbox', { name: 'Cursor B', exact: true });
+  await time.fill('820 ns');
+  await time.press('Enter');
+  await expect(peak.getByRole('cell', { name: '5 V', exact: true })).toBeVisible();
+  await expect(peak.getByRole('cell', { name: '42 mA', exact: true })).toBeVisible();
+  await expect(span.getByRole('cell', { name: '10 V', exact: true })).toBeVisible();
+  expect(await rise.innerText()).toBe(fixedRise);
 });

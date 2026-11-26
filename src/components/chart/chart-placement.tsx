@@ -28,6 +28,7 @@ interface MovableMark {
   kind: 'cursor' | 'marker';
   tone?: ChartReferenceLine['tone'];
   move: (x: number) => void;
+  rename?: ((label: string) => void) | undefined;
   remove?: (() => void) | undefined;
 }
 
@@ -36,10 +37,11 @@ export function getChartMarks(placement: ChartPlacement): MovableMark[] {
   return [
     ...cursorList.map((c) => ({
       id: 'cursor:' + c.name,
-      label: c.name,
+      label: c.label ?? c.name,
       x: c.x,
       kind: 'cursor' as const,
       move: (x: number) => moveCursor(c.name, x),
+      rename: (label: string) => placement.renameCursor(c.name, label),
       remove: () => deleteCursor(c.name),
     })),
     ...markers.map((m) => ({
@@ -187,7 +189,7 @@ export function usePlacementMenu(
       },
       ...placement.cursorList.map((c) => ({
         id: 'place:' + c.name,
-        label: s.chartCursor(c.name),
+        label: s.chartCursor(c.label ?? c.name),
         items: entries('place:' + c.name, (x) => placement.moveCursor(c.name, x)),
       })),
       { id: 'marker', label: s.chartAddMarker, items: entries('marker', placement.addMarker) },

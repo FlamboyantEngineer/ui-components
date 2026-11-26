@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { InlineEdit } from '../inline-edit/inline-edit.js';
 import {
   ProseTable,
   type ProseTableColumn,
@@ -15,6 +16,7 @@ import { ChartPositionEdit } from './chart-position-edit.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import { CursorRowMenu } from './cursor-row-menu.js';
 import type { LinkedChartPoint } from './linked-channel.js';
+import { type LinkedChartMeasurements, measurementRows } from './linked-measurements.js';
 import { type DrawnChannel, readCursors, readDisplayedSample } from './linked-model.js';
 
 interface ReadingPosition {
@@ -74,7 +76,19 @@ function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: numb
   );
 }
 
-function positionName(mark: ReadingPosition, fixedLabel: string) {
+function positionName(mark: ReadingPosition, s: ReturnType<typeof useUiStrings>) {
+  if (mark.mark?.rename) {
+    const shown = s.chartCursor(mark.label);
+    return (
+      <InlineEdit
+        {...hooks.slot('mark-name', { 'mark-id': mark.mark.id, 'display-value': shown })}
+        label={s.chartCursorName}
+        value={mark.label}
+        renderValue={() => shown}
+        onSave={mark.mark.rename}
+      />
+    );
+  }
   return (
     <>
       {mark.mark ? (
@@ -91,11 +105,35 @@ function positionName(mark: ReadingPosition, fixedLabel: string) {
       {mark.fixed && (
         <>
           {' '}
-          <small {...hooks.slot('fixed-label')}>{fixedLabel}</small>
+          <small {...hooks.slot('fixed-label')}>{s.chartFixed}</small>
         </>
       )}
     </>
   );
+}
+
+function columns(
+  lanes: readonly DrawnChannel[],
+  s: ReturnType<typeof useUiStrings>,
+  { xLabel, hasMeasurements }: { xLabel: string; hasMeasurements: boolean },
+): ProseTableColumn[] {
+  return [
+    {
+      key: 'mark',
+      content: hasMeasurements ? s.chartMeasurement : s.chartPoint,
+      isRowHeader: true,
+    },
+    {
+      key: 'position',
+      content: hasMeasurements ? xLabel + ' / ' + s.chartAmount : xLabel,
+      align: 'end',
+    },
+    ...lanes.map(({ channel }) => ({
+      key: 'channel:' + toKeyIdentity(channel.id),
+      align: 'end' as const,
+      content: channel.label + (channel.unit ? ' (' + channel.unit + ')' : ''),
+    })),
+  ];
 }
 
 export function LinkedReadings({
@@ -106,6 +144,8 @@ export function LinkedReadings({
   xLabel,
   extent,
   xUnits,
+  measurements,
+  visibleRange,
 }: {
   lanes: readonly DrawnChannel[];
   placement: ChartPlacement;
@@ -114,19 +154,19 @@ export function LinkedReadings({
   xLabel: string;
   extent: ScaleInterval;
   xUnits?: Readonly<Record<string, number>> | undefined;
+  measurements?: LinkedChartMeasurements | undefined;
+  visibleRange: ScaleInterval;
 }) {
   const s = useUiStrings();
-  const header: ProseTableColumn[] = [
-    { key: 'mark', content: s.chartPoint, isRowHeader: true },
-    { key: 'position', content: xLabel, align: 'end' },
-    ...lanes.map(({ channel }) => ({
-      key: 'channel:' + toKeyIdentity(channel.id),
-      align: 'end' as const,
-      content: channel.label + (channel.unit ? ' (' + channel.unit + ')' : ''),
-    })),
-  ];
   const [a, b] = placement.cursors;
   const readout = readCursors(lanes, placement.cursors);
+  const extra = measurementRows(measurements, lanes, {
+    pair: placement.hasPair ? readout : null,
+    cursors: placement.cursorList,
+    markers: placement.markers,
+    xReferences: references,
+    visibleRange,
+  });
   const totals = (measure: 'deltaY' | 'peakToPeak') =>
     readout.channels.map((reading, index) => {
       const value = reading[measure];
@@ -134,7 +174,7 @@ export function LinkedReadings({
     });
   const rows = getPositions(placement, references, lanes).map((mark) =>
     readingRow(mark.key, [
-      positionName(mark, s.chartFixed),
+      positionName(mark, s),
       mark.mark ? (
         <ChartPositionEdit
           label={mark.mark.kind === 'cursor' ? s.chartCursor(mark.label) : mark.label}
@@ -157,13 +197,20 @@ export function LinkedReadings({
             {s.chartReadings} {placement.hasPair && <small>|Δx| = {formatX(readout.deltaX)}</small>}
           </>
         }
-        header={header}
+        header={columns(lanes, s, { xLabel, hasMeasurements: extra.length > 0 })}
         rows={rows}
         footer={[
           ...(placement.hasPair
-            ? [readingRow('delta', ['B − A', formatX(b - a), ...totals('deltaY')])]
+            ? [
+                readingRow('delta', [
+                  placement.differenceLabel,
+                  formatX(b - a),
+                  ...totals('deltaY'),
+                ]),
+              ]
             : []),
           readingRow('p2p', [s.chartPeakAmplitude, s.chartVisibleRange, ...totals('peakToPeak')]),
+          ...extra,
         ]}
       />
     </CursorRowMenu>

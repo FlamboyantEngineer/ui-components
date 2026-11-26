@@ -4,6 +4,8 @@ import {
   EventChart,
   type EventChartItem,
   type LinkedChartChannel,
+  type LinkedChartMeasurementContext,
+  type LinkedChartSample,
   LinkedLineChart,
 } from '../../src/components/chart/index.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -97,6 +99,51 @@ const events: EventChartItem[] = Array.from({ length: 36 }, (_, i) => ({
 const ns = (x: number) => (x * 1e9).toFixed(2) + ' ns';
 const fixed = [{ id: 'origin', label: 'Trigger', value: 160e-9 }];
 
+function firstRisingCrossing(trace: readonly LinkedChartSample[], level: number) {
+  for (let i = 1; i < trace.length; i++) {
+    const a = trace[i - 1],
+      b = trace[i];
+    if (a?.y != null && b?.y != null && a.y < level && b.y >= level) {
+      return a.x + ((level - a.y) / (b.y - a.y)) * (b.x - a.x);
+    }
+  }
+  return undefined;
+}
+
+const lowCrossing = firstRisingCrossing(samples, 0.2);
+const highCrossing = firstRisingCrossing(samples, 1.8);
+const riseTime =
+  lowCrossing !== undefined && highCrossing !== undefined ? ns(highCrossing - lowCrossing) : '—';
+
+function captureMeasurements({ channels, cursors }: LinkedChartMeasurementContext) {
+  const a = cursors.find((c) => c.name === 'A'),
+    b = cursors.find((c) => c.name === 'B');
+  const low = Math.min(a?.x ?? NaN, b?.x ?? NaN),
+    high = Math.max(a?.x ?? NaN, b?.x ?? NaN);
+  const peaks = new Map<LinkedChartChannel['id'], string>();
+  const spans = new Map<LinkedChartChannel['id'], string>();
+  for (const channel of channels) {
+    let min = Infinity,
+      max = -Infinity;
+    for (const sample of channel.samples) {
+      if (sample.x > high) break;
+      if (sample.x >= low && sample.y != null) {
+        min = Math.min(min, sample.y);
+        max = Math.max(max, sample.y);
+      }
+    }
+    const format = (value: number) =>
+      Number.isFinite(value) ? (channel.formatY ?? String)(value) + ' ' + channel.unit : '—';
+    peaks.set(channel.id, format(max));
+    spans.set(channel.id, format(max - min));
+  }
+  return [
+    { id: 'rise', label: 'Rise time (0.2–1.8 V)', value: riseTime },
+    { id: 'peak', label: 'Peak between cursors', valuesByChannel: peaks },
+    { id: 'span', label: 'Peak-to-peak between cursors', valuesByChannel: spans },
+  ];
+}
+
 function CaptureExample() {
   const [threshold, setThreshold] = useState<number | null>(1);
   const [cursors, setCursors] = useState<readonly [number, number]>([80e-9, 240e-9]);
@@ -121,6 +168,7 @@ function CaptureExample() {
         xUnits={timeUnits}
         channels={channels}
         xReferences={fixed}
+        measurements={captureMeasurements}
         visibleRange={range}
         onVisibleRangeChange={setRange}
         cursors={cursors}
@@ -137,7 +185,7 @@ export function ChartMeasurementCases() {
     <>
       <LabSection
         title="Linked measurements"
-        description="Compare A, B, the fixed Trigger and each trace’s highest acquired sample in the readout. Both peaks occur at 324 ns. Drag a cursor to compare readings or click its time in the table to enter a value such as 820 ns. Shift-drag to zoom and right-click for Reset view."
+        description="Compare A, B, the fixed Trigger and each trace’s highest acquired sample in the readout. Both peaks occur at 324 ns. Click a cursor name to rename it, or click its time to enter a value such as 820 ns. The host computes rise time and the peak and peak-to-peak values between the two cursors from the original samples."
       >
         <CaptureExample />
       </LabSection>

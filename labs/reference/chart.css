@@ -617,14 +617,68 @@
   outline-offset: 2px;
 }
 
+/* The saved label sizes the cell even while the input or its validation message is shown. */
+.ui-linked-line-chart__measurements .ui-inline-edit {
+  position: relative;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-edit[data-invalid] {
+  z-index: 1;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-edit::before {
+  display: block;
+  visibility: hidden;
+  box-sizing: border-box;
+  min-height: var(--ref-control-height-md);
+  padding-inline: 2px calc(var(--ref-icon-size-sm) + 8px);
+  overflow-wrap: anywhere;
+  content: attr(data-display-value);
+}
+
+.ui-linked-line-chart__measurements :is(.ui-inline-edit__read, .ui-inline-edit__editor) {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+}
+
 .ui-linked-line-chart__measurements .ui-inline-edit__read {
-  flex-direction: row-reverse;
-  justify-content: flex-start;
   width: 100%;
+  padding-inline-start: 0;
+}
+
+.ui-linked-line-chart__position .ui-inline-edit__read {
+  flex-direction: row-reverse;
   padding-inline-end: 0;
   text-align: end;
 }
 
 .ui-linked-line-chart__measurements .ui-inline-edit__control {
-  min-width: 6em;
+  min-width: 0;
+}
+
+.ui-linked-line-chart__position input {
+  text-align: end;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-edit__error {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(16rem, 50vw);
+  padding: 4px 6px;
+  border: 1px solid var(--ref-danger);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  text-align: start;
+}
+
+.ui-linked-line-chart__measurements .ui-inline-error__icon {
+  position: static;
+  margin-inline-end: 4px;
+  vertical-align: middle;
 }

@@ -13,6 +13,7 @@ import type { ChartReferenceLine } from './chart-references.js';
 import { useChartViewport } from './chart-viewport.js';
 import type { LinkedChartChannel } from './linked-channel.js';
 import { LinkedLane } from './linked-lane.js';
+import type { LinkedChartMeasurements } from './linked-measurements.js';
 import { drawChannel, getCaptureDomain, prepareChannel } from './linked-model.js';
 import { LinkedReadings } from './linked-readings.js';
 import type { ChartViewportProps } from './numeric-axis.js';
@@ -26,6 +27,8 @@ export interface LinkedLineChartProps
     ChartCursorProps {
   /** Accepted entry suffixes and their multipliers in source x units. */
   xUnits?: Readonly<Record<string, number>> | undefined;
+  /** Additional readout rows, supplied directly or calculated from the current capture and cursors. */
+  measurements?: LinkedChartMeasurements | undefined;
   channels: readonly LinkedChartChannel[];
   /** Height in pixels of each channel including its axes. */
   channelHeight?: number | undefined;
@@ -127,6 +130,7 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
     channelHeight,
     xReferences = noMarkers,
     xUnits,
+    measurements,
     visibleRange,
     defaultVisibleRange,
     onVisibleRangeChange,
@@ -188,6 +192,8 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
             xLabel={axisLabel}
             extent={extent}
             xUnits={xUnits}
+            measurements={measurements}
+            visibleRange={view.axis.domain}
           />
         </>
       ) : (

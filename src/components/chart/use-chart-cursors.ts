@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useUiStrings } from '../../core/provider.js';
 import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { type DrawnChannel, type LinkedChartReadout, readCursors } from './linked-model.js';
 
 /** A movable measurement cursor. Its unique name is stable across insertions and deletions. */
 export interface LinkedChartCursor {
   name: string;
+  /** Editable display name, initially the stable name when omitted. */
+  label?: string | undefined;
   x: number;
 }
 
@@ -22,7 +25,7 @@ export interface ChartCursorProps {
 }
 
 function nextName(cursors: readonly LinkedChartCursor[]) {
-  const used = new Set(cursors.map((c) => c.name));
+  const used = new Set(cursors.flatMap((c) => [c.name, c.label ?? c.name]));
   for (let index = 1; ; index++) {
     let name = '';
     for (let n = index; n > 0; n = Math.floor((n - 1) / 26))
@@ -31,15 +34,28 @@ function nextName(cursors: readonly LinkedChartCursor[]) {
   }
 }
 
+function atPosition(
+  name: string,
+  x: number,
+  cursors: readonly LinkedChartCursor[],
+): LinkedChartCursor {
+  const saved = cursors.find((c) => c.name === name);
+  if (saved) return { ...saved, x };
+  return cursors.some((c) => c.label === name)
+    ? { name, x, label: nextName(cursors) }
+    : { name, x };
+}
+
 export function useChartCursors(
   props: ChartCursorProps,
   model: { extent: ScaleInterval; lanes: DrawnChannel[] },
 ) {
+  const s = useUiStrings();
   const [list, setList] = useControllableState(props.cursorList, props.defaultCursorList);
   const pairInput = props.cursorList === undefined ? props.cursors : undefined;
   const [initialPair] = useState(props.defaultCursors);
   const defaults = pairInput ?? initialPair ?? model.extent;
-  const initial = [
+  const initial: LinkedChartCursor[] = [
     { name: 'A', x: defaults[0] },
     { name: 'B', x: defaults[1] },
   ];
@@ -66,9 +82,10 @@ export function useChartCursors(
   };
   const setCursors = (pair: ScaleInterval) => {
     if (!pair.every(Number.isFinite)) return;
+    const first = atPosition('A', pair[0], cursorList);
     change([
-      { name: 'A', x: pair[0] },
-      { name: 'B', x: pair[1] },
+      first,
+      atPosition('B', pair[1], [...cursorList, first]),
       ...cursorList.filter((c) => c.name !== 'A' && c.name !== 'B'),
     ]);
   };
@@ -76,10 +93,17 @@ export function useChartCursors(
     cursors,
     cursorList,
     hasPair: Boolean(a && b),
+    differenceLabel: (b?.label ?? 'B') + ' − ' + (a?.label ?? 'A'),
     setCursors,
     moveCursor: (name: string, x: number) => {
       if (Number.isFinite(x) && cursorList.some((c) => c.name === name && c.x !== x))
-        change(cursorList.map((c) => (c.name === name ? { name, x } : c)));
+        change(cursorList.map((c) => (c.name === name ? { ...c, x } : c)));
+    },
+    renameCursor: (name: string, input: string) => {
+      const label = input.trim();
+      if (!label || cursorList.some((c) => c.name !== name && (c.label ?? c.name) === label))
+        throw new Error(s.chartCursorNameError);
+      change(cursorList.map((c) => (c.name === name ? { ...c, label } : c)));
     },
     insertCursor: (x: number) => change([...cursorList, { name: nextName(cursorList), x }]),
     deleteCursor: (name: string) => change(cursorList.filter((c) => c.name !== name)),

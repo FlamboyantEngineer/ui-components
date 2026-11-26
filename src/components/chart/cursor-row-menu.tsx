@@ -55,7 +55,7 @@ export function CursorRowMenu({
     const i = cells.findIndex((el) => el.dataset.markId === name);
     const next = cells[i + 1] ?? cells[i - 1] ?? targetRef.current;
     mark?.remove?.();
-    next?.focus({ preventScroll: true });
+    (next?.querySelector<HTMLElement>('button') ?? next)?.focus({ preventScroll: true });
   };
   return (
     <>
