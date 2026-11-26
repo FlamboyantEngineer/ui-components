@@ -49,6 +49,7 @@ function atPosition(
 export function useChartCursors(
   props: ChartCursorProps,
   model: { extent: ScaleInterval; lanes: DrawnChannel[] },
+  selectCursor: (name: string) => void,
 ) {
   const s = useUiStrings();
   const [list, setList] = useControllableState(props.cursorList, props.defaultCursorList);
@@ -96,6 +97,7 @@ export function useChartCursors(
     differenceLabel: (b?.label ?? 'B') + ' − ' + (a?.label ?? 'A'),
     setCursors,
     moveCursor: (name: string, x: number) => {
+      selectCursor(name);
       if (Number.isFinite(x) && cursorList.some((c) => c.name === name && c.x !== x))
         change(cursorList.map((c) => (c.name === name ? { ...c, x } : c)));
     },
@@ -105,7 +107,11 @@ export function useChartCursors(
         throw new Error(s.chartCursorNameError);
       change(cursorList.map((c) => (c.name === name ? { ...c, label } : c)));
     },
-    insertCursor: (x: number) => change([...cursorList, { name: nextName(cursorList), x }]),
+    insertCursor: (x: number) => {
+      const name = nextName(cursorList);
+      change([...cursorList, { name, x }]);
+      selectCursor(name);
+    },
     deleteCursor: (name: string) => change(cursorList.filter((c) => c.name !== name)),
   };
 }

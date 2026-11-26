@@ -23,7 +23,7 @@ export interface EventChartItem {
 
 export interface EventChartProps
   extends
-    Omit<ChartProps, 'table' | 'children' | 'summary' | 'legend' | 'isEmpty'>,
+    Omit<ChartProps, 'table' | 'children' | 'summary' | 'legend' | 'legendPlacement' | 'isEmpty'>,
     ChartViewportProps {
   events: readonly EventChartItem[];
   /** Replaces the generated accessible summary. */

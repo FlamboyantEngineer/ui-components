@@ -11,7 +11,7 @@ export { Chart } from './chart.js';
 export type { ChartAxisPosition, ChartAxisProps } from './chart-axis.js';
 export { ChartAxis } from './chart-axis.js';
 export type { ChartDatum, ChartFormatProps, ChartTooltipContext } from './chart-format.js';
-export type { ChartHiddenKeysProps, ChartLegendProps } from './chart-legend.js';
+export type { ChartHiddenKeysProps, ChartLegendItem, ChartLegendProps } from './chart-legend.js';
 export { ChartLegend } from './chart-legend.js';
 export type { ChartReference, ChartReferenceBand, ChartReferenceLine } from './chart-references.js';
 export type { DonutChartProps, DonutChartSegment } from './donut-chart.js';
@@ -25,15 +25,23 @@ export type {
   LineChartX,
 } from './line-chart.js';
 export { LineChart } from './line-chart.js';
-export type { LinkedChartChannel, LinkedChartPoint, LinkedChartSample } from './linked-channel.js';
+export type {
+  LinkedChartChannel,
+  LinkedChartLayer,
+  LinkedChartLegend,
+  LinkedChartPoint,
+  LinkedChartSample,
+} from './linked-channel.js';
 export { LinkedLineChart, type LinkedLineChartProps } from './linked-line-chart.js';
 export type {
+  LinkedChartHighlight,
   LinkedChartMeasurementContext,
   LinkedChartMeasurementRow,
   LinkedChartMeasurements,
 } from './linked-measurements.js';
 export type { LinkedChartReading, LinkedChartReadout } from './linked-model.js';
 export type { ChartAxisScale, ChartViewportProps } from './numeric-axis.js';
+export type { ChartLegendPlacement } from './plot-with-legend.js';
 export type { ScatterChartPoint, ScatterChartProps, ScatterChartSeries } from './scatter-chart.js';
 export { ScatterChart } from './scatter-chart.js';
 export type { SparklineMarker, SparklineProps, SparklineVariant } from './sparkline.js';

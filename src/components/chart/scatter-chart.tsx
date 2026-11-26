@@ -8,7 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
+import { Chart, type ChartProps, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, scatterChartHooks } from './chart-hooks.js';
 import {
@@ -34,6 +34,7 @@ export interface ScatterChartProps
     BaseProps,
     AriaLabellingProps,
     ChartViewProps,
+    Pick<ChartProps, 'legendPlacement'>,
     ChartHiddenKeysProps,
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */

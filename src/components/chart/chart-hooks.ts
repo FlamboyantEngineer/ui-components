@@ -7,6 +7,8 @@ export const chartHooks = createHooks('chart', [
   'view-toggle',
   'summary',
   'body',
+  'plot-frame',
+  'legend',
   'plot',
   'empty',
   'table',
@@ -49,6 +51,10 @@ export const chartLegendHooks = createHooks('chart-legend', ['item', 'swatch', '
 export const eventChartHooks = createHooks('event-chart', ['event']);
 export const linkedChartHooks = createHooks('linked-line-chart', [
   'channel',
+  'x-label',
+  'row-action',
+  'sample-ring',
+  'range',
   'line',
   'comparison',
   'envelope',

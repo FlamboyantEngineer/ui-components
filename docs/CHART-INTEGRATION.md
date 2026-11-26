@@ -4,6 +4,8 @@ Import both views and their types from `@flamboyantengineer/ui-components/chart`
 
 Plot and readout menus open in the document body by default. When customizing the reference theme, set the menu surface (`--ref-raised`), text, hover, and focus colors on the document root so nested menus inherit the chart palette. For a chart themed inside one panel, wrap it in a `PortalHost` inside that panel. [Portal host reference](../specs/PORTAL.md#uic-portal-13---portal-host)
 
+The Chart lab opens with the measurement showcase. Switch between Signal capture, Frequency response and Elapsed events to try the examples, read their setup notes and use the pointer and keyboard guide. [Chart lab](../labs/chart.html#measurement-showcase)
+
 ## Replace a multi-channel plot
 
 Keep the capture in its original numeric units. Map each trace to a stable channel id and an array of samples. A null amplitude marks a gap. Reference points can use a different x grid. Lower and upper limits belong to the measurement's x coordinate. Pass the same array identities across renders while the capture is unchanged.
@@ -15,7 +17,22 @@ Keep the capture in its original numeric units. Map each trace to a stable chann
   xUnits={{ s: 1, ms: 1e-3, µs: 1e-6, ns: 1e-9 }}
   formatX={(seconds) => (seconds * 1e9).toFixed(2) + ' ns'}
   channels={[
-    { id: 'v', label: 'Voltage', unit: 'V', samples: voltage, reference, threshold: 1 },
+    {
+      id: 'v',
+      label: 'Voltage',
+      unit: 'V',
+      samples: voltage,
+      reference,
+      threshold: 1,
+      legend: {
+        labels: {
+          measured: 'Measured',
+          reference: 'Reference',
+          envelope: 'Tolerance',
+          threshold: 'Threshold',
+        },
+      },
+    },
     { id: 'i', label: 'Current', unit: 'mA', samples: current, yRange: [0, 60] },
   ]}
   xReferences={[{ id: 'trigger', label: 'Trigger', value: triggerTime }]}
@@ -30,6 +47,10 @@ Keep the capture in its original numeric units. Map each trace to a stable chann
   onMarkersChange={setMarkers}
 />
 ```
+
+Give each layer a legend label to make it toggleable. Hover or focus a visible entry to bring its line forward. Restoring a hidden line also brings it forward. Use `legendPlacement` to choose a corner or place the legend above the plot. A channel's `legend.hiddenKeys` and `onHiddenKeysChange` let the host synchronize its visibility with other controls.
+
+Click a named channel point or its label to reveal and highlight its readout row. A keyboard user can focus the point and press Enter or Space. Stable point IDs within each channel keep coincident peaks distinguishable. Handling a cursor highlights its shared row across the linked channels. Column widths stay stable throughout the drag. Every channel repeats the shared x-axis ticks and title. Select a readout row to emphasize its plotted cursor, point, reference or measurement. For example, a rise-time result can provide `highlights: [{ type: 'interval', channelId: 'v', from: lowCrossing, to: highCrossing }]`. For a peak, supply `{ type: 'sample', channelId: 'v', x, y }` in the same array. These coordinates come from the host and may be recalculated as cursors move.
 
 Supply `defaultVisibleRange`, `defaultCursors` or `defaultMarkers` for initial positions the chart then owns. For automatic placement by a host algorithm, update the corresponding controlled values in source units. Drag to pan, Shift+drag to select an x interval, or Ctrl+wheel to zoom about the pointer. Right-click the plot and choose **Reset view** to restore the full extent. Keyboard users can press Home on the focused plot or open the same menu with Shift+F10. A channel's menu offers manual, nearest-sample, extrema, threshold, band and peak-to-peak placement. Click a movable position in the readout to edit it. A bare number uses source units, and suffixes in `xUnits` convert to source units. For example, a cursor at 160 ns has a position of 0.00000016 when the capture uses seconds.
 

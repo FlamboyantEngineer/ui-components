@@ -16,8 +16,9 @@ import { ChartPositionEdit } from './chart-position-edit.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import { CursorRowMenu } from './cursor-row-menu.js';
 import type { LinkedChartPoint } from './linked-channel.js';
-import { type LinkedChartMeasurements, measurementRows } from './linked-measurements.js';
-import { type DrawnChannel, readCursors, readDisplayedSample } from './linked-model.js';
+import type { measurementRows } from './linked-measurements.js';
+import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
+import { pointKey } from './linked-points.js';
 
 interface ReadingPosition {
   key: string;
@@ -33,12 +34,6 @@ function getPositions(
   references: readonly ChartReferenceLine[],
   lanes: readonly DrawnChannel[],
 ): ReadingPosition[] {
-  const named = (mark: ChartReferenceLine, fixed: boolean) => ({
-    key: (fixed ? 'fixed:' : 'mark:') + toKeyIdentity(mark.id),
-    label: mark.label,
-    x: mark.value,
-    fixed,
-  });
   return [
     ...getChartMarks(placement).map((mark) => ({
       key: mark.id,
@@ -46,10 +41,17 @@ function getPositions(
       x: mark.x,
       mark,
     })),
-    ...references.filter((r) => Number.isFinite(r.value)).map((r) => named(r, true)),
+    ...references
+      .filter((r) => Number.isFinite(r.value))
+      .map((r) => ({
+        key: 'x:' + toKeyIdentity(r.id),
+        x: r.value,
+        label: r.label,
+        fixed: true,
+      })),
     ...lanes.flatMap((lane) =>
       lane.points.map((value) => ({
-        key: JSON.stringify([toKeyIdentity(lane.channel.id), toKeyIdentity(value.id)]),
+        key: pointKey(lane.channel.id, value.id),
         label: value.label,
         x: value.x,
         fixed: true,
@@ -71,7 +73,11 @@ function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: numb
   return (
     <>
       {write(sample.y)}
-      {sample.x !== mark.x && <small {...hooks.slot('sample-x')}>@ {formatX(sample.x)}</small>}
+      {(mark.mark || sample.x !== mark.x) && (
+        <small {...hooks.slot('sample-x')}>
+          {sample.x !== mark.x ? '@ ' + formatX(sample.x) : null}
+        </small>
+      )}
     </>
   );
 }
@@ -112,6 +118,14 @@ function positionName(mark: ReadingPosition, s: ReturnType<typeof useUiStrings>)
   );
 }
 
+function ReadingTarget({ selected, children }: { selected: boolean; children: ReactNode }) {
+  return (
+    <button type="button" {...hooks.slot('row-action')} aria-pressed={selected}>
+      {children}
+    </button>
+  );
+}
+
 function columns(
   lanes: readonly DrawnChannel[],
   s: ReturnType<typeof useUiStrings>,
@@ -136,17 +150,7 @@ function columns(
   ];
 }
 
-export function LinkedReadings({
-  lanes,
-  placement,
-  references,
-  formatX,
-  xLabel,
-  extent,
-  xUnits,
-  measurements,
-  visibleRange,
-}: {
+interface LinkedReadingsProps {
   lanes: readonly DrawnChannel[];
   placement: ChartPlacement;
   references: readonly ChartReferenceLine[];
@@ -154,27 +158,24 @@ export function LinkedReadings({
   xLabel: string;
   extent: ScaleInterval;
   xUnits?: Readonly<Record<string, number>> | undefined;
-  measurements?: LinkedChartMeasurements | undefined;
-  visibleRange: ScaleInterval;
-}) {
-  const s = useUiStrings();
-  const [a, b] = placement.cursors;
-  const readout = readCursors(lanes, placement.cursors);
-  const extra = measurementRows(measurements, lanes, {
-    pair: placement.hasPair ? readout : null,
-    cursors: placement.cursorList,
-    markers: placement.markers,
-    xReferences: references,
-    visibleRange,
-  });
-  const totals = (measure: 'deltaY' | 'peakToPeak') =>
-    readout.channels.map((reading, index) => {
-      const value = reading[measure];
-      return value === null ? s.noData : (lanes[index]?.channel.formatY ?? String)(value);
-    });
-  const rows = getPositions(placement, references, lanes).map((mark) =>
+  extra: ReturnType<typeof measurementRows>;
+  readout: LinkedChartReadout;
+}
+
+function positionRows(
+  { placement, references, lanes, formatX, xUnits, extent }: LinkedReadingsProps,
+  s: ReturnType<typeof useUiStrings>,
+) {
+  const { selection } = placement;
+  return getPositions(placement, references, lanes).map((mark) =>
     readingRow(mark.key, [
-      positionName(mark, s),
+      mark.mark ? (
+        positionName(mark, s)
+      ) : (
+        <ReadingTarget selected={mark.key === selection.current}>
+          {positionName(mark, s)}
+        </ReadingTarget>
+      ),
       mark.mark ? (
         <ChartPositionEdit
           label={mark.mark.kind === 'cursor' ? s.chartCursor(mark.label) : mark.label}
@@ -188,8 +189,52 @@ export function LinkedReadings({
       ...lanes.map((lane) => sampleCell(lane, mark, formatX) ?? s.noData),
     ]),
   );
+}
+
+export function LinkedReadings(props: LinkedReadingsProps) {
+  const { lanes, placement, formatX, xLabel, extra, readout } = props;
+  const s = useUiStrings();
+  const { selection } = placement;
+  const [a, b] = placement.cursors;
+  const totals = (measure: 'deltaY' | 'peakToPeak') =>
+    readout.channels.map((reading, index) => {
+      const value = reading[measure];
+      return value === null ? s.noData : (lanes[index]?.channel.formatY ?? String)(value);
+    });
+  const rows = positionRows(props, s);
+  const footer = [
+    ...(placement.hasPair
+      ? [readingRow('delta', [placement.differenceLabel, formatX(b - a), ...totals('deltaY')])]
+      : []),
+    readingRow('p2p', [s.chartPeakAmplitude, s.chartVisibleRange, ...totals('peakToPeak')]),
+    ...extra,
+  ].map((row) => ({
+    ...row,
+    cells: row.cells.map((cell, i) =>
+      i
+        ? cell
+        : {
+            ...cell,
+            content: (
+              <ReadingTarget selected={row.key === selection.current}>{cell.content}</ReadingTarget>
+            ),
+          },
+    ),
+  }));
+  const identify = (row: ProseTableRow) => ({
+    ...row,
+    id: selection.rowId(row.key),
+    'aria-current': row.key === selection.current || undefined,
+  });
+  const keys = new Map([...rows, ...footer].map((row) => [selection.rowId(row.key), row.key]));
   return (
-    <CursorRowMenu marks={getChartMarks(placement)}>
+    <CursorRowMenu
+      marks={getChartMarks(placement)}
+      onActivate={(id) => {
+        const key = keys.get(id);
+        if (key !== undefined) selection.select(key);
+      }}
+    >
       <ProseTable
         aria-label={s.chartReadings}
         caption={
@@ -198,20 +243,8 @@ export function LinkedReadings({
           </>
         }
         header={columns(lanes, s, { xLabel, hasMeasurements: extra.length > 0 })}
-        rows={rows}
-        footer={[
-          ...(placement.hasPair
-            ? [
-                readingRow('delta', [
-                  placement.differenceLabel,
-                  formatX(b - a),
-                  ...totals('deltaY'),
-                ]),
-              ]
-            : []),
-          readingRow('p2p', [s.chartPeakAmplitude, s.chartVisibleRange, ...totals('peakToPeak')]),
-          ...extra,
-        ]}
+        rows={rows.map(identify)}
+        footer={footer.map(identify)}
       />
     </CursorRowMenu>
   );

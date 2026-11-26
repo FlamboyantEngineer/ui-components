@@ -104,10 +104,11 @@ mountLab(
         axes={{ header: ['sticky', 'static'] }}
         render={({ header: mode }) => (
           <div style={{ display: 'flex', flexDirection: 'column', width: 280, height: 160 }}>
+            <a href={'#' + mode + '-Quince'}>Jump to Quince</a>
             <ScrollRegion role="region" aria-label={`Harvest, ${mode} header`} tabIndex={0}>
               <ProseTable
                 header={harvestHeader}
-                rows={harvest}
+                rows={harvest.map((item) => ({ ...item, id: mode + '-' + item.key }))}
                 footer={harvestTotal}
                 stickyHeader={mode === 'sticky'}
               />

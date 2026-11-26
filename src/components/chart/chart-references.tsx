@@ -145,12 +145,23 @@ function describeReferences<V>(
  * The placed references, drawn under the values: decorative, since the summary names them, and
  * letting the pointer through to the values beneath.
  */
-export function ChartReferences({ placed }: { placed: readonly PlacedReference[] }) {
+export function ChartReferences({
+  placed,
+  highlightedKey,
+}: {
+  placed: readonly PlacedReference[];
+  highlightedKey?: string | undefined;
+}) {
   if (placed.length === 0) return null;
   return (
     <g {...hooks.slot('references')} aria-hidden="true" pointerEvents="none">
       {placed.map((reference) => {
-        const data = { kind: reference.kind, axis: reference.axis, tone: reference.tone };
+        const data = {
+          kind: reference.kind,
+          axis: reference.axis,
+          highlighted: reference.key === highlightedKey,
+          tone: reference.tone,
+        };
         const isHorizontal = reference.axis === 'y';
         return (
           <g key={reference.key} {...hooks.slot('reference', data)}>
