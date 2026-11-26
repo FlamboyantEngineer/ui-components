@@ -22,16 +22,23 @@ function cursorAt(target: EventTarget) {
 export function CursorRowMenu({
   children,
   marks,
+  onActivate,
 }: {
   children: ReactNode;
   marks: ReturnType<typeof getChartMarks>;
+  onActivate: (id: string) => void;
 }) {
   const s = useUiStrings();
   const controller = useMenuController();
   const targetRef = useRef<HTMLElement | null>(null);
   const [name, setName] = useState<string>();
   const mark = marks.find((m) => m.id === name);
-  const select = (target: EventTarget) => setName(cursorAt(target)?.dataset.markId);
+  const select = (target: EventTarget) => {
+    const id = cursorAt(target)?.dataset.markId;
+    setName(id);
+    const row = isElement(target) ? target.closest('tr[id]') : null;
+    if (row) onActivate(row.id);
+  };
   const target = useContextMenuTarget({
     controller,
     targetRef,
@@ -40,7 +47,7 @@ export function CursorRowMenu({
     own: {
       onContextMenu: (event) => select(event.target),
       onPointerDownCapture: (event) => {
-        if (event.pointerType === 'touch') select(event.target);
+        select(event.target);
       },
       onKeyDownCapture: (event) => {
         if (isContextMenuKey(event)) select(event.target);
@@ -59,7 +66,13 @@ export function CursorRowMenu({
   };
   return (
     <>
-      <div {...hooks.slot('measurements')} {...target} tabIndex={-1}>
+      <div
+        {...hooks.slot('measurements')}
+        {...target}
+        onClickCapture={(event) => select(event.target)}
+        onFocusCapture={(event) => select(event.target)}
+        tabIndex={-1}
+      >
         {children}
       </div>
       <ContextMenu controller={controller} triggerRef={targetRef}>

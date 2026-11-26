@@ -10,7 +10,7 @@ import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
 import { useBarChartModel } from './bar-chart-model.js';
 import type { BarChartLayout, BarGeometry } from './bar-geometry.js';
-import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
+import { Chart, type ChartProps, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { type ChartDatum, type ChartFormatProps, toDatum, toTooltipText } from './chart-format.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
@@ -37,6 +37,7 @@ export interface BarChartProps
     BaseProps,
     AriaLabellingProps,
     ChartViewProps,
+    Pick<ChartProps, 'legendPlacement'>,
     ChartHiddenKeysProps,
     ChartFormatProps<string>,
     RefProps<HTMLDivElement> {

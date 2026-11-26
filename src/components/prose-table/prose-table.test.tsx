@@ -162,3 +162,19 @@ describe('ProseTable', () => {
     expectHooksMatchSpec(container, 'PROSE-TABLE');
   });
 });
+
+it('UIC-PROSE-TABLE-1.1 identifies a linked current row without adding a tab stop', () => {
+  render(
+    <ProseTable
+      header={header}
+      rows={rows.map((row) => ({
+        ...row,
+        id: 'fruit-' + row.key,
+        'aria-current': row.key === 'pear' ? true : undefined,
+      }))}
+    />,
+  );
+  const current = screen.getByRole('row', { name: 'Pear Green', current: true });
+  expect(current).toHaveAttribute('id', 'fruit-pear');
+  expect(current).not.toHaveAttribute('tabindex');
+});

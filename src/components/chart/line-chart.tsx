@@ -1,15 +1,15 @@
 'use client';
 
-import { memo, type ReactNode } from 'react';
+import { memo, type ReactNode, useState } from 'react';
 import { useTimeZone } from '../../core/clock.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, RefProps } from '../../core/props.js';
+import type { BaseProps, Key, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
 import { getNumberFormat } from '../../utils/intl-format.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
+import { Chart, type ChartProps, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { type ChartDatum, type ChartFormatProps, toDatum, toTooltipText } from './chart-format.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
@@ -42,6 +42,7 @@ export interface LineChartProps
     BaseProps,
     AriaLabellingProps,
     ChartViewProps,
+    Pick<ChartProps, 'legendPlacement'>,
     ChartHiddenKeysProps,
     ChartFormatProps<LineChartX>,
     RefProps<HTMLDivElement> {
@@ -90,6 +91,7 @@ export interface LineChartProps
 }
 
 interface LinePlotProps {
+  front: Key | undefined;
   geometry: LineGeometry;
   width: number;
   height: number;
@@ -115,6 +117,8 @@ const LinePlot = memo(function LinePlot(props: LinePlotProps) {
   const strings = useUiStrings();
   const { plot, lines, xAxis, yTicks } = geometry;
   const all = lines.flatMap((line) => line.points);
+  const front = lines.find((line) => series[line.series]?.id === props.front);
+  const paint = front ? [...lines.filter((line) => line !== front), front] : lines;
   const points = useChartPoints(all);
   const active = all.find((point) => point.key === points.activeKey);
   const write = (point: (typeof all)[number]) => writeValue(toDatum(series, point));
@@ -146,7 +150,7 @@ const LinePlot = memo(function LinePlot(props: LinePlotProps) {
       />
       <ChartReferences placed={references} />
       {variant === 'area'
-        ? lines.map((line) => (
+        ? paint.map((line) => (
             <path
               key={`area:${line.key}`}
               {...lineChartHooks.slot('area', toSeriesData(series, line.series))}
@@ -154,7 +158,7 @@ const LinePlot = memo(function LinePlot(props: LinePlotProps) {
             />
           ))
         : null}
-      {lines.map((line) => (
+      {paint.map((line) => (
         <path
           key={`line:${line.key}`}
           {...lineChartHooks.slot('line', toSeriesData(series, line.series))}
@@ -162,7 +166,7 @@ const LinePlot = memo(function LinePlot(props: LinePlotProps) {
           fill="none"
         />
       ))}
-      {all.map((point) => (
+      {(front ? paint.flatMap((line) => line.points) : all).map((point) => (
         <circle
           key={point.key}
           {...lineChartHooks.slot('point', {
@@ -214,6 +218,7 @@ export function LineChart(props: LineChartProps) {
   const { width, element, frameRef } = useChartFrame(ref);
   const format = getNumberFormat(useLocale().locale, options.formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
+  const [front, setFront] = useState<Key>();
   const showLegend = showLegendProp ?? hasLegendByDefault(series, hidden);
   const model = useLineChartModel({
     element,
@@ -239,7 +244,13 @@ export function LineChart(props: LineChartProps) {
       table={model.table}
       legend={
         showLegend ? (
-          <ChartLegend items={series} hiddenKeys={hidden} onHiddenKeysChange={setHidden} />
+          <ChartLegend
+            items={series}
+            swatch="line"
+            hiddenKeys={hidden}
+            onHiddenKeysChange={setHidden}
+            onHighlight={setFront}
+          />
         ) : null
       }
     >
@@ -247,6 +258,7 @@ export function LineChart(props: LineChartProps) {
         <p {...chartHooks.slot('empty')}>{strings.noData}</p>
       ) : (
         <LinePlot
+          front={front}
           geometry={model.geometry}
           width={width}
           height={height}

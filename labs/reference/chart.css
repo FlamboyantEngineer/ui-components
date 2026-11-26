@@ -579,6 +579,17 @@
 
 .ui-linked-line-chart__measurements table {
   width: 100%;
+  table-layout: fixed;
+  overflow-wrap: anywhere;
+}
+
+/* Fixed-layout header tracks grow with the container and scroll locally for many channels. */
+.ui-linked-line-chart__measurements thead th {
+  width: 9ch;
+}
+
+.ui-linked-line-chart__measurements thead th:first-child {
+  width: 13ch;
 }
 
 .ui-linked-line-chart__measurements caption {
@@ -595,6 +606,7 @@
 
 .ui-linked-line-chart__sample-x {
   display: block;
+  min-block-size: 1lh;
   color: var(--ref-muted);
 }
 
@@ -681,4 +693,158 @@
   position: static;
   margin-inline-end: 4px;
   vertical-align: middle;
+}
+
+/* Position the legend relative to this plot. Its sibling viewport owns plot gestures. */
+.ui-chart__plot-frame {
+  position: relative;
+  min-width: 0;
+  container: ui-chart / inline-size;
+}
+
+.ui-chart__plot-frame:not([data-placement='above']) > .ui-chart__legend {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 12px;
+  inset-inline-end: 32px;
+  box-sizing: border-box;
+  max-width: min(44%, calc(100% - 64px));
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  padding: 2px 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+}
+
+.ui-chart__plot-frame[data-placement$='start'] > .ui-chart__legend {
+  inset-inline: 32px auto;
+}
+
+.ui-chart__plot-frame[data-placement^='bottom'] > .ui-chart__legend {
+  inset-block: auto 28px;
+}
+
+.ui-chart__legend .ui-chart-legend {
+  gap: 2px 6px;
+}
+
+.ui-chart__legend .ui-chart-legend__item {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-chart__legend .ui-chart-legend__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@container ui-chart (max-width: 24rem) {
+  .ui-chart__plot-frame:not([data-placement='above']) > .ui-chart__legend {
+    position: static;
+    max-width: 100%;
+    max-height: none;
+    margin-block-end: 4px;
+  }
+}
+
+.ui-chart-legend__swatch[data-swatch] {
+  flex: none;
+  width: 18px;
+  box-sizing: border-box;
+}
+
+.ui-chart-legend__swatch:is([data-swatch='line'], [data-swatch='dashed']) {
+  height: 0;
+  border: 0;
+  border-block-start: 2px solid var(--ref-chart-series);
+  border-radius: 0;
+  background: none;
+}
+
+.ui-chart-legend__swatch[data-swatch='dashed'],
+.ui-line-chart .ui-chart-legend__swatch[data-swatch='line'][data-tone='neutral'] {
+  border-block-start-style: dashed;
+}
+
+.ui-chart-legend__swatch[data-swatch='band'] {
+  border: 1px solid var(--ref-chart-series);
+  background: color-mix(in srgb, var(--ref-chart-series) var(--ref-tint), var(--ref-canvas));
+}
+
+.ui-linked-line-chart__channel .ui-chart-legend__swatch {
+  --ref-chart-series: var(--ref-accent-ink);
+}
+
+.ui-linked-line-chart__channel .ui-chart-legend__swatch[data-key='reference'] {
+  --ref-chart-series: var(--ref-muted);
+}
+
+.ui-linked-line-chart__channel .ui-chart-legend__swatch[data-key='threshold'] {
+  --ref-chart-series: var(--ref-text);
+}
+
+.ui-linked-line-chart__point {
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-linked-line-chart__point:is(:focus-visible, [data-highlighted]) circle {
+  stroke: var(--ref-focus);
+  stroke-width: 3px;
+}
+
+.ui-linked-line-chart__measurements tr[aria-current='true'] > :is(th, td) {
+  background: var(--ref-selected);
+}
+
+.ui-linked-line-chart__measurements tr[aria-current='true'] > th {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.ui-linked-line-chart__x-label {
+  margin-block: 4px 8px;
+  text-align: center;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-linked-line-chart__row-action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: inherit;
+  cursor: pointer;
+}
+
+.ui-linked-line-chart__row-action:focus-visible {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-linked-line-chart__measurements tr[id] {
+  cursor: pointer;
+}
+
+.ui-linked-line-chart
+  :is(.ui-chart__reference[data-highlighted] line, [data-mark-id][data-highlighted] line) {
+  stroke: var(--ref-focus);
+}
+
+.ui-linked-line-chart
+  :is(.ui-chart__reference[data-highlighted] line, .ui-linked-line-chart__line[data-highlighted]) {
+  stroke-width: 3px;
+}
+.ui-linked-line-chart [data-mark-id][data-highlighted] circle,
+.ui-linked-line-chart__sample-ring {
+  stroke: var(--ref-focus);
+  stroke-width: 2px;
+}
+.ui-linked-line-chart__range {
+  fill: var(--ref-focus);
+  fill-opacity: 0.14;
+  stroke: var(--ref-focus);
 }
