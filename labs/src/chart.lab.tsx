@@ -18,7 +18,7 @@ import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { ChartDenseCases } from './chart-dense-cases.js';
 import { ChartFormatCases } from './chart-format-cases.js';
 import { ChartHeatmapCases } from './chart-heatmap-cases.js';
-import { ChartMeasurementCases } from './chart-measurement-cases.js';
+import { ChartMeasurementShowcase } from './chart-measurement-cases.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartOptionsCases } from './chart-options-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
@@ -285,6 +285,12 @@ function TypedKeys() {
 
 mountLab(
   <>
+    <LabSection
+      title="Measurement showcase"
+      description="Explore linked scope traces, magnitude and phase, and elapsed-time events."
+    >
+      <ChartMeasurementShowcase />
+    </LabSection>
     <ChartSparklineCases />
     <LabSection
       title="Typed identities"
@@ -337,6 +343,7 @@ mountLab(
           <div style={box(440)}>
             <LineChart
               label="Sprint burndown"
+              legendPlacement="top-end"
               series={burndown}
               variant={variant}
               timeZone="UTC"
@@ -477,7 +484,6 @@ mountLab(
     </LabSection>
     <ChartFormatCases />
     <ChartDenseCases />
-    <ChartMeasurementCases />
     <ChartMissingCases />
     <ChartReferencesCases />
     <ChartScatterCases />

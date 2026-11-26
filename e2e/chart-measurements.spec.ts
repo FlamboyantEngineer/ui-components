@@ -102,6 +102,7 @@ test('UIC-CHART-16.1 reaches both observations at zero and keeps exact interval 
   lab,
 }) => {
   await lab.open('chart');
+  await page.getByRole('tab', { name: 'Elapsed events' }).click();
   const chart = page.getByRole('figure', { name: 'Observation sequence' });
   const first = chart.getByRole('img', { name: /^Observation 1,/ });
   await first.focus();
@@ -116,6 +117,7 @@ test('UIC-CHART-14.1 zooms to a dragged interval, pans, then restores the captur
   lab,
 }) => {
   await lab.open('chart');
+  await page.getByRole('tab', { name: 'Elapsed events' }).click();
   const chart = page.getByRole('figure', { name: 'Observation sequence' });
   const plot = chart.getByRole('group', { name: 'Elapsed time' });
   await plot.scrollIntoViewIfNeeded();
@@ -156,6 +158,7 @@ test('UIC-CHART-14.1 clears pointer feedback on cancellation and modifier releas
   lab,
 }) => {
   await lab.open('chart');
+  await page.getByRole('tab', { name: 'Elapsed events' }).click();
   const chart = page.getByRole('figure', { name: 'Observation sequence' });
   const plot = chart.getByRole('group', { name: 'Elapsed time' });
   await plot.hover();
@@ -213,6 +216,7 @@ test('UIC-CHART-15.2 UIC-CHART-15.3 edits a cursor in units and deletes targeted
 
 test('UIC-CHART-15.1 links magnitude and phase at the low-pass cutoff', async ({ page, lab }) => {
   await lab.open('chart');
+  await page.getByRole('tab', { name: 'Frequency response' }).click();
   const figure = page.getByRole('figure', { name: 'Frequency response' });
   const row = figure.getByRole('row', { name: /^Cutoff/ });
   await expect(row.getByRole('cell', { name: '-3.01', exact: true })).toBeVisible();
@@ -294,4 +298,112 @@ test('UIC-CHART-15.2 reports host-calculated peak and peak-to-peak over the inte
   await expect(peak.getByRole('cell', { name: '42 mA', exact: true })).toBeVisible();
   await expect(span.getByRole('cell', { name: '10 V', exact: true })).toBeVisible();
   expect(await rise.innerText()).toBe(fixedRise);
+});
+
+for (const width of [1200, 900, 375]) {
+  test(`UIC-CHART-2.4 UIC-CHART-15.2 toggles traces and reveals the exact peak row at ${width}px`, async ({
+    page,
+    lab,
+  }) => {
+    await page.setViewportSize({ width, height: 760 });
+    await lab.open('chart');
+    const chart = page.getByRole('figure', { name: 'Captured signals' });
+    const lane = chart.getByRole('region', { name: 'Voltage' });
+    const legend = lane.getByRole('toolbar');
+    const plot = lane.getByRole('group', { name: 'Voltage' });
+    await legend.scrollIntoViewIfNeeded();
+    const bounds = await legend.boundingBox();
+    const drawing = await plot.boundingBox();
+    if (!bounds || !drawing) throw new Error('Missing chart geometry');
+    if (drawing.width <= 384) expect(bounds.y + bounds.height).toBeLessThanOrEqual(drawing.y);
+    else {
+      expect(bounds.y).toBeGreaterThan(drawing.y);
+      expect(bounds.y + bounds.height).toBeLessThan(drawing.y + drawing.height);
+    }
+    const reference = legend.getByRole('button', { name: 'Reference' });
+    await reference.click();
+    await expect(lane.locator('.ui-linked-line-chart__comparison')).toHaveCount(0);
+    await reference.press('Space');
+    await expect(lane.locator('.ui-linked-line-chart__comparison')).toBeVisible();
+    await plot.press('+');
+    const zoomedStart = await plot.getAttribute('data-range-start');
+    expect(Number(zoomedStart)).toBeGreaterThan(0);
+    const current = chart.getByRole('button', { name: 'Current peak' });
+    const currentRow = chart.getByRole('row', { name: /^Current peak/ });
+    const voltageRow = chart.getByRole('row', { name: /^Voltage peak/ });
+    await current.locator('text').click();
+    await expect(currentRow).toHaveAttribute('aria-current', 'true');
+    await expect(currentRow).toBeInViewport();
+    await expect(voltageRow).not.toHaveAttribute('aria-current');
+    const peak = lane.getByRole('button', { name: 'Voltage peak' });
+    await peak.locator('circle').click();
+    await expect(voltageRow).toHaveAttribute('aria-current', 'true');
+    await expect(currentRow).not.toHaveAttribute('aria-current');
+    await current.press('Enter');
+    await expect(currentRow).toHaveAttribute('aria-current', 'true');
+    await expect(currentRow).toBeInViewport();
+    await expect(plot).toHaveAttribute('data-range-start', String(zoomedStart));
+  });
+}
+
+test('UIC-CHART-15.2 keeps frequency readout columns steady as digit counts change during a drag and resizes with its container', async ({
+  page,
+  lab,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 780 });
+  await lab.open('chart');
+  await page.getByRole('tab', { name: 'Frequency response' }).click();
+  const chart = page.getByRole('figure', { name: 'Frequency response' });
+  const table = chart.getByRole('table', { name: 'Cursor readings' });
+  const columns = () =>
+    table.getByRole('columnheader').evaluateAll((headers) =>
+      headers.map((h) => {
+        const { x, width } = h.getBoundingClientRect();
+        return [x, width];
+      }),
+    );
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 780 });
+    const lane = chart.getByRole('region', { name: 'Magnitude' });
+    const slider = lane.getByRole('slider', { name: 'A' });
+    const line = slider.locator('line');
+    await slider.press('Home');
+    await line.scrollIntoViewIfNeeded();
+    const box = await line.boundingBox();
+    const plot = await lane.getByRole('group', { name: 'Magnitude' }).boundingBox();
+    if (!box || !plot) throw new Error('Missing frequency plot geometry');
+    const before = await columns();
+    const y = box.y + box.height / 2;
+    const scroll = await page.evaluate(() => window.scrollY);
+    await page.mouse.move(box.x, y);
+    await page.mouse.down();
+    const row = table.getByRole('row', { name: /^Edit Cursor name Cursor A\b/ });
+    await expect(row).toHaveAttribute('aria-current', 'true');
+    const position = row.getByRole('button', { name: /^Edit Cursor A / });
+    await expect(position).toContainText('10 Hz');
+    const hzDigitCounts = new Set([2]);
+    for (const fraction of [0.17, 0.3, 0.45, 0.58, 0.76, 0.88]) {
+      await page.mouse.move(plot.x + plot.width * fraction, y, { steps: 3 });
+      const label = (await position.innerText()).trim();
+      if (label.endsWith(' Hz')) hzDigitCounts.add(label.replace(/[^0-9]/g, '').length);
+      expect(await columns()).toEqual(before);
+      expect(await page.evaluate(() => window.scrollY)).toBe(scroll);
+    }
+    await page.mouse.up();
+    expect(hzDigitCounts.size).toBeGreaterThan(1);
+    await expect(row).toContainText('kHz');
+    await chart
+      .getByRole('region', { name: 'Phase' })
+      .getByRole('slider', { name: 'B' })
+      .press('ArrowRight');
+    await expect(table.getByRole('row', { name: /^Edit Cursor name Cursor B\b/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    await expect(row).not.toHaveAttribute('aria-current');
+    if (width === 1280) {
+      await page.setViewportSize({ width: 375, height: 780 });
+      expect(await columns()).not.toEqual(before);
+    }
+  }
 });
