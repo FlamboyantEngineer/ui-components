@@ -216,6 +216,33 @@ test('UIC-CHART-15.2 UIC-CHART-15.3 edits a cursor in units and deletes targeted
   ).toHaveCount(0);
 });
 
+test('UIC-CHART-15.2 opens the pressed cursor menu at a fractional legend edge', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const lane = page.getByRole('region', { name: 'Voltage', exact: true });
+  const cursor = lane.getByRole('slider', { name: 'B', exact: true });
+  await cursor.scrollIntoViewIfNeeded();
+  const { x, y } = await cursor.locator('line').evaluate((line) => {
+    const box = line.getBoundingClientRect();
+    return { x: box.x, y: Math.floor(box.y + box.height / 2) + 0.75 };
+  });
+  // A wrapped legend can end between the pointer and the browser's rounded contextmenu position.
+  await lane.locator('.ui-chart__legend').evaluate(
+    (legend, point) => {
+      const box = legend.getBoundingClientRect();
+      legend.style.transform = `translate(${point.x - box.left - box.width / 2}px, ${point.y - 0.25 - box.bottom}px)`;
+    },
+    { x, y },
+  );
+  await page.mouse.click(x, y, { button: 'right' });
+  const remove = page.getByRole('menuitem', { name: 'Delete cursor' });
+  await expect(remove).toBeVisible();
+  await remove.click();
+  await expect(cursor).toHaveCount(0);
+});
+
 test('UIC-CHART-15.1 links magnitude and phase at the low-pass cutoff', async ({ page, lab }) => {
   await lab.open('chart');
   await page.getByRole('tab', { name: 'Frequency response' }).click();

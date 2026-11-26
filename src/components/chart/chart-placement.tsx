@@ -5,6 +5,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import { capturePointer } from '../../utils/pointer-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
@@ -132,7 +133,11 @@ export function MovableChartMarks({
               aria-label={m.label}
               aria-details={selection.rowId(m.id)}
               onFocus={() => selection.select(m.id)}
-              onPointerDown={() => selection.select(m.id)}
+              onPointerDown={(event) => {
+                // The contextmenu event can round a fractional pointer position onto a nearby legend.
+                if (event.button === 2) capturePointer(event);
+                selection.select(m.id);
+              }}
               onClick={() => selection.select(m.id)}
               tabIndex={0}
               aria-valuenow={position}
