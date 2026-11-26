@@ -2,6 +2,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 import {
   type ChartReferenceLine,
   EventChart,
+  type LinkedChartDifferential,
   LinkedLineChart,
 } from '../../src/components/chart/index.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -45,6 +46,23 @@ function Capture() {
   const [threshold, setThreshold] = useState<number | null>(1);
   const [range, setRange] = useState<readonly [number, number]>([0, lastTime]);
   const [cursors, setCursors] = useState<readonly [number, number]>([80e-9, 240e-9]);
+  const [differentials, setDifferentials] = useState<readonly LinkedChartDifferential[]>([
+    {
+      id: 'delay',
+      label: 'Edge delay',
+      axis: 'x',
+      from: { type: 'reference', id: 'origin' },
+      to: { type: 'cursor', name: 'B' },
+    },
+    {
+      id: 'amplitude',
+      label: 'Voltage excursion',
+      axis: 'y',
+      channelId: 'v',
+      from: 0,
+      to: { type: 'point', channelId: 'v', id: 'peak' },
+    },
+  ]);
   const [markers, setMarkers] = useState<readonly ChartReferenceLine[]>([]);
   const channels = useMemo(
     () => [{ ...voltage, threshold: threshold ?? undefined }, current],
@@ -60,6 +78,8 @@ function Capture() {
           xUnits={timeUnits}
           channels={channels}
           measurements={captureMeasurements}
+          differentialCursors={differentials}
+          onDifferentialCursorsChange={setDifferentials}
           xReferences={fixed}
           visibleRange={range}
           onVisibleRangeChange={setRange}
@@ -87,6 +107,12 @@ function Capture() {
         <p>
           The host calculates the 0.2–1.8 V rise time and both channels’ peak and peak-to-peak
           amplitudes between A and B. Move B to 820 ns to include the spike.
+        </p>
+        <h4>Differential cursors</h4>
+        <p>
+          Move B to change the trigger-to-B delay. Drag the lower voltage diamond up to change the
+          baseline of the peak measurement. Right-click a diamond to change its snap target, or open
+          “Differential cursors” in a plot menu to add a pair. Values show end minus start.
         </p>
         <h4>Threshold and error band</h4>
         <NumberField
@@ -116,6 +142,15 @@ function Frequency() {
           xScale="log"
           xReferences={frequencyReferences}
           defaultCursors={[100, 1000]}
+          defaultDifferentialCursors={[
+            {
+              id: 'span',
+              label: 'Frequency span',
+              axis: 'x',
+              from: 60,
+              to: { type: 'reference', id: 'cutoff' },
+            },
+          ]}
         />
       </div>
       <Notes title="Frequency notes">
