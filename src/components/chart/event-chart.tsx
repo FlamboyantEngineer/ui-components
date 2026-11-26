@@ -47,6 +47,8 @@ interface EventPlotProps {
   renderDetails: EventChartProps['renderDetails'];
 }
 
+const eventTrack = { height: 80, axisY: 46, centerY: 25, radius: 5 };
+
 function EventPlot({ events, view, width, label, formatX, renderDetails }: EventPlotProps) {
   const { axis } = view;
   const [left, right] = axis.range;
@@ -70,7 +72,7 @@ function EventPlot({ events, view, width, label, formatX, renderDetails }: Event
     <ViewportSurface view={view} label={label}>
       <ChartPlot
         width={width}
-        height={80}
+        height={eventTrack.height}
         points={focus}
         tooltip={{
           label: active?.label ?? '',
@@ -80,7 +82,12 @@ function EventPlot({ events, view, width, label, formatX, renderDetails }: Event
           content: active ? renderDetails?.(active) : undefined,
         }}
       >
-        <ChartAxis position="bottom" ticks={axis.ticks()} offset={46} range={axis.range} />
+        <ChartAxis
+          position="bottom"
+          ticks={axis.ticks()}
+          offset={eventTrack.axisY}
+          range={axis.range}
+        />
         {points.map((point) => {
           const { event } = point;
           const pos = Math.max(left, axis.map(event.start));
@@ -91,14 +98,20 @@ function EventPlot({ events, view, width, label, formatX, renderDetails }: Event
             'aria-label': event.label + ', ' + detail(event),
           };
           return event.end === undefined || event.end === event.start ? (
-            <circle key={point.key} {...props} cx={pos} cy={25} r={5} />
+            <circle
+              key={point.key}
+              {...props}
+              cx={pos}
+              cy={eventTrack.centerY}
+              r={eventTrack.radius}
+            />
           ) : (
             <rect
               key={point.key}
               {...props}
               x={pos}
-              y={20}
-              height={10}
+              y={eventTrack.centerY - eventTrack.radius}
+              height={2 * eventTrack.radius}
               width={Math.max(1, Math.min(right, axis.map(event.end)) - pos)}
             />
           );
