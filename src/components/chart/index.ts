@@ -34,6 +34,7 @@ export type {
 } from './linked-channel.js';
 export { LinkedLineChart, type LinkedLineChartProps } from './linked-line-chart.js';
 export type {
+  LinkedChartHighlight,
   LinkedChartMeasurementContext,
   LinkedChartMeasurementRow,
   LinkedChartMeasurements,

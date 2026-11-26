@@ -90,14 +90,18 @@ export function LinkedTraces({
   layers,
   level,
   clip,
+  emphasized,
 }: {
   lane: DrawnChannel;
   layers: ReturnType<typeof useLinkedLegend>;
   level: readonly PlacedReference[];
+  emphasized: boolean;
   clip: string;
 }) {
   const paths = {
-    measured: <path {...hooks.slot('line')} d={lane.line.path} fill="none" />,
+    measured: (
+      <path {...hooks.slot('line', { highlighted: emphasized })} d={lane.line.path} fill="none" />
+    ),
     reference: lane.reference ? (
       <path {...hooks.slot('comparison')} d={lane.reference} fill="none" />
     ) : null,

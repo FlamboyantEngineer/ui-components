@@ -7,12 +7,20 @@ import type { LinkedChartChannel, LinkedChartSample } from './linked-channel.js'
 import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
 import type { LinkedChartCursor } from './use-chart-cursors.js';
 
+/** Source geometry to emphasize while a measurement row is current. An interval can span all channels. */
+export type LinkedChartHighlight =
+  | { type: 'sample'; channelId: Key; x: number; y: number }
+  | { type: 'interval'; channelId?: Key; from: number; to: number }
+  | { type: 'channel'; channelId: Key };
+
 /** One host-calculated result. The host formats values in the units of its measurement. */
 export interface LinkedChartMeasurementRow {
   id: Key;
   label: string;
   value?: ReactNode;
   valuesByChannel?: ReadonlyMap<Key, ReactNode> | undefined;
+  /** Defaults to the channels with values, or the entire capture for a scalar result. */
+  highlights?: readonly LinkedChartHighlight[] | undefined;
 }
 
 export interface LinkedChartMeasurementContext {
@@ -49,6 +57,11 @@ export function measurementRows(
       : measurements;
   return (rows ?? []).map((row) => ({
     key: 'measurement:' + toKeyIdentity(row.id),
+    highlights:
+      row.highlights ??
+      lanes
+        .filter(({ channel }) => !row.valuesByChannel || row.valuesByChannel.has(channel.id))
+        .map(({ channel }): LinkedChartHighlight => ({ type: 'channel', channelId: channel.id })),
     cells: [
       { key: 'label', content: row.label },
       { key: 'value', content: row.value },

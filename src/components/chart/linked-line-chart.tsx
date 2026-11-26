@@ -14,8 +14,8 @@ import { useChartViewport } from './chart-viewport.js';
 import type { LinkedChartChannel } from './linked-channel.js';
 import { LinkedLane } from './linked-lane.js';
 import { useChannelVisibility } from './linked-legend.js';
-import type { LinkedChartMeasurements } from './linked-measurements.js';
-import { drawChannel, getCaptureDomain, prepareChannel } from './linked-model.js';
+import { type LinkedChartMeasurements, measurementRows } from './linked-measurements.js';
+import { drawChannel, getCaptureDomain, prepareChannel, readCursors } from './linked-model.js';
 import { LinkedReadings } from './linked-readings.js';
 import type { ChartViewportProps } from './numeric-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
@@ -141,12 +141,69 @@ function chartSummary(
   return parts.filter(Boolean).join('. ') || strings.noData;
 }
 
+function CaptureView({
+  props,
+  model,
+  placement,
+  visibility,
+}: {
+  props: LinkedLineChartProps;
+  model: ReturnType<typeof useLinkedModel>;
+  placement: ChartPlacement;
+  visibility: ReturnType<typeof useChannelVisibility>;
+}) {
+  const { view, width, height, lanes, extent } = model;
+  const strings = useUiStrings();
+  const { xLabel = strings.chartXAxis, formatX = String, xReferences = noMarkers } = props;
+  const xTicks = useMemo(() => view.axis.ticks(), [view.axis]);
+  const readout = readCursors(lanes, placement.cursors);
+  const extra = measurementRows(props.measurements, lanes, {
+    pair: placement.hasPair ? readout : null,
+    cursors: placement.cursorList,
+    markers: placement.markers,
+    xReferences,
+    visibleRange: view.axis.domain,
+  });
+  const highlights = extra.find((row) => row.key === placement.selection.current)?.highlights ?? [];
+  return (
+    <>
+      {lanes.map((lane) => (
+        <LinkedLane
+          key={toKeyIdentity(lane.channel.id)}
+          lane={lane}
+          visibility={visibility(lane.channel)}
+          width={width}
+          height={height}
+          view={view}
+          placement={placement}
+          references={xReferences}
+          legendPlacement={props.legendPlacement ?? 'top-end'}
+          xTicks={xTicks}
+          xLabel={xLabel}
+          highlights={highlights}
+        />
+      ))}
+      <LinkedReadings
+        lanes={lanes}
+        placement={placement}
+        references={xReferences}
+        formatX={formatX}
+        xLabel={xLabel}
+        extent={extent}
+        xUnits={props.xUnits}
+        extra={extra}
+        readout={readout}
+      />
+    </>
+  );
+}
+
 export function LinkedLineChart(props: LinkedLineChartProps) {
   const {
     channels,
     channelHeight,
-    legendPlacement = 'top-end',
-    xReferences = noMarkers,
+    legendPlacement,
+    xReferences,
     xUnits,
     measurements,
     visibleRange,
@@ -162,14 +219,15 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
     defaultMarkers,
     onMarkersChange,
     xScale,
-    formatX = String,
+    formatX,
     xLabel,
     summary,
     ...frame
   } = props;
   const strings = useUiStrings();
-  const { frameRef, width, extent, lanes, view, height, hasData } = useLinkedModel(props);
-  const placement = usePlacement(props, { extent, lanes });
+  const model = useLinkedModel(props);
+  const { frameRef, hasData } = model;
+  const placement = usePlacement(props, model);
   const visibility = useChannelVisibility();
   const axisLabel = xLabel ?? strings.chartXAxis;
   const table = () => toCaptureTable(channels, axisLabel, strings);
@@ -183,34 +241,7 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
       summary={chartSummary(props, strings)}
     >
       {hasData ? (
-        <>
-          {lanes.map((lane, i) => (
-            <LinkedLane
-              key={toKeyIdentity(lane.channel.id)}
-              lane={lane}
-              visibility={visibility(lane.channel)}
-              placement={placement}
-              width={width}
-              height={height}
-              view={view}
-              references={xReferences}
-              legendPlacement={legendPlacement}
-              showX={i === lanes.length - 1}
-            />
-          ))}
-          <span>{axisLabel}</span>
-          <LinkedReadings
-            lanes={lanes}
-            placement={placement}
-            references={xReferences}
-            formatX={formatX}
-            xLabel={axisLabel}
-            extent={extent}
-            xUnits={xUnits}
-            measurements={measurements}
-            visibleRange={view.axis.domain}
-          />
-        </>
+        <CaptureView props={props} model={model} placement={placement} visibility={visibility} />
       ) : (
         strings.noData
       )}

@@ -138,3 +138,90 @@ it('UIC-CHART-15.2 keeps one current row for a cursor shared by channels and a n
   await user.click(within(aRow).getByRole('button', { name: /^Edit Cursor A / }));
   expect(aRow).toHaveAttribute('aria-current', 'true');
 });
+
+it('UIC-CHART-15.1 repeats one formatted horizontal axis on every channel after a controlled range change', () => {
+  const channels = [channel('v', 'Voltage'), channel('i', 'Current')];
+  const plot = (to: number) => (
+    <LinkedLineChart
+      channels={channels}
+      xLabel="Time (ns)"
+      formatX={(x) => x + ' ns'}
+      visibleRange={[0, to]}
+      label="Capture"
+    />
+  );
+  const { rerender } = render(plot(2));
+  const ticks = (name: string) =>
+    [
+      ...screen
+        .getByRole('region', { name })
+        .querySelectorAll('.ui-chart-axis[data-position="bottom"] text'),
+    ].map((node) => [node.getAttribute('x'), node.textContent]);
+  const before = ticks('Voltage');
+  expect(before.length).toBeGreaterThan(1);
+  expect(before).toEqual(ticks('Current'));
+  for (const name of ['Voltage', 'Current'])
+    expect(screen.getByRole('region', { name })).toHaveAccessibleDescription('Time (ns)');
+  rerender(plot(1));
+  expect(ticks('Current')).toEqual(ticks('Voltage'));
+  expect(ticks('Voltage')).not.toEqual(before);
+});
+
+it('UIC-CHART-15.2 highlights declared source geometry and follows edits to a selected host measurement', async () => {
+  const user = userEvent.setup();
+  const channels = [channel(1, 'Voltage'), channel('1', 'Current')];
+  const result = (to: number) => (
+    <LinkedLineChart
+      label="Signals"
+      channels={channels}
+      measurements={[
+        {
+          id: 1,
+          label: 'Time window',
+          value: to,
+          highlights: [{ type: 'interval', channelId: 1, from: 0, to }],
+        },
+        { id: 2, label: 'Captured current', valuesByChannel: new Map([['1', 1]]) },
+      ]}
+    />
+  );
+  const { rerender } = render(result(1));
+  const volts = screen.getByRole('region', { name: 'Voltage' }),
+    amps = screen.getByRole('region', { name: 'Current' });
+  await user.click(
+    within(screen.getByRole('row', { name: /Time window/ })).getByRole('cell', { name: '1' }),
+  );
+  const band = volts.querySelector('.ui-linked-line-chart__range');
+  expect(band).toBeInTheDocument();
+  expect(amps.querySelector('.ui-linked-line-chart__range')).toBeNull();
+  const width = band?.getAttribute('width');
+  rerender(result(2));
+  expect(band).not.toHaveAttribute('width', width);
+  screen.getByRole('button', { name: 'Captured current' }).focus();
+  await user.keyboard(' ');
+  expect(amps.querySelector('.ui-linked-line-chart__line')).toHaveAttribute(
+    'data-highlighted',
+    'true',
+  );
+  expect(volts.querySelector('.ui-linked-line-chart__line')).not.toHaveAttribute(
+    'data-highlighted',
+  );
+  expect(band).not.toBeInTheDocument();
+});
+
+it('UIC-CHART-15.2 selects a movable marker from its value cell without selecting a coincident cursor', async () => {
+  const user = userEvent.setup();
+  render(
+    <LinkedLineChart
+      label="Capture"
+      channels={[channel('v', 'Voltage')]}
+      defaultCursorList={[{ name: 'C', x: 1 }]}
+      defaultMarkers={[{ id: 'C', label: 'Probe', value: 1 }]}
+    />,
+  );
+  const table = within(screen.getByRole('table', { name: 'Cursor readings' }));
+  const probeRow = within(table.getByRole('row', { name: /^Probe/ }));
+  await user.click(probeRow.getByRole('cell', { name: '1' }));
+  expect(screen.getByRole('slider', { name: 'Probe' })).toHaveAttribute('data-highlighted', 'true');
+  expect(screen.getByRole('slider', { name: 'C' })).not.toHaveAttribute('data-highlighted');
+});

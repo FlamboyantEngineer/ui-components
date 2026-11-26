@@ -202,6 +202,8 @@ function findExtremes(values: readonly LinkedChartSample[]) {
   }
   return {
     min: min?.x,
+    minSample: min,
+    maxSample: max,
     max: max?.x,
     peakToPeak: min?.y != null && max?.y != null ? max.y - min.y : null,
   };

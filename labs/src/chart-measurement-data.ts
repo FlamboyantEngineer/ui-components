@@ -1,6 +1,7 @@
 import type {
   EventChartItem,
   LinkedChartChannel,
+  LinkedChartHighlight,
   LinkedChartMeasurementContext,
   LinkedChartSample,
 } from '../../src/components/chart/index.js';
@@ -125,25 +126,60 @@ export function captureMeasurements({ channels, cursors }: LinkedChartMeasuremen
     high = Math.max(a?.x ?? NaN, b?.x ?? NaN);
   const peaks = new Map<LinkedChartChannel['id'], string>();
   const spans = new Map<LinkedChartChannel['id'], string>();
+  const peakTargets: LinkedChartHighlight[] = [];
+  const spanTargets: LinkedChartHighlight[] = [];
   for (const channel of channels) {
     let min = Infinity,
       max = -Infinity;
+    let minX = NaN,
+      maxX = NaN;
     for (const sample of channel.samples) {
       if (sample.x > high) break;
       if (sample.x >= low && sample.y != null) {
-        min = Math.min(min, sample.y);
-        max = Math.max(max, sample.y);
+        if (sample.y < min) {
+          min = sample.y;
+          minX = sample.x;
+        }
+        if (sample.y > max) {
+          max = sample.y;
+          maxX = sample.x;
+        }
       }
     }
     const format = (value: number) =>
       Number.isFinite(value) ? (channel.formatY ?? String)(value) + ' ' + channel.unit : '—';
+    if (Number.isFinite(max)) {
+      const peak = { type: 'sample' as const, channelId: channel.id, x: maxX, y: max };
+      peakTargets.push(peak);
+      spanTargets.push(peak, { type: 'sample', channelId: channel.id, x: minX, y: min });
+    }
     peaks.set(channel.id, format(max));
     spans.set(channel.id, format(max - min));
   }
   return [
-    { id: 'rise', label: 'Rise time (0.2–1.8 V)', value: riseTime },
-    { id: 'peak', label: 'Peak between cursors', valuesByChannel: peaks },
-    { id: 'span', label: 'Peak-to-peak between cursors', valuesByChannel: spans },
+    {
+      id: 'rise',
+      label: 'Rise time (0.2–1.8 V)',
+      value: riseTime,
+      highlights:
+        lowCrossing !== undefined && highCrossing !== undefined
+          ? [
+              {
+                type: 'interval' as const,
+                channelId: voltage.id,
+                from: lowCrossing,
+                to: highCrossing,
+              },
+            ]
+          : [],
+    },
+    { id: 'peak', label: 'Peak between cursors', valuesByChannel: peaks, highlights: peakTargets },
+    {
+      id: 'span',
+      label: 'Peak-to-peak between cursors',
+      valuesByChannel: spans,
+      highlights: spanTargets,
+    },
   ];
 }
 

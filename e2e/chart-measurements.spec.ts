@@ -211,7 +211,9 @@ test('UIC-CHART-15.2 UIC-CHART-15.3 edits a cursor in units and deletes targeted
   await page.getByRole('menuitem', { name: 'Delete cursor' }).click();
   await expect(remaining).toHaveCount(0);
   await expect(plot.getByRole('slider', { name: 'A', exact: true })).toBeVisible();
-  await expect(chart.getByRole('row', { name: /^Trigger/ }).getByRole('button')).toHaveCount(0);
+  await expect(
+    chart.getByRole('row', { name: /^Trigger/ }).getByRole('button', { name: /^Edit/ }),
+  ).toHaveCount(0);
 });
 
 test('UIC-CHART-15.1 links magnitude and phase at the low-pass cutoff', async ({ page, lab }) => {
@@ -328,7 +330,7 @@ for (const width of [1200, 900, 375]) {
     await plot.press('+');
     const zoomedStart = await plot.getAttribute('data-range-start');
     expect(Number(zoomedStart)).toBeGreaterThan(0);
-    const current = chart.getByRole('button', { name: 'Current peak' });
+    const current = chart.getByRole('button', { name: 'Current peak', exact: true });
     const currentRow = chart.getByRole('row', { name: /^Current peak/ });
     const voltageRow = chart.getByRole('row', { name: /^Voltage peak/ });
     await current.locator('text').click();
@@ -406,4 +408,59 @@ test('UIC-CHART-15.2 keeps frequency readout columns steady as digit counts chan
       expect(await columns()).not.toEqual(before);
     }
   }
+});
+
+test('UIC-CHART-15.1 UIC-CHART-15.2 shows the time axis on both channels and highlights plot elements from any reading cell', async ({
+  page,
+  lab,
+}) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await lab.open('chart');
+  const chart = page.getByRole('figure', { name: 'Captured signals' });
+  const voltage = chart.getByRole('region', { name: 'Voltage' }),
+    current = chart.getByRole('region', { name: 'Current' });
+  const ticks = '.ui-chart-axis[data-position="bottom"] .ui-chart-axis__label';
+  await expect(voltage.locator(ticks).first()).toContainText('ns');
+  await expect(current.locator(ticks)).toHaveText(await voltage.locator(ticks).allTextContents());
+  for (const lane of [voltage, current])
+    await expect(lane.getByText('Time (ns)', { exact: true })).toBeVisible();
+  const full = await voltage.locator(ticks).allTextContents();
+  const viewport = voltage.getByRole('group', { name: 'Voltage' });
+  await viewport.press('+');
+  await expect.poll(() => voltage.locator(ticks).allTextContents()).not.toEqual(full);
+  await expect(current.locator(ticks)).toHaveText(await voltage.locator(ticks).allTextContents());
+  await viewport.press('Home');
+  const table = chart.getByRole('table', { name: 'Cursor readings' });
+  const select = async (name: RegExp) => {
+    const row = table.getByRole('row', { name });
+    await row.getByRole('cell').last().click();
+    await expect(row).toHaveAttribute('aria-current', 'true');
+  };
+  await select(/^Current peak/);
+  await expect(current.getByRole('button', { name: 'Current peak' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(voltage.getByRole('button', { name: 'Voltage peak' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await select(/^Trigger/);
+  await expect(chart.locator('.ui-chart__reference[data-highlighted]')).toHaveCount(2);
+  await select(/^Edit Cursor name Cursor B/);
+  for (const lane of [current, voltage])
+    await expect(lane.getByRole('slider', { name: 'B' })).toHaveAttribute(
+      'data-highlighted',
+      'true',
+    );
+  await table.getByRole('button', { name: 'B − A' }).press('Enter');
+  await expect(chart.locator('[role=slider][data-highlighted]')).toHaveCount(4);
+  await select(/^Peak-to-peak Visible range/i);
+  await expect(chart.locator('.ui-linked-line-chart__sample-ring')).toHaveCount(4);
+  await select(/^Rise time/);
+  await expect(voltage.locator('.ui-linked-line-chart__range')).toBeVisible();
+  await select(/^Peak between cursors/);
+  await expect(chart.locator('.ui-linked-line-chart__sample-ring')).toHaveCount(2);
+  await select(/^Peak-to-peak between cursors/);
+  await expect(chart.locator('.ui-linked-line-chart__sample-ring')).toHaveCount(4);
 });

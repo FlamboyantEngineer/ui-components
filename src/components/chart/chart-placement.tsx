@@ -121,7 +121,9 @@ export function MovableChartMarks({
               key={m.id}
               {...hooks.slot(m.kind, {
                 dragging: draggedMark === m.id,
-                highlighted: selection.current === m.id,
+                highlighted:
+                  selection.current === m.id ||
+                  (selection.current === 'delta' && (m.id === 'cursor:A' || m.id === 'cursor:B')),
                 'mark-id': m.id,
                 coordinate: m.x,
                 tone: m.tone,

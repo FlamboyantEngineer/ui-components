@@ -77,7 +77,8 @@ function Capture() {
         </dl>
         <h4>Inspect the transient</h4>
         <p>
-          Select a peak or its label to reveal its readout row. Click, drag, or keyboard-focus a
+          Select a peak to reveal its readout row, or select a row to highlight what it measures on
+          the plots. Each channel repeats the shared time axis. Click, drag, or keyboard-focus a
           cursor to highlight its row while you measure. Use the legend to toggle a trace, or hover
           or focus its name to bring it forward. Voltage reaches 5 V and current reaches 42 mA at
           324 ns. The next voltage sample drops to −5 V. Shift-drag across the spike to inspect it.

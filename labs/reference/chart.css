@@ -802,3 +802,49 @@
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
+
+.ui-linked-line-chart__x-label {
+  margin-block: 4px 8px;
+  text-align: center;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-linked-line-chart__row-action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: inherit;
+  cursor: pointer;
+}
+
+.ui-linked-line-chart__row-action:focus-visible {
+  outline: var(--ref-focus-ring);
+}
+
+.ui-linked-line-chart__measurements tr[id] {
+  cursor: pointer;
+}
+
+.ui-linked-line-chart
+  :is(.ui-chart__reference[data-highlighted] line, [data-mark-id][data-highlighted] line) {
+  stroke: var(--ref-focus);
+}
+
+.ui-linked-line-chart
+  :is(.ui-chart__reference[data-highlighted] line, .ui-linked-line-chart__line[data-highlighted]) {
+  stroke-width: 3px;
+}
+.ui-linked-line-chart [data-mark-id][data-highlighted] circle,
+.ui-linked-line-chart__sample-ring {
+  stroke: var(--ref-focus);
+  stroke-width: 2px;
+}
+.ui-linked-line-chart__range {
+  fill: var(--ref-focus);
+  fill-opacity: 0.14;
+  stroke: var(--ref-focus);
+}

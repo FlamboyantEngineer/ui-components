@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
-import { ChartAxis } from './chart-axis.js';
+import { ChartAxis, type ChartAxisProps } from './chart-axis.js';
 import { chartHooks, linkedChartHooks as hooks } from './chart-hooks.js';
 import type { ChartBox } from './chart-layout.js';
 import type { ChartHiddenKeysProps } from './chart-legend.js';
@@ -16,8 +16,10 @@ import {
 import { type ChartReferenceLine, ChartReferences, placeReferences } from './chart-references.js';
 import { type NumericViewport, ViewportSurface } from './chart-viewport.js';
 import { LinkedTraces, useLinkedLegend } from './linked-legend.js';
+import type { LinkedChartHighlight } from './linked-measurements.js';
 import type { DrawnChannel } from './linked-model.js';
 import { ChannelPoints } from './linked-points.js';
+import { MeasurementHighlights } from './measurement-highlights.js';
 import { type ChartLegendPlacement, PlotWithLegend } from './plot-with-legend.js';
 
 interface LaneProps {
@@ -28,7 +30,9 @@ interface LaneProps {
   height: number;
   view: NumericViewport;
   references: readonly ChartReferenceLine[];
-  showX: boolean;
+  xTicks: ChartAxisProps['ticks'];
+  xLabel: string;
+  highlights: readonly LinkedChartHighlight[];
   legendPlacement: ChartLegendPlacement;
 }
 
@@ -62,7 +66,15 @@ function markAt(target: EventTarget, marks: ReturnType<typeof getChartMarks>) {
   return marks.find((mark) => mark.id === id);
 }
 
-function LaneAxes({ lane, plot, showX }: { lane: DrawnChannel; plot: ChartBox; showX: boolean }) {
+function LaneAxes({
+  lane,
+  plot,
+  xTicks,
+}: {
+  lane: DrawnChannel;
+  plot: ChartBox;
+  xTicks: ChartAxisProps['ticks'];
+}) {
   return (
     <>
       <ChartAxis
@@ -72,43 +84,88 @@ function LaneAxes({ lane, plot, showX }: { lane: DrawnChannel; plot: ChartBox; s
         ticks={lane.y.ticks()}
         gridLength={plot.right - plot.left}
       />
-      {showX ? (
-        <ChartAxis
-          position="bottom"
-          offset={plot.bottom}
-          range={lane.x.range}
-          ticks={lane.x.ticks()}
-        />
-      ) : null}
+      <ChartAxis position="bottom" offset={plot.bottom} range={lane.x.range} ticks={xTicks} />
     </>
   );
 }
 
-export function LinkedLane({
-  lane,
-  placement,
-  width,
-  height,
-  view,
-  references,
-  showX,
-  legendPlacement,
-  visibility,
-}: LaneProps) {
-  const clip = useId();
+function LaneDrawing({
+  settings,
+  layers,
+  clip,
+  marks,
+  draggedMark,
+}: {
+  settings: LaneProps;
+  layers: ReturnType<typeof useLinkedLegend>;
+  clip: string;
+  marks: ReturnType<typeof getChartMarks>;
+  draggedMark: string | undefined;
+}) {
+  const { lane, width, height, placement, references, view, xTicks, highlights } = settings;
   const { channel, y } = lane;
   const { axis } = view;
-  const layers = useLinkedLegend(channel, visibility);
-  const marks = getChartMarks(placement);
-  const getItems = usePlacementMenu(lane, placement, view);
   const [left, right] = axis.range;
   const [bottom, top] = y.range;
   const plot = { top, bottom, left, right };
   const fixed = useLaneReferences(lane, references, plot);
   return (
+    <svg
+      {...chartHooks.slot('plot')}
+      role="group"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      <defs>
+        <clipPath id={clip}>
+          <rect x={left} y={top} width={right - left} height={bottom - top} />
+        </clipPath>
+      </defs>
+      <LaneAxes lane={lane} plot={plot} xTicks={xTicks} />
+      <LinkedTraces
+        lane={lane}
+        layers={layers}
+        emphasized={highlights.some(
+          (target) => target.type === 'channel' && target.channelId === channel.id,
+        )}
+        level={fixed.filter((r) => r.axis === 'y')}
+        clip={`url(#${clip})`}
+      />
+      <ChartReferences
+        placed={fixed.filter((r) => r.axis === 'x')}
+        highlightedKey={placement.selection.current}
+      />
+      <MeasurementHighlights
+        lane={lane}
+        highlights={highlights}
+        extrema={placement.selection.current === 'p2p'}
+        clip={clip}
+      />
+      <MovableChartMarks
+        selection={placement.selection}
+        marks={marks}
+        view={view}
+        lane={lane}
+        draggedMark={draggedMark}
+      />
+      <ChannelPoints lane={lane} selection={placement.selection} />
+    </svg>
+  );
+}
+
+export function LinkedLane(settings: LaneProps) {
+  const { lane, placement, view, xLabel, legendPlacement, visibility } = settings;
+  const clip = useId();
+  const { channel } = lane;
+  const layers = useLinkedLegend(channel, visibility);
+  const marks = getChartMarks(placement);
+  const getItems = usePlacementMenu(lane, placement, view);
+  return (
     <section
       {...hooks.slot('channel', { key: channel.id, 'y-scale': channel.yScale ?? 'linear' })}
       aria-label={channel.label}
+      aria-describedby={clip + '-x-label'}
     >
       <span>
         {channel.label}
@@ -122,38 +179,19 @@ export function LinkedLane({
           startMark={(target) => markAt(target, marks)}
         >
           {(draggedMark) => (
-            <svg
-              {...chartHooks.slot('plot')}
-              role="group"
-              width={width}
-              height={height}
-              viewBox={`0 0 ${width} ${height}`}
-            >
-              <defs>
-                <clipPath id={clip}>
-                  <rect x={left} y={top} width={right - left} height={bottom - top} />
-                </clipPath>
-              </defs>
-              <LaneAxes lane={lane} plot={plot} showX={showX} />
-              <LinkedTraces
-                lane={lane}
-                layers={layers}
-                level={fixed.filter((r) => r.axis === 'y')}
-                clip={`url(#${clip})`}
-              />
-              <ChartReferences placed={fixed.filter((r) => r.axis === 'x')} />
-              <MovableChartMarks
-                selection={placement.selection}
-                marks={marks}
-                view={view}
-                lane={lane}
-                draggedMark={draggedMark}
-              />
-              <ChannelPoints lane={lane} selection={placement.selection} />
-            </svg>
+            <LaneDrawing
+              settings={settings}
+              layers={layers}
+              clip={clip}
+              marks={marks}
+              draggedMark={draggedMark}
+            />
           )}
         </ViewportSurface>
       </PlotWithLegend>
+      <div {...hooks.slot('x-label')} id={clip + '-x-label'}>
+        {xLabel}
+      </div>
     </section>
   );
 }

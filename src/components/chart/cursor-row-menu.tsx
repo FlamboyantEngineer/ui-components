@@ -36,7 +36,8 @@ export function CursorRowMenu({
   const select = (target: EventTarget) => {
     const id = cursorAt(target)?.dataset.markId;
     setName(id);
-    if (id !== undefined) onActivate(id);
+    const row = isElement(target) ? target.closest('tr[id]') : null;
+    if (row) onActivate(row.id);
   };
   const target = useContextMenuTarget({
     controller,
@@ -68,6 +69,7 @@ export function CursorRowMenu({
       <div
         {...hooks.slot('measurements')}
         {...target}
+        onClickCapture={(event) => select(event.target)}
         onFocusCapture={(event) => select(event.target)}
         tabIndex={-1}
       >
