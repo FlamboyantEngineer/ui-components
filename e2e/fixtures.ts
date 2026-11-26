@@ -93,6 +93,11 @@ export const test = base.extend<{ lab: LabFixture }>({
         // finishes each run in a second page; a page with frames keeps the default, which also
         // scans frames that cannot run scripts. Incomplete results fail unless e2e/axe-incomplete.ts
         // accepts their rule for the lab.
+        // An iframe whose frame is not attached or loaded yet would pick the in-place run and be
+        // left untested; wait until every iframe has its loaded frame.
+        const iframes = await page.locator('iframe').count();
+        await expect.poll(() => page.frames().length).toBe(iframes + 1);
+        await Promise.all(page.frames().map((frame) => frame.waitForLoadState('load')));
         const results = await new AxeBuilder({ page })
           .include(selector)
           .options({ resultTypes: ['violations', 'incomplete'] })
