@@ -18,6 +18,7 @@ import { createLinearScale } from '../../src/utils/linear-scale.js';
 import { ChartDenseCases } from './chart-dense-cases.js';
 import { ChartFormatCases } from './chart-format-cases.js';
 import { ChartHeatmapCases } from './chart-heatmap-cases.js';
+import { ChartMeasurementCases } from './chart-measurement-cases.js';
 import { ChartMissingCases } from './chart-missing-cases.js';
 import { ChartOptionsCases } from './chart-options-cases.js';
 import { ChartReferencesCases } from './chart-references-cases.js';
@@ -476,6 +477,7 @@ mountLab(
     </LabSection>
     <ChartFormatCases />
     <ChartDenseCases />
+    <ChartMeasurementCases />
     <ChartMissingCases />
     <ChartReferencesCases />
     <ChartScatterCases />

@@ -352,6 +352,26 @@ The image shall be described by a `<desc>` that reads its lowest, highest and la
 Implementation: `src/components/chart/sparkline.tsx`, `src/core/strings/content.ts`
 Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.spec.ts`
 
+## UIC-CHART-14 - Numeric viewport
+
+### UIC-CHART-14.1 - Shared pan, zoom and numeric scales
+
+`EventChart` accepts `ChartViewportProps`. A positive, increasing `visibleRange` on a logarithmic axis, or any finite increasing range on a linear axis, controls the view in original x units. `defaultVisibleRange` initializes an uncontrolled view. The view intersects the data extent and falls back to the capture extent when the intersection is empty. `onVisibleRangeChange` reports requested changes. The initial extent includes the capture, and reset restores that extent. `xScale` defaults to `linear`. With `log`, equal ratios occupy equal distances and only positive x values draw. `xLabel` names the axis and `formatX` formats its ticks.
+
+The plot supports Shift+drag to preview and zoom to a horizontal interval, double-click to reset, drag to pan, Ctrl+wheel to zoom around the coordinate beneath the pointer, and ordinary wheel scrolling by the browser. Navigation buttons and the plot context menu provide pan, zoom and reset. On the focused viewport, Left/Right pan one fifth of the visible span, +/− zoom at the center and Home resets. All moves operate in the displayed scale and remain within the capture extent. Secondary click, long touch, Shift+F10 and the Context Menu key open the existing ContextMenu.
+
+Implementation: `src/components/chart/numeric-axis.ts`, `src/components/chart/chart-viewport.tsx`, `labs/reference/chart.css`
+Verification: `src/components/chart/numeric-axis.test.ts`, `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
+## UIC-CHART-16 - Event chart
+
+### UIC-CHART-16.1 - Exact numeric points and intervals
+
+`EventChart` accepts `events` with stable `id`, `label`, numeric `start` and optional inclusive `end`. A zero-length interval draws as a point. Valid events sort by start and retain input order at ties. Visible marks share a roving tab stop with Left/Right and Home/End navigation. Hover and keyboard focus reveal event details. `renderDetails(event)` receives the original item. Names and table rows include the numeric endpoints alongside a differing `formatX` result so rounded labels preserve distinguishable details. Coincident events have separate identities and table rows. The chart supports the shared numeric viewport and Chart frame.
+
+Implementation: `src/components/chart/event-chart.tsx`, `src/components/chart/chart-points.tsx`, `labs/src/chart-measurement-cases.tsx`
+Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
 ## Hooks
 
 | Hook                                 | Kind      | Values / Meaning                                  |
@@ -431,3 +451,11 @@ Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.sp
 | `data-variant`                       | attribute | `line`, `area`                                    | Line or filled area.                                                                |
 | `data-marker`                        | attribute | `min`, `max`, `last`                              | Which value a marker marks.                                                         |
 | `data-empty`                         | state     | `true`                                            | The series has no finite value.                                                     |
+| `ui-chart__navigation`               | slot      |                                                   | Viewport navigation buttons.                                                        |
+| `ui-chart__viewport`                 | slot      |                                                   | Focusable plot and context menu target.                                             |
+| `ui-event-chart`                     | root      |                                                   | Numeric event figure.                                                               |
+| `ui-event-chart__event`              | slot      |                                                   | Individually focusable point or interval.                                           |
+| `data-range-start`                   | attribute |                                                   | First visible x coordinate on the viewport.                                         |
+| `data-range-end`                     | attribute |                                                   | Last visible x coordinate on the viewport.                                          |
+| `ui-chart__selection`                | slot      |                                                   | Preview of a horizontal zoom selection.                                             |
+| `data-x-scale`                       | attribute | `linear`, `log`                                   | Numeric x scale on the event or linked chart root.                                  |

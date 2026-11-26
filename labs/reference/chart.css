@@ -463,3 +463,39 @@
 .ui-sparkline__marker[data-marker='max'] {
   fill: var(--ref-success);
 }
+
+.ui-chart__navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.ui-chart__viewport {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.ui-chart__selection {
+  position: absolute;
+  inset-block: 0;
+  background: var(--ref-accent-ink);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.ui-chart__viewport:focus-visible,
+.ui-event-chart__event:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-event-chart {
+  min-width: 0;
+}
+
+.ui-event-chart__event {
+  fill: var(--ref-accent-ink);
+}

@@ -15,6 +15,9 @@ export const chartHooks = createHooks('chart', [
   'tooltip-swatch',
   'tooltip-label',
   'tooltip-value',
+  'navigation',
+  'viewport',
+  'selection',
   'references',
   'reference',
   'reference-line',
@@ -43,3 +46,5 @@ export const calendarHeatmapHooks = createHooks('calendar-heatmap', [
 export const chartAxisHooks = createHooks('chart-axis', ['line', 'tick', 'label', 'grid']);
 
 export const chartLegendHooks = createHooks('chart-legend', ['item', 'swatch', 'label']);
+
+export const eventChartHooks = createHooks('event-chart', ['event']);

@@ -1,6 +1,8 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of charts and dashboard grids. */
 interface DashboardStrings {
+  chartPanLeft: string;
+  chartPanRight: string;
   /** Toggles a chart between its drawing and a table of its values. */
   showAsTable: string;
   /** Names a chart legend's group of series toggles. */
