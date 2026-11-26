@@ -8,12 +8,7 @@ import { Chart, type ChartProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { eventChartHooks as hooks } from './chart-hooks.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
-import {
-  ChartNavigation,
-  type NumericViewport,
-  useChartViewport,
-  ViewportSurface,
-} from './chart-viewport.js';
+import { type NumericViewport, useChartViewport, ViewportSurface } from './chart-viewport.js';
 import { type ChartViewportProps, findAxisExtent, isAxisValue } from './numeric-axis.js';
 import { useChartFrame } from './use-chart-box.js';
 
@@ -177,7 +172,6 @@ export function EventChart({
     >
       {drawable.length ? (
         <>
-          <ChartNavigation view={view} />
           <EventPlot
             events={drawable}
             view={view}

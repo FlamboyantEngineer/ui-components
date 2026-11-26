@@ -139,8 +139,10 @@ it('UIC-CHART-15.2 keeps the latest controlled B when a host updates it during a
   const handle = screen.getByRole('slider', { name: 'A' });
   const viewport = screen.getByRole('group', { name: 'Voltage' });
   await user.pointer({ keys: '[MouseLeft>]', target: handle, coords: { clientX: 100 } });
+  expect(handle).toHaveAttribute('data-dragging', 'true');
   rerender(view(3));
   await user.pointer({ target: viewport, coords: { clientX: 150 } });
   await user.pointer({ keys: '[/MouseLeft]', target: viewport });
+  expect(handle).not.toHaveAttribute('data-dragging');
   expect(change).toHaveBeenCalledWith([expect.any(Number), 3], expect.anything());
 });

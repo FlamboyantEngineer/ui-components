@@ -358,9 +358,13 @@ Verification: `src/components/chart/sparkline.test.tsx`, `e2e/chart-sparkline.sp
 
 `LinkedLineChart` and `EventChart` accept `ChartViewportProps`. A positive, increasing `visibleRange` on a logarithmic axis, or any finite increasing range on a linear axis, controls the view in original x units. `defaultVisibleRange` initializes an uncontrolled view. The view intersects the data extent and falls back to the capture extent when the intersection is empty. `onVisibleRangeChange` reports requested changes. The initial extent includes the capture, and reset restores that extent. `xScale` defaults to `linear`. With `log`, equal ratios occupy equal distances and only positive x values draw. `xLabel` names the axis and `formatX` formats its ticks.
 
-The plot supports Shift+drag to preview and zoom to a horizontal interval, double-click to reset, drag to pan, Ctrl+wheel to zoom around the coordinate beneath the pointer, and ordinary wheel scrolling by the browser. Navigation buttons and the plot context menu provide pan, zoom and reset. On the focused viewport, Left/Right pan one fifth of the visible span, +/− zoom at the center and Home resets. All moves operate in the displayed scale and remain within the capture extent. Secondary click, long touch, Shift+F10 and the Context Menu key open the existing ContextMenu.
+Drag a zoomed plot to pan, Shift+drag to preview and zoom to a horizontal interval, or Ctrl+wheel to zoom around the pointer. Ordinary wheel input scrolls the page. Choose **Reset view** in the plot context menu to restore the full extent.
 
-Implementation: `src/components/chart/numeric-axis.ts`, `src/components/chart/chart-viewport.tsx`, `labs/reference/chart.css`
+The viewport’s `data-gesture` identifies the interaction as `idle`, `pan`, `panning`, `select`, `selecting`, `zoom-in`, `zoom-out` or `move-mark`. The reference styles show a grab hand when panning is available, a closed hand during a pan, a magnifier for zoom, a crosshair during interval selection and a horizontal resize cursor on movable marks.
+
+On the focused viewport, Left/Right pan one fifth of the visible span, +/− zoom at the center and Home resets. All moves operate in the displayed scale and remain within the capture extent. Secondary click, long touch, Shift+F10 and the Context Menu key open the existing ContextMenu.
+
+Implementation: `src/components/chart/numeric-axis.ts`, `src/components/chart/chart-viewport.tsx`, `src/components/chart/use-plot-pointer.ts`, `labs/reference/chart.css`
 Verification: `src/components/chart/numeric-axis.test.ts`, `src/components/chart/event-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
 
 ## UIC-CHART-15 - Linked line chart
@@ -383,7 +387,7 @@ Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components
 
 ### UIC-CHART-15.3 - Manual and automatic measurement placement
 
-Each channel menu places A, B, a new marker or an existing marker at the pointer coordinate (keyboard uses the focused mark or viewport midpoint), the nearest displayed sample, the first full-resolution minimum or maximum, first rising or falling threshold crossing, or first sample strictly outside its supplied band. Crossings linearly interpolate consecutive valid source values in data units. Samples exactly on a band limit pass. Unavailable measurements disable their actions. Peak-to-peak places A at the minimum and B at the maximum together. Zoom between cursors fits their span. `markers`, `defaultMarkers` and `onMarkersChange` use the existing named reference-line shape. Move a marker by drag, keyboard, or numeric entry and remove it by its button or Delete key. Placement only changes marker or cursor coordinates.
+Each channel menu places A, B, a new marker or an existing marker at the pointer coordinate (keyboard uses the focused mark or viewport midpoint), the nearest displayed sample, the first full-resolution minimum or maximum, first rising or falling threshold crossing, or first sample strictly outside its supplied band. Crossings linearly interpolate consecutive valid source values in data units. Samples exactly on a band limit pass. Unavailable measurements disable their actions. Peak-to-peak places A at the minimum and B at the maximum together. Zoom between cursors fits their span. `markers`, `defaultMarkers` and `onMarkersChange` use the existing named reference-line shape. Move a marker by drag, keyboard, or numeric entry and remove it by its button or Delete key. The dragged mark carries `data-dragging` until release or cancellation. The reference styles thicken the active line from 1 to 2 pixels during a drag or keyboard focus. The transparent hit area keeps its width. Placement only changes marker or cursor coordinates.
 
 Implementation: `src/components/chart/chart-placement.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-line-chart.tsx`
 Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
@@ -476,7 +480,6 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `data-variant`                       | attribute | `line`, `area`                                    | Line or filled area.                                                                |
 | `data-marker`                        | attribute | `min`, `max`, `last`                              | Which value a marker marks.                                                         |
 | `data-empty`                         | state     | `true`                                            | The series has no finite value.                                                     |
-| `ui-chart__navigation`               | slot      |                                                   | Viewport navigation buttons.                                                        |
 | `ui-chart__viewport`                 | slot      |                                                   | Focusable plot and context menu target.                                             |
 | `ui-event-chart`                     | root      |                                                   | Numeric event figure.                                                               |
 | `ui-event-chart__event`              | slot      |                                                   | Individually focusable point or interval.                                           |
@@ -490,6 +493,8 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-linked-line-chart__readout`      | slot      |                                                   | Coordinate editors and measured values.                                             |
 | `data-mark-id`                       | attribute |                                                   | Internal typed identity on a movable mark.                                          |
 | `data-coordinate`                    | attribute |                                                   | Source x of a movable measurement mark.                                             |
+| `data-dragging`                      | state     | `true`                                            | The movable cursor or marker being dragged in this channel.                         |
+| `data-gesture`                       | attribute |                                                   | Available or active pointer gesture on a numeric viewport.                          |
 | `data-range-start`                   | attribute |                                                   | First visible x coordinate on the viewport.                                         |
 | `data-range-end`                     | attribute |                                                   | Last visible x coordinate on the viewport.                                          |
 | `ui-chart__selection`                | slot      |                                                   | Preview of a horizontal zoom selection.                                             |

@@ -15,7 +15,6 @@ export const chartHooks = createHooks('chart', [
   'tooltip-swatch',
   'tooltip-label',
   'tooltip-value',
-  'navigation',
   'viewport',
   'selection',
   'references',

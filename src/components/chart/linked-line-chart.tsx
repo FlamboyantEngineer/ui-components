@@ -13,7 +13,7 @@ import { Chart, type ChartProps } from './chart.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
 import { type ChartPlacement, getChartMarks } from './chart-placement.js';
 import type { ChartReferenceLine } from './chart-references.js';
-import { ChartNavigation, useChartViewport } from './chart-viewport.js';
+import { useChartViewport } from './chart-viewport.js';
 import type { LinkedChartChannel } from './linked-channel.js';
 import { LinkedLane } from './linked-lane.js';
 import {
@@ -256,7 +256,6 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
     >
       {hasData ? (
         <>
-          <ChartNavigation view={view} />
           {lanes.map((lane, i) => (
             <LinkedLane
               key={toKeyIdentity(lane.channel.id)}

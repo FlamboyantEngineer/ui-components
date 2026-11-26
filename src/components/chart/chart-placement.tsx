@@ -94,10 +94,12 @@ function moveByKey(e: KeyboardEvent, mark: MovableMark, view: NumericViewport) {
 }
 
 export function MovableChartMarks({
+  draggedMark,
   marks,
   view,
   lane,
 }: {
+  draggedMark: string | undefined;
   marks: readonly MovableMark[];
   view: NumericViewport;
   lane: DrawnChannel;
@@ -119,7 +121,12 @@ export function MovableChartMarks({
           return (
             <g
               key={m.id}
-              {...hooks.slot(m.kind, { 'mark-id': m.id, coordinate: m.x, tone: m.tone })}
+              {...hooks.slot(m.kind, {
+                dragging: draggedMark === m.id,
+                'mark-id': m.id,
+                coordinate: m.x,
+                tone: m.tone,
+              })}
               role="slider"
               aria-label={m.label}
               tabIndex={0}

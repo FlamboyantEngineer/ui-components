@@ -3,8 +3,7 @@ import { defineStrings } from '../message-format.js';
 interface DashboardStrings {
   chartPeakAmplitude: string;
   chartZoomCursors: string;
-  chartPanLeft: string;
-  chartPanRight: string;
+  chartResetView: string;
   chartHere: string;
   chartNearest: string;
   chartMinimum: string;

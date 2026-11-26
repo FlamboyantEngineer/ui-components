@@ -99,13 +99,13 @@ export function ChartMeasurementCases() {
     <>
       <LabSection
         title="Linked measurements"
-        description="Drag the plot to pan, drag a cursor to measure, or enter its coordinate in seconds. Open a channel’s context menu for sample, crossing, range and error-band placement."
+        description="Shift-drag to select a range or Ctrl+wheel to zoom, then drag the plot to pan. Drag a cursor to measure. Its line thickens while held. Enter its coordinate in seconds for exact placement. Right-click a channel for placement and Reset view."
       >
         <CaptureExample />
       </LabSection>
       <LabSection
         title="Logarithmic axes"
-        description="Frequency and amplitude use positive logarithmic scales."
+        description="Frequency and amplitude use positive logarithmic scales. Ctrl+wheel zooms around the pointer. Right-click the plot to reset the view."
       >
         <LinkedLineChart
           label="Frequency response"
@@ -117,7 +117,7 @@ export function ChartMeasurementCases() {
       </LabSection>
       <LabSection
         title="Elapsed events"
-        description="Arrow through the observations at each coordinate. The table includes the original numeric endpoints in seconds."
+        description="Arrow through observations at each coordinate. Shift-drag to inspect a time interval and choose Reset view in the plot menu to see the full sequence. The table includes the original numeric endpoints in seconds."
       >
         <EventChart
           label="Observation sequence"

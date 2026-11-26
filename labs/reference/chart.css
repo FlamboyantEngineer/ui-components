@@ -464,7 +464,6 @@
   fill: var(--ref-success);
 }
 
-.ui-chart__navigation,
 .ui-linked-line-chart__readout {
   display: flex;
   flex-wrap: wrap;
@@ -477,6 +476,38 @@
   min-width: 0;
   overflow: hidden;
   touch-action: pan-y;
+  user-select: none;
+  cursor: default;
+}
+
+.ui-chart__viewport[data-gesture='pan'] {
+  cursor: grab;
+}
+
+.ui-chart__viewport[data-gesture='select'],
+.ui-chart__viewport[data-gesture='zoom-in'] {
+  cursor: zoom-in;
+}
+
+.ui-chart__viewport[data-gesture='zoom-out'] {
+  cursor: zoom-out;
+}
+
+.ui-chart__viewport[data-gesture='panning'] {
+  cursor: grabbing;
+}
+
+.ui-chart__viewport[data-gesture='selecting'] {
+  cursor: crosshair;
+}
+
+.ui-chart__viewport[data-gesture='move-mark'] {
+  cursor: ew-resize;
+}
+
+/* Keep the captured gesture's cursor when the pointer crosses another mark. */
+.ui-chart__viewport:is([data-gesture='panning'], [data-gesture='selecting']) [role='slider'] {
+  cursor: inherit;
 }
 
 .ui-chart__selection {
@@ -488,9 +519,7 @@
 }
 
 .ui-chart__viewport:focus-visible,
-.ui-event-chart__event:focus-visible,
-.ui-linked-line-chart__cursor:focus-visible,
-.ui-linked-line-chart__marker:focus-visible {
+.ui-event-chart__event:focus-visible {
   outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
@@ -526,6 +555,7 @@
 .ui-linked-line-chart__marker {
   fill: var(--ref-text);
   cursor: ew-resize;
+  outline: none;
   font-size: var(--ref-font-size-sm);
 }
 
@@ -536,4 +566,12 @@
 
 .ui-linked-line-chart__marker line {
   stroke-dasharray: 2 3;
+}
+
+:is(.ui-linked-line-chart__cursor, .ui-linked-line-chart__marker):is(
+    [data-dragging],
+    :focus-visible
+  )
+  line {
+  stroke-width: 2px;
 }

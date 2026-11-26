@@ -40,16 +40,21 @@ it('UIC-CHART-14.1 UIC-CHART-16.1 requests viewport changes while the host retai
     <EventChart
       label="Events"
       events={events}
+      xLabel="Elapsed time"
       visibleRange={[0.0000013, 0.0000028]}
       onVisibleRangeChange={change}
     />,
   );
-  expectHooksMatchSpec(document.body, 'CHART', { slots: ['viewport', 'navigation'] });
-  await user.click(screen.getByRole('button', { name: 'Zoom in' }));
+  expectHooksMatchSpec(document.body, 'CHART', { slots: ['viewport'] });
+  expect(screen.queryByRole('button', { name: /pan|zoom|reset/i })).not.toBeInTheDocument();
+  const plot = screen.getByRole('group', { name: 'Elapsed time' });
+  plot.focus();
+  await user.keyboard('=');
   const a = change.mock.calls[0];
-  await user.click(screen.getByRole('button', { name: 'Zoom in' }));
+  await user.keyboard('=');
   expect(change.mock.calls[1]).toEqual(a);
-  await user.click(screen.getByRole('button', { name: 'Reset zoom' }));
+  await user.keyboard('{Shift>}{F10}{/Shift}');
+  await user.click(await screen.findByRole('menuitem', { name: 'Reset view' }));
   expect(change).toHaveBeenLastCalledWith([events[0]?.start, events[2]?.start]);
 });
 

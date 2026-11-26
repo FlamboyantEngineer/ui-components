@@ -49,6 +49,13 @@ function useLaneReferences(
   return [...markers, ...level];
 }
 
+function markAt(target: EventTarget, marks: ReturnType<typeof getChartMarks>) {
+  const id = isElement(target)
+    ? target.closest('[data-mark-id]')?.getAttribute('data-mark-id')
+    : null;
+  return marks.find((mark) => mark.id === id);
+}
+
 export function LinkedLane({ lane, placement, width, height, view, references, showX }: LaneProps) {
   const clip = useId();
   const { channel, y } = lane;
@@ -72,45 +79,47 @@ export function LinkedLane({ lane, placement, width, height, view, references, s
         view={view}
         label={channel.label}
         getItems={getItems}
-        startMark={(target) => {
-          const id = isElement(target)
-            ? target.closest('[data-mark-id]')?.getAttribute('data-mark-id')
-            : null;
-          return marks.find((m) => m.id === id);
-        }}
+        startMark={(target) => markAt(target, marks)}
       >
-        <svg
-          {...chartHooks.slot('plot')}
-          role="group"
-          width={width}
-          height={height}
-          viewBox={`0 0 ${width} ${height}`}
-        >
-          <defs>
-            <clipPath id={clip}>
-              <rect x={left} y={top} width={right - left} height={bottom - top} />
-            </clipPath>
-          </defs>
-          <ChartAxis
-            position="left"
-            offset={left}
-            range={y.range}
-            ticks={y.ticks()}
-            gridLength={right - left}
-          />
-          {showX ? (
-            <ChartAxis position="bottom" offset={bottom} range={axis.range} ticks={axis.ticks()} />
-          ) : null}
-          <g clipPath={`url(#${clip})`} aria-hidden="true">
-            {lane.band ? <path {...hooks.slot('envelope')} d={lane.band} /> : null}
-            {lane.reference ? (
-              <path {...hooks.slot('comparison')} d={lane.reference} fill="none" />
+        {(draggedMark) => (
+          <svg
+            {...chartHooks.slot('plot')}
+            role="group"
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+          >
+            <defs>
+              <clipPath id={clip}>
+                <rect x={left} y={top} width={right - left} height={bottom - top} />
+              </clipPath>
+            </defs>
+            <ChartAxis
+              position="left"
+              offset={left}
+              range={y.range}
+              ticks={y.ticks()}
+              gridLength={right - left}
+            />
+            {showX ? (
+              <ChartAxis
+                position="bottom"
+                offset={bottom}
+                range={axis.range}
+                ticks={axis.ticks()}
+              />
             ) : null}
-            <path {...hooks.slot('line')} d={lane.line.path} fill="none" />
-          </g>
-          <ChartReferences placed={fixed} />
-          <MovableChartMarks marks={marks} view={view} lane={lane} />
-        </svg>
+            <g clipPath={`url(#${clip})`} aria-hidden="true">
+              {lane.band ? <path {...hooks.slot('envelope')} d={lane.band} /> : null}
+              {lane.reference ? (
+                <path {...hooks.slot('comparison')} d={lane.reference} fill="none" />
+              ) : null}
+              <path {...hooks.slot('line')} d={lane.line.path} fill="none" />
+            </g>
+            <ChartReferences placed={fixed} />
+            <MovableChartMarks marks={marks} view={view} lane={lane} draggedMark={draggedMark} />
+          </svg>
+        )}
       </ViewportSurface>
     </section>
   );
