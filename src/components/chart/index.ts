@@ -25,7 +25,7 @@ export type {
   LineChartX,
 } from './line-chart.js';
 export { LineChart } from './line-chart.js';
-export type { LinkedChartChannel, LinkedChartSample } from './linked-channel.js';
+export type { LinkedChartChannel, LinkedChartPoint, LinkedChartSample } from './linked-channel.js';
 export { LinkedLineChart, type LinkedLineChartProps } from './linked-line-chart.js';
 export type { LinkedChartReading, LinkedChartReadout } from './linked-model.js';
 export type { ChartAxisScale, ChartViewportProps } from './numeric-axis.js';

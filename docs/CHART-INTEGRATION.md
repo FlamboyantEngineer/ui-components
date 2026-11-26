@@ -30,6 +30,8 @@ Keep the capture in its original numeric units. Map each trace to a stable chann
 
 Supply `defaultVisibleRange`, `defaultCursors` or `defaultMarkers` for initial positions the chart then owns. For automatic placement by a host algorithm, update the corresponding controlled values in source units. Drag to pan, Shift+drag to select an x interval, or Ctrl+wheel to zoom about the pointer. Right-click the plot and choose **Reset view** to restore the full extent. Keyboard users can press Home on the focused plot or open the same menu with Shift+F10. A channel's menu offers manual, nearest-sample, extrema, threshold, band and peak-to-peak placement. Position fields take source units. For example, a cursor at 160 ns has a position of 0.00000016 when the capture uses seconds.
 
+Use `xReferences` for a shared fixed coordinate such as a trigger. For a channel-specific measurement, supply `points: [{ id, label, x, y }]` on that channel. For example, the capture lab scans each original sample array for its highest valid amplitude and supplies that sample as a fixed point. Both types appear alongside A and B in the readout.
+
 For frequency data, set `xScale="log"`, supply frequencies in Hz and format labels as desired. A channel can independently set `yScale="log"`. A logarithmic axis needs positive coordinates. Supply linear y values for a linear dB axis when the host already expresses amplitude in decibels.
 
 ## Replace an elapsed-time event view

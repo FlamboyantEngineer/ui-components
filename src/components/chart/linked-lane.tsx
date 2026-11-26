@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, linkedChartHooks as hooks } from './chart-hooks.js';
 import type { ChartBox } from './chart-layout.js';
@@ -54,6 +55,34 @@ function markAt(target: EventTarget, marks: ReturnType<typeof getChartMarks>) {
     ? target.closest('[data-mark-id]')?.getAttribute('data-mark-id')
     : null;
   return marks.find((mark) => mark.id === id);
+}
+
+function ChannelPoints({ lane }: { lane: DrawnChannel }) {
+  const [left, right] = lane.x.range;
+  const [bottom, top] = lane.y.range;
+  return lane.points.map((p) => {
+    const x = lane.x.map(p.x),
+      y = lane.y.map(p.y);
+    if (!(x >= left && x <= right && y >= top && y <= bottom)) return null;
+    const end = x > (left + right) / 2;
+    return (
+      <g
+        key={toKeyIdentity(p.id)}
+        {...hooks.slot('point', { key: p.id })}
+        aria-hidden="true"
+        pointerEvents="none"
+      >
+        <circle cx={x} cy={y} r={3.5} />
+        <text
+          x={x + (end ? -7 : 7)}
+          y={y < top + 14 ? y + 14 : y - 6}
+          textAnchor={end ? 'end' : 'start'}
+        >
+          {p.label}
+        </text>
+      </g>
+    );
+  });
 }
 
 export function LinkedLane({ lane, placement, width, height, view, references, showX }: LaneProps) {
@@ -117,6 +146,7 @@ export function LinkedLane({ lane, placement, width, height, view, references, s
               <path {...hooks.slot('line')} d={lane.line.path} fill="none" />
             </g>
             <ChartReferences placed={fixed} />
+            <ChannelPoints lane={lane} />
             <MovableChartMarks marks={marks} view={view} lane={lane} draggedMark={draggedMark} />
           </svg>
         )}

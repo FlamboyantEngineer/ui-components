@@ -55,4 +55,8 @@ export const linkedChartHooks = createHooks('linked-line-chart', [
   'cursor',
   'marker',
   'readout',
+  'measurements',
+  'fixed-label',
+  'sample-x',
+  'point',
 ]);

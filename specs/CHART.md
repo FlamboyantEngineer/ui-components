@@ -382,6 +382,10 @@ Verification: `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurem
 
 `cursors` and `defaultCursors` are pairs in A, B order. Each mark identifies its nearest displayed sample with a dot. Its slider expresses position as a percentage and announces the coordinate and reading in host units. Each cursor is a named slider and also has a numeric position field in x units. Drag or use arrow keys to move a cursor, Shift+arrow for a larger move, and Home/End for the visible edges. Cursors can cross. `onCursorsChange(pair, readout)` reports the requested positions, absolute x separation, and each channel's nearest displayed source samples and signed B minus A amplitude. A cursor outside the view or an empty channel reports a null sample. Proximity is measured along the displayed axis. A tie between two distinct coordinates picks the earlier sample. Peak-to-peak is the maximum minus minimum of the channel's full-resolution measurements in the visible x range.
 
+The cursor readings table has a row for each A/B cursor, named movable marker and fixed x reference, plus each host-supplied channel point. Each channel has its own column with its amplitude unit. The table shows the nearest displayed sample’s x coordinate when it differs from the cursor position. The footer gives signed B minus A differences and visible-range peak-to-peak amplitudes. Absolute x separation appears in the caption. The Edit positions disclosure contains the exact numeric fields.
+
+A channel accepts optional `points: readonly LinkedChartPoint[]`. Each point has a channel-local `id`, a `label`, and numeric `x` and `y` in source units. Points are fixed annotations. The plot draws a labeled point within its axes and the table retains its supplied coordinates when zoomed away. A point annotates one channel. It does not contribute samples to the capture or to measurements.
+
 Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-model.ts`, `src/components/chart/chart-placement.tsx`
 Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
 
@@ -490,6 +494,10 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-linked-line-chart__envelope`     | slot      |                                                   | Sampled error band.                                                                 |
 | `ui-linked-line-chart__cursor`       | slot      |                                                   | Movable cursor.                                                                     |
 | `ui-linked-line-chart__marker`       | slot      |                                                   | Movable marker.                                                                     |
+| `ui-linked-line-chart__measurements` | slot      |                                                   | Scrollable table of cursor, reference and point readings.                           |
+| `ui-linked-line-chart__point`        | slot      |                                                   | Named fixed channel point.                                                          |
+| `ui-linked-line-chart__fixed-label`  | slot      |                                                   | Fixed annotation label in the readout.                                              |
+| `ui-linked-line-chart__sample-x`     | slot      |                                                   | Nearest sample coordinate when it differs from the mark.                            |
 | `ui-linked-line-chart__readout`      | slot      |                                                   | Coordinate editors and measured values.                                             |
 | `data-mark-id`                       | attribute |                                                   | Internal typed identity on a movable mark.                                          |
 | `data-coordinate`                    | attribute |                                                   | Source x of a movable measurement mark.                                             |

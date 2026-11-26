@@ -14,7 +14,16 @@ export interface LinkedChartSample {
   upper?: number | undefined;
 }
 
+/** A host-placed, read-only annotation in the channel's source coordinates. */
+export interface LinkedChartPoint {
+  id: Key;
+  label: string;
+  x: number;
+  y: number;
+}
+
 export interface LinkedChartChannel {
+  points?: readonly LinkedChartPoint[] | undefined;
   id: Key;
   label: string;
   unit?: string | undefined;

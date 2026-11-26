@@ -22,7 +22,19 @@ const samples = Array.from({ length: count }, (_, i) => {
           : reference + 0.08 * Math.cos(i / 14);
   return { x: i * 4e-11, y, lower: reference - 0.25, upper: reference + 0.25 };
 });
-const voltage: LinkedChartChannel = {
+function withPeak(channel: LinkedChartChannel): LinkedChartChannel {
+  let peak: { x: number; y: number } | undefined;
+  for (const { x, y } of channel.samples) {
+    if (y !== null && Number.isFinite(y) && (!peak || y > peak.y)) peak = { x, y };
+  }
+  return {
+    ...channel,
+    formatY: (value) => String(Number(value.toPrecision(4))),
+    points: peak ? [{ id: 'peak', label: channel.label + ' peak', ...peak }] : [],
+  };
+}
+
+const voltage = withPeak({
   id: 'v',
   label: 'Voltage',
   unit: 'V',
@@ -31,8 +43,8 @@ const voltage: LinkedChartChannel = {
   reference: samples
     .filter((_, i) => i % 32 === 0)
     .map((p) => ({ x: p.x, y: Math.sin(p.x / 4e-8) * 2 })),
-};
-const current: LinkedChartChannel = {
+});
+const current = withPeak({
   id: 'i',
   label: 'Current',
   unit: 'mA',
@@ -41,7 +53,7 @@ const current: LinkedChartChannel = {
   samples: samples
     .filter((_, i) => i % 3 === 0)
     .map((p) => ({ x: p.x, y: p.y === null ? null : 22 + p.y * 4 })),
-};
+});
 const frequencies: LinkedChartChannel[] = [
   {
     id: 'response',
@@ -62,7 +74,7 @@ const fixed = [{ id: 'origin', label: 'Trigger', value: 160e-9 }];
 
 function CaptureExample() {
   const [threshold, setThreshold] = useState<number | null>(1);
-  const [cursors, setCursors] = useState<readonly [number, number]>([160e-9, 320e-9]);
+  const [cursors, setCursors] = useState<readonly [number, number]>([80e-9, 240e-9]);
   const [range, setRange] = useState<readonly [number, number]>([0, samples.at(-1)?.x ?? 0]);
   const [markers, setMarkers] = useState<readonly ChartReferenceLine[]>([]);
   const channels = useMemo(
@@ -99,7 +111,7 @@ export function ChartMeasurementCases() {
     <>
       <LabSection
         title="Linked measurements"
-        description="Shift-drag to select a range or Ctrl+wheel to zoom, then drag the plot to pan. Drag a cursor to measure. Its line thickens while held. Enter its coordinate in seconds for exact placement. Right-click a channel for placement and Reset view."
+        description="Compare A, B, the fixed Trigger and each trace’s highest acquired sample in the readout. Both peaks occur at 324 ns. Drag a cursor to compare readings or open Edit positions to enter an exact coordinate in seconds. Shift-drag to zoom and right-click for Reset view."
       >
         <CaptureExample />
       </LabSection>

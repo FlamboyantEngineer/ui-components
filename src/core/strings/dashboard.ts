@@ -1,6 +1,10 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of charts and dashboard grids. */
 interface DashboardStrings {
+  chartReadings: string;
+  chartFixed: string;
+  chartVisibleRange: string;
+  chartEditPositions: string;
   chartPeakAmplitude: string;
   chartZoomCursors: string;
   chartResetView: string;

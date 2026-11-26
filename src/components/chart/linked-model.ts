@@ -79,6 +79,7 @@ export function drawChannel(prepared: ReturnType<typeof prepareChannel>, x: Line
     line,
     reference: comparison.path,
     band: drawBand(samples, x, y),
+    points: (channel.points ?? []).filter((p) => Number.isFinite(p.y) && Number.isFinite(p.x)),
     measurements: measureChannel(visible, channel, x.domain),
   };
 }
@@ -101,19 +102,22 @@ export interface LinkedChartReadout {
   channels: readonly LinkedChartReading[];
 }
 
+export function readDisplayedSample(lane: DrawnChannel, at: number) {
+  return at >= lane.x.domain[0] && at <= lane.x.domain[1]
+    ? findNearestSample(lane.line.displayed, at, lane.x)
+    : null;
+}
+
 export function readCursors(
   lanes: readonly DrawnChannel[],
   cursors: ScaleInterval,
 ): LinkedChartReadout {
   return {
     deltaX: Math.abs(cursors[1] - cursors[0]),
-    channels: lanes.map(({ line, channel, measurements, x: axis }) => {
-      const read = (x: number) =>
-        x >= axis.domain[0] && x <= axis.domain[1]
-          ? findNearestSample(line.displayed, x, axis)
-          : null;
-      const a = read(cursors[0]);
-      const b = read(cursors[1]);
+    channels: lanes.map((lane) => {
+      const { channel, measurements } = lane;
+      const a = readDisplayedSample(lane, cursors[0]);
+      const b = readDisplayedSample(lane, cursors[1]);
       return {
         channelId: channel.id,
         samples: [a, b],

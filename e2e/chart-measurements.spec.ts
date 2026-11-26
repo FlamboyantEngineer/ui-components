@@ -84,7 +84,17 @@ test('UIC-CHART-15.2 UIC-CHART-15.3 drags a cursor and places peak-to-peak from 
     .getByRole('group', { name: 'Voltage' })
     .click({ button: 'right', position: { x: 100, y: 40 } });
   await page.getByRole('menuitem', { name: 'Place cursors at minimum and maximum' }).click();
-  await expect(chart).toContainText('Peak-to-peak = 10 V');
+  const readings = chart.getByRole('table', { name: 'Cursor readings' });
+  await expect(
+    readings
+      .getByRole('row', { name: /^Peak-to-peak/ })
+      .getByRole('cell', { name: '10', exact: true }),
+  ).toBeVisible();
+  await expect(readings.getByRole('row', { name: /^Trigger/ })).toContainText('160.00 ns');
+  await expect(readings.getByRole('row', { name: /^Voltage peak/ })).toContainText('324.00 ns');
+  await expect(
+    chart.getByRole('region', { name: 'Current' }).locator('.ui-linked-line-chart__point'),
+  ).toHaveText('Current peak');
 });
 
 test('UIC-CHART-16.1 reaches both observations at zero and keeps exact interval details', async ({

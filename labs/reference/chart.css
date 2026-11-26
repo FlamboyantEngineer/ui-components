@@ -575,3 +575,46 @@
   line {
   stroke-width: 2px;
 }
+
+.ui-linked-line-chart__measurements {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-linked-line-chart__measurements table {
+  width: 100%;
+}
+
+.ui-linked-line-chart__measurements caption {
+  text-align: start;
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-linked-line-chart__measurements caption small,
+.ui-linked-line-chart__fixed-label {
+  margin-inline-start: 8px;
+  color: var(--ref-muted);
+  font-weight: normal;
+}
+
+.ui-linked-line-chart__sample-x {
+  display: block;
+  color: var(--ref-muted);
+}
+
+.ui-linked-line-chart__point circle {
+  fill: var(--ref-canvas);
+  stroke: var(--ref-accent-ink);
+  stroke-width: 2px;
+}
+
+.ui-linked-line-chart__point text {
+  fill: var(--ref-text);
+  font-size: var(--ref-font-size-sm);
+  paint-order: stroke;
+  stroke: var(--ref-canvas);
+  stroke-width: 3px;
+}

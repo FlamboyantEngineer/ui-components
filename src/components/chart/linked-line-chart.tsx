@@ -8,6 +8,7 @@ import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useIdFactory } from '../../utils/use-id-factory.js';
 import { Button } from '../button/button.js';
+import { Disclosure } from '../disclosure/disclosure.js';
 import { NumberField } from '../number-field/number-field.js';
 import { Chart, type ChartProps } from './chart.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
@@ -23,6 +24,7 @@ import {
   prepareChannel,
   readCursors,
 } from './linked-model.js';
+import { LinkedReadings } from './linked-readings.js';
 import type { ChartViewportProps } from './numeric-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 
@@ -121,46 +123,6 @@ function PositionInputs({
   );
 }
 
-function CursorReadings({
-  readout,
-  channels,
-  formatX,
-}: {
-  readout: LinkedChartReadout;
-  channels: readonly LinkedChartChannel[];
-  formatX: (x: number) => string;
-}) {
-  const strings = useUiStrings();
-  return (
-    <div {...hooks.slot('readout')}>
-      <span>Δx = {formatX(readout.deltaX)}</span>
-      {readout.channels.map((reading, index) => {
-        const channel = channels[index];
-        if (!channel) return null;
-        const writeY = (y: number) =>
-          (channel.formatY ?? String)(y) + (channel.unit ? ' ' + channel.unit : '');
-        return (
-          <div key={toKeyIdentity(channel.id)}>
-            {channel.label}
-            {' · '}
-            {reading.samples.map((p, i) => (
-              <span key={i}>
-                {i === 0 ? 'A' : 'B'} ={' '}
-                {p?.y != null ? formatX(p.x) + ', ' + writeY(p.y) : strings.noData}
-                {' · '}
-              </span>
-            ))}
-            Δy = {reading.deltaY === null ? strings.noData : writeY(reading.deltaY)}
-            {' · '}
-            {strings.chartPeakAmplitude} ={' '}
-            {reading.peakToPeak === null ? strings.noData : writeY(reading.peakToPeak)}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function useLinkedModel(props: LinkedLineChartProps) {
   const { channels, xScale = 'linear', channelHeight = 160 } = props;
   const height = Number.isFinite(channelHeight) ? Math.max(64, channelHeight) : 160;
@@ -236,7 +198,6 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
   const strings = useUiStrings();
   const { frameRef, width, extent, lanes, view, height, hasData } = useLinkedModel(props);
   const placement = usePlacement(props, { extent, lanes });
-  const readout = readCursors(lanes, placement.cursors);
   const axisLabel = xLabel ?? strings.chartXAxis;
   const table = () => toCaptureTable(channels, axisLabel, strings);
   const description = [
@@ -269,8 +230,16 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
             />
           ))}
           <span>{axisLabel}</span>
-          <PositionInputs placement={placement} extent={extent} />
-          <CursorReadings channels={channels} readout={readout} formatX={formatX} />
+          <LinkedReadings
+            lanes={lanes}
+            placement={placement}
+            references={xReferences}
+            formatX={formatX}
+            xLabel={axisLabel}
+          />
+          <Disclosure title={strings.chartEditPositions}>
+            <PositionInputs placement={placement} extent={extent} />
+          </Disclosure>
         </>
       ) : (
         strings.noData

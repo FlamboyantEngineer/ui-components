@@ -84,6 +84,8 @@ it('UIC-CHART-15.3 places peak-to-peak cursors and an out-of-band marker through
   await user.click(await screen.findByRole('menuitem', { name: 'First sample outside band' }));
   expect(change).toHaveBeenCalledWith([expect.objectContaining({ value: 2 })]);
   expect(screen.getByRole('slider', { name: 'Marker 1' })).toHaveAttribute('data-coordinate', '2');
+  expect(screen.getByRole('rowheader', { name: 'Marker 1' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Edit positions' }));
   await user.click(screen.getByRole('button', { name: 'Remove Marker 1' }));
   expect(change).toHaveBeenLastCalledWith([]);
 });
@@ -117,6 +119,7 @@ it('UIC-CHART-15.3 places a marker at an exact sub-microsecond coordinate from i
       onMarkersChange={change}
     />,
   );
+  await user.click(screen.getByRole('button', { name: 'Edit positions' }));
   const field = screen.getByLabelText('Probe', { selector: 'input' });
   await user.clear(field);
   await user.type(field, '0.000000325');
@@ -145,4 +148,35 @@ it('UIC-CHART-15.2 keeps the latest controlled B when a host updates it during a
   await user.pointer({ keys: '[/MouseLeft]', target: viewport });
   expect(handle).not.toHaveAttribute('data-dragging');
   expect(change).toHaveBeenCalledWith([expect.any(Number), 3], expect.anything());
+});
+
+it('UIC-CHART-15.2 lists coincident fixed points and references separately from movable cursors', () => {
+  const channels = [
+    { ...voltage, points: [{ id: 'peak', label: 'Voltage peak', x: 2, y: 5 }] },
+    { ...current, points: [{ id: 'peak', label: 'Current peak', x: 2, y: 499 }] },
+  ];
+  const props = {
+    label: 'Signals',
+    channels,
+    cursors: [3, 1] as const,
+    xReferences: [{ id: 'peak', label: 'Trigger', value: 2 }],
+  };
+  const { rerender } = render(<LinkedLineChart {...props} />);
+  const table = within(screen.getByRole('table', { name: 'Cursor readings' }));
+  expect(table.getByRole('columnheader', { name: 'Voltage (V)' })).toBeVisible();
+  expect(
+    within(table.getByRole('row', { name: /^Voltage peak/ })).getByRole('cell', { name: '5' }),
+  ).toBeVisible();
+  expect(
+    within(table.getByRole('row', { name: /^Current peak/ })).getByRole('cell', { name: '499' }),
+  ).toBeVisible();
+  expect(
+    within(table.getByRole('row', { name: /^Trigger/ })).getByRole('cell', { name: '5' }),
+  ).toBeVisible();
+  expect(table.getByRole('row', { name: /^B − A/ })).toHaveTextContent('-2');
+  rerender(<LinkedLineChart {...props} visibleRange={[3, 4]} />);
+  expect(table.getByRole('row', { name: /^Trigger/ })).toHaveTextContent('No data');
+  expect(table.getByRole('row', { name: /^Current peak/ })).toHaveTextContent('499');
+  const currentLane = screen.getByRole('region', { name: 'Current' });
+  expect(currentLane.querySelectorAll('.ui-linked-line-chart__point')).toHaveLength(0);
 });
