@@ -62,6 +62,17 @@ The legend shall take one tab stop, and the arrow keys move focus between its it
 Implementation: `src/components/chart/chart-legend.tsx`
 Verification: `src/components/chart/chart.test.tsx`, `e2e/chart.spec.ts`
 
+### UIC-CHART-2.4 - In-plot legends
+
+`ChartLegendPlacement` accepts `above`, `top-start`, `top-end`, `bottom-start` or `bottom-end`. Pass `legendPlacement` to a Chart frame, bar, line, donut or scatter chart to position its legend. The default is `above`. In the reference theme a corner legend moves above its plot when the plot width is 24rem or less. Start and end follow text direction.
+
+`ChartLegendItem.swatch` and the legend-wide `swatch` default accept `line`, `dashed` or `band`. A visible item's hover or focus and a restored item call `onHighlight(id)`. Line charts draw the highlighted series last within the line and point layers, preserving its original series color and keyboard traversal order.
+
+A linked chart channel opts in with `legend: { labels }`. The keys of `LinkedChartLegend.labels` are the `LinkedChartLayer` values `measured`, `reference`, `envelope` and `threshold`. The channel shows a toggle for each named layer with data, defaulting to the top-end corner. Per-channel `hiddenKeys`, `defaultHiddenKeys` and `onHiddenKeysChange` control visibility. The envelope stays below the lines. The plot keeps its scale, fixed points, and measurements as visibility changes.
+
+Implementation: `src/components/chart/plot-with-legend.tsx`, `src/components/chart/chart-legend.tsx`, `src/components/chart/linked-legend.tsx`, `src/components/chart/line-chart.tsx`, `labs/reference/chart.css`
+Verification: `src/components/chart/linked-legend.test.tsx`, `src/components/chart/line-chart.test.tsx`, `e2e/chart-measurements.spec.ts`
+
 ## UIC-CHART-3 - Axis
 
 ### UIC-CHART-3.1 - Parts
@@ -382,7 +393,7 @@ Verification: `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurem
 
 `cursors` and `defaultCursors` are pairs in A, B order. Each mark identifies its nearest displayed sample with a dot. Its slider expresses position as a percentage and announces the coordinate and reading in host units. Each cursor is a named slider with an editable position in the readout table. Drag or use arrow keys to move a cursor, Shift+arrow for a larger move, and Home/End for the visible edges. Cursors can cross. `onCursorsChange(pair, readout)` reports the requested positions, absolute x separation, and each channel's nearest displayed source samples and signed B minus A amplitude. A cursor outside the view or an empty channel reports a null sample. Proximity is measured along the displayed axis. A tie between two distinct coordinates picks the earlier sample. Peak-to-peak is the maximum minus minimum of the channel's full-resolution measurements in the visible x range.
 
-The plot menu inserts a cursor at the pointer or focused coordinate. New cursors take the first unused alphabetic name (A through Z, then AA, AB and so on). Existing names stay stable. The menu on a movable cursor or anywhere on its readout row offers Delete cursor. Focus the row name and press Shift+F10 for keyboard access. Fixed references and channel points are read-only. B minus A measurements and zoom between cursors require both A and B. Peak-to-peak placement restores both.
+The plot menu inserts a cursor at the pointer or focused coordinate. New cursors take the first unused alphabetic name (A through Z, then AA, AB and so on). Existing names stay stable. The menu on a movable cursor or anywhere on its readout row offers Delete cursor. Focus the row name and press Shift+F10 for keyboard access. Fixed references and channel points keep their host coordinates. B minus A measurements and zoom between cursors require both A and B. Peak-to-peak placement restores both.
 
 `ChartCursorProps` accepts a controlled `cursorList`, an initial `defaultCursorList`, and `onCursorListChange(next)` for all insertions, moves, renames and deletions. Each `LinkedChartCursor` has a unique stable string `name` and a finite source coordinate `x`. Its optional `label` is the editable display name and defaults to `name`. Renaming preserves identity, position and the roles of A and B in measurements. A controlled list takes precedence over the legacy A/B coordinate pair.
 
@@ -390,10 +401,12 @@ The cursor readings table has a row for each A/B cursor, named movable marker an
 
 The optional `measurements` prop accepts ready-made rows or a pure function of `LinkedChartMeasurementContext`. It receives all named cursors with their source positions and editable labels, movable markers, fixed x references, the visible range, original channels, the A/B readout (null when either is missing), and a nearest-displayed-sample lookup by channel id and coordinate. Results follow pointer, keyboard, table edits and host prop updates. Each `LinkedChartMeasurementRow` has a stable `id`, `label`, optional scalar `value` and optional `valuesByChannel` map. Cells accept host-rendered content with its own units. The table appends rows in caller order and leaves missing values empty.
 
-A channel accepts optional `points: readonly LinkedChartPoint[]`. Each point has a channel-local `id`, a `label`, and numeric `x` and `y` in source units. Points are fixed annotations. The plot draws a labeled point within its axes and the table retains its supplied coordinates when zoomed away. A point annotates one channel. It does not contribute samples to the capture or to measurements.
+A channel accepts optional `points: readonly LinkedChartPoint[]`. Each point has a channel-local `id`, a `label`, and numeric `x` and `y` in source units. Points are fixed annotations. The plot draws a labeled point within its axes and the table retains its supplied coordinates when zoomed away. Each point annotates one channel. Its coordinates are independent of the acquired samples and measurements.
 
-Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-model.ts`, `src/components/chart/chart-placement.tsx`
-Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
+Clicking a fixed channel point or its label, or pressing Enter or Space on the focused point, highlights its readout row and scrolls it into view. The point exposes its pressed state and references the row through `aria-details`. The row exposes `aria-current`. Selection follows the chart, channel and point identity even when labels, keys or coordinates coincide across channels. Pressing or focusing a movable cursor or marker in any channel highlights its shared readout row. The highlight follows a cursor through dragging, keyboard movement, menu placement and row editing. Handling a movable mark preserves the plot scroll position. Readout columns size from the container and its headings, so changing digit counts, signs, decimal places or units during a drag keeps the column boundaries fixed. Extra channels can scroll within the readout.
+
+Implementation: `src/components/chart/linked-line-chart.tsx`, `src/components/chart/linked-model.ts`, `src/components/chart/chart-placement.tsx`, `src/components/chart/linked-points.tsx`, `src/components/chart/linked-readings.tsx`
+Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-legend.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
 
 ### UIC-CHART-15.3 - Manual and automatic measurement placement
 
@@ -458,6 +471,11 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-chart-axis__tick`                | slot      |                                                   | A tick mark.                                                                        |
 | `ui-chart-axis__label`               | slot      |                                                   | A tick label.                                                                       |
 | `ui-chart-axis__grid`                | slot      |                                                   | A grid line across the drawing.                                                     |
+| `ui-chart__plot-frame`               | slot      |                                                   | Container for a positioned legend and its plot.                                     |
+| `ui-chart__legend`                   | slot      |                                                   | Positioned legend inside the plot frame.                                            |
+| `data-placement`                     | attribute | `ChartLegendPlacement`                            | Requested legend position.                                                          |
+| `data-swatch`                        | attribute | `line`, `dashed`, `band`                          | Geometry represented by a legend swatch.                                            |
+| `data-highlighted`                   | state     | `true`                                            | Point, cursor or marker whose readout row is current.                               |
 | `ui-chart-legend`                    | root      |                                                   | `ChartLegend`'s group.                                                              |
 | `ui-chart-legend__item`              | slot      |                                                   | A series' toggle button.                                                            |
 | `ui-chart-legend__swatch`            | slot      |                                                   | The item's decorative color mark.                                                   |
@@ -516,4 +534,4 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-chart__selection`                | slot      |                                                   | Preview of a horizontal zoom selection.                                             |
 | `data-x-scale`                       | attribute | `linear`, `log`                                   | Numeric x scale on the event or linked chart root.                                  |
 | `data-y-scale`                       | attribute | `linear`, `log`                                   | Amplitude scale of a linked channel.                                                |
-| `data-key`                           | attribute |                                                   | Host key on a linked channel.                                                       |
+| `data-key`                           | attribute |                                                   | Host key on a channel, fixed point or legend swatch.                                |

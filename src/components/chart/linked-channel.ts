@@ -1,6 +1,7 @@
 import type { Key } from '../../core/props.js';
 import type { LinearScale, ScaleInterval } from '../../utils/linear-scale.js';
 import { roundCoordinate } from './chart-layout.js';
+import type { ChartHiddenKeysProps } from './chart-legend.js';
 import { sampleRun } from './line-sampling.js';
 import { type ChartAxisScale, findAxisExtent, isAxisValue } from './numeric-axis.js';
 
@@ -22,7 +23,15 @@ export interface LinkedChartPoint {
   y: number;
 }
 
+export type LinkedChartLayer = 'measured' | 'reference' | 'envelope' | 'threshold';
+
+/** A channel's legend. Each named layer can be toggled independently of the other channels. */
+export interface LinkedChartLegend extends ChartHiddenKeysProps {
+  labels: Partial<Record<LinkedChartLayer, string>>;
+}
+
 export interface LinkedChartChannel {
+  legend?: LinkedChartLegend | undefined;
   points?: readonly LinkedChartPoint[] | undefined;
   id: Key;
   label: string;

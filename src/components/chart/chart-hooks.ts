@@ -7,6 +7,8 @@ export const chartHooks = createHooks('chart', [
   'view-toggle',
   'summary',
   'body',
+  'plot-frame',
+  'legend',
   'plot',
   'empty',
   'table',

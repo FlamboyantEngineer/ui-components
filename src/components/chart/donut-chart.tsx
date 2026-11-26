@@ -7,7 +7,7 @@ import type { BaseProps, RefProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useNumberFormatter } from '../../primitives/index.js';
 import { requireDefined } from '../../utils/require-defined.js';
-import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
+import { Chart, type ChartProps, type ChartSeries, type ChartViewProps } from './chart.js';
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
 import { type ChartHiddenKeysProps, ChartLegend, useHiddenKeys } from './chart-legend.js';
 import { ChartPlot, useChartPoints } from './chart-points.js';
@@ -25,6 +25,7 @@ export interface DonutChartProps
     BaseProps,
     AriaLabellingProps,
     ChartViewProps,
+    Pick<ChartProps, 'legendPlacement'>,
     ChartHiddenKeysProps,
     RefProps<HTMLDivElement> {
   /** Visible title that names the chart. Without one, name it with `aria-label` or `aria-labelledby`. */

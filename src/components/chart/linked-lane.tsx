@@ -3,10 +3,10 @@
 import { useId } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { isElement } from '../../utils/is-element.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, linkedChartHooks as hooks } from './chart-hooks.js';
 import type { ChartBox } from './chart-layout.js';
+import type { ChartHiddenKeysProps } from './chart-legend.js';
 import {
   type ChartPlacement,
   getChartMarks,
@@ -15,9 +15,13 @@ import {
 } from './chart-placement.js';
 import { type ChartReferenceLine, ChartReferences, placeReferences } from './chart-references.js';
 import { type NumericViewport, ViewportSurface } from './chart-viewport.js';
+import { LinkedTraces, useLinkedLegend } from './linked-legend.js';
 import type { DrawnChannel } from './linked-model.js';
+import { ChannelPoints } from './linked-points.js';
+import { type ChartLegendPlacement, PlotWithLegend } from './plot-with-legend.js';
 
 interface LaneProps {
+  visibility: ChartHiddenKeysProps;
   lane: DrawnChannel;
   placement: ChartPlacement;
   width: number;
@@ -25,6 +29,7 @@ interface LaneProps {
   view: NumericViewport;
   references: readonly ChartReferenceLine[];
   showX: boolean;
+  legendPlacement: ChartLegendPlacement;
 }
 
 function useLaneReferences(
@@ -57,38 +62,43 @@ function markAt(target: EventTarget, marks: ReturnType<typeof getChartMarks>) {
   return marks.find((mark) => mark.id === id);
 }
 
-function ChannelPoints({ lane }: { lane: DrawnChannel }) {
-  const [left, right] = lane.x.range;
-  const [bottom, top] = lane.y.range;
-  return lane.points.map((p) => {
-    const x = lane.x.map(p.x),
-      y = lane.y.map(p.y);
-    if (!(x >= left && x <= right && y >= top && y <= bottom)) return null;
-    const end = x > (left + right) / 2;
-    return (
-      <g
-        key={toKeyIdentity(p.id)}
-        {...hooks.slot('point', { key: p.id })}
-        aria-hidden="true"
-        pointerEvents="none"
-      >
-        <circle cx={x} cy={y} r={3.5} />
-        <text
-          x={x + (end ? -7 : 7)}
-          y={y < top + 14 ? y + 14 : y - 6}
-          textAnchor={end ? 'end' : 'start'}
-        >
-          {p.label}
-        </text>
-      </g>
-    );
-  });
+function LaneAxes({ lane, plot, showX }: { lane: DrawnChannel; plot: ChartBox; showX: boolean }) {
+  return (
+    <>
+      <ChartAxis
+        position="left"
+        offset={plot.left}
+        range={lane.y.range}
+        ticks={lane.y.ticks()}
+        gridLength={plot.right - plot.left}
+      />
+      {showX ? (
+        <ChartAxis
+          position="bottom"
+          offset={plot.bottom}
+          range={lane.x.range}
+          ticks={lane.x.ticks()}
+        />
+      ) : null}
+    </>
+  );
 }
 
-export function LinkedLane({ lane, placement, width, height, view, references, showX }: LaneProps) {
+export function LinkedLane({
+  lane,
+  placement,
+  width,
+  height,
+  view,
+  references,
+  showX,
+  legendPlacement,
+  visibility,
+}: LaneProps) {
   const clip = useId();
   const { channel, y } = lane;
   const { axis } = view;
+  const layers = useLinkedLegend(channel, visibility);
   const marks = getChartMarks(placement);
   const getItems = usePlacementMenu(lane, placement, view);
   const [left, right] = axis.range;
@@ -104,53 +114,46 @@ export function LinkedLane({ lane, placement, width, height, view, references, s
         {channel.label}
         {channel.unit ? ' (' + channel.unit + ')' : ''}
       </span>
-      <ViewportSurface
-        view={view}
-        label={channel.label}
-        getItems={getItems}
-        startMark={(target) => markAt(target, marks)}
-      >
-        {(draggedMark) => (
-          <svg
-            {...chartHooks.slot('plot')}
-            role="group"
-            width={width}
-            height={height}
-            viewBox={`0 0 ${width} ${height}`}
-          >
-            <defs>
-              <clipPath id={clip}>
-                <rect x={left} y={top} width={right - left} height={bottom - top} />
-              </clipPath>
-            </defs>
-            <ChartAxis
-              position="left"
-              offset={left}
-              range={y.range}
-              ticks={y.ticks()}
-              gridLength={right - left}
-            />
-            {showX ? (
-              <ChartAxis
-                position="bottom"
-                offset={bottom}
-                range={axis.range}
-                ticks={axis.ticks()}
+      <PlotWithLegend legend={layers.legend} placement={legendPlacement}>
+        <ViewportSurface
+          view={view}
+          label={channel.label}
+          getItems={getItems}
+          startMark={(target) => markAt(target, marks)}
+        >
+          {(draggedMark) => (
+            <svg
+              {...chartHooks.slot('plot')}
+              role="group"
+              width={width}
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
+            >
+              <defs>
+                <clipPath id={clip}>
+                  <rect x={left} y={top} width={right - left} height={bottom - top} />
+                </clipPath>
+              </defs>
+              <LaneAxes lane={lane} plot={plot} showX={showX} />
+              <LinkedTraces
+                lane={lane}
+                layers={layers}
+                level={fixed.filter((r) => r.axis === 'y')}
+                clip={`url(#${clip})`}
               />
-            ) : null}
-            <g clipPath={`url(#${clip})`} aria-hidden="true">
-              {lane.band ? <path {...hooks.slot('envelope')} d={lane.band} /> : null}
-              {lane.reference ? (
-                <path {...hooks.slot('comparison')} d={lane.reference} fill="none" />
-              ) : null}
-              <path {...hooks.slot('line')} d={lane.line.path} fill="none" />
-            </g>
-            <ChartReferences placed={fixed} />
-            <ChannelPoints lane={lane} />
-            <MovableChartMarks marks={marks} view={view} lane={lane} draggedMark={draggedMark} />
-          </svg>
-        )}
-      </ViewportSurface>
+              <ChartReferences placed={fixed.filter((r) => r.axis === 'x')} />
+              <MovableChartMarks
+                selection={placement.selection}
+                marks={marks}
+                view={view}
+                lane={lane}
+                draggedMark={draggedMark}
+              />
+              <ChannelPoints lane={lane} selection={placement.selection} />
+            </svg>
+          )}
+        </ViewportSurface>
+      </PlotWithLegend>
     </section>
   );
 }

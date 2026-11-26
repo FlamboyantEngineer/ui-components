@@ -346,3 +346,18 @@ describe('LineChart', () => {
     expect(document.querySelector('.ui-line-chart__line')).toBeNull();
   });
 });
+
+it('UIC-CHART-2.4 positions the legend and restores a line above overlapping series', async () => {
+  const user = userEvent.setup();
+  render(<LineChart label="Defects" series={defects} legendPlacement="top-start" />);
+  const legend = screen.getByRole('toolbar');
+  expect(legend.closest('.ui-chart__plot-frame')).toHaveAttribute('data-placement', 'top-start');
+  const first = within(legend).getByRole('button', { name: 'Open' });
+  expect(first.querySelector('.ui-chart-legend__swatch')).toHaveAttribute('data-swatch', 'line');
+  await user.click(first);
+  expect(lines().map((line) => line.getAttribute('data-series'))).toEqual(['1']);
+  await user.keyboard(' ');
+  expect(lines().map((line) => line.getAttribute('data-series'))).toEqual(['1', '0']);
+  await user.keyboard('{ArrowRight}');
+  expect(lines().map((line) => line.getAttribute('data-series'))).toEqual(['0', '1']);
+});

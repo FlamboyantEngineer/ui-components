@@ -11,6 +11,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ProseTable } from '../prose-table/prose-table.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { chartHooks as hooks } from './chart-hooks.js';
+import { type ChartLegendPlacement, PlotWithLegend } from './plot-with-legend.js';
 
 /** `chart` shows the drawing; `table` shows the values as a table instead. */
 export type ChartView = 'chart' | 'table';
@@ -54,8 +55,10 @@ export interface ChartProps
    * view shows, so a chart that is drawn never pays for its table.
    */
   table: ChartTable | (() => ChartTable);
-  /** A legend shown above the drawing, such as a `ChartLegend`. */
+  /** A legend for the drawing, such as a `ChartLegend`. */
   legend?: ReactNode;
+  /** Defaults to above the drawing. A corner places the legend inside the plot. */
+  legendPlacement?: ChartLegendPlacement | undefined;
   /** The chart draws no value; publishes `data-empty`. Defaults to `false`. */
   isEmpty?: boolean | undefined;
   /** The drawing. */
@@ -87,6 +90,29 @@ function ChartValueTable({
   );
 }
 
+function ChartDrawing({
+  legend,
+  legendPlacement = 'above',
+  isEmpty,
+  children,
+}: Pick<ChartProps, 'legend' | 'legendPlacement' | 'isEmpty' | 'children'>) {
+  if (isEmpty || legendPlacement === 'above') {
+    return (
+      <>
+        {legend}
+        <div {...hooks.slot('body')}>{children}</div>
+      </>
+    );
+  }
+  return (
+    <div {...hooks.slot('body')}>
+      <PlotWithLegend legend={legend} placement={legendPlacement}>
+        {children}
+      </PlotWithLegend>
+    </div>
+  );
+}
+
 /**
  * The accessible frame of a chart: a named figure described by a text summary, with a legend, the
  * drawing, and a toggle that shows the values as a table instead. Bar, line and donut charts render
@@ -98,6 +124,7 @@ export function Chart({
   showSummary = false,
   table,
   legend,
+  legendPlacement,
   view,
   defaultView = 'chart',
   onViewChange,
@@ -149,10 +176,9 @@ export function Chart({
           name={labelId ? { 'aria-labelledby': labelId } : { 'aria-label': rest['aria-label'] }}
         />
       ) : (
-        <>
-          {legend}
-          <div {...hooks.slot('body')}>{children}</div>
-        </>
+        <ChartDrawing legend={legend} legendPlacement={legendPlacement} isEmpty={isEmpty}>
+          {children}
+        </ChartDrawing>
       )}
     </div>
   );

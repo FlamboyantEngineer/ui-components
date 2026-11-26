@@ -20,10 +20,19 @@ export interface ChartHiddenKeysProps {
   onHiddenKeysChange?: ((keys: Set<Key>) => void) | undefined;
 }
 
+/** The swatch matches the geometry the host draws for a series. */
+export interface ChartLegendItem extends ChartSeries {
+  swatch?: 'line' | 'dashed' | 'band' | undefined;
+}
+
 export interface ChartLegendProps
   extends BaseProps, AriaLabellingProps, ChartHiddenKeysProps, RefProps<HTMLDivElement> {
   /** The series, in the order of their color slots. */
-  items: readonly ChartSeries[];
+  items: readonly ChartLegendItem[];
+  /** Default swatch for items without their own. */
+  swatch?: ChartLegendItem['swatch'];
+  /** A visible entry was hovered, focused or restored and can be drawn in front. */
+  onHighlight?: ((id: Key) => void) | undefined;
 }
 
 /**
@@ -61,6 +70,8 @@ export function useHiddenKeys({
  */
 export function ChartLegend({
   items,
+  swatch,
+  onHighlight,
   hiddenKeys,
   defaultHiddenKeys,
   onHiddenKeysChange,
@@ -78,17 +89,32 @@ export function ChartLegend({
       selectionMode="multiple"
       disallowEmptySelection
       selectedKeys={shown}
-      onSelectionChange={(keys) =>
-        setHidden(new Set(items.filter((item) => !keys.has(item.id)).map((item) => item.id)))
-      }
+      onSelectionChange={(keys) => {
+        for (const id of keys) if (hidden.has(id)) onHighlight?.(id);
+        setHidden(new Set(items.filter((item) => !keys.has(item.id)).map((item) => item.id)));
+      }}
     >
       {items.map((item, series) => (
         <ToggleButton
           key={toKeyIdentity(item.id)}
           id={item.id}
           {...hooks.slot('item', { series, tone: item.tone })}
+          onHoverStart={() => {
+            if (!hidden.has(item.id)) onHighlight?.(item.id);
+          }}
+          onFocus={() => {
+            if (!hidden.has(item.id)) onHighlight?.(item.id);
+          }}
         >
-          <span {...hooks.slot('swatch', { series, tone: item.tone })} aria-hidden="true" />
+          <span
+            {...hooks.slot('swatch', {
+              series,
+              tone: item.tone,
+              key: item.id,
+              swatch: item.swatch ?? swatch,
+            })}
+            aria-hidden="true"
+          />
           <span {...hooks.slot('label')}>{item.label}</span>
         </ToggleButton>
       ))}

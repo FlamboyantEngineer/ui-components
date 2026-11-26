@@ -18,6 +18,7 @@ import { CursorRowMenu } from './cursor-row-menu.js';
 import type { LinkedChartPoint } from './linked-channel.js';
 import { type LinkedChartMeasurements, measurementRows } from './linked-measurements.js';
 import { type DrawnChannel, readCursors, readDisplayedSample } from './linked-model.js';
+import { pointKey } from './linked-points.js';
 
 interface ReadingPosition {
   key: string;
@@ -49,7 +50,7 @@ function getPositions(
     ...references.filter((r) => Number.isFinite(r.value)).map((r) => named(r, true)),
     ...lanes.flatMap((lane) =>
       lane.points.map((value) => ({
-        key: JSON.stringify([toKeyIdentity(lane.channel.id), toKeyIdentity(value.id)]),
+        key: pointKey(lane.channel.id, value.id),
         label: value.label,
         x: value.x,
         fixed: true,
@@ -71,7 +72,11 @@ function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: numb
   return (
     <>
       {write(sample.y)}
-      {sample.x !== mark.x && <small {...hooks.slot('sample-x')}>@ {formatX(sample.x)}</small>}
+      {(mark.mark || sample.x !== mark.x) && (
+        <small {...hooks.slot('sample-x')}>
+          {sample.x !== mark.x ? '@ ' + formatX(sample.x) : null}
+        </small>
+      )}
     </>
   );
 }
@@ -136,6 +141,18 @@ function columns(
   ];
 }
 
+interface LinkedReadingsProps {
+  lanes: readonly DrawnChannel[];
+  placement: ChartPlacement;
+  references: readonly ChartReferenceLine[];
+  formatX: (x: number) => string;
+  xLabel: string;
+  extent: ScaleInterval;
+  xUnits?: Readonly<Record<string, number>> | undefined;
+  measurements?: LinkedChartMeasurements | undefined;
+  visibleRange: ScaleInterval;
+}
+
 export function LinkedReadings({
   lanes,
   placement,
@@ -146,18 +163,9 @@ export function LinkedReadings({
   xUnits,
   measurements,
   visibleRange,
-}: {
-  lanes: readonly DrawnChannel[];
-  placement: ChartPlacement;
-  references: readonly ChartReferenceLine[];
-  formatX: (x: number) => string;
-  xLabel: string;
-  extent: ScaleInterval;
-  xUnits?: Readonly<Record<string, number>> | undefined;
-  measurements?: LinkedChartMeasurements | undefined;
-  visibleRange: ScaleInterval;
-}) {
+}: LinkedReadingsProps) {
   const s = useUiStrings();
+  const { selection } = placement;
   const [a, b] = placement.cursors;
   const readout = readCursors(lanes, placement.cursors);
   const extra = measurementRows(measurements, lanes, {
@@ -172,8 +180,10 @@ export function LinkedReadings({
       const value = reading[measure];
       return value === null ? s.noData : (lanes[index]?.channel.formatY ?? String)(value);
     });
-  const rows = getPositions(placement, references, lanes).map((mark) =>
-    readingRow(mark.key, [
+  const rows = getPositions(placement, references, lanes).map((mark) => ({
+    id: selection.rowId(mark.key),
+    'aria-current': mark.key === selection.current ? true : undefined,
+    ...readingRow(mark.key, [
       positionName(mark, s),
       mark.mark ? (
         <ChartPositionEdit
@@ -187,9 +197,9 @@ export function LinkedReadings({
       ),
       ...lanes.map((lane) => sampleCell(lane, mark, formatX) ?? s.noData),
     ]),
-  );
+  }));
   return (
-    <CursorRowMenu marks={getChartMarks(placement)}>
+    <CursorRowMenu marks={getChartMarks(placement)} onActivate={selection.select}>
       <ProseTable
         aria-label={s.chartReadings}
         caption={

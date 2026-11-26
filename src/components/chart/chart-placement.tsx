@@ -13,8 +13,10 @@ import type { NumericViewport } from './chart-viewport.js';
 import { findNearestSample } from './linked-channel.js';
 import type { DrawnChannel } from './linked-model.js';
 import type { useChartCursors } from './use-chart-cursors.js';
+import type { useReadingSelection } from './use-reading-selection.js';
 
 export interface ChartPlacement extends ReturnType<typeof useChartCursors> {
+  selection: ReturnType<typeof useReadingSelection>;
   markers: readonly ChartReferenceLine[];
   addMarker: (x: number) => void;
   setMarker: (key: Key, x: number) => void;
@@ -89,10 +91,12 @@ function moveByKey(e: KeyboardEvent, mark: MovableMark, view: NumericViewport) {
 
 export function MovableChartMarks({
   draggedMark,
+  selection,
   marks,
   view,
   lane,
 }: {
+  selection: ChartPlacement['selection'];
   draggedMark: string | undefined;
   marks: readonly MovableMark[];
   view: NumericViewport;
@@ -117,12 +121,17 @@ export function MovableChartMarks({
               key={m.id}
               {...hooks.slot(m.kind, {
                 dragging: draggedMark === m.id,
+                highlighted: selection.current === m.id,
                 'mark-id': m.id,
                 coordinate: m.x,
                 tone: m.tone,
               })}
               role="slider"
               aria-label={m.label}
+              aria-details={selection.rowId(m.id)}
+              onFocus={() => selection.select(m.id)}
+              onPointerDown={() => selection.select(m.id)}
+              onClick={() => selection.select(m.id)}
               tabIndex={0}
               aria-valuenow={position}
               aria-valuemin={0}
