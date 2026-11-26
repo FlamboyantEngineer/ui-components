@@ -1,0 +1,19 @@
+/*
+ * shadcn/ui stylesheet: dock panel. The split view partial draws a resize handle as a 1 pixel line
+ * in the layout flow; the dock panel's handle instead straddles the panel's inner edge as an
+ * invisible band, as shadcn/ui's sidebar rail does, so it takes no room from the panel or its
+ * launchers and draws no second line beside the panel's border.
+ */
+
+.ui-dock-panel .ui-resize-handle.ui-dock-panel__handle[data-orientation] {
+  position: absolute;
+  background: transparent;
+}
+
+.ui-dock-panel .ui-resize-handle.ui-dock-panel__handle[data-orientation='vertical'] {
+  width: 6px;
+}
+
+.ui-dock-panel .ui-resize-handle.ui-dock-panel__handle[data-orientation='horizontal'] {
+  height: 6px;
+}

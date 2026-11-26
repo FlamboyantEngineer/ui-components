@@ -193,6 +193,7 @@
 @import url('shadcn/command-palette.css') layer(ui-shadcn);
 @import url('shadcn/dialog.css') layer(ui-shadcn);
 @import url('shadcn/disclosure.css') layer(ui-shadcn);
+@import url('shadcn/dock-panel.css') layer(ui-shadcn);
 @import url('shadcn/drawer.css') layer(ui-shadcn);
 @import url('shadcn/empty-state.css') layer(ui-shadcn);
 @import url('shadcn/field.css') layer(ui-shadcn);
