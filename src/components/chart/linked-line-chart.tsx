@@ -20,13 +20,15 @@ import { LinkedReadings } from './linked-readings.js';
 import type { ChartViewportProps } from './numeric-axis.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 import { type ChartCursorProps, useChartCursors } from './use-chart-cursors.js';
+import { type ChartDifferentialProps, useChartDifferentials } from './use-chart-differentials.js';
 import { useReadingSelection } from './use-reading-selection.js';
 
 export interface LinkedLineChartProps
   extends
     Omit<ChartProps, 'children' | 'summary' | 'table' | 'legend' | 'isEmpty'>,
     ChartViewportProps,
-    ChartCursorProps {
+    ChartCursorProps,
+    ChartDifferentialProps {
   /** Accepted entry suffixes and their multipliers in source x units. */
   xUnits?: Readonly<Record<string, number>> | undefined;
   /** Additional readout rows, supplied directly or calculated from the current capture and cursors. */
@@ -65,7 +67,18 @@ function usePlacement(
     while (labels.has(strings.chartMarker(String(index)))) index++;
     setMarkers([...markers, { id, label: strings.chartMarker(String(index)), value: x }]);
   };
+  const differentials = useChartDifferentials(
+    props,
+    {
+      lanes: model.lanes,
+      cursors: cursorState.cursorList,
+      markers,
+      references: props.xReferences ?? noMarkers,
+    },
+    selection.select,
+  );
   const placement: ChartPlacement = {
+    differentials,
     markers,
     ...cursorState,
     selection,
@@ -158,6 +171,7 @@ function CaptureView({
   const xTicks = useMemo(() => view.axis.ticks(), [view.axis]);
   const readout = readCursors(lanes, placement.cursors);
   const extra = measurementRows(props.measurements, lanes, {
+    differentials: placement.differentials.readings,
     pair: placement.hasPair ? readout : null,
     cursors: placement.cursorList,
     markers: placement.markers,
@@ -213,6 +227,9 @@ export function LinkedLineChart(props: LinkedLineChartProps) {
     defaultCursors,
     cursorList,
     defaultCursorList,
+    differentialCursors,
+    defaultDifferentialCursors,
+    onDifferentialCursorsChange,
     onCursorListChange,
     onCursorsChange,
     markers,

@@ -85,6 +85,37 @@ Pass `measurements` as an array for externally calculated results or as a pure f
 
 Use the context’s original channel samples for peaks, threshold crossings and rise time. `nearestDisplayedSample(channelId, x)` reproduces the plot cursor’s readout. The capture lab precomputes rise time once and recalculates peak and peak-to-peak from the original samples between A and B as either cursor moves.
 
+## Measure a horizontal or vertical difference
+
+Pass free coordinates as numbers. To follow an existing chart element, pass its stable identity. This example measures trigger-to-B delay across the capture and the voltage rise from a free baseline to a named peak.
+
+```tsx
+<LinkedLineChart
+  label="Capture"
+  channels={channels}
+  xReferences={[{ id: 'trigger', label: 'Trigger', value: triggerTime }]}
+  defaultDifferentialCursors={[
+    {
+      id: 'delay',
+      label: 'Delay',
+      axis: 'x',
+      from: { type: 'reference', id: 'trigger' },
+      to: { type: 'cursor', name: 'B' },
+    },
+    {
+      id: 'rise',
+      label: 'Voltage rise',
+      axis: 'y',
+      channelId: 'v',
+      from: 0,
+      to: { type: 'point', channelId: 'v', id: 'peak' },
+    },
+  ]}
+/>
+```
+
+The shaded interval follows both diamonds. The host can style its fill and opacity through `.ui-linked-line-chart__delta-band`. The operator can drag a diamond to detach it, or use its context menu to bind it again. Updating the peak’s coordinates or moving B updates the readout immediately. Pass `differentialCursors` and `onDifferentialCursorsChange` to store the definitions in the host. A `measurements` callback can read `context.differentials` for the resolved values, including changes caused by source movement. A missing endpoint produces a null delta until its source returns.
+
 ## Replace an elapsed-time event view
 
 Pass each occurrence separately, including coincident ones. The stable id distinguishes them in the drawing. Omitting the end makes a point. The built-in details and table retain numeric endpoints even if the formatter rounds to a common label.

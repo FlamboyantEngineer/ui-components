@@ -77,6 +77,7 @@ export function drawChannel(prepared: ReturnType<typeof prepareChannel>, x: Line
     x,
     y,
     line,
+    source: prepared.samples,
     reference: comparison.path,
     band: drawBand(samples, x, y),
     points: (channel.points ?? []).filter((p) => Number.isFinite(p.y) && Number.isFinite(p.x)),

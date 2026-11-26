@@ -419,6 +419,17 @@ Each channel menu places A, B, a new marker or an existing marker at the pointer
 Implementation: `src/components/chart/chart-placement.tsx`, `src/components/chart/linked-channel.ts`, `src/components/chart/linked-line-chart.tsx`
 Verification: `src/components/chart/linked-line-chart.test.tsx`, `src/components/chart/linked-channel.test.ts`, `e2e/chart-measurements.spec.ts`
 
+### UIC-CHART-15.4 - Differential cursor pairs
+
+`differentialCursors`, `defaultDifferentialCursors` and `onDifferentialCursorsChange` control a keyed collection of `LinkedChartDifferential`. Each pair has an `id`, a `label`, two `LinkedChartEndpoint` values (`from`, `to`), and an `axis`. X pairs share the horizontal axis. Y pairs require a `channelId` and use that channel’s amplitude scale and unit. The readout shows both endpoints and their signed difference in source units, including on logarithmic scales.
+
+An endpoint is a free numeric coordinate or a live binding. Bind a named point by `{type: 'point', channelId, id}`, an acquired sample by `{type: 'sample', channelId, x}`, an ordinary cursor by `{type: 'cursor', name}`, or a marker or fixed reference by its `type` and `id`. Y bindings to x-only sources resolve the nearest original sample on the owning channel. Missing samples, targets and incompatible channels yield unavailable readings. Bindings resume when the source returns. Pan, zoom and drawing reduction preserve the underlying measurement. Host measurement functions receive `differentials`, a list of `LinkedChartDifferentialReading` with the cursor definition, resolved endpoints and signed delta. Unavailable numbers are `null`. The change callback reports definition edits.
+
+The plot menu adds and removes pairs and binds each endpoint separately. The menu on a diamond offers its endpoint directly. Free position detaches at the current value. Dragging a diamond or using the arrow, Shift+arrow, Home or End keys sets that endpoint to a free coordinate. Delete or the reading row’s context menu removes the pair. X handles move horizontally and Y handles vertically. Selecting either handle highlights the pair’s row. Selecting the row highlights both endpoints and their shaded span. Each pair lightly fills the visible interval beneath the grid and traces, including when the endpoints cross or extend beyond the view. Coincident or unresolved endpoints have no area. The bands follow the live coordinates and pass pointer events through.
+
+Implementation: `src/components/chart/chart-differentials.ts`, `src/components/chart/use-chart-differentials.ts`, `src/components/chart/differential-marks.tsx`, `src/components/chart/differential-menu.ts`
+Verification: `src/components/chart/chart-differentials.test.tsx`, `e2e/chart-differentials.spec.ts`
+
 ## UIC-CHART-16 - Event chart
 
 ### UIC-CHART-16.1 - Exact numeric points and intervals
@@ -490,7 +501,7 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `data-variant`                       | attribute | `line`, `area`                                    | Lines, or lines over areas.                                                         |
 | `data-position`                      | attribute | `bottom`, `left`                                  | The edge an axis runs along.                                                        |
 | `data-kind`                          | attribute | `line`, `band`                                    | A reference's shape.                                                                |
-| `data-axis`                          | attribute | `x`, `y`                                          | The axis a reference's values sit on: `y` runs up the plot, `x` across it.          |
+| `data-axis`                          | attribute | `x`, `y`                                          | Axis of a reference or differential cursor. Y runs up the plot and X across it.     |
 | `data-series`                        | attribute |                                                   | The position of a mark's series, from 0.                                            |
 | `data-tone`                          | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A series' or reference's tone, when it has one.                                     |
 | `data-level`                         | attribute |                                                   | A heatmap day's or legend swatch's intensity level, from 0 to `levels`.             |
@@ -521,6 +532,11 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-linked-line-chart__comparison`   | slot      |                                                   | Reference trace.                                                                    |
 | `ui-linked-line-chart__envelope`     | slot      |                                                   | Sampled error band.                                                                 |
 | `ui-linked-line-chart__cursor`       | slot      |                                                   | Movable cursor.                                                                     |
+| `ui-linked-line-chart__delta-band`   | slot      |                                                   | Shaded pair interval with `data-key`, `data-axis` and `data-highlighted`.           |
+| `ui-linked-line-chart__delta-value`  | slot      |                                                   | Signed difference and its formatted endpoints.                                      |
+| `ui-linked-line-chart__differential` | slot      |                                                   | Differential endpoint slider, guide and diamond.                                    |
+| `data-endpoint`                      | attribute | `from`, `to`                                      | Start or end of a differential pair.                                                |
+| `data-snapped`                       | state     | `true`                                            | Endpoint follows a source.                                                          |
 | `ui-linked-line-chart__marker`       | slot      |                                                   | Movable marker.                                                                     |
 | `ui-linked-line-chart__measurements` | slot      |                                                   | Scrollable table of cursor, reference and point readings.                           |
 | `ui-linked-line-chart__position`     | slot      |                                                   | In-place movable position editor.                                                   |
@@ -534,7 +550,7 @@ Verification: `src/components/chart/event-chart.test.tsx`, `e2e/chart-measuremen
 | `ui-linked-line-chart__fixed-label`  | slot      |                                                   | Fixed annotation label in the readout.                                              |
 | `ui-linked-line-chart__sample-x`     | slot      |                                                   | Nearest sample coordinate when it differs from the mark.                            |
 | `data-mark-id`                       | attribute |                                                   | Internal typed identity on a movable mark.                                          |
-| `data-coordinate`                    | attribute |                                                   | Source x of a movable measurement mark.                                             |
+| `data-coordinate`                    | attribute |                                                   | Source coordinate on the mark’s axis.                                               |
 | `data-dragging`                      | state     | `true`                                            | The movable cursor or marker being dragged in this channel.                         |
 | `data-gesture`                       | attribute |                                                   | Available or active pointer gesture on a numeric viewport.                          |
 | `data-range-start`                   | attribute |                                                   | First visible x coordinate on the viewport.                                         |
