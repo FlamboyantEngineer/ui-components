@@ -20,7 +20,7 @@ import { LinkedTraces, useLinkedLegend } from './linked-legend.js';
 import type { LinkedChartHighlight } from './linked-measurements.js';
 import type { DrawnChannel } from './linked-model.js';
 import { ChannelPoints } from './linked-points.js';
-import { MeasurementHighlights } from './measurement-highlights.js';
+import { DifferentialBands, MeasurementHighlights } from './measurement-highlights.js';
 import { type ChartLegendPlacement, PlotWithLegend } from './plot-with-legend.js';
 
 interface LaneProps {
@@ -125,6 +125,11 @@ function LaneDrawing({
           <rect x={left} y={top} width={right - left} height={bottom - top} />
         </clipPath>
       </defs>
+      <DifferentialBands
+        lane={lane}
+        readings={placement.differentials.readings}
+        selected={placement.selection.current}
+      />
       <LaneAxes lane={lane} plot={plot} xTicks={xTicks} />
       <LinkedTraces
         lane={lane}

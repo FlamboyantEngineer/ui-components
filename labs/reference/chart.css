@@ -892,3 +892,10 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.ui-linked-line-chart__delta-band {
+  fill: var(--ref-accent-ink);
+}
+.ui-linked-line-chart__delta-band[data-highlighted] {
+  fill-opacity: 0.12;
+}

@@ -110,9 +110,10 @@ function Capture() {
         </p>
         <h4>Differential cursors</h4>
         <p>
-          Move B to change the trigger-to-B delay. Drag the lower voltage diamond up to change the
-          baseline of the peak measurement. Right-click a diamond to change its snap target, or open
-          “Differential cursors” in a plot menu to add a pair. Values show end minus start.
+          Move B to widen or narrow the shaded trigger-to-B interval. Drag the lower voltage diamond
+          up to change the baseline of the peak measurement. Right-click a diamond to change its
+          snap target, or open “Differential cursors” in a plot menu to add a pair. Values show end
+          minus start.
         </p>
         <h4>Threshold and error band</h4>
         <NumberField

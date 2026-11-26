@@ -114,7 +114,7 @@ Pass free coordinates as numbers. To follow an existing chart element, pass its 
 />
 ```
 
-The operator can drag a diamond to detach it, or use its context menu to bind it again. Updating the peak’s coordinates or moving B updates the readout immediately. Pass `differentialCursors` and `onDifferentialCursorsChange` to store the definitions in the host. A `measurements` callback can read `context.differentials` for the resolved values, including changes caused by source movement. A missing endpoint produces a null delta until its source returns.
+The shaded interval follows both diamonds. The host can style its fill and opacity through `.ui-linked-line-chart__delta-band`. The operator can drag a diamond to detach it, or use its context menu to bind it again. Updating the peak’s coordinates or moving B updates the readout immediately. Pass `differentialCursors` and `onDifferentialCursorsChange` to store the definitions in the host. A `measurements` callback can read `context.differentials` for the resolved values, including changes caused by source movement. A missing endpoint produces a null delta until its source returns.
 
 ## Replace an elapsed-time event view
 

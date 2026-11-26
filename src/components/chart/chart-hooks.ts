@@ -62,6 +62,7 @@ export const linkedChartHooks = createHooks('linked-line-chart', [
   'marker',
   'differential',
   'delta-value',
+  'delta-band',
   'measurements',
   'fixed-label',
   'mark-name',

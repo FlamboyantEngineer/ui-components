@@ -12,6 +12,17 @@ test('UIC-CHART-15.4 follows a moving cursor before pointer release and drags a 
   const end = lane.getByRole('slider', { name: 'Edge delay · End' });
   const delay = chart.getByRole('row', { name: /^Edge delay/ });
   await expect(delay).toContainText('80.00 ns');
+  const xBand = lane.locator('.ui-linked-line-chart__delta-band[data-axis="x"]');
+  const yBand = lane.locator('.ui-linked-line-chart__delta-band[data-axis="y"]');
+  const initialWidth = Number(await xBand.getAttribute('width'));
+  const initialHeight = Number(await yBand.getAttribute('height'));
+  await expect(xBand).toHaveCSS('pointer-events', 'none');
+  await expect(xBand).toHaveCSS('fill-opacity', '0.08');
+  await expect(
+    chart
+      .getByRole('region', { name: 'Current' })
+      .locator('.ui-linked-line-chart__delta-band[data-axis="y"]'),
+  ).toHaveCount(0);
   await b.scrollIntoViewIfNeeded();
   const line = await b.locator('line').boundingBox();
   if (!line) throw new Error('Expected a visible cursor');
@@ -22,6 +33,10 @@ test('UIC-CHART-15.4 follows a moving cursor before pointer release and drags a 
   const moved = Number(await b.getAttribute('data-coordinate'));
   expect(moved).toBeGreaterThan(240e-9);
   await expect(end).toHaveAttribute('data-coordinate', String(moved));
+  expect(Number(await xBand.getAttribute('width'))).toBeGreaterThan(initialWidth);
+  await expect(
+    chart.getByRole('region', { name: 'Current' }).locator('.ui-linked-line-chart__delta-band'),
+  ).toHaveAttribute('width', String(await xBand.getAttribute('width')));
   await expect(delay).toContainText(((moved - 160e-9) * 1e9).toFixed(2) + ' ns');
   await page.mouse.up();
   const base = lane.getByRole('slider', { name: 'Voltage excursion · Start' });
@@ -34,6 +49,8 @@ test('UIC-CHART-15.4 follows a moving cursor before pointer release and drags a 
   await page.mouse.move(diamond.x + diamond.width / 2, diamond.y - 18, { steps: 4 });
   expect(Number(await base.getAttribute('data-coordinate'))).toBeGreaterThan(0);
   await expect(peak).toHaveAttribute('data-coordinate', '5');
+  expect(Number(await yBand.getAttribute('height'))).toBeLessThan(initialHeight);
+  await expect(yBand).toHaveAttribute('data-highlighted', 'true');
   await expect(chart.getByRole('row', { name: /^Voltage excursion/ })).toHaveAttribute(
     'aria-current',
     'true',
@@ -100,6 +117,12 @@ test('UIC-CHART-15.4 drags a free X endpoint across a snapped cutoff on a logari
   await page.mouse.move(cutoff.x + cutoff.width / 2 + 24, y, { steps: 4 });
   const value = await start.getAttribute('data-coordinate');
   expect(Number(value)).toBeGreaterThan(1000);
+  const band = await magnitude.locator('.ui-linked-line-chart__delta-band').boundingBox();
+  if (!band) throw new Error('Expected the interval beyond the cutoff');
+  expect(band.x).toBeCloseTo(cutoff.x + cutoff.width / 2, 0);
+  const movedHandle = await start.locator('path').boundingBox();
+  if (!movedHandle) throw new Error('Expected the moved frequency endpoint');
+  expect(band.x + band.width).toBeCloseTo(movedHandle.x + movedHandle.width / 2, 1);
   await expect(phase.getByRole('slider', { name: 'Frequency span · Start' })).toHaveAttribute(
     'data-coordinate',
     String(value),

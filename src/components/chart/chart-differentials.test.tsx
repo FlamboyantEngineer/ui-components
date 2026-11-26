@@ -120,3 +120,47 @@ it('UIC-CHART-15.4 measures source units on logarithmic scales and detaches one 
   await user.keyboard('{Delete}');
   expect(screen.queryByRole('row', { name: /Level/ })).not.toBeInTheDocument();
 });
+
+it('UIC-CHART-15.4 clips reversed differential fills and omits zero, missing and offscreen intervals', () => {
+  const view = (from: number, to: number) => (
+    <LinkedLineChart
+      label="Capture"
+      channels={[channel, { ...channel, id: 'other', label: 'Other' }]}
+      visibleRange={[25, 75]}
+      differentialCursors={[
+        { id: 'span', label: 'Interval', axis: 'x', from, to },
+        { id: 'level', label: 'Levels', axis: 'y', channelId: 1, from: 25, to: 1 },
+        {
+          id: 'gone',
+          label: 'Unavailable',
+          axis: 'y',
+          channelId: 1,
+          from: 1,
+          to: { type: 'point', channelId: 1, id: 'absent' },
+        },
+      ]}
+    />
+  );
+  const { rerender } = render(view(80, 20));
+  const lane = screen.getByRole('region', { name: 'Signal' });
+  const band = (key: string) =>
+    lane.querySelector('.ui-linked-line-chart__delta-band[data-key="' + key + '"]');
+  expect(band('span')).toBeVisible();
+  expect(band('level')).toBeVisible();
+  expect(band('gone')).toBeNull();
+  for (const attr of ['x', 'y', 'width', 'height'])
+    expect(band('span')).toHaveAttribute(attr, band('level')?.getAttribute(attr));
+  expect(
+    screen
+      .getByRole('region', { name: 'Other' })
+      .querySelectorAll('.ui-linked-line-chart__delta-band'),
+  ).toHaveLength(1);
+  rerender(view(25, 25));
+  expect(band('span')).toBeNull();
+  rerender(view(80, 90));
+  expect(band('span')).toBeNull();
+  rerender(view(20, 50));
+  expect(Number(band('span')?.getAttribute('width'))).toBeCloseTo(
+    Number(band('level')?.getAttribute('width')) / 2,
+  );
+});
