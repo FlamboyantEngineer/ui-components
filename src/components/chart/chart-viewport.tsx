@@ -4,6 +4,7 @@ import { type KeyboardEvent, type ReactNode, useMemo, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLocale } from '../../primitives/index.js';
+import { clamp } from '../../utils/clamp.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
 import { isContextMenuKey } from '../../utils/is-context-menu-key.js';
 import type { LinearScale, ScaleInterval } from '../../utils/linear-scale.js';
@@ -84,6 +85,8 @@ export function useChartViewport(
 export type NumericViewport = ReturnType<typeof useChartViewport>;
 
 interface PlotGesture {
+  axis?: 'x' | 'y';
+  scale?: LinearScale;
   id: string;
   move: (x: number) => void;
 }
@@ -144,10 +147,28 @@ function readPointerX(element: HTMLElement, clientX: number, view: NumericViewpo
   );
 }
 
+function moveGesture(
+  mark: PlotGesture | undefined,
+  event: React.PointerEvent<HTMLDivElement>,
+  view: NumericViewport,
+) {
+  if (!mark) return;
+  if (mark.axis !== 'y' || !mark.scale) {
+    mark.move(readPointerX(event.currentTarget, event.clientX, view));
+    return;
+  }
+  const svg = event.currentTarget.querySelector('svg');
+  const bounds = svg?.getBoundingClientRect();
+  if (!svg || !bounds?.height) return;
+  const pixel = ((event.clientY - bounds.top) * svg.viewBox.baseVal.height) / bounds.height;
+  const [bottom, top] = mark.scale.range;
+  mark.move(mark.scale.invert(clamp(pixel, top, bottom)));
+}
+
 function useViewportDrag(view: NumericViewport, startMark: ViewportSurfaceProps['startMark']) {
   const [selection, setSelection] = useState<ScaleInterval | null>(null);
   const [active, setActive] = useState<{
-    gesture: 'panning' | 'selecting' | 'move-mark';
+    gesture: 'panning' | 'selecting' | 'move-mark' | 'move-y';
     markId: string | undefined;
   }>();
   const finish = () => {
@@ -162,15 +183,20 @@ function useViewportDrag(view: NumericViewport, startMark: ViewportSurfaceProps[
       if (!mark && !select && !view.canPan) return null;
       if (select) event.preventDefault();
       setActive({
-        gesture: mark ? 'move-mark' : select ? 'selecting' : 'panning',
+        gesture: mark
+          ? mark.axis === 'y'
+            ? 'move-y'
+            : 'move-mark'
+          : select
+            ? 'selecting'
+            : 'panning',
         markId: mark?.id,
       });
       return { start: event.clientX, axis, markTarget: mark ? event.target : undefined, select };
     },
     onMove: (event, state) => {
       // A controlled host can replace the marker list or the other cursor during a drag.
-      if (state.markTarget)
-        startMark?.(state.markTarget)?.move(readPointerX(event.currentTarget, event.clientX, view));
+      if (state.markTarget) moveGesture(startMark?.(state.markTarget), event, view);
       else if (state.select) {
         const start = readPointerX(event.currentTarget, state.start, view);
         const end = readPointerX(event.currentTarget, event.clientX, view);
@@ -212,7 +238,10 @@ export function ViewportSurface({
     if (isContextMenuKey(event)) {
       const target = event.target as Element;
       const value = target.closest('[data-coordinate]')?.getAttribute('data-coordinate');
-      locate(event.target, value ? Number(value) : middle);
+      locate(
+        event.target,
+        value && startMark?.(event.target)?.axis !== 'y' ? Number(value) : middle,
+      );
     }
     navigateByKey(event, view);
   };

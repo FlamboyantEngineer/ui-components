@@ -394,7 +394,7 @@ test('UIC-CHART-15.2 keeps frequency readout columns steady as digit counts chan
   for (const width of [1280, 375]) {
     await page.setViewportSize({ width, height: 780 });
     const lane = chart.getByRole('region', { name: 'Magnitude' });
-    const slider = lane.getByRole('slider', { name: 'A' });
+    const slider = lane.getByRole('slider', { name: 'A', exact: true });
     const line = slider.locator('line');
     await slider.press('Home');
     await line.scrollIntoViewIfNeeded();
@@ -423,7 +423,7 @@ test('UIC-CHART-15.2 keeps frequency readout columns steady as digit counts chan
     await expect(row).toContainText('kHz');
     await chart
       .getByRole('region', { name: 'Phase' })
-      .getByRole('slider', { name: 'B' })
+      .getByRole('slider', { name: 'B', exact: true })
       .press('ArrowRight');
     await expect(table.getByRole('row', { name: /^Edit Cursor name Cursor B\b/ })).toHaveAttribute(
       'aria-current',
@@ -476,7 +476,7 @@ test('UIC-CHART-15.1 UIC-CHART-15.2 shows the time axis on both channels and hig
   await expect(chart.locator('.ui-chart__reference[data-highlighted]')).toHaveCount(2);
   await select(/^Edit Cursor name Cursor B/);
   for (const lane of [current, voltage])
-    await expect(lane.getByRole('slider', { name: 'B' })).toHaveAttribute(
+    await expect(lane.getByRole('slider', { name: 'B', exact: true })).toHaveAttribute(
       'data-highlighted',
       'true',
     );

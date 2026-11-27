@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import type { ScaleInterval } from '../../utils/linear-scale.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import type { ProseTableRow } from '../prose-table/prose-table.js';
+import type { LinkedChartDifferentialReading } from './chart-differentials.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import type { LinkedChartChannel, LinkedChartSample } from './linked-channel.js';
 import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
@@ -24,6 +26,7 @@ export interface LinkedChartMeasurementRow {
 }
 
 export interface LinkedChartMeasurementContext {
+  differentials: readonly LinkedChartDifferentialReading[];
   /** Original host data, including samples omitted from the drawing. */
   channels: readonly LinkedChartChannel[];
   cursors: readonly LinkedChartCursor[];
@@ -71,4 +74,8 @@ export function measurementRows(
       })),
     ],
   }));
+}
+
+export function readingRow(key: string, contents: readonly ReactNode[]): ProseTableRow {
+  return { key, cells: contents.map((content, index) => ({ key: String(index), content })) };
 }

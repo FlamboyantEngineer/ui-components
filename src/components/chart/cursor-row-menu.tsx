@@ -25,7 +25,10 @@ export function CursorRowMenu({
   onActivate,
 }: {
   children: ReactNode;
-  marks: ReturnType<typeof getChartMarks>;
+  marks: readonly Pick<
+    ReturnType<typeof getChartMarks>[number],
+    'id' | 'label' | 'kind' | 'remove'
+  >[];
   onActivate: (id: string) => void;
 }) {
   const s = useUiStrings();

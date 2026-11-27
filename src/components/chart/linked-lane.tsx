@@ -15,11 +15,12 @@ import {
 } from './chart-placement.js';
 import { type ChartReferenceLine, ChartReferences, placeReferences } from './chart-references.js';
 import { type NumericViewport, ViewportSurface } from './chart-viewport.js';
+import { DifferentialMarks, getDifferentialMarks } from './differential-marks.js';
 import { LinkedTraces, useLinkedLegend } from './linked-legend.js';
 import type { LinkedChartHighlight } from './linked-measurements.js';
 import type { DrawnChannel } from './linked-model.js';
 import { ChannelPoints } from './linked-points.js';
-import { MeasurementHighlights } from './measurement-highlights.js';
+import { DifferentialBands, MeasurementHighlights } from './measurement-highlights.js';
 import { type ChartLegendPlacement, PlotWithLegend } from './plot-with-legend.js';
 
 interface LaneProps {
@@ -59,7 +60,7 @@ function useLaneReferences(
   return [...markers, ...level];
 }
 
-function markAt(target: EventTarget, marks: ReturnType<typeof getChartMarks>) {
+function markAt<T extends { id: string }>(target: EventTarget, marks: readonly T[]) {
   const id = isElement(target)
     ? target.closest('[data-mark-id]')?.getAttribute('data-mark-id')
     : null;
@@ -95,11 +96,13 @@ function LaneDrawing({
   clip,
   marks,
   draggedMark,
+  diff,
 }: {
   settings: LaneProps;
   layers: ReturnType<typeof useLinkedLegend>;
   clip: string;
   marks: ReturnType<typeof getChartMarks>;
+  diff: ReturnType<typeof getDifferentialMarks>;
   draggedMark: string | undefined;
 }) {
   const { lane, width, height, placement, references, view, xTicks, highlights } = settings;
@@ -122,6 +125,11 @@ function LaneDrawing({
           <rect x={left} y={top} width={right - left} height={bottom - top} />
         </clipPath>
       </defs>
+      <DifferentialBands
+        lane={lane}
+        readings={placement.differentials.readings}
+        selected={placement.selection.current}
+      />
       <LaneAxes lane={lane} plot={plot} xTicks={xTicks} />
       <LinkedTraces
         lane={lane}
@@ -149,6 +157,7 @@ function LaneDrawing({
         lane={lane}
         draggedMark={draggedMark}
       />
+      <DifferentialMarks marks={diff} placement={placement} lane={lane} dragged={draggedMark} />
       <ChannelPoints lane={lane} selection={placement.selection} />
     </svg>
   );
@@ -160,6 +169,7 @@ export function LinkedLane(settings: LaneProps) {
   const { channel } = lane;
   const layers = useLinkedLegend(channel, visibility);
   const marks = getChartMarks(placement);
+  const diff = getDifferentialMarks(placement, lane);
   const getItems = usePlacementMenu(lane, placement, view);
   return (
     <section
@@ -176,7 +186,7 @@ export function LinkedLane(settings: LaneProps) {
           view={view}
           label={channel.label}
           getItems={getItems}
-          startMark={(target) => markAt(target, marks)}
+          startMark={(target) => markAt(target, marks) ?? markAt(target, diff)}
         >
           {(draggedMark) => (
             <LaneDrawing
@@ -184,6 +194,7 @@ export function LinkedLane(settings: LaneProps) {
               layers={layers}
               clip={clip}
               marks={marks}
+              diff={diff}
               draggedMark={draggedMark}
             />
           )}

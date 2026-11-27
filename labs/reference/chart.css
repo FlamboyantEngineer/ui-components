@@ -848,3 +848,54 @@
   fill-opacity: 0.14;
   stroke: var(--ref-focus);
 }
+
+.ui-linked-line-chart__differential {
+  color: var(--ref-muted);
+  outline: none;
+  cursor: ew-resize;
+}
+.ui-linked-line-chart__differential[data-axis='y'],
+.ui-chart__viewport[data-gesture='move-y'] {
+  cursor: ns-resize;
+}
+.ui-linked-line-chart__differential line {
+  stroke: currentColor;
+  stroke-width: 1px;
+  stroke-dasharray: 6 3;
+}
+.ui-linked-line-chart__differential path {
+  fill: currentColor;
+  stroke: currentColor;
+}
+.ui-linked-line-chart__differential[data-endpoint='from'] path {
+  fill: var(--ref-surface);
+}
+.ui-linked-line-chart__differential:is(:focus-visible, [data-highlighted], [data-dragging]) {
+  color: var(--ref-focus);
+}
+.ui-linked-line-chart__differential:is(:focus-visible, [data-highlighted], [data-dragging]) line {
+  stroke-width: 2px;
+}
+
+.ui-linked-line-chart__differential text {
+  fill: currentColor;
+  font-size: var(--ref-font-size-sm);
+  paint-order: stroke;
+  stroke: var(--ref-canvas);
+  stroke-width: 3px;
+}
+
+.ui-linked-line-chart__delta-value,
+.ui-linked-line-chart__delta-value small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ui-linked-line-chart__delta-band {
+  fill: var(--ref-accent-ink);
+}
+.ui-linked-line-chart__delta-band[data-highlighted] {
+  fill-opacity: 0.12;
+}

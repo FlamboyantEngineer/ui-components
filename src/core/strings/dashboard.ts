@@ -1,6 +1,11 @@
 import { defineStrings } from '../message-format.js';
 /** Strings of charts and dashboard grids. */
 interface DashboardStrings {
+  chartDifferentials: string;
+  chartAddDifferential: (axis: string) => string;
+  chartFreePosition: string;
+  chartFrom: string;
+  chartTo: string;
   chartReadings: string;
   chartMeasurement: string;
   chartFixed: string;
@@ -104,6 +109,7 @@ interface DashboardStrings {
 
 /** The module's text, with the message values each text function reads its arguments as. */
 export const dashboardStrings = defineStrings<DashboardStrings>({
+  chartAddDifferential: (axis) => ({ axis }),
   chartCursor: (name) => ({ name }),
   chartPositionError: (low, high) => ({ low, high }),
   chartMarker: (name) => ({ name }),

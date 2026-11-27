@@ -10,6 +10,11 @@ export type { ChartProps, ChartSeries, ChartTable, ChartView, ChartViewProps } f
 export { Chart } from './chart.js';
 export type { ChartAxisPosition, ChartAxisProps } from './chart-axis.js';
 export { ChartAxis } from './chart-axis.js';
+export type {
+  LinkedChartDifferential,
+  LinkedChartDifferentialReading,
+  LinkedChartEndpoint,
+} from './chart-differentials.js';
 export type { ChartDatum, ChartFormatProps, ChartTooltipContext } from './chart-format.js';
 export type { ChartHiddenKeysProps, ChartLegendItem, ChartLegendProps } from './chart-legend.js';
 export { ChartLegend } from './chart-legend.js';
@@ -47,3 +52,4 @@ export { ScatterChart } from './scatter-chart.js';
 export type { SparklineMarker, SparklineProps, SparklineVariant } from './sparkline.js';
 export { Sparkline } from './sparkline.js';
 export type { ChartCursorProps, LinkedChartCursor } from './use-chart-cursors.js';
+export type { ChartDifferentialProps } from './use-chart-differentials.js';

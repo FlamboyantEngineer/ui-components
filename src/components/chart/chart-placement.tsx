@@ -5,18 +5,22 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { isComposingKey } from '../../utils/is-composing-key.js';
+import type { LinearScale } from '../../utils/linear-scale.js';
 import { capturePointer } from '../../utils/pointer-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import type { NumericViewport } from './chart-viewport.js';
+import { differentialMenu } from './differential-menu.js';
 import { findNearestSample } from './linked-channel.js';
 import type { DrawnChannel } from './linked-model.js';
 import type { useChartCursors } from './use-chart-cursors.js';
+import type { useChartDifferentials } from './use-chart-differentials.js';
 import type { useReadingSelection } from './use-reading-selection.js';
 
 export interface ChartPlacement extends ReturnType<typeof useChartCursors> {
+  differentials: ReturnType<typeof useChartDifferentials>;
   selection: ReturnType<typeof useReadingSelection>;
   markers: readonly ChartReferenceLine[];
   addMarker: (x: number) => void;
@@ -59,19 +63,24 @@ export function getChartMarks(placement: ChartPlacement): MovableMark[] {
   ];
 }
 
-function moveByKey(e: KeyboardEvent, mark: MovableMark, view: NumericViewport) {
+export function moveMarkByKey(
+  e: KeyboardEvent,
+  mark: { value: number; move: (v: number) => void; remove?: (() => void) | undefined },
+  axis: LinearScale,
+) {
   if (isComposingKey(e.nativeEvent) || e.ctrlKey || e.altKey || e.metaKey) return;
-  const { axis } = view;
+  const low = Math.min(...axis.range),
+    high = Math.max(...axis.range);
   const step = (axis.range[1] - axis.range[0]) * (e.shiftKey ? 0.1 : 0.01);
-  const pos = axis.map(mark.x);
+  const pos = axis.map(mark.value);
   switch (e.key) {
     case 'ArrowLeft':
     case 'ArrowDown':
-      mark.move(axis.invert(clamp(pos - step, ...axis.range)));
+      mark.move(axis.invert(clamp(pos - step, low, high)));
       break;
     case 'ArrowRight':
     case 'ArrowUp':
-      mark.move(axis.invert(clamp(pos + step, ...axis.range)));
+      mark.move(axis.invert(clamp(pos + step, low, high)));
       break;
     case 'Home':
       mark.move(axis.domain[0]);
@@ -90,6 +99,12 @@ function moveByKey(e: KeyboardEvent, mark: MovableMark, view: NumericViewport) {
   e.stopPropagation();
 }
 
+/** A slider percentage stays a valid ARIA decimal even when the data uses scientific notation. */
+export function markPercent(axis: LinearScale, value: number) {
+  const [start, end] = axis.range;
+  return Math.round((10000 * (axis.map(value) - start)) / (end - start)) / 100;
+}
+
 export function MovableChartMarks({
   draggedMark,
   selection,
@@ -104,7 +119,6 @@ export function MovableChartMarks({
   lane: DrawnChannel;
 }) {
   const bottom = lane.y.range[0];
-  const [left, right] = view.axis.range;
   return (
     <>
       {marks
@@ -116,7 +130,7 @@ export function MovableChartMarks({
             sample?.y != null
               ? (lane.channel.formatY ?? String)(sample.y) + ' ' + (lane.channel.unit ?? '')
               : '';
-          const position = Math.round((10000 * (x - left)) / (right - left)) / 100;
+          const position = markPercent(view.axis, m.x);
           return (
             <g
               key={m.id}
@@ -144,7 +158,7 @@ export function MovableChartMarks({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuetext={[view.writeX(m.x), reading.trim()].filter(Boolean).join(', ')}
-              onKeyDown={(e) => moveByKey(e, m, view)}
+              onKeyDown={(e) => moveMarkByKey(e, { ...m, value: m.x }, view.axis)}
             >
               <rect x={x - 8} y={0} width={16} height={bottom} fill="transparent" />
               <line x1={x} x2={x} y1={10} y2={bottom} />
@@ -216,6 +230,7 @@ export function usePlacementMenu(
           placement.setMarker(marker.id, x),
         ),
       })),
+      ...differentialMenu({ model: placement.differentials, lane, at, strings: s }, target),
       {
         id: 'zoom-cursors',
         label: s.chartZoomCursors,

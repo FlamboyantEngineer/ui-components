@@ -10,13 +10,15 @@ import {
   type ProseTableColumn,
   type ProseTableRow,
 } from '../prose-table/prose-table.js';
+import { differentialKey } from './chart-differentials.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
 import { type ChartPlacement, getChartMarks } from './chart-placement.js';
 import { ChartPositionEdit } from './chart-position-edit.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import { CursorRowMenu } from './cursor-row-menu.js';
+import { differentialRows } from './differential-readings.js';
 import type { LinkedChartPoint } from './linked-channel.js';
-import type { measurementRows } from './linked-measurements.js';
+import { type measurementRows, readingRow } from './linked-measurements.js';
 import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
 import { pointKey } from './linked-points.js';
 
@@ -59,10 +61,6 @@ function getPositions(
       })),
     ),
   ];
-}
-
-function readingRow(key: string, contents: readonly ReactNode[]): ProseTableRow {
-  return { key, cells: contents.map((content, index) => ({ key: String(index), content })) };
 }
 
 function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: number) => string) {
@@ -118,9 +116,22 @@ function positionName(mark: ReadingPosition, s: ReturnType<typeof useUiStrings>)
   );
 }
 
-function ReadingTarget({ selected, children }: { selected: boolean; children: ReactNode }) {
+function ReadingTarget({
+  selected,
+  children,
+  markId,
+}: {
+  selected: boolean;
+  children: ReactNode;
+  markId?: string | undefined;
+}) {
   return (
-    <button type="button" {...hooks.slot('row-action')} aria-pressed={selected}>
+    <button
+      type="button"
+      {...hooks.slot('row-action', { 'mark-id': markId })}
+      aria-haspopup={markId ? 'menu' : undefined}
+      aria-pressed={selected}
+    >
       {children}
     </button>
   );
@@ -202,11 +213,18 @@ export function LinkedReadings(props: LinkedReadingsProps) {
       return value === null ? s.noData : (lanes[index]?.channel.formatY ?? String)(value);
     });
   const rows = positionRows(props, s);
+  const pairs = placement.differentials.readings.map(({ cursor }) => ({
+    id: differentialKey(cursor.id),
+    label: cursor.label,
+    kind: 'cursor' as const,
+    remove: () => placement.differentials.remove(cursor.id),
+  }));
   const footer = [
     ...(placement.hasPair
       ? [readingRow('delta', [placement.differenceLabel, formatX(b - a), ...totals('deltaY')])]
       : []),
     readingRow('p2p', [s.chartPeakAmplitude, s.chartVisibleRange, ...totals('peakToPeak')]),
+    ...differentialRows(props, s),
     ...extra,
   ].map((row) => ({
     ...row,
@@ -216,7 +234,12 @@ export function LinkedReadings(props: LinkedReadingsProps) {
         : {
             ...cell,
             content: (
-              <ReadingTarget selected={row.key === selection.current}>{cell.content}</ReadingTarget>
+              <ReadingTarget
+                selected={row.key === selection.current}
+                markId={pairs.find((p) => p.id === row.key)?.id}
+              >
+                {cell.content}
+              </ReadingTarget>
             ),
           },
     ),
@@ -229,7 +252,7 @@ export function LinkedReadings(props: LinkedReadingsProps) {
   const keys = new Map([...rows, ...footer].map((row) => [selection.rowId(row.key), row.key]));
   return (
     <CursorRowMenu
-      marks={getChartMarks(placement)}
+      marks={[...getChartMarks(placement), ...pairs]}
       onActivate={(id) => {
         const key = keys.get(id);
         if (key !== undefined) selection.select(key);
@@ -242,7 +265,10 @@ export function LinkedReadings(props: LinkedReadingsProps) {
             {s.chartReadings} {placement.hasPair && <small>|Δx| = {formatX(readout.deltaX)}</small>}
           </>
         }
-        header={columns(lanes, s, { xLabel, hasMeasurements: extra.length > 0 })}
+        header={columns(lanes, s, {
+          xLabel,
+          hasMeasurements: extra.length + placement.differentials.readings.length > 0,
+        })}
         rows={rows.map(identify)}
         footer={footer.map(identify)}
       />
