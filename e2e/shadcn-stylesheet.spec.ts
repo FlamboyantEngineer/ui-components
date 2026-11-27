@@ -163,3 +163,21 @@ test('UIC-LABS-3.11 UIC-SELECT-FIELD-14.1 reserves the native chevron clearance 
     expect(clearance).toBeGreaterThanOrEqual(4);
   }
 });
+
+const overlayHandles = {
+  'dock-panel': '.ui-dock-panel__handle',
+  'navigation-rail': '.ui-navigation-rail__resize-handle',
+} as const;
+
+for (const [name, hook] of Object.entries(overlayHandles)) {
+  test(`UIC-LABS-3.11 keeps the ${name} resize handle out of the layout flow`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open(name, { stylesheet: 'shadcn', theme: 'light' });
+    const handle = page.locator(hook).first();
+    await expect(handle).toBeVisible();
+    await expect(handle).toHaveCSS('position', 'absolute');
+    await expect(handle).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  });
+}

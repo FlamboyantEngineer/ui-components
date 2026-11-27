@@ -107,3 +107,11 @@
   min-height: 28px;
   padding: 0 8px;
 }
+
+/* The resize handle straddles the rail's edge as an invisible band, as shadcn/ui's sidebar rail
+   does, instead of the split view's 1 pixel line in the layout flow. */
+.ui-navigation-rail .ui-resize-handle.ui-navigation-rail__resize-handle[data-orientation] {
+  position: absolute;
+  width: 10px;
+  background: transparent;
+}
