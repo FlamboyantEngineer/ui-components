@@ -5,6 +5,7 @@ import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { ProseTableRow } from '../prose-table/prose-table.js';
 import type { LinkedChartDifferentialReading } from './chart-differentials.js';
 import type { ChartReferenceLine } from './chart-references.js';
+import { type LinkedChartCursorSample, readCursorSample } from './cursor-sampling.js';
 import type { LinkedChartChannel, LinkedChartSample } from './linked-channel.js';
 import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
 import type { LinkedChartCursor } from './use-chart-cursors.js';
@@ -35,6 +36,8 @@ export interface LinkedChartMeasurementContext {
   visibleRange: ScaleInterval;
   /** Readings for A and B when both exist. */
   pair: LinkedChartReadout | null;
+  /** Read the same acquired or interpolated value as the cursor table at this coordinate. */
+  sampleAt: (channelId: Key, x: number) => LinkedChartCursorSample | null;
   nearestDisplayedSample: (channelId: Key, x: number) => LinkedChartSample | null;
 }
 
@@ -45,13 +48,17 @@ export type LinkedChartMeasurements =
 export function measurementRows(
   measurements: LinkedChartMeasurements | undefined,
   lanes: readonly DrawnChannel[],
-  context: Omit<LinkedChartMeasurementContext, 'channels' | 'nearestDisplayedSample'>,
+  context: Omit<LinkedChartMeasurementContext, 'channels' | 'nearestDisplayedSample' | 'sampleAt'>,
 ) {
   const rows =
     typeof measurements === 'function'
       ? measurements({
           ...context,
           channels: lanes.map((lane) => lane.channel),
+          sampleAt: (channelId, x) => {
+            const lane = lanes.find((candidate) => candidate.channel.id === channelId);
+            return lane ? readCursorSample(lane, x) : null;
+          },
           nearestDisplayedSample: (channelId, x) => {
             const lane = lanes.find((candidate) => candidate.channel.id === channelId);
             return lane ? readDisplayedSample(lane, x) : null;

@@ -164,3 +164,32 @@ it('UIC-CHART-15.4 clips reversed differential fills and omits zero, missing and
     Number(band('level')?.getAttribute('width')) / 2,
   );
 });
+
+it('UIC-CHART-15.4 follows an interpolated cursor amplitude and its acquired neighbor', () => {
+  const measure = vi.fn((_context: LinkedChartMeasurementContext) => []);
+  const view = (x: number) => (
+    <LinkedLineChart
+      label="Capture"
+      channels={[channel]}
+      cursors={[x, 100]}
+      differentialCursors={[
+        {
+          id: 1,
+          axis: 'y',
+          channelId: 1,
+          label: 'Height',
+          from: 0,
+          to: { type: 'cursor', name: 'A' },
+        },
+      ]}
+      measurements={measure}
+    />
+  );
+  const { rerender } = render(view(5.5));
+  const reading = () => measure.mock.lastCall?.[0];
+  expect(reading()?.differentials[0]?.delta).toBeCloseTo(3);
+  expect(reading()?.sampleAt(1, 5.5)?.y).toBe(reading()?.differentials[0]?.to);
+  rerender(view(10));
+  expect(reading()?.differentials[0]?.delta).toBe(4);
+  expect(reading()?.sampleAt(1, 10)).toBe(channel.samples[1]);
+});

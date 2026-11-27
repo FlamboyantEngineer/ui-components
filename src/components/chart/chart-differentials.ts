@@ -2,6 +2,7 @@ import type { Key } from '../../core/props.js';
 import type { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { ChartReferenceLine } from './chart-references.js';
+import { readSourceSample } from './cursor-sampling.js';
 import { findNearestSample } from './linked-channel.js';
 import type { DrawnChannel } from './linked-model.js';
 import type { LinkedChartCursor } from './use-chart-cursors.js';
@@ -61,14 +62,7 @@ function projectPosition(
 ) {
   if (pair.axis === 'x' || x === undefined) return x;
   const lane = sources.lanes.find((l) => l.channel.id === pair.channelId);
-  if (
-    !lane ||
-    !Number.isFinite(lane.x.map(x)) ||
-    x < (lane.source[0]?.x ?? Infinity) ||
-    x > (lane.source.at(-1)?.x ?? -Infinity)
-  )
-    return null;
-  return findNearestSample(lane.source, x, lane.x)?.y;
+  return lane ? readSourceSample(lane, x)?.y : null;
 }
 
 function anchoredValue(

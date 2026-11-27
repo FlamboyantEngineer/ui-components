@@ -101,7 +101,8 @@ function Capture() {
           the plots. Each channel repeats the shared time axis. Click, drag, or keyboard-focus a
           cursor to highlight its row while you measure. Use the legend to toggle a trace, or hover
           or focus its name to bring it forward. Voltage reaches 5 V and current reaches 42 mA at
-          324 ns. The next voltage sample drops to −5 V. Shift-drag across the spike to inspect it.
+          324 ns. Enter 324.01 ns for cursor A to snap to that acquired peak. The next voltage
+          sample drops to −5 V. Shift-drag across the spike to inspect it.
         </p>
         <h4>Measure the excursion</h4>
         <p>
@@ -168,7 +169,9 @@ function Frequency() {
         <h4>Compare frequencies</h4>
         <p>
           Cursors start at 100 Hz and 1 kHz. Right-click either plot and choose “Insert cursor” to
-          compare a third frequency. Right-click a cursor or its reading row to delete it.
+          compare a third frequency. Zoom in around 1 kHz until the 1,000 Hz and 1,015.47 Hz samples
+          are well apart. Place a cursor between them to see interpolated magnitude and phase,
+          marked ≈.
         </p>
       </Notes>
     </div>

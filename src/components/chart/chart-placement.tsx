@@ -12,6 +12,7 @@ import type { MenuEntry } from '../menu/menu.js';
 import { linkedChartHooks as hooks } from './chart-hooks.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import type { NumericViewport } from './chart-viewport.js';
+import { cursorSnapRadius, readCursorSample, snapCursorX } from './cursor-sampling.js';
 import { differentialMenu } from './differential-menu.js';
 import { findNearestSample } from './linked-channel.js';
 import type { DrawnChannel } from './linked-model.js';
@@ -39,7 +40,10 @@ interface MovableMark {
   remove?: (() => void) | undefined;
 }
 
-export function getChartMarks(placement: ChartPlacement): MovableMark[] {
+export function getChartMarks(
+  placement: ChartPlacement,
+  lanes: readonly DrawnChannel[],
+): MovableMark[] {
   const { cursorList, moveCursor, deleteCursor, markers, setMarker, removeMarker } = placement;
   return [
     ...cursorList.map((c) => ({
@@ -47,7 +51,7 @@ export function getChartMarks(placement: ChartPlacement): MovableMark[] {
       label: c.label ?? c.name,
       x: c.x,
       kind: 'cursor' as const,
-      move: (x: number) => moveCursor(c.name, x),
+      move: (x: number) => moveCursor(c.name, snapCursorX(lanes, x)),
       rename: (label: string) => placement.renameCursor(c.name, label),
       remove: () => deleteCursor(c.name),
     })),
@@ -65,13 +69,20 @@ export function getChartMarks(placement: ChartPlacement): MovableMark[] {
 
 export function moveMarkByKey(
   e: KeyboardEvent,
-  mark: { value: number; move: (v: number) => void; remove?: (() => void) | undefined },
+  mark: {
+    kind?: 'cursor' | 'marker';
+    value: number;
+    move: (v: number) => void;
+    remove?: (() => void) | undefined;
+  },
   axis: LinearScale,
 ) {
   if (isComposingKey(e.nativeEvent) || e.ctrlKey || e.altKey || e.metaKey) return;
   const low = Math.min(...axis.range),
     high = Math.max(...axis.range);
-  const step = (axis.range[1] - axis.range[0]) * (e.shiftKey ? 0.1 : 0.01);
+  const span = axis.range[1] - axis.range[0];
+  const minimum = mark.kind === 'cursor' ? cursorSnapRadius + 1 : 0;
+  const step = Math.sign(span) * Math.max(minimum, Math.abs(span) * (e.shiftKey ? 0.1 : 0.01));
   const pos = axis.map(mark.value);
   switch (e.key) {
     case 'ArrowLeft':
@@ -125,10 +136,13 @@ export function MovableChartMarks({
         .filter((m) => m.x >= view.axis.domain[0] && m.x <= view.axis.domain[1])
         .map((m) => {
           const x = view.axis.map(m.x);
-          const sample = findNearestSample(lane.line.displayed, m.x, view.axis);
+          const sample = readCursorSample(lane, m.x);
           const reading =
             sample?.y != null
-              ? (lane.channel.formatY ?? String)(sample.y) + ' ' + (lane.channel.unit ?? '')
+              ? (sample.interpolated ? '≈ ' : '') +
+                (lane.channel.formatY ?? String)(sample.y) +
+                ' ' +
+                (lane.channel.unit ?? '')
               : '';
           const position = markPercent(view.axis, m.x);
           return (
@@ -162,8 +176,8 @@ export function MovableChartMarks({
             >
               <rect x={x - 8} y={0} width={16} height={bottom} fill="transparent" />
               <line x1={x} x2={x} y1={10} y2={bottom} />
-              {sample?.y != null ? (
-                <circle cx={view.axis.map(sample.x)} cy={lane.y.map(sample.y)} r={3} />
+              {sample?.y != null && sample.y >= lane.y.domain[0] && sample.y <= lane.y.domain[1] ? (
+                <circle cx={x} cy={lane.y.map(sample.y)} r={3} />
               ) : null}
               <text x={x} y={9} textAnchor="middle">
                 {m.label}
@@ -192,13 +206,13 @@ export function usePlacementMenu(
       ['falling', s.chartFalling, m.falling],
       ['outside', s.chartOutside, m.outside],
     ] as const;
-    const entries = (prefix: string, move: (x: number) => void) =>
+    const entries = (prefix: string, move: (x: number, source: string) => void) =>
       sources.map(([id, label, value]) => ({
         id: prefix + '-' + id,
         label,
         isDisabled: value === undefined,
         onAction: () => {
-          if (value !== undefined) move(value);
+          if (value !== undefined) move(value, id);
         },
       }));
     const hit = placement.cursorList.find((c) => 'cursor:' + c.name === target);
@@ -215,12 +229,14 @@ export function usePlacementMenu(
       {
         id: 'insert-cursor',
         label: s.chartInsertCursor,
-        onAction: () => placement.insertCursor(at),
+        onAction: () => placement.insertCursor(snapCursorX([lane], at)),
       },
       ...placement.cursorList.map((c) => ({
         id: 'place:' + c.name,
         label: s.chartCursor(c.label ?? c.name),
-        items: entries('place:' + c.name, (x) => placement.moveCursor(c.name, x)),
+        items: entries('place:' + c.name, (x, source) =>
+          placement.moveCursor(c.name, source === 'position' ? snapCursorX([lane], x) : x),
+        ),
       })),
       { id: 'marker', label: s.chartAddMarker, items: entries('marker', placement.addMarker) },
       ...placement.markers.map((marker) => ({
