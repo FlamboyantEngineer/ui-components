@@ -62,7 +62,7 @@ export function findChannelExtent(channel: LinkedChartChannel): ScaleInterval {
   return findAxisExtent(values(), channel.yScale ?? 'linear');
 }
 
-function findStart(samples: readonly LinkedChartSample[], x: number) {
+export function findStart(samples: readonly LinkedChartSample[], x: number) {
   let lo = 0;
   let hi = samples.length;
   while (lo < hi) {
@@ -189,7 +189,7 @@ export function measureChannel(
     }
     previous = p;
   }
-  return { ...extremes, rising, falling, outside };
+  return { ...extremes, rising, falling, outside, samples: values };
 }
 
 function findExtremes(values: readonly LinkedChartSample[]) {

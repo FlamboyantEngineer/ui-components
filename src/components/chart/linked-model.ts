@@ -1,11 +1,11 @@
 import type { LinearScale, ScaleInterval } from '../../utils/linear-scale.js';
+import { type LinkedChartCursorSample, readCursorSample } from './cursor-sampling.js';
 import {
   drawBand,
   drawTrace,
   findChannelExtent,
   findNearestSample,
   type LinkedChartChannel,
-  type LinkedChartSample,
   measureChannel,
   orderSamples,
   sliceSamples,
@@ -31,10 +31,12 @@ export function prepareChannel(channel: LinkedChartChannel, height: number) {
     format: channel.formatY,
     tickCount: 4,
   });
+  const samples = orderSamples(channel.samples);
   return {
     channel,
     y,
-    samples: orderSamples(channel.samples),
+    samples,
+    measured: samples.filter((p) => isAxisValue(p.y ?? NaN, kind)),
     reference: orderSamples(channel.reference ?? []),
   };
 }
@@ -78,6 +80,7 @@ export function drawChannel(prepared: ReturnType<typeof prepareChannel>, x: Line
     y,
     line,
     source: prepared.samples,
+    measured: prepared.measured,
     reference: comparison.path,
     band: drawBand(samples, x, y),
     points: (channel.points ?? []).filter((p) => Number.isFinite(p.y) && Number.isFinite(p.x)),
@@ -89,8 +92,8 @@ export type DrawnChannel = ReturnType<typeof drawChannel>;
 
 export interface LinkedChartReading {
   channelId: LinkedChartChannel['id'];
-  /** Nearest displayed source samples for cursors A and B. */
-  samples: readonly [LinkedChartSample | null, LinkedChartSample | null];
+  /** Full-resolution readings at A and B. Interpolated values carry interpolated: true. */
+  samples: readonly [LinkedChartCursorSample | null, LinkedChartCursorSample | null];
   /** Signed amplitude difference B minus A, in this channel's units. */
   deltaY: number | null;
   /** Full-resolution peak-to-peak amplitude over the visible x range. */
@@ -117,8 +120,8 @@ export function readCursors(
     deltaX: Math.abs(cursors[1] - cursors[0]),
     channels: lanes.map((lane) => {
       const { channel, measurements } = lane;
-      const a = readDisplayedSample(lane, cursors[0]);
-      const b = readDisplayedSample(lane, cursors[1]);
+      const a = readCursorSample(lane, cursors[0]);
+      const b = readCursorSample(lane, cursors[1]);
       return {
         channelId: channel.id,
         samples: [a, b],

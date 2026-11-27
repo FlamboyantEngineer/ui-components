@@ -28,7 +28,7 @@ const current = {
     { x: 3.6, y: 500 },
   ],
 };
-it('UIC-CHART-15.2 reports two independent displayed samples and delta in source units', async () => {
+it('UIC-CHART-15.2 reports source samples and delta in source units within each channel’s support', async () => {
   const user = userEvent.setup();
   const change = vi.fn();
   render(
@@ -55,8 +55,8 @@ it('UIC-CHART-15.2 reports two independent displayed samples and delta in source
       },
       {
         channelId: 'i',
-        samples: [current.samples[0], current.samples[1]],
-        deltaY: 200,
+        samples: [null, null],
+        deltaY: null,
         peakToPeak: 200,
       },
     ],
@@ -291,6 +291,10 @@ it('UIC-CHART-15.2 supplies original data and live positions for host measuremen
   expect(context?.visibleRange).toEqual([0, 4]);
   expect(context?.markers[0]?.id).toBe('probe');
   expect(context?.xReferences[0]?.id).toBe('trigger');
+  expect(context?.sampleAt(1, 2)).toBe(voltage.samples[1]);
+  expect(context?.sampleAt(1, 1)).toEqual(context?.pair?.channels[0]?.samples[0]);
+  expect(context?.sampleAt(1, 1)?.interpolated).toBe(true);
+  expect(context?.sampleAt(1, -1)).toBeNull();
   expect(context?.nearestDisplayedSample(1, 2)).toBe(voltage.samples[1]);
   expect(context?.nearestDisplayedSample('missing', 2)).toBeNull();
   const cursor = within(screen.getByRole('region', { name: 'Voltage' })).getByRole('slider', {

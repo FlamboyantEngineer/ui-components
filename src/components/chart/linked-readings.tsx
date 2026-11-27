@@ -16,10 +16,11 @@ import { type ChartPlacement, getChartMarks } from './chart-placement.js';
 import { ChartPositionEdit } from './chart-position-edit.js';
 import type { ChartReferenceLine } from './chart-references.js';
 import { CursorRowMenu } from './cursor-row-menu.js';
+import { readCursorSample } from './cursor-sampling.js';
 import { differentialRows } from './differential-readings.js';
 import type { LinkedChartPoint } from './linked-channel.js';
 import { type measurementRows, readingRow } from './linked-measurements.js';
-import { type DrawnChannel, type LinkedChartReadout, readDisplayedSample } from './linked-model.js';
+import type { DrawnChannel, LinkedChartReadout } from './linked-model.js';
 import { pointKey } from './linked-points.js';
 
 interface ReadingPosition {
@@ -37,7 +38,7 @@ function getPositions(
   lanes: readonly DrawnChannel[],
 ): ReadingPosition[] {
   return [
-    ...getChartMarks(placement).map((mark) => ({
+    ...getChartMarks(placement, lanes).map((mark) => ({
       key: mark.id,
       label: mark.label,
       x: mark.x,
@@ -63,21 +64,11 @@ function getPositions(
   ];
 }
 
-function sampleCell(lane: DrawnChannel, mark: ReadingPosition, formatX: (x: number) => string) {
+function sampleCell(lane: DrawnChannel, mark: ReadingPosition) {
   const write = lane.channel.formatY ?? String;
   if (mark.point) return mark.point.lane === lane ? write(mark.point.value.y) : '—';
-  const sample = readDisplayedSample(lane, mark.x);
-  if (sample?.y == null) return null;
-  return (
-    <>
-      {write(sample.y)}
-      {(mark.mark || sample.x !== mark.x) && (
-        <small {...hooks.slot('sample-x')}>
-          {sample.x !== mark.x ? '@ ' + formatX(sample.x) : null}
-        </small>
-      )}
-    </>
-  );
+  const sample = readCursorSample(lane, mark.x);
+  return sample?.y == null ? null : (sample.interpolated ? '≈ ' : '') + write(sample.y);
 }
 
 function positionName(mark: ReadingPosition, s: ReturnType<typeof useUiStrings>) {
@@ -197,7 +188,7 @@ function positionRows(
       ) : (
         formatX(mark.x)
       ),
-      ...lanes.map((lane) => sampleCell(lane, mark, formatX) ?? s.noData),
+      ...lanes.map((lane) => sampleCell(lane, mark) ?? s.noData),
     ]),
   );
 }
@@ -252,7 +243,7 @@ export function LinkedReadings(props: LinkedReadingsProps) {
   const keys = new Map([...rows, ...footer].map((row) => [selection.rowId(row.key), row.key]));
   return (
     <CursorRowMenu
-      marks={[...getChartMarks(placement), ...pairs]}
+      marks={[...getChartMarks(placement, lanes), ...pairs]}
       onActivate={(id) => {
         const key = keys.get(id);
         if (key !== undefined) selection.select(key);

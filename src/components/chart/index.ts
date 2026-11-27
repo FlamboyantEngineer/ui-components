@@ -19,6 +19,7 @@ export type { ChartDatum, ChartFormatProps, ChartTooltipContext } from './chart-
 export type { ChartHiddenKeysProps, ChartLegendItem, ChartLegendProps } from './chart-legend.js';
 export { ChartLegend } from './chart-legend.js';
 export type { ChartReference, ChartReferenceBand, ChartReferenceLine } from './chart-references.js';
+export type { LinkedChartCursorSample } from './cursor-sampling.js';
 export type { DonutChartProps, DonutChartSegment } from './donut-chart.js';
 export { DonutChart } from './donut-chart.js';
 export { EventChart, type EventChartItem, type EventChartProps } from './event-chart.js';

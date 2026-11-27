@@ -57,7 +57,7 @@ describe('linked measurements', () => {
       outside: undefined,
     });
   });
-  it('UIC-CHART-15.2 snaps by displayed distance on a logarithmic axis', () => {
+  it('UIC-CHART-15.2 interpolates amplitudes along a logarithmic x axis', () => {
     const data = {
       ...channel,
       samples: [
@@ -67,6 +67,9 @@ describe('linked measurements', () => {
     };
     const x = createNumericAxis({ kind: 'log', domain: [1, 10], range: [0, 200] });
     const result = readCursors([drawChannel(prepareChannel(data, 120), x)], [2, 4]);
-    expect(result.channels[0]?.samples).toEqual(data.samples);
+    for (const reading of result.channels[0]?.samples ?? []) {
+      expect(reading?.interpolated).toBe(true);
+      expect(reading?.y).toBeCloseTo(5 - 3 * Math.log10(reading?.x ?? NaN), 12);
+    }
   });
 });

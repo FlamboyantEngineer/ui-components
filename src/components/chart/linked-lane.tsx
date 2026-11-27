@@ -168,7 +168,7 @@ export function LinkedLane(settings: LaneProps) {
   const clip = useId();
   const { channel } = lane;
   const layers = useLinkedLegend(channel, visibility);
-  const marks = getChartMarks(placement);
+  const marks = getChartMarks(placement, [lane]);
   const diff = getDifferentialMarks(placement, lane);
   const getItems = usePlacementMenu(lane, placement, view);
   return (
